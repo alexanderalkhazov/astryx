@@ -14,6 +14,7 @@
     <Using Include="Shouldly" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="../../src/BuildingBlocks/Astryx.Infrastructure/Astryx.Infrastructure.csproj" />
     <ProjectReference Include="../../src/Modules/Identity/Astryx.Modules.Identity.csproj" />
     <ProjectReference Include="../../src/Modules/Profiles/Astryx.Modules.Profiles.csproj" />
     <ProjectReference Include="../../src/Modules/MarketData/Astryx.Modules.MarketData.csproj" />

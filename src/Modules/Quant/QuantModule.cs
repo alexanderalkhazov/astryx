@@ -1,10 +1,13 @@
+using Astryx.Infrastructure.Persistence;
+using Astryx.Modules.Quant.Infrastructure.Persistence;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Astryx.Modules.Quant;
 
-/// <summary>Composition entry point for the Quant module (SYSTEM_DESIGN.md §7). NOT IMPLEMENTED.</summary>
+/// <summary>Composition entry point for the Quant module (SYSTEM_DESIGN.md §7).</summary>
 public static class QuantModule
 {
-    public static IServiceCollection AddQuantModule(this IServiceCollection services, IConfiguration configuration) => services;
+    public static IServiceCollection AddQuantModule(this IServiceCollection services, IConfiguration configuration) =>
+        services.AddModuleDbContext<QuantDbContext>(QuantDbContext.SchemaName, historyKey: "quant");
 }

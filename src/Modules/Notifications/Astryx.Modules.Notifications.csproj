@@ -5,5 +5,6 @@
   <ItemGroup>
     <ProjectReference Include="../../BuildingBlocks/Astryx.SharedKernel/Astryx.SharedKernel.csproj" />
     <ProjectReference Include="../../BuildingBlocks/Astryx.Contracts/Astryx.Contracts.csproj" />
+    <ProjectReference Include="../../BuildingBlocks/Astryx.Infrastructure/Astryx.Infrastructure.csproj" />
   </ItemGroup>
 </Project>

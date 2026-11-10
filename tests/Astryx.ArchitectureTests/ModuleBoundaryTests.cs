@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace Astryx.ArchitectureTests;
 
-/// <summary>Modules may only depend on SharedKernel and Contracts, never on each other (SYSTEM_DESIGN.md §4.4).</summary>
+/// <summary>Modules depend only on the building blocks (SharedKernel, Contracts, Infrastructure), never on each other or on Workers (SYSTEM_DESIGN.md §4.4).</summary>
 public class ModuleBoundaryTests
 {
     public static TheoryData<string> Modules => new()
@@ -36,11 +36,19 @@ public class ModuleBoundaryTests
 
     [Theory]
     [MemberData(nameof(Modules))]
-    public void Module_does_not_reference_infrastructure_or_workers(string moduleName)
+    public void Module_does_not_reference_workers_or_api(string moduleName)
     {
         var references = Assembly.Load(moduleName).GetReferencedAssemblies().Select(a => a.Name!).ToList();
 
-        references.ShouldNotContain("Astryx.Infrastructure");
         references.ShouldNotContain("Astryx.Workers");
+        references.ShouldNotContain("Astryx.Api");
+    }
+
+    [Fact]
+    public void Building_blocks_do_not_reference_modules()
+    {
+        var infrastructure = typeof(Astryx.Infrastructure.StartupGuards).Assembly.GetReferencedAssemblies().Select(a => a.Name!);
+
+        infrastructure.ShouldNotContain(n => n.StartsWith("Astryx.Modules.", StringComparison.Ordinal));
     }
 }

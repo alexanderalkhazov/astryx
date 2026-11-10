@@ -287,7 +287,7 @@ astryx/
 Rules:
 
 - `DECIDED` (v0.2) Each module **starts as a single project** `Astryx.Modules.<Name>` with `Domain/`, `Application/`, `Infrastructure/` and `Api/` folders. It is split into separate projects only when a module grows large enough to justify it. Boundaries are enforced by the architecture tests either way.
-- `DECIDED` Module projects may reference only `SharedKernel`, `Contracts` and their own projects. A module never references another module's `Domain` or `Infrastructure`. Cross-module calls go through interfaces in `Astryx.Contracts`, which are implemented by the owning module and registered in DI. Enforce this with an architecture test (NetArchTest).
+- `DECIDED` Module projects may reference only the building blocks (`SharedKernel`, `Contracts`, and `Astryx.Infrastructure` for the EF base, outbox, job queue and idempotency) and their own code. A module never references another module, `Workers` or the API host (v0.2 clarification; architecture tests enforce it). Cross-module calls go through interfaces in `Astryx.Contracts`, which are implemented by the owning module and registered in DI. Enforce this with an architecture test (NetArchTest).
 - `DECIDED` Each module owns a Postgres **schema** (`identity`, `market`, `discovery`, `watchlist`, `ai`, `strategy`, `trading`, `portfolio`, `notify`, `audit`) and its own `DbContext`. Foreign keys across schemas are allowed for referential integrity (one database), but writes happen only through the owning module.
 
 ---
@@ -1406,6 +1406,7 @@ SignalR is an optimisation; every state is also reachable by polling REST (clien
 | Concurrency | `xmin` system column as the EF concurrency token, plus an explicit `version bigint` on `portfolios` and `positions` |
 | Soft delete | Only `users.deleted_at` (GDPR-style erasure job, §10.5). Everything else is either append-only or hard-deleted. |
 | Extensions | `citext`, `pg_trgm` (search), `pgcrypto` (only for `gen_random_uuid()` defaults in seed SQL) |
+| Migrations | One `DbContext` per module deriving from `ModuleDbContext` (`Astryx.Infrastructure`). Each has its own history table `{schema}.__ef_migrations_{module}`, so modules sharing a schema (Identity/Profiles, MarketData/Quant, Trading/Paper) migrate independently. Migrations live in each module's `Infrastructure/Persistence/Migrations/`. The platform context `InfraDbContext` (schema `infra`, extensions) runs first. Apply them with `dotnet Astryx.Api.dll --migrate`, or automatically when `Database:MigrateOnStartup=true` (Development). |
 
 ### 10.2 Consolidations relative to the suggested entity list
 

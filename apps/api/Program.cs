@@ -17,7 +17,7 @@ using Astryx.Modules.Watchlists;
 using Astryx.Workers;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Npgsql;
+using Astryx.Infrastructure.Persistence;
 using Serilog;
 using Serilog.Formatting.Compact;
 
@@ -32,9 +32,7 @@ builder.Services.AddSerilog((services, logger) => logger
 
 builder.Services.AddOpenApi();
 
-var postgres = builder.Configuration.GetConnectionString("Postgres")
-    ?? throw new InvalidOperationException("ConnectionStrings:Postgres is not configured.");
-builder.Services.AddSingleton(_ => NpgsqlDataSource.Create(postgres));
+builder.Services.AddAstryxPersistence(builder.Configuration);
 
 builder.Services.AddHttpClient<OllamaHealthCheck>(client =>
 {
@@ -43,7 +41,6 @@ builder.Services.AddHttpClient<OllamaHealthCheck>(client =>
 });
 
 builder.Services.AddHealthChecks()
-    .AddCheck<PostgresHealthCheck>("postgres", tags: ["ready"])
     .AddCheck<OllamaHealthCheck>("ollama", tags: ["deps"]);
 
 builder.Services
@@ -63,6 +60,18 @@ builder.Services
     .AddWorkers(builder.Configuration);
 
 var app = builder.Build();
+
+// `dotnet Astryx.Api.dll --migrate` applies migrations and exits (production deploy step, SYSTEM_DESIGN.md §22.2).
+if (args.Contains("--migrate", StringComparer.Ordinal))
+{
+    await MigrationRunner.MigrateAllAsync(app.Services);
+    return;
+}
+
+if (app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
+{
+    await MigrationRunner.MigrateAllAsync(app.Services);
+}
 
 app.UseSerilogRequestLogging();
 
@@ -87,6 +96,7 @@ app.MapGet("/api/v1/system/status", async (HealthCheckService health, IConfigura
     return Results.Ok(new
     {
         database = Status("postgres"),
+        migrations = Status("migrations"),
         ai = new { status = Status("ollama"), model = config["Ai:Ollama:Model"] },
         marketData = new { provider = config["MarketData:Provider"] },
         broker = new { adapter = config["Broker:Adapter"], mode = "paper" },
