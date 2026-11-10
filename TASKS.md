@@ -143,7 +143,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Scope:** `Money`, `Price`, `Quantity`, `Percent`, `Currency`, `Result<T>`, `Error`, UUIDv7 `Ids`, `RoundingPolicy` (ledger half-even to cents; tick rounding).
   - **Acceptance:** unit tests cover currency mismatch, rounding at boundaries, negative or zero price rejection, and decimal-string JSON converters (round-trip `"186.50"`).
   - **Refs:** §9.5, §20.1 · **Depends:** T-000 · **P0**
-- [ ] **T-012** Persistence foundation
+- [x] **T-012** Persistence foundation — `db9252f`
   - **Scope:** EF Core + Npgsql, a base `ModuleDbContext` (schema per module, snake_case, UTC conventions, `xmin` concurrency), a migrations runner (`--migrate` flag and dev auto-migrate), and the `citext`/`pg_trgm` extensions.
   - **Acceptance:** an empty migration per schema applies in compose. `/health/ready` reports pending migrations as Unhealthy.
   - **Refs:** §10.1, §22.1 · **Depends:** T-011 · **P0**
