@@ -151,7 +151,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Scope:** correlation-ID middleware, the RFC 7807 exception handler with the `code` and `traceId` extensions, the FluentValidation integration, and a JSON options setup (unknown properties rejected, 64 KB body limit).
   - **Acceptance:** API tests assert the problem-details shape for 400, 404 and 422, and the `X-Correlation-Id` echo.
   - **Refs:** §9.2, §11.1–11.2, §18.7 · **Depends:** T-011 · **P0**
-- [ ] **T-014** Transactional outbox and dispatcher
+- [x] **T-014** Transactional outbox and dispatcher — `2132c5a`
   - **Scope:** the `infra.outbox_messages` table, `IOutbox.Add(event)` in the same transaction, `OutboxDispatcher` BackgroundService with in-process handlers, dedupe by `message_id`, poison handling.
   - **Acceptance:** an integration test shows that an event is delivered exactly once to an idempotent handler after a simulated crash before dispatch.
   - **Refs:** §9.4, §19.2 · **Depends:** T-012 · **P0**
