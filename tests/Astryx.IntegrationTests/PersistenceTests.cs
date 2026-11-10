@@ -1,31 +1,34 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Astryx.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 
 namespace Astryx.IntegrationTests;
 
 public class PersistenceTests(ApiFactory factory) : IClassFixture<ApiFactory>
 {
-    public static TheoryData<string, string> Histories => new()
-    {
-        { "infra", "infra" }, { "identity", "identity" }, { "identity", "profiles" }, { "market", "marketdata" },
-        { "market", "quant" }, { "discovery", "discovery" }, { "watchlist", "watchlists" }, { "ai", "ai" },
-        { "strategy", "strategies" }, { "trading", "trading" }, { "trading", "paper" }, { "portfolio", "portfolio" },
-        { "notify", "notifications" }, { "audit", "audit" },
-    };
-
-    [Theory]
-    [MemberData(nameof(Histories))]
-    public async Task Every_module_schema_has_its_own_applied_migration_history(string schema, string historyKey)
+    [Fact]
+    public async Task Every_module_has_its_own_history_table_with_all_its_migrations_applied()
     {
         _ = factory.CreateClient(); // starting the host applies migrations
+        var registrations = factory.Services.GetServices<ModuleDbContextRegistration>().ToList();
+        registrations.Count.ShouldBe(14); // infra + 13 modules
 
         await using var connection = new NpgsqlConnection(factory.ConnectionString);
         await connection.OpenAsync();
-        await using var command = new NpgsqlCommand($"SELECT count(*) FROM \"{schema}\".\"__ef_migrations_{historyKey}\"", connection);
+        foreach (var registration in registrations)
+        {
+            await using var scope = factory.Services.CreateAsyncScope();
+            var context = (DbContext)scope.ServiceProvider.GetRequiredService(registration.ContextType);
+            var defined = context.Database.GetMigrations().Count();
+            await using var command = new NpgsqlCommand($"SELECT count(*) FROM \"{registration.Schema}\".\"{registration.HistoryTable}\"", connection);
 
-        ((long)(await command.ExecuteScalarAsync())!).ShouldBe(1);
+            defined.ShouldBeGreaterThan(0, registration.ContextType.Name);
+            ((long)(await command.ExecuteScalarAsync())!).ShouldBe(defined, registration.ContextType.Name);
+        }
     }
 
     [Theory]

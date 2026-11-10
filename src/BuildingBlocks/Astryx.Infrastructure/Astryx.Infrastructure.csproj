@@ -14,4 +14,7 @@
     <ProjectReference Include="../Astryx.SharedKernel/Astryx.SharedKernel.csproj" />
     <ProjectReference Include="../Astryx.Contracts/Astryx.Contracts.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Astryx.UnitTests" />
+  </ItemGroup>
 </Project>

@@ -1,4 +1,5 @@
 using Astryx.Infrastructure.Health;
+using Astryx.Infrastructure.Outbox;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,7 +8,7 @@ using Npgsql;
 namespace Astryx.Infrastructure.Persistence;
 
 /// <summary>A module DbContext registered for migrations and the pending-migrations health check.</summary>
-public sealed record ModuleDbContextRegistration(Type ContextType, string Schema, int Order);
+public sealed record ModuleDbContextRegistration(Type ContextType, string Schema, string HistoryTable, int Order);
 
 public static class PersistenceRegistration
 {
@@ -22,6 +23,7 @@ public static class PersistenceRegistration
 
         services.AddSingleton(_ => NpgsqlDataSource.Create(connectionString));
         services.AddModuleDbContext<InfraDbContext>(InfraDbContext.SchemaName, historyKey: "infra", order: 0);
+        services.AddOutbox(configuration);
         services.AddHealthChecks()
             .AddCheck<PostgresHealthCheck>("postgres", tags: ["ready"])
             .AddCheck<PendingMigrationsHealthCheck>("migrations", tags: ["ready"]);
@@ -35,10 +37,11 @@ public static class PersistenceRegistration
     public static IServiceCollection AddModuleDbContext<TContext>(this IServiceCollection services, string schema, string historyKey, int order = 10)
         where TContext : ModuleDbContext
     {
+        var historyTable = $"__ef_migrations_{historyKey}";
         services.AddDbContext<TContext>((provider, options) => options
-            .UseNpgsql(provider.GetRequiredService<NpgsqlDataSource>(), npgsql => npgsql.MigrationsHistoryTable($"__ef_migrations_{historyKey}", schema))
+            .UseNpgsql(provider.GetRequiredService<NpgsqlDataSource>(), npgsql => npgsql.MigrationsHistoryTable(historyTable, schema))
             .UseSnakeCaseNamingConvention());
-        services.AddSingleton(new ModuleDbContextRegistration(typeof(TContext), schema, order));
+        services.AddSingleton(new ModuleDbContextRegistration(typeof(TContext), schema, historyTable, order));
         return services;
     }
 }

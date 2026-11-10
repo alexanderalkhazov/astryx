@@ -1336,7 +1336,8 @@ builder.Services
 ### 9.4 Transactions & outbox
 
 - Each command handler runs in one `DbContext` transaction. Cross-module writes that must be atomic (fill → position → ledger) use a **shared connection + transaction** via `IUnitOfWork` spanning the Trading and Portfolio contexts (same database). `DECIDED`: Paper execution is the only cross-module atomic write; everything else is eventual via outbox.
-- Domain events are written to `outbox_messages` in the same transaction; `OutboxDispatcher` publishes to in-process handlers (Notifications, Audit, SignalR) with at-least-once delivery; handlers are idempotent by `message_id`.
+- Integration events (`IIntegrationEvent` in `Astryx.Contracts`, each with a static stable `EventName`) are queued with `moduleDbContext.Publish(evt)`. `ModuleDbContext.SaveChangesAsync` writes the business rows and the `infra.outbox_messages` rows in **one transaction** on the module's own connection, joining an outer transaction if one is open. Module models do not map the outbox table, so their migrations stay independent. Synchronous `SaveChanges` with pending events throws.
+- `OutboxDispatcher` (hosted by `OutboxDispatcherService` when `Workers:Enabled`) claims batches with `FOR UPDATE SKIP LOCKED` and invokes every `IIntegrationEventHandler<T>` registered via `AddIntegrationEventHandler<TEvent, THandler>()`, each in its own DI scope with the message's correlation ID. Successful handlers are recorded in `infra.outbox_deliveries`. Failures back off exponentially (1 s doubling, capped at 5 min), and a message becomes poison after 10 attempts (`Outbox:*` options). Delivery is **at-least-once**, so handlers must be idempotent by `MessageId`.
 
 ### 9.5 Domain primitives (SharedKernel)
 
@@ -2019,7 +2020,8 @@ IX `(user_id, occurred_at desc)`, `(entity_type, entity_id)`.
 
 #### Schema `infra`
 
-**`infra.outbox_messages`** — `id` PK, `occurred_at`, `type`, `payload` jsonb, `correlation_id`, `processed_at` NULL, `attempts` int, `last_error`. IX `(occurred_at) WHERE processed_at IS NULL`.
+**`infra.outbox_messages`** — `id` PK (UUIDv7), `occurred_at`, `type` (stable versioned event name, e.g. `identity.user_registered.v1`), `payload` jsonb, `correlation_id`, `processed_at` NULL, `attempts` int, `next_attempt_at` (backoff), `last_error`, `failed_at` NULL (poison: max attempts or undeserialisable). IX `ix_outbox_messages_pending (next_attempt_at) WHERE processed_at IS NULL AND failed_at IS NULL`.
+**`infra.outbox_deliveries`** — PK `(message_id, handler)`, FK → outbox_messages (cascade), `delivered_at`. One row per handler that processed a message, so a retry re-runs only the handlers that failed.
 **`infra.job_queue`** — `id` PK, `type`, `payload` jsonb, `status` CK (`pending`,`running`,`succeeded`,`failed`,`dead`), `run_after` timestamptz, `attempts`, `max_attempts`, `locked_by`, `locked_until`, `dedupe_key` text NULL, `last_error`, `started_at`, `finished_at`. Partial UK `(dedupe_key) WHERE status IN ('pending','running')`. IX `(status, run_after) WHERE status='pending'`.
 **`infra.idempotency_records`** — PK `(user_id, key)`, `endpoint` text, `request_hash` text, `status` CK (`in_progress`,`completed`), `response_status` int, `response_body` jsonb, `resource_id` uuid, `expires_at` (created + 24 h).
 

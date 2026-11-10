@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using Astryx.Infrastructure.Outbox;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -20,6 +21,7 @@ public sealed partial class CorrelationIdMiddleware(RequestDelegate next, ILogge
         var correlationId = ValidId().IsMatch(incoming) ? incoming : Guid.NewGuid().ToString("N");
 
         context.Items[ItemKey] = correlationId;
+        CorrelationContext.Id = correlationId;
         Activity.Current?.SetTag("correlation.id", correlationId);
         context.Response.OnStarting(() =>
         {
