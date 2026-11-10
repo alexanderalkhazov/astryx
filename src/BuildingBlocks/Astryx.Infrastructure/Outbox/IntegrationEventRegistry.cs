@@ -30,7 +30,7 @@ public static class IntegrationEventRegistration
             typeof(THandler).FullName!,
             async (provider, payload, context, cancellationToken) =>
             {
-                var integrationEvent = JsonSerializer.Deserialize<TEvent>(payload, OutboxSerializer.Options)
+                var integrationEvent = JsonSerializer.Deserialize<TEvent>(payload, InfrastructureJson.Options)
                     ?? throw new JsonException($"Payload for {TEvent.EventName} deserialised to null.");
                 await provider.GetRequiredService<THandler>().HandleAsync(integrationEvent, context, cancellationToken);
             }));

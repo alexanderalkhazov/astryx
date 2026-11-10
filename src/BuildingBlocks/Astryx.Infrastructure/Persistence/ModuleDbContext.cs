@@ -42,7 +42,7 @@ public abstract class ModuleDbContext(DbContextOptions options) : DbContext(opti
             OccurredAt = now,
             NextAttemptAt = now,
             Type = TEvent.EventName,
-            Payload = JsonSerializer.Serialize(integrationEvent, OutboxSerializer.Options),
+            Payload = JsonSerializer.Serialize(integrationEvent, InfrastructureJson.Options),
             CorrelationId = CorrelationContext.Id,
         });
     }

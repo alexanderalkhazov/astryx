@@ -1,3 +1,4 @@
+using Astryx.Infrastructure.Jobs;
 using Astryx.Infrastructure.Outbox;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +15,6 @@ public static class WorkersRegistration
             return services;
         }
 
-        return services.AddOutboxDispatcherService();
+        return services.AddOutboxDispatcherService().AddJobWorkerServices();
     }
 }

@@ -1,4 +1,5 @@
 using Astryx.Infrastructure.Health;
+using Astryx.Infrastructure.Jobs;
 using Astryx.Infrastructure.Outbox;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -24,6 +25,7 @@ public static class PersistenceRegistration
         services.AddSingleton(_ => NpgsqlDataSource.Create(connectionString));
         services.AddModuleDbContext<InfraDbContext>(InfraDbContext.SchemaName, historyKey: "infra", order: 0);
         services.AddOutbox(configuration);
+        services.AddJobQueue(configuration);
         services.AddHealthChecks()
             .AddCheck<PostgresHealthCheck>("postgres", tags: ["ready"])
             .AddCheck<PendingMigrationsHealthCheck>("migrations", tags: ["ready"]);

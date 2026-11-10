@@ -2022,7 +2022,8 @@ IX `(user_id, occurred_at desc)`, `(entity_type, entity_id)`.
 
 **`infra.outbox_messages`** — `id` PK (UUIDv7), `occurred_at`, `type` (stable versioned event name, e.g. `identity.user_registered.v1`), `payload` jsonb, `correlation_id`, `processed_at` NULL, `attempts` int, `next_attempt_at` (backoff), `last_error`, `failed_at` NULL (poison: max attempts or undeserialisable). IX `ix_outbox_messages_pending (next_attempt_at) WHERE processed_at IS NULL AND failed_at IS NULL`.
 **`infra.outbox_deliveries`** — PK `(message_id, handler)`, FK → outbox_messages (cascade), `delivered_at`. One row per handler that processed a message, so a retry re-runs only the handlers that failed.
-**`infra.job_queue`** — `id` PK, `type`, `payload` jsonb, `status` CK (`pending`,`running`,`succeeded`,`failed`,`dead`), `run_after` timestamptz, `attempts`, `max_attempts`, `locked_by`, `locked_until`, `dedupe_key` text NULL, `last_error`, `started_at`, `finished_at`. Partial UK `(dedupe_key) WHERE status IN ('pending','running')`. IX `(status, run_after) WHERE status='pending'`.
+**`infra.job_queue`** — `id` PK, `type` (stable versioned job type), `payload` jsonb, `status` CK (`pending`,`running`,`succeeded`,`dead`; a failed attempt with retries left returns to `pending` with a later `run_after`), `run_after`, `attempts`, `max_attempts`, `timeout_seconds`, `locked_by`, `locked_until` (lease = timeout + grace), `dedupe_key` NULL, `correlation_id`, `last_error`, `created_at`, `started_at`, `finished_at`. Partial UK `ux_job_queue_active_dedupe (dedupe_key) WHERE status IN ('pending','running')`. IX `(run_after) WHERE status='pending'`, `(locked_until) WHERE status='running'`.
+**`infra.recurring_jobs`** — PK `name`, `next_due_at`. One row per recurring schedule; see §19.1.
 **`infra.idempotency_records`** — PK `(user_id, key)`, `endpoint` text, `request_hash` text, `status` CK (`in_progress`,`completed`), `response_status` int, `response_body` jsonb, `resource_id` uuid, `expires_at` (created + 24 h).
 
 ### 10.5 Retention, caching and deletion
@@ -3249,7 +3250,8 @@ WHERE id = (
 RETURNING *;
 ```
 
-- **Schedulers** are `BackgroundService` + `PeriodicTimer`. They enqueue with a `dedupe_key` (e.g. `quote-sync:2026-11-09T19:32`), so multiple worker replicas never double-schedule. A partial unique index enforces this, so no leader election is needed for scheduling.
+- **Schedulers** (`JobScheduler`, ticked by `JobMaintenanceService`) register schedules with `AddRecurringJob<TJob>(name, interval, factory)`. Each schedule owns one row in `infra.recurring_jobs`. A replica claims the due slot with `UPDATE … SET next_due_at = slot + interval WHERE name = … AND next_due_at <= now` and enqueues **in the same transaction**, so exactly one replica enqueues each slot, even when a fast job has already finished. No leader election is needed. (v0.1 proposed dedupe keys alone; those only block duplicates while a job is pending or running.) Dedupe keys remain for ad-hoc work, e.g. "one active scanner run".
+- **Execution:** `JobRunner` claims with `UPDATE … WHERE id = (SELECT … FOR UPDATE SKIP LOCKED) RETURNING *`, runs the `IJobHandler<TJob>` registered via `AddJobHandler<TJob, THandler>()` with a per-job timeout, and settles only while it still holds the lease. Failures retry with backoff (30 s doubling, capped at 15 min, `Jobs:*` options). Unknown types and undeserialisable payloads go straight to `dead`. `JobRunnerService` runs `Jobs:Concurrency` claim loops when `Workers:Enabled`.
 - **Reaper:** every 30 s, jobs with `status='running' AND locked_until < now()` go back to `pending` (if attempts remain) or `dead`.
 
 ### 19.2 Workers
