@@ -155,7 +155,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Scope:** the `infra.outbox_messages` table, `IOutbox.Add(event)` in the same transaction, `OutboxDispatcher` BackgroundService with in-process handlers, dedupe by `message_id`, poison handling.
   - **Acceptance:** an integration test shows that an event is delivered exactly once to an idempotent handler after a simulated crash before dispatch.
   - **Refs:** §9.4, §19.2 · **Depends:** T-012 · **P0**
-- [ ] **T-015** Postgres job queue, scheduler and reaper
+- [x] **T-015** Postgres job queue, scheduler and reaper — `dc7b491`
   - **Scope:** `infra.job_queue`, a `SKIP LOCKED` claim, leases, the reaper, `dedupe_key` scheduling with `PeriodicTimer`, retry with backoff, `dead` state, `Workers:Enabled` switch.
   - **Acceptance:** tests cover a concurrent claim by 2 workers (one wins), lease expiry requeue, dedupe preventing a double schedule, and moving to dead after max attempts.
   - **Refs:** §19.1–19.3 · **Depends:** T-012 · **P0**
