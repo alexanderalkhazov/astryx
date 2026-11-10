@@ -117,6 +117,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Scope:** a workflow on PR and on push to `main`: setup .NET 10 and pnpm, `dotnet build` (warnings as errors), `dotnet test` (Testcontainers on the Ubuntu runner), `pnpm install --frozen-lockfile`, `pnpm typecheck`, `expo-doctor`. NuGet and pnpm caching.
   - **Acceptance:** a PR with a failing test is blocked. A green run takes under 10 minutes.
   - **Refs:** §21.2, §22.2 · **Depends:** T-000 · **P0**
+  - ⏸ WIP: `.github/workflows/ci.yml` committed; every step passes locally (restore --locked-mode, Release build 0 warnings, 32/32 tests, frozen pnpm install, typecheck, expo-doctor 20/20, 18 s). **Blocked:** no GitHub remote yet, so "PR with failing test is blocked" and the <10 min run time can't be verified. Next: create the repo, push, enable branch protection on `main` requiring both jobs.
 - [ ] **T-002** Secret and dependency scanning in CI
   - **Scope:** gitleaks; `dotnet list package --vulnerable`; `pnpm audit --prod` (fail on high or critical); Dependabot/Renovate config.
   - **Acceptance:** a committed fake secret fails CI. A weekly update PR is opened automatically.
