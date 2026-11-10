@@ -162,7 +162,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Scope:** `infra.job_queue`, a `SKIP LOCKED` claim, leases, the reaper, `dedupe_key` scheduling with `PeriodicTimer`, retry with backoff, `dead` state, `Workers:Enabled` switch.
   - **Acceptance:** tests cover a concurrent claim by 2 workers (one wins), lease expiry requeue, dedupe preventing a double schedule, and moving to dead after max attempts.
   - **Refs:** §19.1–19.3 · **Depends:** T-012 · **P0**
-- [ ] **T-016** Idempotency infrastructure
+- [x] **T-016** Idempotency infrastructure — `744b7c5`
   - **Scope:** `infra.idempotency_records`, an `[Idempotent]` endpoint filter (in-progress / replay / key-reused semantics), the `Idempotent-Replayed` header, 24 h cleanup.
   - **Acceptance:** IDEM-01, IDEM-02 (10 concurrent requests) and IDEM-03 pass against a test endpoint.
   - **Refs:** §11.1, §20.10, §21.7 · **Depends:** T-013 · **P0**
