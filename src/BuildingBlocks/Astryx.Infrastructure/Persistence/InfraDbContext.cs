@@ -1,3 +1,4 @@
+using Astryx.Infrastructure.Idempotency;
 using Astryx.Infrastructure.Jobs;
 using Astryx.Infrastructure.Outbox;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +22,8 @@ public sealed class InfraDbContext(DbContextOptions<InfraDbContext> options) : M
     public DbSet<JobRecord> JobQueue => Set<JobRecord>();
 
     public DbSet<RecurringJobState> RecurringJobs => Set<RecurringJobState>();
+
+    public DbSet<IdempotencyRecord> IdempotencyRecords => Set<IdempotencyRecord>();
 
     protected override void ConfigureModel(ModelBuilder modelBuilder)
     {
@@ -72,6 +75,19 @@ public sealed class InfraDbContext(DbContextOptions<InfraDbContext> options) : M
             entity.ToTable("recurring_jobs");
             entity.HasKey(r => r.Name);
             entity.Property(r => r.Name).HasMaxLength(200);
+        });
+
+        modelBuilder.Entity<IdempotencyRecord>(entity =>
+        {
+            entity.ToTable("idempotency_records", t => t.HasCheckConstraint("ck_idempotency_records_status", "status IN ('in_progress', 'completed')"));
+            entity.HasKey(r => new { r.Subject, r.Key });
+            entity.Property(r => r.Subject).HasMaxLength(64);
+            entity.Property(r => r.Key).HasMaxLength(128);
+            entity.Property(r => r.Endpoint).HasMaxLength(300);
+            entity.Property(r => r.RequestHash).HasMaxLength(64);
+            entity.Property(r => r.Status).HasMaxLength(16);
+            entity.Property(r => r.ResponseContentType).HasMaxLength(200);
+            entity.HasIndex(r => r.ExpiresAt).HasDatabaseName("ix_idempotency_records_expires_at");
         });
     }
 }

@@ -2027,7 +2027,7 @@ IX `(user_id, occurred_at desc)`, `(entity_type, entity_id)`.
 **`infra.outbox_deliveries`** — PK `(message_id, handler)`, FK → outbox_messages (cascade), `delivered_at`. One row per handler that processed a message, so a retry re-runs only the handlers that failed.
 **`infra.job_queue`** — `id` PK, `type` (stable versioned job type), `payload` jsonb, `status` CK (`pending`,`running`,`succeeded`,`dead`; a failed attempt with retries left returns to `pending` with a later `run_after`), `run_after`, `attempts`, `max_attempts`, `timeout_seconds`, `locked_by`, `locked_until` (lease = timeout + grace), `dedupe_key` NULL, `correlation_id`, `last_error`, `created_at`, `started_at`, `finished_at`. Partial UK `ux_job_queue_active_dedupe (dedupe_key) WHERE status IN ('pending','running')`. IX `(run_after) WHERE status='pending'`, `(locked_until) WHERE status='running'`.
 **`infra.recurring_jobs`** — PK `name`, `next_due_at`. One row per recurring schedule; see §19.1.
-**`infra.idempotency_records`** — PK `(user_id, key)`, `endpoint` text, `request_hash` text, `status` CK (`in_progress`,`completed`), `response_status` int, `response_body` jsonb, `resource_id` uuid, `expires_at` (created + 24 h).
+**`infra.idempotency_records`** — PK `(subject, key)` (subject = user id, or `anonymous`), `endpoint` (`METHOD /path`), `request_hash` (SHA-256 of method, path, query and raw body), `status` CK (`in_progress`,`completed`), `in_progress_until` (60 s lease; an expired lease means the request was abandoned and may be taken over), `response_status`, `response_content_type`, `response_body` text, `created_at`, `expires_at` (created + 24 h). IX `(expires_at)`. Deleted hourly by the `idempotency-cleanup` recurring job. 5xx responses are never stored, so a retry runs again.
 
 ### 10.5 Retention, caching and deletion
 
@@ -2093,7 +2093,7 @@ Error envelope (every problem response also carries `correlationId`; unknown rou
 
 | HTTP | `code` | Meaning |
 |---|---|---|
-| 400 | `bad_request` | Malformed JSON or unknown parameter |
+| 400 | `bad_request`, `idempotency_key_required`, `idempotency_key_invalid` | Malformed JSON or unknown parameter; missing or malformed `Idempotency-Key` on an idempotent endpoint |
 | 401 | `unauthorized`, `token_expired`, `session_revoked` | Authentication failure |
 | 403 | `email_not_verified`, `forbidden`, `live_trading_disabled` | Authorisation failure |
 | 404 | `not_found`, `instrument_not_found` | Resource is missing **or belongs to another user** (never 403, to avoid confirming that IDs exist) |

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text.Json.Serialization;
+using Astryx.Infrastructure.Idempotency;
 using Astryx.SharedKernel.Json;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
@@ -38,7 +39,7 @@ public static class HttpPipeline
         return services;
     }
 
-    /// <summary>Correlation → exception handler → status-code problem details → body limit.</summary>
+    /// <summary>Correlation → exception handler → status-code problem details → body limit → idempotency buffering.</summary>
     public static WebApplication UseAstryxHttp(this WebApplication app)
     {
         app.UseMiddleware<CorrelationIdMiddleware>();
@@ -48,6 +49,7 @@ public static class HttpPipeline
         });
         app.UseStatusCodePages();
         app.UseMiddleware<RequestBodyLimitMiddleware>();
+        app.UseMiddleware<IdempotencyBufferingMiddleware>();
         return app;
     }
 }

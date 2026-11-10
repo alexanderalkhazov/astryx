@@ -254,19 +254,21 @@ public class JobQueueTests(JobDatabase database) : IClassFixture<JobDatabase>, I
         await using var replicaB = Provider();
         var schedulerA = replicaA.GetRequiredService<JobScheduler>();
         var schedulerB = replicaB.GetRequiredService<JobScheduler>();
+        async Task<int> PingJobsAsync() => (await JobsAsync(replicaA)).Count(j => j.Type == PingJob.JobType);
 
-        var first = await Task.WhenAll(schedulerA.TickAsync(CancellationToken.None), schedulerB.TickAsync(CancellationToken.None), schedulerA.TickAsync(CancellationToken.None));
-        first.Sum().ShouldBe(1);
+        // Other schedules (e.g. idempotency cleanup) also exist; only this schedule's jobs are counted.
+        await Task.WhenAll(schedulerA.TickAsync(CancellationToken.None), schedulerB.TickAsync(CancellationToken.None), schedulerA.TickAsync(CancellationToken.None));
+        (await PingJobsAsync()).ShouldBe(1);
 
-        await RunAsync(replicaA); // even after the slot's job finishes...
-        (await schedulerB.TickAsync(CancellationToken.None)).ShouldBe(0); // ...the same slot is not enqueued again
+        while (await RunAsync(replicaA))
+        {
+        } // even after the slot's job finishes...
+
+        await schedulerB.TickAsync(CancellationToken.None);
+        (await PingJobsAsync()).ShouldBe(1); // ...the same slot is not enqueued again
 
         _time.Advance(TimeSpan.FromMinutes(1));
-        var second = await Task.WhenAll(schedulerA.TickAsync(CancellationToken.None), schedulerB.TickAsync(CancellationToken.None));
-        second.Sum().ShouldBe(1);
-
-        var jobs = await JobsAsync(replicaA);
-        jobs.Count.ShouldBe(2);
-        jobs.ShouldAllBe(j => j.Type == "test.ping.v1");
+        await Task.WhenAll(schedulerA.TickAsync(CancellationToken.None), schedulerB.TickAsync(CancellationToken.None));
+        (await PingJobsAsync()).ShouldBe(2);
     }
 }
