@@ -5,6 +5,7 @@ using Astryx.Modules.Ai;
 using Astryx.Modules.Audit;
 using Astryx.Modules.Discovery;
 using Astryx.Modules.Identity;
+using Astryx.Modules.Identity.Api;
 using Astryx.Modules.MarketData;
 using Astryx.Modules.Notifications;
 using Astryx.Modules.Paper;
@@ -112,6 +113,8 @@ app.MapGet("/api/v1/system/status", async (HealthCheckService health, IConfigura
         features = new { liveTrading = config.GetValue<bool>("Features:LiveTrading") },
     });
 });
+
+app.MapIdentityEndpoints();
 
 if (app.Environment.IsEnvironment("Testing"))
 {

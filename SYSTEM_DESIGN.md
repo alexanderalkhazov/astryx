@@ -1570,8 +1570,9 @@ IX: `(user_id, device_id)`, `(family_id)`, `(expires_at)` for cleanup.
 | token_hash | bytea | UK |
 | expires_at | timestamptz | verification 24 h, reset 30 min |
 | consumed_at | timestamptz | NULL |
+| source_message_id | uuid | NULL, UK. The outbox message that issued the token; makes the issuing handler idempotent |
 
-IX: `(user_id, purpose) WHERE consumed_at IS NULL`.
+IX: `(user_id, purpose) WHERE consumed_at IS NULL`. FK users (cascade).
 
 **`identity.user_profiles`** — 1:1 profile.
 
@@ -2109,7 +2110,7 @@ Error envelope (every problem response also carries `correlationId`; unknown rou
 
 | # | Method & route | Auth | Request | Response | Validation | Errors |
 |---|---|---|---|---|---|---|
-| A1 | `POST /auth/register` | none | `RegisterRequest {email, password, displayName?}` | `201 {userId, emailVerificationRequired:true}` | email RFC 5322 ≤ 254. password 12–128 characters, not in the breached list. displayName ≤ 80 | 409 `duplicate` (returned as a generic 201 to avoid user enumeration, `ASSUMPTION`: the email is sent saying "you already have an account"), 422, 429 |
+| A1 | `POST /auth/register` | none | `RegisterRequest {email, password, displayName?}` | `201 {emailVerificationRequired:true}` (no `userId`, so new and existing emails get identical responses; the verification link carries the id) | email RFC 5322 ≤ 254. password 12–128 characters, not in the breached list. displayName ≤ 80 | 409 `duplicate` (returned as a generic 201 to avoid user enumeration, `ASSUMPTION`: the email is sent saying "you already have an account"), 422, 429 |
 | A2 | `POST /auth/verify-email` | none | `{userId, token}` | `204` | token is base64url, 43 characters | 422 `invalid_or_expired_token` |
 | A3 | `POST /auth/resend-verification` | none | `{email}` | `202` (always) | | 429 |
 | A4 | `POST /auth/login` | none | `LoginRequest {email, password, deviceId}` | `200 TokenResponse` | deviceId 8–64 chars `[A-Za-z0-9-]` | 401 `invalid_credentials`, 403 `email_not_verified`, 423 `account_locked`, 429 |
@@ -3254,6 +3255,7 @@ Budget per user key: sync uses about 3 reads/min, order lookups at most about 10
 
 - Password policy: 12–128 characters, any characters allowed, checked against the HIBP k-anonymity range API (`ASSUMPTION`; skipped offline). No composition rules.
 - A verification token (32 random bytes, base64url) is emailed as a deep link `astryx://verify-email?userId=…&token=…`. Only its SHA-256 hash is stored. It expires in 24 h and is single use.
+- Implementation (T-020): registration publishes `UserRegistered` and `EmailVerificationRequested` through the outbox, and **no token travels in the outbox payload**. `EmailVerificationHandler` generates the token, invalidates older unused ones, and commits the hash **only after SMTP accepted the email**, in one transaction, so a failed send leaves nothing behind and the retry issues a fresh link. An existing email gets an identical 201 plus an "already have an account" email to the owner. The password is hashed in both branches to equalise timing, and concurrent registrations of one email resolve to one account (unique index, loser takes the existing-account path). `UserRegistered` provisions the profile, risk defaults (§14.3), notification preferences, default watchlist and the simulated portfolio with its `initial_deposit` (idempotent handlers).
 - Login is blocked until the email is verified (`403 email_not_verified` with a resend option).
 
 ### 18.2 Password hashing

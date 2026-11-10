@@ -66,6 +66,6 @@ public class PendingMigrationTests(UnmigratedApiFactory factory) : IClassFixture
         var body = await response.Content.ReadFromJsonAsync<JsonElement>();
         var migrations = body.GetProperty("entries").GetProperty("migrations");
         migrations.GetProperty("status").GetString().ShouldBe("Unhealthy");
-        migrations.GetProperty("data").GetProperty("IdentityDbContext").GetArrayLength().ShouldBe(1);
+        migrations.GetProperty("data").GetProperty("IdentityDbContext").GetArrayLength().ShouldBeGreaterThan(0);
     }
 }
