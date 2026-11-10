@@ -126,7 +126,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Scope:** ESLint (Expo config, plus a rule forbidding `color.gain` outside P&L/executed components) and Prettier for TS; `dotnet format --verify-no-changes`; `pnpm lint` in Turbo and CI.
   - **Acceptance:** CI fails on unformatted code. The lint rule catches a deliberate violation.
   - **Refs:** §8.6, §4.4 · **Depends:** T-001 · **P1**
-- [ ] **T-004** Banned floating-point API analyzer
+- [x] **T-004** Banned floating-point API analyzer — `bb71a18`
   - **Scope:** `Microsoft.CodeAnalysis.BannedApiAnalyzers` with `BannedSymbols.txt` banning `double`/`float` arithmetic helpers for money in Domain code, with the documented exception for `Volatility()`.
   - **Acceptance:** introducing `double` in a module's `Domain/` folder fails the build.
   - **Refs:** §20.1 · **Depends:** T-000 · **P1**
