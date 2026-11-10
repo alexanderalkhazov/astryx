@@ -139,7 +139,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Scope:** export `openapi.json` at build (`Microsoft.Extensions.ApiDescription.Server`), and generate types and Zod schemas into `@astryx/api-client`. A `pnpm api:gen` script. CI checks the generated code is up to date.
   - **Acceptance:** changing a DTO without regenerating fails CI. `SystemStatus` comes from generated types.
   - **Refs:** §8.8, §11 · **Depends:** T-001 · **P0**
-- [ ] **T-011** SharedKernel primitives
+- [x] **T-011** SharedKernel primitives — `a1174af`
   - **Scope:** `Money`, `Price`, `Quantity`, `Percent`, `Currency`, `Result<T>`, `Error`, UUIDv7 `Ids`, `RoundingPolicy` (ledger half-even to cents; tick rounding).
   - **Acceptance:** unit tests cover currency mismatch, rounding at boundaries, negative or zero price rejection, and decimal-string JSON converters (round-trip `"186.50"`).
   - **Refs:** §9.5, §20.1 · **Depends:** T-000 · **P0**
