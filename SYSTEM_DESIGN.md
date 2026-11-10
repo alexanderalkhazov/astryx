@@ -2020,6 +2020,7 @@ IX `(user_id, created_at desc)`, `(user_id) WHERE read_at IS NULL`.
 | metadata | jsonb | |
 
 IX `(user_id, occurred_at desc)`, `(entity_type, entity_id)`.
+Implementation (T-017): monthly partitions `audit.audit_logs_yYYYYmMM` plus `audit.audit_logs_default`. They are created by `audit.ensure_month_partition(date)` and dropped after 24 months by `audit.drop_partitions_before(date)`, both called by the daily `audit-partition-maintenance` job, which keeps 2 months ahead. A trigger rejects UPDATE, DELETE and TRUNCATE (append-only; retention drops whole partitions). Rows are written either in the business transaction with `moduleDbContext.Audit(entry)` or standalone with `IAuditLog` (`Astryx.Contracts.Audit`). `before`/`after`/`metadata` are redacted by `AuditRedactor`: secret keys (password, tokens, api/user keys, credentials, …; case and separator insensitive) become `[REDACTED]`, emails are masked, and payloads over 16 KB are replaced by a marker. Correlation ID, IP and user agent are captured from the request.
 
 #### Schema `infra`
 

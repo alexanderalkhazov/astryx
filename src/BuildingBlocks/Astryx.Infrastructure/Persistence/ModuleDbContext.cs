@@ -1,5 +1,7 @@
 using System.Text.Json;
+using Astryx.Contracts.Audit;
 using Astryx.Contracts.Events;
+using Astryx.Infrastructure.Audit;
 using Astryx.Infrastructure.Outbox;
 using Astryx.SharedKernel;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +15,7 @@ namespace Astryx.Infrastructure.Persistence;
 public abstract class ModuleDbContext(DbContextOptions options) : DbContext(options)
 {
     private readonly List<OutboxMessage> _pendingEvents = [];
+    private readonly List<AuditEntry> _pendingAudit = [];
 
     /// <summary>The Postgres schema this context owns.</summary>
     public abstract string Schema { get; }
@@ -47,14 +50,20 @@ public abstract class ModuleDbContext(DbContextOptions options) : DbContext(opti
         });
     }
 
+    /// <summary>
+    /// Queues an audit entry, written to <c>audit.audit_logs</c> in the same transaction as the next
+    /// <see cref="SaveChangesAsync(bool, CancellationToken)"/>: if the change rolls back, so does its audit row (§7.18).
+    /// </summary>
+    public void Audit(AuditEntry entry) => _pendingAudit.Add(entry);
+
     public override int SaveChanges(bool acceptAllChangesOnSuccess) =>
-        _pendingEvents.Count == 0
+        _pendingEvents.Count == 0 && _pendingAudit.Count == 0
             ? base.SaveChanges(acceptAllChangesOnSuccess)
-            : throw new InvalidOperationException("Contexts with published events must be saved with SaveChangesAsync.");
+            : throw new InvalidOperationException("Contexts with published events or audit entries must be saved with SaveChangesAsync.");
 
     public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
     {
-        if (_pendingEvents.Count == 0)
+        if (_pendingEvents.Count == 0 && _pendingAudit.Count == 0)
         {
             return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
         }
@@ -73,12 +82,19 @@ public abstract class ModuleDbContext(DbContextOptions options) : DbContext(opti
                 cancellationToken);
         }
 
+        var auditTime = DateTimeOffset.UtcNow;
+        foreach (var entry in _pendingAudit)
+        {
+            await AuditWriter.InsertAsync(Database, entry, auditTime, cancellationToken);
+        }
+
         if (transaction is not null)
         {
             await transaction.CommitAsync(cancellationToken);
         }
 
         _pendingEvents.Clear();
+        _pendingAudit.Clear();
         return written;
     }
 
