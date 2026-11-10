@@ -1,6 +1,6 @@
 # Astryx — AI Trading Workstation · System Design
 
-> **Status:** Draft v0.2 · 2026-11-09 · Owner: @Alex — v0.2 records the verified project skeleton (§4.5)
+> **Status:** Draft v0.3 · 2026-11-10 · Owner: @Alex — v0.2 recorded the verified skeleton (§4.5); v0.3 adds the eToro integration (§17) based on eToro's official API docs
 > **Scope:** The architectural source of truth for the Astryx monorepo (mobile app, backend, workers, database, AI, infrastructure). Future implementation tasks and code reviews must follow this document. Any change to a `DECIDED` item needs an ADR entry in §25.
 
 ### How to read this document
@@ -55,7 +55,7 @@ Key decisions:
 - `DECIDED` A modular monolith in ASP.NET Core (.NET 10) with PostgreSQL. Background workers use `BackgroundService` and a Postgres-backed job queue.
 - `DECIDED` An Expo + Expo Router React Native app that renders native components to match the "Graphite terminal" design. The design HTML is a visual reference only, and there are no WebViews.
 - `DECIDED` AI runs through `IFinancialAiService`. The initial provider is Ollama with `qwen3.5:0.8b`, which is treated as an **integration prototype**, not a reasoning system. All AI output is schema-validated and **advisory only**.
-- `DECIDED` **Real-money trading is disabled in the MVP.** Only `MockBrokerAdapter` / the paper engine exist. The design's "Live mode" guard is NOT IMPLEMENTED and is blocked server-side by a feature flag.
+- `DECIDED` (v0.3) **Execution goes through eToro's official public API, in the eToro Demo environment for the MVP** (`EToroBrokerAdapter`). The internal paper simulator (`MockBrokerAdapter`) stays for development, CI and offline use. **Real-money trading (eToro Real) remains disabled** until the gates in §17.9 pass. The design's "Live mode" guard is built but blocked server-side.
 - `DECIDED` All monetary values are `decimal` in C#, `numeric` in Postgres, and **strings** in JSON. The mobile app never computes authoritative financial values.
 
 Recommended first milestone: **Phase 1 + a walking skeleton of Phase 5.** That means auth, a seeded instrument list, mocked market data, and a hard-coded NVDA proposal that goes through the real risk engine and paper engine end to end, with idempotent execution (see §24).
@@ -68,7 +68,7 @@ Recommended first milestone: **Phase 1 + a walking skeleton of Phase 5.** That m
 
 > "A private, mobile trading workstation that finds stock setups, explains them, and lets you approve a sized trade through eToro, with research kept visibly separate from execution."
 
-`DECIDED` For the MVP, "through eToro" becomes "through a simulated paper account". The eToro wording in the design (sync, permissions, "Nothing is sent to eToro until you hold to approve") becomes **"paper account"** copy until Phase 8 confirms that an official integration is possible.
+`DECIDED` (v0.3, supersedes v0.1) For the MVP, "through eToro" means **an eToro Demo (virtual funds) account connected through eToro's official public API** (§17). The design's eToro wording (sync, permissions, "Nothing is sent to eToro until you hold to approve") is kept as designed. eToro Real stays disabled behind §17.9.
 
 ### 2.2 Primary user and context
 
@@ -147,7 +147,7 @@ Recommended first milestone: **Phase 1 + a walking skeleton of Phase 5.** That m
 | C-1 | Stack fixed by the master prompt: Expo/RN/TS, ASP.NET Core .NET 10, EF Core, PostgreSQL, Ollama. |
 | C-2 | AI must never be authoritative for prices, balances, P&L, sizing, limits, stop calculations, execution or data validation. |
 | C-3 | No floating point for authoritative financial values, in either the backend or the mobile app. |
-| C-4 | Real-money execution is disabled in the MVP. |
+| C-4 | Real-money execution is disabled in the MVP. eToro integration uses the **Demo** environment only until §17.9 gates pass. |
 | C-5 | No secrets in the mobile binary. |
 | C-6 | The only order path is **Proposal → server risk assessment → Confirm sheet → 1.2 s hold → idempotent order request** (design safety rule 1). |
 | C-7 | Any failed pre-trade check disables approval, with no override in the app (design rule 3) **and none in the API**. |
@@ -1872,9 +1872,9 @@ IX `(proposal_id, created_at desc)`.
 | assessment_id | uuid | FK risk_assessments NULL (required for entries, CK) |
 | position_id | uuid | FK positions NULL (set for exits and after the entry fill) |
 | client_order_id | text | The Idempotency-Key (entries) or a deterministic key (exits: `exit:{positionId}:{reason}`) |
-| broker | text | CK in (`mock`) — extended later |
-| broker_order_id | text | UK. Display ID `SIM-` + 6 base32 characters for mock |
-| mode | text | CK = `paper` in the MVP migration |
+| broker | text | CK in (`mock`,`etoro`) |
+| broker_order_id | text | UK per broker. `SIM-` + 6 base32 characters for mock; eToro `orderId` for eToro |
+| mode | text | CK in (`simulated`,`etoro_demo`) in the MVP migration |
 | purpose | text | CK in (`entry`,`exit_stop`,`exit_target`,`exit_manual`,`exit_reset`) |
 | side | text | CK in (`buy`,`sell`) |
 | order_type | text | CK in (`market`,`limit`,`buy_stop`,`sell_stop`) |
@@ -1882,7 +1882,8 @@ IX `(proposal_id, created_at desc)`.
 | quantity | numeric(18,6) | CK > 0 |
 | stop_price, limit_price | numeric(18,6) | NULL |
 | oco_group_id | uuid | NULL. Links the stop and target exit orders |
-| status | text | CK in (`accepted`,`working`,`filled`,`cancelled`,`expired`,`rejected`) |
+| status | text | CK in (`accepted`,`submitting`,`submitted`,`working`,`filled`,`cancelled`,`expired`,`rejected`); `submitting`/`submitted` only for async broker venues (§17.5) |
+| broker_status | text | NULL. Last raw broker status id/name (eToro `status.id`) |
 | filled_quantity | numeric(18,6) | DEFAULT 0 |
 | avg_fill_price | numeric(18,6) | NULL |
 | reject_code | text | NULL |
@@ -1911,7 +1912,7 @@ UK `(user_id, client_order_id)`. Partial UK `(proposal_id) WHERE purpose='entry'
 
 UK `(order_id, sequence)`. IX `(portfolio_id, filled_at desc)`.
 
-**`trading.broker_connections`** — `id` PK, `user_id` FK (cascade), `broker` CK (`mock`,`etoro`), `status` CK (`connected`,`disconnected`,`error`,`revoked`), `account_ref` text NULL (masked), `permissions` jsonb (`{read_portfolio:true, place_orders:'paper', deposits_withdrawals:false}`), `credentials_ciphertext` bytea NULL, `credentials_key_id` text NULL, `connected_at`, `last_sync_at`, `revoked_at`. Partial UK `(user_id, broker) WHERE status <> 'revoked'`. **Credentials are envelope-encrypted** (§18.12), never plaintext. In the MVP only the `mock` row exists.
+**`trading.broker_connections`** — `id` PK, `user_id` FK (cascade), `broker` CK (`mock`,`etoro`), `environment` CK (`demo`,`real`), `status` CK (`connected`,`degraded`,`disconnected`,`revoked`), `account_ref` text NULL (eToro username or id), `key_suffix` char(4) (display only, e.g. `3f2a`), `permissions` jsonb (`{read:true, write:true, deposits_withdrawals:"never_requested"}`), `credentials_ciphertext` bytea, `credentials_key_id` text (wrapping key id), `key_expires_at` NULL, `connected_at`, `last_sync_at`, `last_error`, `revoked_at`. Partial UK `(user_id, broker, environment) WHERE status <> 'revoked'`. CK `environment = 'demo'` while §17.9 gates are open. **Credentials are envelope-encrypted** (§17.6, §18.12), never plaintext.
 
 #### Schema `portfolio`
 
@@ -1921,7 +1922,8 @@ UK `(order_id, sequence)`. IX `(portfolio_id, filled_at desc)`.
 |---|---|---|
 | id | uuid | PK |
 | user_id | uuid | FK users (cascade) |
-| mode | text | CK = `paper` |
+| mode | text | CK in (`simulated`,`etoro_demo`,`etoro_real`); `etoro_real` rejected by CK while §17.9 gates are open |
+| broker_connection_id | uuid | FK broker_connections NULL (required for `etoro_*`) |
 | base_currency | char(3) | `USD` |
 | starting_cash | numeric(20,4) | |
 | cash_balance | numeric(20,4) | Cached; equals the sum of transactions (reconciled) |
@@ -1948,6 +1950,7 @@ Partial UK `(user_id, mode)`.
 | entry_order_id | uuid | FK orders |
 | proposal_id | uuid | FK proposals |
 | strategy_version_id | uuid | FK NULL — "Generated by" |
+| broker_position_id | text | NULL. eToro `positionId` for `etoro_*` portfolios |
 | opened_at, closed_at | timestamptz | |
 | exit_price | numeric(18,6) | NULL |
 | exit_reason | text | CK in (`stop`,`target`,`manual`,`reset`) NULL |
@@ -2409,7 +2412,9 @@ Clients poll AI2 with `pollAfterMs` (2 s, growing to 5 s, give up after 120 s wi
 | N4 | `POST /devices` | `{deviceId, pushToken, platform}` | `201` (upsert) | 422 |
 | N5 | `DELETE /devices/{deviceId}` | — | `204` | |
 | N6 | `GET /system/status` | — | `200 {marketData:{status, asOf}, scanner:{status, lastRunAt}, ai:{status, model}, broker:{adapter:"mock", status}}` | |
-| N7 | `GET /broker/connection` | — | `200 {broker:"mock", label:"Paper account (simulated)", status:"connected", permissions:{readPortfolio:true, placeOrders:"paper", depositsWithdrawals:"never_requested"}, lastSyncAt}` | |
+| N7 | `GET /broker/connections` | — | `200 {items:[{id, broker:"etoro", environment:"demo", label:"eToro · paper account", keySuffix:"3f2a", status:"connected", permissions:{readPortfolio:true, placeOrders:"demo_only", depositsWithdrawals:"never_requested"}, lastSyncAt}]}` | |
+| N8 | `POST /broker/connections` | `{broker:"etoro", environment:"demo", apiKey, userKey}` (TLS, never logged) | `201` connection (keys validated with eToro identity + read call; write permission detected) | 422 `broker_credentials_invalid`, 403 `live_trading_disabled` for `environment:"real"` |
+| N9 | `DELETE /broker/connections/{id}` | — | `204` (ciphertext deleted; user told to revoke the key in eToro) | 404 |
 
 ```json
 // NotificationDto
@@ -3034,7 +3039,8 @@ Implementations:
 
 - `FakeMarketDataProvider`: deterministic. Uses seeded CSV bars from `tests/fixtures/market/` and a random walk with a fixed seed for intraday ticks. It supports fault injection (down, stale, bad tick). It is the default in Development and in tests, and it reproduces the design's sample data (NVDA 186.40, etc.).
 - `FakeNewsProvider`: fixture headlines.
-- `<Vendor>MarketDataProvider`: `NOT IMPLEMENTED`. Q-03 decides which vendor.
+- `EToroMarketDataProvider` (v0.3 candidate, `NOT IMPLEMENTED`): eToro's API offers instrument search, market rates (bid/ask, multiple instruments per call), candle history, historical closes and WebSocket rate/candle streams (§17.3). Its limit of 60 req/min per user key fits nightly EOD candles for about 1,000 symbols (about 17 min) and batched quotes for positions and watchlist, but not a full-universe 60 s quote sweep. Whether eToro data may be stored and displayed in this app is part of Q-03.
+- `<Vendor>MarketDataProvider`: `NOT IMPLEMENTED`. Q-03 decides between eToro data and a dedicated vendor.
 
 ### 16.2 Provider selection: an explicit decision (`OPEN QUESTION Q-03`)
 
@@ -3084,50 +3090,160 @@ The "vs S&P 500" overlay uses an index proxy (an ETF such as SPY, or index data 
 
 ## 17. Brokerage Integration Architecture
 
-### 17.1 Abstraction
+> **v0.3 (2026-11-10):** rewritten after verifying eToro's official public API (sources at the end of this section). eToro is now **in scope**: the **eToro Demo** environment is the MVP execution venue, and **eToro Real** is designed now but stays disabled behind the gates in §17.9.
+
+### 17.1 Execution venues
+
+| Venue (`portfolios.mode`) | Adapter | Money | Status |
+|---|---|---|---|
+| `simulated` | `MockBrokerAdapter` → internal `PaperFillSimulator` (§15) | None, internal ledger | MVP. Default for development, CI, E2E and offline use |
+| `etoro_demo` | `EToroBrokerAdapter` (environment `demo`) | eToro virtual funds | **MVP target.** Matches the design's "eToro · paper account" |
+| `etoro_real` | `EToroBrokerAdapter` (environment `real`) | **Real money** | `NOT IMPLEMENTED` and **disabled**. Code paths exist behind `Features:LiveTrading`, which still fails startup until every §17.9 gate passes |
+
+`DECIDED` (ADR-020): one adapter serves both eToro environments. The environment comes from the user's **connection**, never from a request parameter. A demo key cannot authenticate against the real environment (eToro enforces this too).
+
+### 17.2 Abstraction
 
 ```csharp
 public interface IBrokerAdapter
 {
     string Code { get; }                                         // "mock", "etoro"
-    BrokerMode Mode { get; }                                     // Paper | Live
-    BrokerCapabilities Capabilities { get; }                     // order types, fractional, OCO, extended hours
-    Task<BrokerAccountSnapshot> GetAccountAsync(BrokerConnection c, CancellationToken ct);
+    BrokerCapabilities Capabilities { get; }                     // order types, fractional, native SL/TP, async fills
+    Task<BrokerAccountSnapshot> GetAccountAsync(BrokerConnection c, CancellationToken ct);         // cash, equity, P&L
     Task<IReadOnlyList<BrokerPosition>> GetPositionsAsync(BrokerConnection c, CancellationToken ct);
-    Task<BrokerOrderResult> SubmitOrderAsync(BrokerConnection c, BrokerOrderRequest r, CancellationToken ct); // r.ClientOrderId = idempotency
-    Task<BrokerOrderResult> CancelOrderAsync(BrokerConnection c, string brokerOrderId, CancellationToken ct);
-    Task<BrokerOrderResult> GetOrderAsync(BrokerConnection c, string brokerOrderId, CancellationToken ct);
+    Task<BrokerEligibility> CheckEligibilityAsync(BrokerConnection c, BrokerInstrumentRef i, CancellationToken ct);
+    Task<BrokerCostPreview> PreviewCostAsync(BrokerConnection c, BrokerOrderRequest r, CancellationToken ct);
+    Task<BrokerSubmitResult> SubmitOrderAsync(BrokerConnection c, BrokerOrderRequest r, CancellationToken ct); // r.ClientOrderId → x-request-id
+    Task<BrokerOrderStatus> LookupOrderAsync(BrokerConnection c, BrokerOrderLookup lookup, CancellationToken ct); // by broker order id or client order id
+    Task<BrokerSubmitResult> ClosePositionAsync(BrokerConnection c, BrokerPositionRef p, Quantity units, string clientOrderId, CancellationToken ct);
+    Task ModifyProtectionAsync(BrokerConnection c, BrokerPositionRef p, Price? stopLoss, Price? takeProfit, CancellationToken ct);
+    Task CancelOrderAsync(BrokerConnection c, string brokerOrderId, CancellationToken ct);
 }
 ```
 
-### 17.2 Implementations
+`MockBrokerAdapter` completes synchronously. `EToroBrokerAdapter` is **asynchronous**: a submit only means "accepted"; the fill arrives later (§17.5).
 
-| Adapter | Status | Behaviour |
+### 17.3 Verified eToro API capabilities (2026-11-10)
+
+| Capability | eToro public API | Used for |
 |---|---|---|
-| `MockBrokerAdapter` | MVP | Delegates to `PaperFillSimulator` (§15). `Mode = Paper`. Generates `SIM-` IDs. Account state lives in our `portfolio` schema |
-| `EToroBrokerAdapter` | **NOT IMPLEMENTED** | Built only after Phase 8 verifies: an official API exists for this use, individual developers or apps can get access, trading permission scope, a sandbox/demo environment, rate limits, terms (automation, third-party apps, data storage), regional availability and authentication method (OAuth vs API key). **This document makes no claim that any of these exist.** |
+| Base URLs | `https://public-api.etoro.com/api/v1` (data, info) and `/api/v2` (order execution, order lookup, eligibility) | `EToroApiClient` |
+| Auth: personal keys | Headers `x-api-key` (app/public key) + `x-user-key` (user key) + `x-request-id` (unique UUID per request). The user creates keys in eToro → Settings → Trading → API Key Management: one environment per key (Demo or Real), permission read or write, optional IP whitelist and expiry. The user key is shown only once. Requires a KYC-verified eToro account | MVP connection method (§17.6) |
+| Auth: OAuth 2.0 / SSO | Bearer tokens with scopes such as `etoro-public:demo:write`. Needs a registered OAuth application. Never send keys and a token together | `OPEN QUESTION Q-21` (for multi-user / public release) |
+| Create order | `POST /api/v2/trading/execution/{demo\|real}/orders`. Body: `action:"open"`, `transaction:"buy"` (or `sellShort`), `symbol` **or** `instrumentId`, `orderType` `mkt` \| `mit` (market-if-touched, needs `triggerRate`) \| `limitIOC` (needs `limitRate`, within 10% of market), `amount` **or** `units`, `orderCurrency:"usd"`, `leverage` (default 1; >1 requires `stopLossRate`), `stopLossRate`, `stopLossType` `fixed\|trailing`, `takeProfitRate`, `settlementType` `real\|cfd\|…`. Response: `orderId`, `referenceId` (= our `x-request-id`), `token`. **Asynchronous** | Proposal execution |
+| Order lookup | `GET /api/v2/trading/info/{env}/orders:lookup` by `orderId` or `referenceId`. Status ids: 1 Received, 2 Placed, 11 WaitingForMarket, 12 PendingTriggeredRate (in flight); 3 Filled, 5 PartiallyFilled (executed); 4 Rejected, 10 RejectedPartiallyFilled (failed, with `errorCode`/`errorMessage`). `positionExecutions[]` gives the `positionId`s created | Fill confirmation |
+| Idempotency | `x-request-id` "must be unique per request — it provides idempotency"; if the response is lost, `referenceId` lookup is the only way to find the order | Maps 1:1 to our Idempotency-Key / `client_order_id` |
+| Close / modify / cancel | Close position by units; modify stop-loss and take-profit on an open position; cancel pending order or pending close | Close position (T11), exits, cancel working order |
+| Eligibility and cost | "Check instrument trading eligibility" (allowed settlement types); "Get what-if trading cost breakdown" | Pre-trade check `broker_eligible`; proposal "Fees and spread" |
+| Portfolio and P&L | Aggregated portfolio snapshot, portfolio/instrument breakdown, account P&L, trading history (demo and real) | Sync and reconciliation, Home "synced 14:32 ET" |
+| Market data | Instrument search (by symbol or free text), display data, exchanges, instrument types, market rates (bid/ask, one or more instruments), candle history, historical closing prices | Optional `EToroMarketDataProvider` (§16, Q-03) |
+| Streaming | WebSocket topics `instrument:<id>` (rates), `candle:<id>`, `private` / `private:demo` / `private:real` (portfolio updates) | Real-time fills and quotes (T-148) |
+| Watchlists | Read/write user watchlists | Optional two-way watchlist sync (`ASSUMPTION`: not in MVP) |
+| Rate limits | Per **user key**, 1-minute rolling window: **60 req/min** for standard reads; **20 req/min** for execution and state-changing calls (open, close, cancel) shared across demo and real; `429` with `Retry-After`. eToro's index lists 120/min for some market-data groups, which is inconsistent with the rate-limit page, so the client assumes 60 | `EToroRateLimiter` |
+| Money movement | Internal transfers, deposits and withdrawals exist in the API | **Never called.** `DECIDED`: permanently out of scope (design rule 6) |
 
-### 17.3 Design-to-implementation mapping
+### 17.4 Mapping Astryx orders to eToro
 
-| Design element | MVP implementation |
+| Astryx | eToro request |
 |---|---|
-| "eToro · paper account · API key ••••3f2a · synced 14:32 ET · Connected" | "Paper account (simulated) · synced 14:32 ET · Connected". No API key field |
-| Permissions: Read portfolio & balances — Allowed | Mock: always allowed |
-| Place & close orders — Paper only | Mock: paper only. Live is impossible |
-| Deposits & withdrawals — Never requested | `DECIDED` permanently: the app never requests, stores or uses any deposit or withdrawal capability for any broker |
-| "Pull to refresh syncs eToro" | `POST /portfolio/sync`, which re-values positions from fresh quotes |
-| "Losing the eToro connection disables approval" | Losing the **market data** feed (or, in future, the broker) disables approval |
-| Live mode guard (re-confirm limits, biometrics, type LIVE) | Guard UI is built and ends in "not available". Server returns 403 |
+| Long entry, `market` | `transaction:"buy"`, `orderType:"mkt"` |
+| Long entry, `buy_stop` @ entry | `orderType:"mit"`, `triggerRate: entry` (`OPEN QUESTION Q-22`: confirm in Demo that `mit` triggers when the price **rises** to the trigger for a buy; fallback is a server-side trigger in `PositionMonitor` that sends `mkt` when the quote reaches entry) |
+| Long entry, `limit` @ price | `orderType:"limitIOC"`, `limitRate: price` (immediate-or-cancel; no resting limit orders in v2) |
+| Quantity | `units` (whole shares while Q-11 is open) |
+| Attached stop / target | `stopLossRate`, `stopLossType:"fixed"`, `takeProfitRate`. eToro manages the exits natively, so there is **no internal OCO** for eToro portfolios |
+| Product | `settlementType:"real"` (real stock, unleveraged; design: "real stock, unleveraged"), `leverage: 1`, `orderCurrency:"usd"` |
+| Idempotency | `x-request-id` = `orders.client_order_id` (the mobile Idempotency-Key for entries; deterministic keys for exits) |
+| Close position | Close by units = full position units |
+| Short selling | Not used (`DECIDED`: long only) |
 
-### 17.4 Live-trading enablement requirements (future, all mandatory)
+### 17.5 Asynchronous order flow (eToro venues)
 
-1. Phase 8 research ADR approved, plus a legal/regulatory review (Q-02, Q-13).
-2. `Features:LiveTrading` enabled per environment **and** per user (allow-list).
-3. Live guard flow: re-confirm risk limits, device biometrics, type `LIVE`, plus a server-side recent re-authentication (password ≤ 5 min).
-4. Separate live portfolio. Paper and live ledgers are never mixed.
-5. Broker credentials envelope-encrypted (§18.12) and scoped to read + trade, never funding.
-6. Reconciliation job against broker positions every sync, with mismatches halting new orders.
-7. A kill switch: an admin flag that blocks all live order submission instantly.
+```mermaid
+sequenceDiagram
+    autonumber
+    participant M as Mobile
+    participant API as Astryx API
+    participant DB as PostgreSQL
+    participant J as Job worker
+    participant E as eToro API
+    M->>API: POST /paper/orders (Idempotency-Key K, proposalId, assessmentId)
+    API->>DB: Tx: idempotency, lock portfolio, re-run risk on fresh quote, order(status=submitting, client_order_id=K), reserve cash, enqueue SubmitBrokerOrder(K)
+    API-->>M: 202 Accepted {orderId, status:"submitting"}
+    J->>E: POST /api/v2/trading/execution/demo/orders (x-request-id=K, SL/TP attached)
+    alt accepted
+        E-->>J: 200 {orderId, referenceId=K}
+        J->>DB: order.broker_order_id, status=submitted, enqueue LookupBrokerOrder
+    else timeout / 5xx / lost response
+        J->>E: GET orders:lookup?referenceId=K (never blind-resubmit)
+        E-->>J: found → continue, or not found → resubmit with the same K
+    end
+    loop until terminal (1 s, 2 s, 4 s … max 5 min)
+        J->>E: GET orders:lookup?orderId=…
+    end
+    alt Filled
+        J->>DB: Tx: fill(s), position(broker_position_id), ledger mirror, proposal approved, outbox OrderFilled
+    else Rejected
+        J->>DB: Tx: order rejected(errorCode), release reserved cash, proposal back to pending, outbox OrderRejected
+    end
+    DB-->>M: SignalR order.updated → Fill receipt / rejection toast
+```
+
+Rules:
+
+- The **risk engine runs before anything is sent** and is still authoritative. eToro may reject an order the risk engine accepted, but the reverse never happens.
+- **No network call inside a database transaction.** The submit happens in a job after the order row commits. The order's `client_order_id` makes retries safe.
+- `submitting`/`submitted` orders reserve cash like working orders (§15.3). Stuck orders (not terminal after 10 minutes) raise an alert and are reconciled from portfolio sync.
+- **eToro is authoritative for fills, positions and cash** in `etoro_*` portfolios. Our tables mirror them. Every mirrored fill stores the broker ids, and `BrokerPortfolioSyncJob` reconciles (§17.7).
+- Losing the eToro connection (auth failure, 5xx streak, rate-limit exhaustion) marks the connection `degraded`, **disables approval** and shows the design's "Connection lost" state (design rule 5).
+
+### 17.6 Connection and credential security
+
+- **MVP connection method: personal API keys.** The design's Settings card ("eToro · paper account · API key ••••3f2a · synced 14:32 ET") is exactly this. In the PROPOSED "Connect eToro" screen, the user pastes the API key and the user key and chooses Demo. The server validates them with the identity endpoint ("Get authenticated user profile") and a read call, and detects whether the key has write permission.
+- Keys are **envelope-encrypted** (AES-256-GCM data key per connection, wrapped by a master key: ASP.NET Data Protection with a key ring in the secret store locally, a KMS key in production). Only the last 4 characters are kept in clear for display. Keys are decrypted only inside `EToroApiClient`, in memory, and never logged. The mobile app sends keys once over TLS and never stores them.
+- One active connection per user per environment. Disconnect deletes the ciphertext. Users are told to revoke the key in eToro too.
+- Permissions shown in Settings come from the key: Read portfolio and balances (read), Place and close orders (write; "Demo only" while live is disabled), Deposits and withdrawals: **Never requested** (the app never calls money-movement endpoints; enforced by an architecture test that bans those client methods).
+- A read-only key can sync and display, but the risk check `broker_write_permission` fails, so approval is disabled with "Your eToro key is read-only".
+
+### 17.7 Portfolio sync and reconciliation (eToro venues)
+
+| Job | Trigger | Work |
+|---|---|---|
+| `BrokerPortfolioSyncJob` | Every 60 s in session, every 15 min otherwise, on pull-to-refresh, after every fill | Aggregated portfolio + P&L → upsert mirrored positions, cash, equity; detect positions closed by eToro SL/TP → record exit fills (`exit_reason` stop/target from history) and realized P&L; update `last_sync_at` |
+| `LookupBrokerOrderJob` | After submit, with backoff | Poll `orders:lookup` until terminal (§17.5) |
+| `BrokerReconciliationJob` | Nightly + after sync errors | Compare mirrored state against broker snapshots. On mismatch: halt new entries for that portfolio, critical alert, audit entry (same rule as §20.13) |
+
+Budget per user key: sync uses about 3 reads/min, order lookups at most about 10/min during a fill, and quotes come from the market-data path (or WebSocket). That stays under 60 reads/min. Execution calls (open/close/modify/cancel) are capped at 20/min, so `EToroRateLimiter` queues and backs off on `Retry-After`.
+
+### 17.8 Design-to-implementation mapping
+
+| Design element | Implementation |
+|---|---|
+| "eToro · paper account · API key ••••3f2a · synced 14:32 ET · Connected" | `etoro_demo` connection: masked key suffix, `last_sync_at`, connection status |
+| Permissions: Read portfolio & balances / Place & close orders / Deposits & withdrawals | Derived from key permission; "Place & close orders — Paper only" means **eToro Demo only**; deposits/withdrawals never requested |
+| "Nothing is sent to eToro until you hold to approve" | Literally true for `etoro_demo`; the submit job is only enqueued by T6 after the hold |
+| "Pull to refresh syncs eToro" | `POST /portfolio/sync` → `BrokerPortfolioSyncJob` |
+| "Losing the eToro connection disables approval and marks values stale" | Connection `degraded` → `broker_connected` check fails, banner shown |
+| Fill receipt "SIM-463AC2" | eToro venues show the eToro order id; simulator keeps `SIM-…` |
+| Live mode guard (limits, biometrics, type LIVE) | Built; ends in "not available" until §17.9 gates pass |
+| `simulated` mode | Not in the design; used in development and tests, and selectable in Settings › Prototype controls (dev builds) |
+
+### 17.9 Real-money (eToro Real) enablement gates — all mandatory
+
+1. A legal/regulatory review approves real-money automation for the operator's jurisdiction and eToro entity (Q-02, Q-13), and eToro's API terms for this use are confirmed.
+2. At least 4 weeks of `etoro_demo` operation with zero reconciliation mismatches and zero duplicate orders.
+3. `Features:LiveTrading` is enabled per environment **and** per user (allow-list), with a startup guard requiring a configured KMS key and alerting.
+4. The live guard flow is complete: re-confirm limits, device biometrics, type `LIVE`, and a server-side recent re-auth (password ≤ 5 min).
+5. A separate `etoro_real` portfolio and a separate Real write key. Demo and real ledgers are never mixed.
+6. An admin kill switch blocks all real submissions instantly. Daily loss halt and limits stay enforced by the risk engine.
+7. Each real order requires its own hold-to-approve. No automation submits real orders without a fresh user approval.
+
+### 17.10 Sources (verified 2026-11-10)
+
+- eToro API docs — Authentication: <https://api-portal.etoro.com/core/getting-started/authentication>
+- eToro API docs — Create an order (demo): <https://api-portal.etoro.com/api-reference/trading--demo/create-an-order>
+- eToro API docs — Rate limits: <https://api-portal.etoro.com/core/getting-started/rate-limits>
+- eToro API docs index: <https://api-portal.etoro.com/llms.txt>
+- eToro Builders — Getting started / authentication: <https://builders.etoro.com/get-started>, <https://builders.etoro.com/learn/authentication-and-api-keys>
 
 ---
 
@@ -3793,7 +3909,7 @@ Sentry SDKs: `@sentry/react-native` (with source maps through EAS) and `Sentry.A
 | 005 | Async AI via job table + SignalR/polling | DECIDED | Inference latency is unbounded on local hardware | Synchronous request; SSE streaming | Clients handle job states. Extra tables |
 | 006 | Ollama + `qwen3.5:0.8b` as PoC behind `IAiProvider` | DECIDED (PoC) | Local, free, private | Hosted LLM APIs | Low output quality expected. Eval gate before relying on it |
 | 007 | Risk engine authoritative, re-run at execution, no override | DECIDED | Design rule 3 + master prompt | Client-side checks; override with confirmation | Some 409 `assessment_stale` friction when prices move |
-| 008 | Paper only in the MVP; live blocked in 3 places + startup guard | DECIDED | Regulatory and financial risk; unverified broker API | Live behind a confirmation | Design's eToro copy is changed to "paper account" |
+| 008 | No real money in the MVP; live blocked in 3 places + startup guard | DECIDED (amended by 020) | Regulatory and financial risk | Live behind a confirmation | eToro Demo is the MVP venue; eToro Real waits for §17.9 |
 | 009 | Expo Router instead of hand-wired React Navigation | DECIDED | Mandated stack; file-based deep links; it wraps the same native stack/tabs the design handoff names | React Navigation directly (design handoff) | Route files must mirror the handoff tree (§8.3) |
 | 010 | Strategy-generated signals as the primary proposal source | DECIDED | Matches the design (proposal "Source: Base Breakout v3"); deterministic and backtestable | AI-only proposals | Requires a strategy rule implementation (Q-09) |
 | 011 | Server-side sizing on every stepper change (debounced) | DECIDED | The design says client-computed, re-verified server-side; we keep the client as preview only to avoid float math and divergence | Client-authoritative preview | One API call per change (rate-limited, ~150 ms debounce) |
@@ -3804,6 +3920,8 @@ Sentry SDKs: `@sentry/react-native` (with source maps through EAS) and `Sentry.A
 | 016 | No MediatR / AutoMapper | DECIDED | Licensing changes and unneeded indirection; explicit handlers and mapping | MediatR, AutoMapper, Mapster | Slightly more boilerplate |
 | 017 | Unadjusted bar storage + adjustment factors | DECIDED | Correct historical reconstruction; supports split-only and total-return modes | Store vendor-adjusted bars | Adjustment logic must be tested |
 | 018 | SignalR scale-out via outbox + LISTEN/NOTIFY, no Redis | DECIDED | Keeps a single datastore | Redis backplane, Azure SignalR | Custom fan-out code |
+| 020 | eToro official public API as the execution venue; Demo in MVP, Real gated | DECIDED (2026-11-10) | Verified official API with separate Demo/Real environments, native SL/TP, async orders with `x-request-id` idempotency; matches the design's eToro flows | Internal simulator only; other brokers | Async order flow (§17.5), encrypted key storage, broker-authoritative fills and reconciliation; simulator kept for tests |
+| 021 | Broker is authoritative for fills, positions and cash in `etoro_*` portfolios; Astryx mirrors and reconciles | DECIDED (2026-11-10) | Avoids two sources of truth for real broker state | Astryx ledger authoritative | Mirror tables store broker ids; mismatches halt entries |
 | 019 | Minimal APIs with endpoint filters instead of MVC controllers (supersedes the v0.1 "controllers" choice) | DECIDED (2026-11-10, T-013) | .NET 10 OpenAPI generation works natively with minimal APIs and typed results; less ceremony; each module maps its own route group; validation and idempotency become reusable endpoint filters (`WithValidation<T>()`, `[Idempotent]`) | MVC controllers | OpenAPI metadata is declared per endpoint (`Produces…`, `WithName`); conventions live in `Astryx.Infrastructure.Http` |
 
 ---
@@ -3824,7 +3942,10 @@ Sentry SDKs: `@sentry/react-native` (with source maps through EAS) and `Sentry.A
 | Q-10 | Backtest engine scope: in-house vs a library; point-in-time universe; per-user strategies? | Strategy lab Configure/re-run | Phase 6 | Seeded read-only runs |
 | Q-11 | Fractional shares? | Quantity precision, sizing | Phase 5 | Whole shares |
 | Q-12 | Paper execution assumptions: slippage model, commission, spread, liquidity cap, limit-touch fills | Realism of paper results | Phase 5 | §15.7 defaults |
-| Q-13 | What eToro API integration is actually possible (official access, scopes, ToS)? | Live trading | Phase 8 | None; mock only |
+| Q-13 | eToro Real for this use: legal/regulatory approval and eToro API terms for automated real-money orders (the API capability itself is verified, §17.3) | Real money | §17.9 | eToro Demo only |
+| Q-21 | Personal API keys (MVP) vs a registered eToro OAuth application for multi-user or public release | Onboarding, security | Before tester release | Personal keys |
+| Q-22 | Does eToro `mit` for a buy trigger when price **rises** to the trigger (buy-stop semantics)? | Breakout entries | T-143 | Verify in Demo; fallback: server-side trigger sending `mkt` |
+| Q-23 | eToro Demo fill realism (spread, slippage, timing) and fees for `settlementType: real` stocks | Paper results, "Fees and spread" | T-146 | Use the what-if cost endpoint; label Demo fills as simulated by eToro |
 | Q-14 | Multi-currency support? | Data model, P&L | Post-MVP | USD only |
 | Q-15 | Production domain and universal links? | Deep links, email links | Phase 7 | Custom scheme `astryx://` |
 | Q-16 | Production hosting and infrastructure (cloud, region, budget, GPU for AI)? | §22.2 | Phase 7 | Single-region container platform + managed Postgres |

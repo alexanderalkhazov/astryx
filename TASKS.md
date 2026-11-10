@@ -3,7 +3,7 @@
 > **Owner:** @Alex · **Created:** 2026-11-10 · **Source of truth for *what* to build:** [`SYSTEM_DESIGN.md`](SYSTEM_DESIGN.md)
 > **This file is the source of truth for *order of work* and *status*.** Every contributor, human or AI agent, follows the rules in Part A before touching code.
 
-**Goal:** a working app end to end. A user can sign up, find a setup in Discover, read the deterministic and AI analysis, approve a sized paper trade by holding for 1.2 s, watch the position in Portfolio and Activity, and see it close at its stop or target. The app runs on the iOS simulator against the local Docker stack, fake market data and local Ollama. Real-money trading stays disabled.
+**Goal:** a working app end to end. A user can sign up, find a setup in Discover, read the deterministic and AI analysis, approve a sized trade by holding for 1.2 s, watch the position in Portfolio and Activity, and see it close at its stop or target. The app runs on the iOS simulator against the local Docker stack and local Ollama. Trades execute either in the internal simulator (development and tests) or **in the user's eToro Demo account through eToro's official API** (SYSTEM_DESIGN.md §17). Real-money (eToro Real) trading stays disabled until the M8 gates pass.
 
 ---
 
@@ -14,6 +14,7 @@
 1. **One task, one commit** (or a small series of commits, see rule 5). Pick the **lowest-numbered unblocked** open task unless the owner says otherwise.
 2. Every commit message **starts with the task ID** and uses Conventional Commits:
    `T-204 feat(market): add quote freshness evaluation`
+   Changes that only maintain the plan itself (new or re-scoped tasks, design-doc updates not delivered by a task) use the prefix `PLAN`: `PLAN docs: add eToro integration milestone`. They are not ticked.
 3. When the task's commit is in, **tick the box and record the short hash** (first 7 characters of `git rev-parse --short HEAD`) of the commit that delivered it:
    ```diff
    - - [ ] **T-204** Quote freshness rules
@@ -54,7 +55,8 @@
 
 ### A5. Non-negotiable product and safety rules (from SYSTEM_DESIGN.md)
 
-1. **Real-money trading stays disabled.** No code path may submit a live order. `Features:LiveTrading=true` must keep failing startup.
+1. **Real-money trading stays disabled.** No code path may submit an order to eToro **Real**. eToro **Demo** is allowed. `Features:LiveTrading=true` must keep failing startup until every M8 gate (SYSTEM_DESIGN.md §17.9) is ticked.
+10. **eToro credentials are secrets.** Keys are envelope-encrypted at rest, decrypted only inside `EToroApiClient`, never logged, never stored on the device, and never sent anywhere except eToro. The app never calls eToro deposit, withdrawal or transfer endpoints.
 2. **AI is advisory only.** The `Ai` module must never reference `Paper`, Portfolio write ports or `IBrokerAdapter`. AI-suggested levels pass `LevelValidator` and the risk engine before they can seed a proposal.
 3. **The risk engine is authoritative and has no override**: not in the UI, not in the API, not behind a flag. It runs again inside the execution transaction.
 4. **The only order path** is Proposal → server assessment → Confirm sheet → 1.2 s hold → `POST /paper/orders` with an `Idempotency-Key`.
@@ -98,10 +100,11 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 | **M2** Market data | Search, quotes, charts, watchlist on fake data | NVDA stock screen renders design data |
 | **M3** Quant and scanner | Deterministic indicators and ranked setups in Discover | Discover shows NVDA #1, score 87 |
 | **M4** AI research | Async AI analysis with validated output | NVDA analysis completes via Ollama |
-| **M5** Paper trading | Proposal → risk → hold-to-approve → fill → position | Design NVDA trade fills: 76 sh @ 186.52 |
+| **M5** Paper trading | Proposal → risk → hold-to-approve → fill → position (internal simulator) | Design NVDA trade fills: 76 sh @ 186.52 |
+| **M5b** eToro integration (Demo) | Connect an eToro Demo account and trade it through the same proposal → hold → fill flow | NVDA proposal fills in eToro Demo; position, SL/TP and P&L reconcile |
 | **M6** Portfolio and activity | Positions, P&L, Activity, notifications, strategy lab, settings | Full 10-step journey works manually |
 | **M7** E2E and hardening | Automated journey, failure tests, observability, release gate | §21.10 release gate passes |
-| **M8** Brokerage research | Documented go/no-go on eToro | ADR approved |
+| **M8** eToro Real (gated) | Real-money trading on eToro, only after legal, operational and safety gates | Every §17.9 gate ticked, owner sign-off |
 
 ---
 
@@ -362,6 +365,45 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Acceptance:** `order.updated` and `position.updated` SignalR events invalidate proposal, portfolio, positions and activity queries. Fill and stop/target toasts appear.
   - **Refs:** §9.6 · **Depends:** T-088, T-074 · **P0**
 
+### M5b · eToro integration (Demo)
+
+> Execution venue per SYSTEM_DESIGN.md §17. Every task here runs against the **Demo** environment only. Contract tests use WireMock fixtures built from eToro's documented examples, so CI never needs real keys. One opt-in smoke suite uses a Demo key from CI secrets.
+
+- [ ] **T-140** eToro API client
+  - **Scope:** typed `EToroApiClient` for v1/v2 base URLs: `x-api-key` + `x-user-key` + `x-request-id` on every call; per-user-key rate limiter (60 reads/min, 20 execution/min, honours `Retry-After`); retries with backoff only for idempotent reads; error mapping (401 → `broker_credentials_invalid`, 429 → `broker_rate_limited`, 5xx → `broker_unavailable`); circuit breaker; redacted logging; no money-movement methods exist.
+  - **Acceptance:** WireMock contract tests cover auth headers, 429 + `Retry-After`, 5xx, timeout and malformed responses. An architecture test bans transfer, deposit and withdrawal endpoints. Keys never appear in logs (log-capture test).
+  - **Refs:** §17.3 · **Depends:** T-013 · **P0**
+- [ ] **T-141** Connect eToro (encrypted credentials and Settings card)
+  - **Story:** As a user, I want to connect my eToro Demo account with my API keys so the app can see my portfolio and place approved trades.
+  - **Acceptance:** `trading.broker_connections` migration (environment, key suffix, permissions, ciphertext). Envelope encryption via Data Protection (KMS in production). N7–N9: keys validated with eToro identity and a read call; write permission detected; `environment:"real"` returns 403 `live_trading_disabled`. Connecting creates an `etoro_demo` portfolio; disconnect deletes the ciphertext. PROPOSED "Connect eToro" screen (paste keys, choose Demo, help link to eToro → Settings → Trading → API Key Management). The design 18 card shows the masked key, sync time, status and permission rows. Audit rows for connect and disconnect.
+  - **Refs:** §17.6, §10.4, §8.4.11 · **Depends:** T-140, T-023, T-017, T-032 · **P0**
+- [ ] **T-142** Instrument mapping and eligibility
+  - **Acceptance:** our instruments map to eToro `instrumentId` (search by symbol, cached in `market.instruments.provider_refs.etoro`). Unmapped instruments show "Not tradable on eToro". New risk checks `broker_eligible` (eligibility endpoint confirms `settlementType: real`), `broker_connected` and `broker_write_permission`, shown only when they warn or fail.
+  - **Refs:** §17.3, §14.5 · **Depends:** T-141, T-082 · **P0**
+- [ ] **T-143** `EToroBrokerAdapter` (Demo)
+  - **Scope:** implements `IBrokerAdapter`: submit (`mkt` / `mit` / `limitIOC` mapping, `units`, `settlementType:"real"`, `leverage:1`, `stopLossRate`, `takeProfitRate`), order lookup and status mapping (1, 2, 11, 12 in flight; 3, 5 filled; 4, 10 rejected), close by units, modify SL/TP, cancel, account and positions snapshot.
+  - **Acceptance:** contract tests per method using documented request and response shapes. A manual Demo run verifies Q-22 (does `mit` trigger on a rise for buy-stops?) and records the answer in §17.4. If it doesn't, implement the server-side trigger fallback.
+  - **Refs:** §17.2–17.4, Q-22 · **Depends:** T-140, T-142 · **P0**
+- [ ] **T-144** Asynchronous broker order flow
+  - **Story:** As a user, after I hold to approve, I see "Sending to eToro…", then a fill receipt with the eToro order id, or a clear rejection reason.
+  - **Acceptance:** for `etoro_*` portfolios, T6 commits the order as `submitting` with a cash reservation and returns 202. `SubmitBrokerOrderJob` sends with `x-request-id` = Idempotency-Key, and after a timeout or lost response it **looks up by `referenceId` before any resubmit**. `LookupBrokerOrderJob` polls until terminal; a fill records mirrored fill, position (`broker_position_id`), ledger and proposal-approved state, then SignalR `order.updated`. A rejection releases cash and returns the proposal to pending with eToro's reason. Fill receipt and Activity show eToro ids. Tests: a lost response produces no duplicate order (lookup finds it); a reject path; a stuck order alerts after 10 minutes; 10 concurrent submits with the same key produce one eToro call.
+  - **Refs:** §17.5, §15.9 · **Depends:** T-143, T-084, T-088, T-015 · **P0**
+- [ ] **T-145** Broker portfolio sync and reconciliation
+  - **Acceptance:** `BrokerPortfolioSyncJob` (60 s in session, 15 min otherwise, on pull-to-refresh, after fills) mirrors positions, cash, equity and P&L. Positions closed by eToro SL/TP become exit fills with the correct `exit_reason` and realized P&L. `BrokerReconciliationJob` halts entries on a mismatch. A connection that is degraded (auth failure or 5xx streak) disables approval and shows the Connection-lost banner. Home and Settings show "synced HH:MM ET".
+  - **Refs:** §17.7, §20.13 · **Depends:** T-144, T-090 · **P0**
+- [ ] **T-146** eToro trading-cost preview
+  - **Acceptance:** the what-if trading cost breakdown feeds the proposal's "Fees and spread" and `maxLossInclCosts` for `etoro_*` portfolios (cached per assessment). If it is unavailable, the assessment falls back to the configured slippage model and labels the estimate. Q-23 is answered or deferred with evidence.
+  - **Refs:** §17.3, §14.4, Q-23 · **Depends:** T-143, T-083 · **P1**
+- [ ] **T-147** eToro market data provider (decision and adapter)
+  - **Acceptance:** an ADR resolves Q-03 between eToro data and a dedicated vendor, including whether eToro data may be stored and displayed. If eToro is chosen: `EToroMarketDataProvider` (search, rates in batches, candle history) within the 60/min budget (nightly EOD candles for the universe, batched quotes for positions, working orders and watchlist).
+  - **Refs:** §16, §17.3, Q-03 · **Depends:** T-051, T-140 · **P1**
+- [ ] **T-148** eToro WebSocket streaming
+  - **Acceptance:** subscription to `private:demo` drives near-instant fill and close events (polling stays as the fallback), and `instrument:<id>` rates feed `QuoteUpdated` for held and watched symbols. Reconnect with resubscribe. Lag metric.
+  - **Refs:** §17.3, §9.6 · **Depends:** T-145 · **P2**
+- [ ] **T-149** eToro Demo end-to-end smoke
+  - **Acceptance:** an opt-in CI job (Demo keys from secrets, manual trigger) connects, places a 1-share market order on a liquid symbol with SL/TP, confirms the fill, verifies the mirrored position, closes it and verifies reconciliation is clean. A Maestro variant of the journey runs against an `etoro_demo` portfolio.
+  - **Refs:** §17, §21 · **Depends:** T-145 · **P1**
+
 ### M6 · Portfolio, activity, strategy lab, settings
 
 - [ ] **T-090** Valuation, snapshots and performance
@@ -395,7 +437,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Refs:** §7.8 · **Depends:** T-096, T-095 · **P1**
 - [ ] **T-098** Settings screen
   - **Story:** As a user, I want to see my paper connection and permissions, adjust risk limits and scanner settings, and understand that live trading is unavailable.
-  - **Acceptance:** design 18: connection card ("Paper account (simulated)", permissions incl. "Deposits & withdrawals — Never requested"), Paper/Live segmented with the guard dialog (design 25) ending in "Live trading isn't available yet" (server 403), risk limit steppers with bounds, scanner universe and filters, watchlist link, notification toggles, security (sign out, sign out of all devices, change password), and prototype controls in dev builds only.
+  - **Acceptance:** design 18: eToro connection card (from T-141: "eToro · paper account", masked key, sync time, permissions incl. "Deposits & withdrawals — Never requested"; "Connect eToro" when not connected), Paper/Live segmented with the guard dialog (design 25) ending in "Live trading isn't available yet" (server 403), risk limit steppers with bounds, scanner universe and filters, watchlist link, notification toggles, security (sign out, sign out of all devices, change password), and prototype controls in dev builds only.
   - **Refs:** §8.4.11, §17.3 · **Depends:** T-023, T-095 · **P0**
 - [ ] **T-099** Paper account reset
   - **Acceptance:** P11 with the `RESET` confirmation, close at last price, cancel orders, `reset_close`/`reset_deposit` entries and a new performance epoch. **PAPER-08 passes.** A PROPOSED confirmation dialog in Settings.
@@ -440,11 +482,31 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Acceptance:** every item in §21.10 is verified and listed in the commit body with evidence (CI run link, E2E artifacts). Open P0 tasks: none.
   - **Refs:** §21.10 · **Depends:** T-110–T-118 (P0/P1) · **P0**
 
-### M8 · Brokerage research (no implementation)
+### M8 · eToro Real (gated: no real money until every task is ticked)
 
-- [ ] **T-130** eToro integration research ADR
-  - **Acceptance:** documented answers with sources for official API availability, access process, sandbox, permission scopes, order types, rate limits, ToS (automation, third-party apps, data storage), regions and auth model. Legal review noted. A go/no-go decision by the owner. Live trading remains disabled regardless.
-  - **Refs:** §17.2, §17.4, Q-13 · **Depends:** T-119 · **P2**
+> SYSTEM_DESIGN.md §17.9. These tasks are gates as well as work items: the live feature flag must keep failing startup until T-130–T-136 are all `[x]`.
+
+- [ ] **T-130** Legal, regulatory and eToro-terms review for real-money automation
+  - **Acceptance:** written review for the operator's jurisdiction and eToro entity, covering eToro API terms for automated and third-party real-money orders, plus a decision recorded as an ADR (Q-02, Q-13). A "no" stops M8.
+  - **Refs:** §17.9 · **Depends:** T-149 · **P2**
+- [ ] **T-131** Demo soak period
+  - **Acceptance:** ≥ 4 consecutive weeks of `etoro_demo` use with zero reconciliation mismatches, zero duplicate orders and zero unhandled stuck orders, evidenced by metrics and an audit export.
+  - **Refs:** §17.9 · **Depends:** T-145 · **P2**
+- [ ] **T-132** Live-mode guard and re-authentication
+  - **Acceptance:** the live guard flow from design 25 is complete (re-confirm limits, device biometrics, type `LIVE`) plus a server-side recent re-auth (password ≤ 5 min). A per-user allow-list and the per-environment flag are both required.
+  - **Refs:** §17.9, §8.4.11 · **Depends:** T-098, T-130 · **P2**
+- [ ] **T-133** Real connection and separate real portfolio
+  - **Acceptance:** `environment:"real"` connections are accepted only when gates pass. A separate `etoro_real` portfolio has its own ledger and never mixes with demo. The DB check constraint is relaxed by a reviewed migration.
+  - **Refs:** §17.1, §10.4 · **Depends:** T-132 · **P2**
+- [ ] **T-134** Admin kill switch and production KMS
+  - **Acceptance:** an admin flag blocks all real submissions instantly (tested). Production KMS key wrapping is in place. The startup guard verifies KMS and alerting before enabling live.
+  - **Refs:** §17.9, §18.12 · **Depends:** T-117 · **P2**
+- [ ] **T-135** Real-money safety test suite
+  - **Acceptance:** order-path proof tests (T-112) extended to `etoro_real`. Every real order requires its own fresh hold-to-approve. No job can submit a real order without a user-approved assessment.
+  - **Refs:** §17.9, A5 · **Depends:** T-133 · **P2**
+- [ ] **T-136** Owner sign-off to enable live
+  - **Acceptance:** owner reviews T-130–T-135 evidence and enables the flag for their own account only. The doc and ADR are updated.
+  - **Refs:** §17.9 · **Depends:** T-130–T-135 · **P2**
 
 ---
 
@@ -454,4 +516,5 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 |---|---|---|---|
 | 2026-11-09 | Skeleton verified (pre-M0) | — (uncommitted) | 32/32 .NET tests, stack healthy, app running in simulator (§4.5) |
 | 2026-11-10 | T-000 baseline committed | `1b2a253` | Fresh-clone check: 32/32 tests, typecheck green |
+| 2026-11-10 | eToro integration planned (M5b, gated M8) | — | Official eToro API verified; SYSTEM_DESIGN.md v0.3 §17; client flow map in docs/PRODUCT_FLOW.md |
 | 2026-11-10 | Platform core: T-004, T-011, T-012, T-013 | `76db047` | 109/109 tests; float ban, money primitives, per-module migrations, RFC 7807 pipeline |
