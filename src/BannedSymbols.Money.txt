@@ -1,0 +1,15 @@
+# Floating-point is banned for money, price, quantity and percent (SYSTEM_DESIGN.md §20.1, TASKS.md T-004).
+# Use decimal and the SharedKernel primitives instead.
+# The single documented exception is the log step in Quant volatility (§13.3); suppress RS0030 locally with a justification.
+T:System.Double;Use decimal for financial values (SYSTEM_DESIGN.md §20.1)
+T:System.Single;Use decimal for financial values (SYSTEM_DESIGN.md §20.1)
+M:System.Decimal.op_Explicit(System.Decimal)~System.Double;Do not convert decimal to double (SYSTEM_DESIGN.md §20.1)
+M:System.Decimal.op_Explicit(System.Decimal)~System.Single;Do not convert decimal to float (SYSTEM_DESIGN.md §20.1)
+M:System.Decimal.ToDouble(System.Decimal);Do not convert decimal to double (SYSTEM_DESIGN.md §20.1)
+M:System.Decimal.ToSingle(System.Decimal);Do not convert decimal to float (SYSTEM_DESIGN.md §20.1)
+M:System.Convert.ToDouble(System.Decimal);Do not convert decimal to double (SYSTEM_DESIGN.md §20.1)
+M:System.Convert.ToDouble(System.String);Parse financial strings with decimal.Parse (SYSTEM_DESIGN.md §20.1)
+M:System.Math.Pow(System.Double,System.Double);Floating-point math is banned in domain code (SYSTEM_DESIGN.md §20.1)
+M:System.Math.Sqrt(System.Double);Floating-point math is banned in domain code (SYSTEM_DESIGN.md §20.1)
+M:System.Math.Log(System.Double);Floating-point math is banned in domain code (SYSTEM_DESIGN.md §20.1)
+M:System.Math.Exp(System.Double);Floating-point math is banned in domain code (SYSTEM_DESIGN.md §20.1)

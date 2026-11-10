@@ -3320,7 +3320,7 @@ Each run logs `job.type`, `job.id`, `attempt`, `duration_ms` and `outcome` with 
 
 Rules:
 
-- `DECIDED` `float` and `double` are banned in the Domain projects for money, price and quantity (Roslyn analyzer `BannedApiAnalyzers` + review). The single documented exception is `Volatility()`.
+- `DECIDED` `float` and `double` are banned in every `Astryx.Modules.*` project and in `Astryx.SharedKernel`. Two layers enforce it: (1) `BannedApiAnalyzers` with `src/BannedSymbols.Money.txt` fails the **build** on floating-point APIs (`Math.Sqrt/Log/Pow/Exp`, `Convert.ToDouble`, `decimal.ToDouble`, …); (2) the architecture test `FloatingPointBanTests` fails **CI** on the `double`/`float` keywords and built-in decimal casts, which the analyzer cannot see. The single documented exception is `Volatility()`, marked with `// float-ok: <reason>` plus a local `RS0030` suppression.
 - `DECIDED` The mobile app parses decimals as strings. It may use `decimal.js-light` for display-only derived values (e.g. a preview of qty × entry while the server recomputes), and converts to JS `number` **only for chart pixel coordinates**. It never sends computed money back to the server: requests contain only user intents (quantity, risk choice, ids).
 
 ### 20.2 Currency handling

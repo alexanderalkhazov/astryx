@@ -1,0 +1,14 @@
+<Project>
+  <!-- Inherit the repository-wide settings. -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <!-- Modules and SharedKernel hold financial logic: floating point is banned there (T-004, SYSTEM_DESIGN.md §20.1). -->
+  <PropertyGroup Condition="$(MSBuildProjectName.StartsWith('Astryx.Modules.')) Or '$(MSBuildProjectName)' == 'Astryx.SharedKernel'">
+    <BanFloatingPoint>true</BanFloatingPoint>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(BanFloatingPoint)' == 'true'">
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" PrivateAssets="all" />
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.Money.txt" />
+  </ItemGroup>
+</Project>
