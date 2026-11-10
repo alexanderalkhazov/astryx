@@ -166,7 +166,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Scope:** `infra.idempotency_records`, an `[Idempotent]` endpoint filter (in-progress / replay / key-reused semantics), the `Idempotent-Replayed` header, 24 h cleanup.
   - **Acceptance:** IDEM-01, IDEM-02 (10 concurrent requests) and IDEM-03 pass against a test endpoint.
   - **Refs:** §11.1, §20.10, §21.7 · **Depends:** T-013 · **P0**
-- [ ] **T-017** Audit module
+- [x] **T-017** Audit module — `1f35a80`
   - **Scope:** the `audit.audit_logs` table (monthly partitions), an `IAuditLog` writer usable in-transaction and via the outbox, and redaction of before/after payloads.
   - **Acceptance:** writing an audit row inside a rolled-back transaction leaves no row. Redaction strips `password`/`token` keys (test).
   - **Refs:** §7.18, §10.4 · **Depends:** T-014 · **P0**
@@ -516,5 +516,6 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 |---|---|---|---|
 | 2026-11-09 | Skeleton verified (pre-M0) | — (uncommitted) | 32/32 .NET tests, stack healthy, app running in simulator (§4.5) |
 | 2026-11-10 | T-000 baseline committed | `1b2a253` | Fresh-clone check: 32/32 tests, typecheck green |
+| 2026-11-10 | Platform plumbing complete: T-014..T-017 | `1f35a80` | 155/155 tests; outbox, job queue, idempotency, audit |
 | 2026-11-10 | eToro integration planned (M5b, gated M8) | — | Official eToro API verified; SYSTEM_DESIGN.md v0.3 §17; client flow map in docs/PRODUCT_FLOW.md |
 | 2026-11-10 | Platform core: T-004, T-011, T-012, T-013 | `76db047` | 109/109 tests; float ban, money primitives, per-module migrations, RFC 7807 pipeline |
