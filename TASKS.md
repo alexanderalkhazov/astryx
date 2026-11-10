@@ -147,7 +147,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Scope:** EF Core + Npgsql, a base `ModuleDbContext` (schema per module, snake_case, UTC conventions, `xmin` concurrency), a migrations runner (`--migrate` flag and dev auto-migrate), and the `citext`/`pg_trgm` extensions.
   - **Acceptance:** an empty migration per schema applies in compose. `/health/ready` reports pending migrations as Unhealthy.
   - **Refs:** §10.1, §22.1 · **Depends:** T-011 · **P0**
-- [ ] **T-013** Request pipeline essentials
+- [x] **T-013** Request pipeline essentials — `76db047`
   - **Scope:** correlation-ID middleware, the RFC 7807 exception handler with the `code` and `traceId` extensions, the FluentValidation integration, and a JSON options setup (unknown properties rejected, 64 KB body limit).
   - **Acceptance:** API tests assert the problem-details shape for 400, 404 and 422, and the `X-Correlation-Id` echo.
   - **Refs:** §9.2, §11.1–11.2, §18.7 · **Depends:** T-011 · **P0**
@@ -454,3 +454,4 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 |---|---|---|---|
 | 2026-11-09 | Skeleton verified (pre-M0) | — (uncommitted) | 32/32 .NET tests, stack healthy, app running in simulator (§4.5) |
 | 2026-11-10 | T-000 baseline committed | `1b2a253` | Fresh-clone check: 32/32 tests, typecheck green |
+| 2026-11-10 | Platform core: T-004, T-011, T-012, T-013 | `76db047` | 109/109 tests; float ban, money primitives, per-module migrations, RFC 7807 pipeline |
