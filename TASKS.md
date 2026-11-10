@@ -109,7 +109,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 
 ### M0 · Baseline
 
-- [ ] **T-000** Commit the verified project skeleton
+- [x] **T-000** Commit the verified project skeleton — `1b2a253`
   - **Scope:** first commit containing the skeleton, `SYSTEM_DESIGN.md`, `README.md`, `TASKS.md` and the design PNGs. Configure the git author identity first.
   - **Acceptance:** `git log` shows one commit. `git status` is clean. `.env` is not tracked. `dotnet test` (32 tests) and `pnpm typecheck` pass on a fresh clone.
   - **Refs:** §4.5 · **Depends:** — · **P0**
@@ -452,3 +452,4 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 | Date | Milestone reached | Commit | Notes |
 |---|---|---|---|
 | 2026-11-09 | Skeleton verified (pre-M0) | — (uncommitted) | 32/32 .NET tests, stack healthy, app running in simulator (§4.5) |
+| 2026-11-10 | T-000 baseline committed | `1b2a253` | Fresh-clone check: 32/32 tests, typecheck green |
