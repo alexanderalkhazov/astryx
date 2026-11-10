@@ -17,7 +17,9 @@ using Astryx.Modules.Watchlists;
 using Astryx.Workers;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Astryx.Infrastructure.Http;
 using Astryx.Infrastructure.Persistence;
+using Astryx.Api.TestSupport;
 using Serilog;
 using Serilog.Formatting.Compact;
 
@@ -31,6 +33,7 @@ builder.Services.AddSerilog((services, logger) => logger
     .WriteTo.Console(new RenderedCompactJsonFormatter()));
 
 builder.Services.AddOpenApi();
+builder.Services.AddAstryxHttp();
 
 builder.Services.AddAstryxPersistence(builder.Configuration);
 
@@ -59,6 +62,11 @@ builder.Services
     .AddAuditModule(builder.Configuration)
     .AddWorkers(builder.Configuration);
 
+if (builder.Environment.IsEnvironment("Testing"))
+{
+    builder.Services.AddTestSupport();
+}
+
 var app = builder.Build();
 
 // `dotnet Astryx.Api.dll --migrate` applies migrations and exits (production deploy step, SYSTEM_DESIGN.md §22.2).
@@ -73,6 +81,7 @@ if (app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
     await MigrationRunner.MigrateAllAsync(app.Services);
 }
 
+app.UseAstryxHttp();
 app.UseSerilogRequestLogging();
 
 if (app.Environment.IsDevelopment())
@@ -103,6 +112,11 @@ app.MapGet("/api/v1/system/status", async (HealthCheckService health, IConfigura
         features = new { liveTrading = config.GetValue<bool>("Features:LiveTrading") },
     });
 });
+
+if (app.Environment.IsEnvironment("Testing"))
+{
+    app.MapTestSupportEndpoints();
+}
 
 app.Run();
 

@@ -200,7 +200,7 @@ Recommended first milestone: **Phase 1 + a walking skeleton of Phase 5.** That m
 
 | Concern | Choice | Status |
 |---|---|---|
-| Runtime | .NET 10, ASP.NET Core Web API (controllers for explicit OpenAPI) | `DECIDED` |
+| Runtime | .NET 10, ASP.NET Core **minimal APIs** grouped per module (`MapGroup`), typed results and endpoint filters, with native OpenAPI (ADR-019) | `DECIDED` |
 | Architecture | Modular monolith with module projects and internal contracts | `DECIDED` |
 | ORM | EF Core 10 + Npgsql provider, migrations per module schema | `DECIDED` |
 | Background | `BackgroundService` hosts + a Postgres-backed job table (`FOR UPDATE SKIP LOCKED`) | `DECIDED` |
@@ -2069,7 +2069,7 @@ IX `(user_id, occurred_at desc)`, `(entity_type, entity_id)`.
 | Rate limits | `429` with `Retry-After` (§18.10) |
 | Staleness | Responses carrying market-derived values include `asOf` and `stale: boolean` |
 
-Error envelope:
+Error envelope (every problem response also carries `correlationId`; unknown routes, malformed JSON and oversized bodies get the same shape via the status-code pages middleware):
 
 ```json
 {
@@ -3800,6 +3800,7 @@ Sentry SDKs: `@sentry/react-native` (with source maps through EAS) and `Sentry.A
 | 016 | No MediatR / AutoMapper | DECIDED | Licensing changes and unneeded indirection; explicit handlers and mapping | MediatR, AutoMapper, Mapster | Slightly more boilerplate |
 | 017 | Unadjusted bar storage + adjustment factors | DECIDED | Correct historical reconstruction; supports split-only and total-return modes | Store vendor-adjusted bars | Adjustment logic must be tested |
 | 018 | SignalR scale-out via outbox + LISTEN/NOTIFY, no Redis | DECIDED | Keeps a single datastore | Redis backplane, Azure SignalR | Custom fan-out code |
+| 019 | Minimal APIs with endpoint filters instead of MVC controllers (supersedes the v0.1 "controllers" choice) | DECIDED (2026-11-10, T-013) | .NET 10 OpenAPI generation works natively with minimal APIs and typed results; less ceremony; each module maps its own route group; validation and idempotency become reusable endpoint filters (`WithValidation<T>()`, `[Idempotent]`) | MVC controllers | OpenAPI metadata is declared per endpoint (`Produces…`, `WithName`); conventions live in `Astryx.Infrastructure.Http` |
 
 ---
 
