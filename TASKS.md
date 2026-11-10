@@ -173,7 +173,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 
 **Identity and profiles**
 
-- [ ] **T-020** Account registration and email verification (API)
+- [x] **T-020** Account registration and email verification (API) — `db2845f`
   - **Story:** As a new user, I want to create an account and verify my email so that my workstation is private to me.
   - **Acceptance:** endpoints A1–A3. Passwords are hashed with the configured iterations. A single-use, hashed verification token expires in 24 h and is emailed via Mailpit as an `astryx://verify-email` link. Registration creates the profile, default risk settings, default watchlist and a paper portfolio ($100,000.00 `initial_deposit` ledger entry) via outbox events. No user enumeration.
   - **Refs:** §7.1, §11.3, §18.1–18.2 · **Depends:** T-013, T-014, T-017 · **P0**
