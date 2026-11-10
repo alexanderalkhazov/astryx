@@ -1,0 +1,60 @@
+<Solution>
+  <Folder Name="/apps/" />
+  <Folder Name="/apps/api/">
+    <Project Path="apps/api/Astryx.Api.csproj" />
+  </Folder>
+  <Folder Name="/src/" />
+  <Folder Name="/src/BuildingBlocks/">
+    <Project Path="src/BuildingBlocks/Astryx.Contracts/Astryx.Contracts.csproj" />
+    <Project Path="src/BuildingBlocks/Astryx.Infrastructure/Astryx.Infrastructure.csproj" />
+    <Project Path="src/BuildingBlocks/Astryx.SharedKernel/Astryx.SharedKernel.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/" />
+  <Folder Name="/src/Modules/Ai/">
+    <Project Path="src/Modules/Ai/Astryx.Modules.Ai.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Audit/">
+    <Project Path="src/Modules/Audit/Astryx.Modules.Audit.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Discovery/">
+    <Project Path="src/Modules/Discovery/Astryx.Modules.Discovery.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Identity/">
+    <Project Path="src/Modules/Identity/Astryx.Modules.Identity.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/MarketData/">
+    <Project Path="src/Modules/MarketData/Astryx.Modules.MarketData.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Notifications/">
+    <Project Path="src/Modules/Notifications/Astryx.Modules.Notifications.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Paper/">
+    <Project Path="src/Modules/Paper/Astryx.Modules.Paper.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Portfolio/">
+    <Project Path="src/Modules/Portfolio/Astryx.Modules.Portfolio.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Profiles/">
+    <Project Path="src/Modules/Profiles/Astryx.Modules.Profiles.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Quant/">
+    <Project Path="src/Modules/Quant/Astryx.Modules.Quant.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Strategies/">
+    <Project Path="src/Modules/Strategies/Astryx.Modules.Strategies.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Trading/">
+    <Project Path="src/Modules/Trading/Astryx.Modules.Trading.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Watchlists/">
+    <Project Path="src/Modules/Watchlists/Astryx.Modules.Watchlists.csproj" />
+  </Folder>
+  <Folder Name="/src/Workers/">
+    <Project Path="src/Workers/Astryx.Workers/Astryx.Workers.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Astryx.ArchitectureTests/Astryx.ArchitectureTests.csproj" />
+    <Project Path="tests/Astryx.IntegrationTests/Astryx.IntegrationTests.csproj" />
+    <Project Path="tests/Astryx.UnitTests/Astryx.UnitTests.csproj" />
+  </Folder>
+</Solution>

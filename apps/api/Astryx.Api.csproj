@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <UserSecretsId>astryx-api</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Serilog.AspNetCore" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/BuildingBlocks/Astryx.Infrastructure/Astryx.Infrastructure.csproj" />
+    <ProjectReference Include="../../src/Workers/Astryx.Workers/Astryx.Workers.csproj" />
+    <ProjectReference Include="../../src/Modules/Identity/Astryx.Modules.Identity.csproj" />
+    <ProjectReference Include="../../src/Modules/Profiles/Astryx.Modules.Profiles.csproj" />
+    <ProjectReference Include="../../src/Modules/MarketData/Astryx.Modules.MarketData.csproj" />
+    <ProjectReference Include="../../src/Modules/Discovery/Astryx.Modules.Discovery.csproj" />
+    <ProjectReference Include="../../src/Modules/Watchlists/Astryx.Modules.Watchlists.csproj" />
+    <ProjectReference Include="../../src/Modules/Quant/Astryx.Modules.Quant.csproj" />
+    <ProjectReference Include="../../src/Modules/Ai/Astryx.Modules.Ai.csproj" />
+    <ProjectReference Include="../../src/Modules/Strategies/Astryx.Modules.Strategies.csproj" />
+    <ProjectReference Include="../../src/Modules/Trading/Astryx.Modules.Trading.csproj" />
+    <ProjectReference Include="../../src/Modules/Paper/Astryx.Modules.Paper.csproj" />
+    <ProjectReference Include="../../src/Modules/Portfolio/Astryx.Modules.Portfolio.csproj" />
+    <ProjectReference Include="../../src/Modules/Notifications/Astryx.Modules.Notifications.csproj" />
+    <ProjectReference Include="../../src/Modules/Audit/Astryx.Modules.Audit.csproj" />
+  </ItemGroup>
+</Project>

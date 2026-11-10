@@ -1,0 +1,21 @@
+{
+  "name": "astryx",
+  "private": true,
+  "packageManager": "pnpm@12.18.0",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "mobile": "pnpm --filter @astryx/mobile start",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "api": "dotnet run --project apps/api",
+    "api:test": "dotnet test Astryx.slnx",
+    "stack:up": "docker compose -f infra/docker/docker-compose.yml --env-file .env up -d --build",
+    "stack:down": "docker compose -f infra/docker/docker-compose.yml --env-file .env down",
+    "stack:logs": "docker compose -f infra/docker/docker-compose.yml --env-file .env logs -f api"
+  },
+  "devDependencies": {
+    "turbo": "2.11.10",
+    "typescript": "~6.0.3"
+  }
+}

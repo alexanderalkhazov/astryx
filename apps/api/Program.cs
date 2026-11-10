@@ -1,0 +1,112 @@
+using System.Text.Json;
+using Astryx.Infrastructure;
+using Astryx.Infrastructure.Health;
+using Astryx.Modules.Ai;
+using Astryx.Modules.Audit;
+using Astryx.Modules.Discovery;
+using Astryx.Modules.Identity;
+using Astryx.Modules.MarketData;
+using Astryx.Modules.Notifications;
+using Astryx.Modules.Paper;
+using Astryx.Modules.Portfolio;
+using Astryx.Modules.Profiles;
+using Astryx.Modules.Quant;
+using Astryx.Modules.Strategies;
+using Astryx.Modules.Trading;
+using Astryx.Modules.Watchlists;
+using Astryx.Workers;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Npgsql;
+using Serilog;
+using Serilog.Formatting.Compact;
+
+var builder = WebApplication.CreateBuilder(args);
+
+StartupGuards.EnsureLiveTradingDisabled(builder.Configuration);
+
+builder.Services.AddSerilog((services, logger) => logger
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .WriteTo.Console(new RenderedCompactJsonFormatter()));
+
+builder.Services.AddOpenApi();
+
+var postgres = builder.Configuration.GetConnectionString("Postgres")
+    ?? throw new InvalidOperationException("ConnectionStrings:Postgres is not configured.");
+builder.Services.AddSingleton(_ => NpgsqlDataSource.Create(postgres));
+
+builder.Services.AddHttpClient<OllamaHealthCheck>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["Ai:Ollama:BaseUrl"] ?? "http://localhost:11434");
+    client.Timeout = TimeSpan.FromSeconds(3);
+});
+
+builder.Services.AddHealthChecks()
+    .AddCheck<PostgresHealthCheck>("postgres", tags: ["ready"])
+    .AddCheck<OllamaHealthCheck>("ollama", tags: ["deps"]);
+
+builder.Services
+    .AddIdentityModule(builder.Configuration)
+    .AddProfilesModule(builder.Configuration)
+    .AddMarketDataModule(builder.Configuration)
+    .AddDiscoveryModule(builder.Configuration)
+    .AddWatchlistsModule(builder.Configuration)
+    .AddQuantModule(builder.Configuration)
+    .AddAiModule(builder.Configuration)
+    .AddStrategiesModule(builder.Configuration)
+    .AddTradingModule(builder.Configuration)
+    .AddPaperModule(builder.Configuration)
+    .AddPortfolioModule(builder.Configuration)
+    .AddNotificationsModule(builder.Configuration)
+    .AddAuditModule(builder.Configuration)
+    .AddWorkers(builder.Configuration);
+
+var app = builder.Build();
+
+app.UseSerilogRequestLogging();
+
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+}
+
+app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false });
+app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = c => c.Tags.Contains("ready"), ResponseWriter = WriteHealthJson });
+app.MapHealthChecks("/health/deps", new HealthCheckOptions
+{
+    Predicate = _ => true,
+    ResponseWriter = WriteHealthJson,
+    ResultStatusCodes = { [HealthStatus.Degraded] = StatusCodes.Status200OK },
+});
+
+app.MapGet("/api/v1/system/status", async (HealthCheckService health, IConfiguration config, CancellationToken ct) =>
+{
+    var report = await health.CheckHealthAsync(ct);
+    string Status(string name) => report.Entries.TryGetValue(name, out var e) ? e.Status.ToString().ToLowerInvariant() : "unknown";
+    return Results.Ok(new
+    {
+        database = Status("postgres"),
+        ai = new { status = Status("ollama"), model = config["Ai:Ollama:Model"] },
+        marketData = new { provider = config["MarketData:Provider"] },
+        broker = new { adapter = config["Broker:Adapter"], mode = "paper" },
+        features = new { liveTrading = config.GetValue<bool>("Features:LiveTrading") },
+    });
+});
+
+app.Run();
+
+static Task WriteHealthJson(HttpContext context, HealthReport report)
+{
+    context.Response.ContentType = "application/json";
+    var body = new
+    {
+        status = report.Status.ToString(),
+        entries = report.Entries.ToDictionary(
+            e => e.Key,
+            e => new { status = e.Value.Status.ToString(), description = e.Value.Description, data = e.Value.Data }),
+    };
+    return context.Response.WriteAsync(JsonSerializer.Serialize(body, JsonSerializerOptions.Web));
+}
+
+public partial class Program;

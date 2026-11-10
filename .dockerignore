@@ -1,0 +1,11 @@
+**/bin/
+**/obj/
+**/node_modules/
+**/.expo/
+.git/
+.env
+apps/mobile/
+packages/
+docs/
+tests/
+*.md

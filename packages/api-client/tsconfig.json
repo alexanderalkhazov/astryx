@@ -1,0 +1,1 @@
+{ "extends": "@astryx/tsconfig/base.json", "include": ["src"] }

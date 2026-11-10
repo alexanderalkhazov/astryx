@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../Astryx.SharedKernel/Astryx.SharedKernel.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,46 @@
+# Local development stack (SYSTEM_DESIGN.md §22.1).
+# Ollama runs natively on macOS (Metal GPU) and is reached via host.docker.internal.
+name: astryx
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: astryx
+      POSTGRES_USER: astryx
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    ports: ["5432:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U astryx -d astryx"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  mailpit:
+    image: axllent/mailpit:latest
+    ports: ["1025:1025", "8025:8025"]
+
+  api:
+    build:
+      context: ../..
+      dockerfile: infra/docker/api.Dockerfile
+    image: astryx-api:dev
+    depends_on:
+      postgres: { condition: service_healthy }
+    ports: ["${API_PORT:-5080}:8080"]
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=astryx;Username=astryx;Password=${POSTGRES_PASSWORD}
+      Ai__Provider: ${AI_PROVIDER:-Ollama}
+      Ai__Ollama__BaseUrl: http://host.docker.internal:11434
+      Ai__Ollama__Model: ${OLLAMA_MODEL:-qwen3.5:0.8b}
+      MarketData__Provider: ${MARKET_DATA_PROVIDER:-Fake}
+      Jwt__SigningKeys: ${JWT_SIGNING_KEYS:?set JWT_SIGNING_KEYS in .env}
+      Email__Smtp__Host: mailpit
+      Email__Smtp__Port: "1025"
+      Features__DevFaultInjection: "true"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  pgdata:

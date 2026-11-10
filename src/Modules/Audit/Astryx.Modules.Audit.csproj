@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../BuildingBlocks/Astryx.SharedKernel/Astryx.SharedKernel.csproj" />
+    <ProjectReference Include="../../BuildingBlocks/Astryx.Contracts/Astryx.Contracts.csproj" />
+  </ItemGroup>
+</Project>

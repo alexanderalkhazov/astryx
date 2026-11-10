@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Shouldly" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="Xunit" />
+    <Using Include="Shouldly" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Modules/Identity/Astryx.Modules.Identity.csproj" />
+    <ProjectReference Include="../../src/Modules/Profiles/Astryx.Modules.Profiles.csproj" />
+    <ProjectReference Include="../../src/Modules/MarketData/Astryx.Modules.MarketData.csproj" />
+    <ProjectReference Include="../../src/Modules/Discovery/Astryx.Modules.Discovery.csproj" />
+    <ProjectReference Include="../../src/Modules/Watchlists/Astryx.Modules.Watchlists.csproj" />
+    <ProjectReference Include="../../src/Modules/Quant/Astryx.Modules.Quant.csproj" />
+    <ProjectReference Include="../../src/Modules/Ai/Astryx.Modules.Ai.csproj" />
+    <ProjectReference Include="../../src/Modules/Strategies/Astryx.Modules.Strategies.csproj" />
+    <ProjectReference Include="../../src/Modules/Trading/Astryx.Modules.Trading.csproj" />
+    <ProjectReference Include="../../src/Modules/Paper/Astryx.Modules.Paper.csproj" />
+    <ProjectReference Include="../../src/Modules/Portfolio/Astryx.Modules.Portfolio.csproj" />
+    <ProjectReference Include="../../src/Modules/Notifications/Astryx.Modules.Notifications.csproj" />
+    <ProjectReference Include="../../src/Modules/Audit/Astryx.Modules.Audit.csproj" />
+  </ItemGroup>
+</Project>
