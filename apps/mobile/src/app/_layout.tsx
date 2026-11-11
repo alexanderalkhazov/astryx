@@ -4,6 +4,7 @@ import { Geist_500Medium } from '@expo-google-fonts/geist/500Medium';
 import { Geist_600SemiBold } from '@expo-google-fonts/geist/600SemiBold';
 import { GeistMono_500Medium } from '@expo-google-fonts/geist-mono/500Medium';
 import { GeistMono_600SemiBold } from '@expo-google-fonts/geist-mono/600SemiBold';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { color } from '@astryx/design-tokens';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
@@ -14,11 +15,12 @@ import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { ToastHost } from '@/components/ToastHost';
 import { queryClient } from '@/lib/queryClient';
 
 void SplashScreen.preventAutoHideAsync();
 
-// Root: providers, auth gate (T-034), sheet portal (T-032), toast host, SignalR lifecycle (SYSTEM_DESIGN.md §8.3).
+// Root: providers, auth gate (T-034), sheet portal and toast host (T-032), SignalR lifecycle (SYSTEM_DESIGN.md §8.3).
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
     Geist_400Regular,
@@ -43,8 +45,11 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: color.bg }}>
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
-          <StatusBar style="light" />
-          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: color.bg } }} />
+          <BottomSheetModalProvider>
+            <StatusBar style="light" />
+            <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: color.bg } }} />
+            <ToastHost />
+          </BottomSheetModalProvider>
         </QueryClientProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

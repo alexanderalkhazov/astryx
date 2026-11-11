@@ -1250,6 +1250,13 @@ Implementation (T-031):
 - Developer gallery: `/dev/gallery` (`?only=buttons|badges|inputs|feedback`); it redirects when `__DEV__` is false.
 - Jest (RNTL 14): `render` and `fireEvent` are async and must be awaited, because un-awaited presses overlap `act()` and corrupt later tests. Reanimated is stubbed in `jest.setup.ts`, and Lucide maps to its CommonJS build in `jest.config.js`.
 
+Implementation (T-032):
+- **Status and data:** `StatusBanner` (a discriminated union, so `executed` requires `orderId` and every other tone forbids it; proven at compile time by `StatusBanner.typecheck.tsx`), `CheckRow`, `MetricHero`/`MetricTile`/`MetricGrid`/`ScoreBreakdownBar`.
+- **Dialog:** `Dialog` (cancel first, solid-red `danger` confirm, cannot be dismissed while busy).
+- **Sheet:** `Sheet` over `@gorhom/bottom-sheet` 5.2. It is content-sized up to 88 % and `dismissible={false}` locks pan, backdrop and Android back. `present()` is deferred one frame, because presenting in the mounting commit is ignored.
+- **Toasts:** `ToastHost` plus the `useToasts` store (3.8 s, max 3, tap to dismiss), and the `useSheet` store (one sheet at a time). All are mounted in the root layout.
+- **Known noise:** bottom-sheet 5.2 triggers Reanimated 4.7 "dependencies are ignored on native" warnings from inside the library.
+
 > Type-level safety rule: research components (`ProposalCard`, `StatusBanner tone="pending"`) cannot receive `orderId`/`fillPrice` props. Enforced with discriminated unions + an ESLint `no-restricted-syntax` rule for `color.gain` outside executed/P&L components.
 
 ### 8.7 State management

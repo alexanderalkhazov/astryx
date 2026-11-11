@@ -1,21 +1,29 @@
 import { color, radius, space } from '@astryx/design-tokens';
 import { Redirect, useLocalSearchParams } from 'expo-router';
 import { Search } from 'lucide-react-native';
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Badge, PaperBadge, SignalBadge } from '@/components/Badge';
 import { Button, IconButton } from '@/components/Button';
+import { CheckRow } from '@/components/CheckRow';
 import { Chip, RemovableChip } from '@/components/Chip';
+import { Dialog } from '@/components/Dialog';
 import { EmptyState, SkeletonRow, Spinner } from '@/components/Feedback';
 import { Input, Select } from '@/components/Input';
+import { MetricGrid, MetricHero, MetricTile, ScoreBreakdownBar } from '@/components/Metric';
 import { StackHeader } from '@/components/Navigation';
 import { Segmented } from '@/components/Segmented';
+import { Sheet } from '@/components/Sheet';
+import { StatusBanner } from '@/components/StatusBanner';
 import { Stepper } from '@/components/Stepper';
 import { Switch } from '@/components/Switch';
 import { Tabs } from '@/components/Tabs';
-import { Text } from '@/components/Text';
+import { Pnl, Text } from '@/components/Text';
+import { formatPct } from '@/lib/format';
+import { useSheet } from '@/state/sheets';
+import { toast } from '@/state/toasts';
 
 /**
  * Developer-only component gallery (TASKS.md T-031). Compare against docs/design/png/Component library.png.
@@ -29,11 +37,11 @@ export default function GalleryScreen() {
   return <Gallery />;
 }
 
-type SectionKey = 'buttons' | 'badges' | 'inputs' | 'feedback';
+type SectionKey = 'buttons' | 'badges' | 'inputs' | 'feedback' | 'status' | 'metrics' | 'overlays';
 
 function Gallery() {
   // `?only=inputs` renders one section, for side-by-side comparison with the design board.
-  const { only } = useLocalSearchParams<{ only?: SectionKey }>();
+  const { only, demo } = useLocalSearchParams<{ only?: SectionKey; demo?: 'sheet' | 'dialog' | 'toast' }>();
   const show = (key: SectionKey) => !only || only === key;
   const [chip, setChip] = useState<'all' | 'breakouts'>('all');
   const [timeframe, setTimeframe] = useState<'3M' | '1Y' | '5D'>('3M');
@@ -42,6 +50,17 @@ function Gallery() {
   const [on, setOn] = useState(true);
   const [off, setOff] = useState(false);
   const [orderType, setOrderType] = useState<'buy_stop' | 'limit' | 'market'>('buy_stop');
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [locked, setLocked] = useState(false);
+  const sheet = useSheet('gallery-demo');
+
+  // `?demo=sheet|dialog|toast` opens an overlay on load, for screenshots without tapping.
+  useEffect(() => {
+    if (demo === 'sheet') sheet.open();
+    if (demo === 'dialog') setDialogOpen(true);
+    if (demo === 'toast') toast({ tone: 'success', title: 'Simulated order filled', body: 'Bought 76 NVDA at $186.52 · stop and target attached' });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [demo]);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -123,7 +142,69 @@ function Gallery() {
             action={{ label: 'Reset filters', onPress: () => {} }}
           />
         </Section>}
+
+        {show('status') && <Section title="Status banners & checks">
+          <StatusBanner tone="pending" title="Research proposal — not executed" body="Dashed amber · nothing sent to the broker." />
+          <StatusBanner tone="executed" title="Executed · simulated fill" body="Bought 76 NVDA at $186.52" orderId="SIM-463AC2" />
+          <StatusBanner tone="error" title="Connection lost" body="Values are from the last sync at 14:12 ET. Approvals are disabled." action={{ label: 'Retry', onPress: () => {} }} />
+          <StatusBanner tone="rejected" title="Proposal rejected" body="No order created. The signal stays in history." />
+          <View style={styles.checks}>
+            <CheckRow first status="pass" label="Risk per trade · 0.53%" />
+            <CheckRow status="warn" label="Technology 22.4% → 34.4%" />
+            <CheckRow status="fail" label="Position weight 12.15%" detail="Limit 12%" />
+            <CheckRow status="pending" label="Regular session open" />
+          </View>
+        </Section>}
+
+        {show('metrics') && <Section title="Metric displays">
+          <MetricHero label="Total portfolio value" value="118181.30">
+            <View style={styles.row}>
+              <Pnl value="493.25" />
+              <Text.Data tone="gain">({formatPct('0.0042', { signed: true })}) today</Text.Data>
+            </View>
+          </MetricHero>
+          <View style={styles.row}>
+            <MetricTile label="Max potential loss" value="−$630.80" tone="loss" caption="0.53% of equity" />
+            <MetricTile label="Potential profit" value="+$1,330.00" tone="gain" caption="1.13% of equity" />
+          </View>
+          <MetricGrid items={[{ label: 'CAGR', value: '+16.9%' }, { label: 'Sharpe', value: '1.31' }, { label: 'Max DD', value: '−14.8%' }, { label: 'PF', value: '1.86' }]} />
+          <ScoreBreakdownBar label="Pattern quality" value="24" max="30" />
+        </Section>}
+
+        {show('overlays') && <Section title="Sheet, dialog & toast">
+          <Text.Caption tone="tertiary">Sheet store: {sheet.isOpen ? 'open' : 'closed'}{locked ? ' · locked' : ''}</Text.Caption>
+          <Button variant="secondary" label="Open sheet" onPress={sheet.open} />
+          <Button variant="destructive" label="Close position…" onPress={() => setDialogOpen(true)} />
+          <Button
+            variant="secondary"
+            label="Show toast"
+            onPress={() => toast({ tone: 'success', title: 'Simulated order filled', body: 'Bought 76 NVDA at $186.52 · stop and target attached' })}
+          />
+        </Section>}
       </ScrollView>
+
+      <Sheet open={sheet.isOpen} onClose={sheet.close} dismissible={!locked} accessibilityLabel="Confirm simulated order">
+        <Text.Overline tone="pending">Paper account · simulated</Text.Overline>
+        <Text.Headline>Confirm simulated order</Text.Headline>
+        <View style={styles.row}>
+          <Text.Body tone="secondary">Action</Text.Body>
+          <Text.Data>Buy 76 · long</Text.Data>
+        </View>
+        <Button label={locked ? 'Sending… (locked)' : 'Lock as if sending'} onPress={() => setLocked((l) => !l)} />
+        <Button variant="link" label="Close" onPress={sheet.close} disabled={locked} />
+      </Sheet>
+
+      <Dialog
+        visible={dialogOpen}
+        title="Close NVDA position?"
+        body="Sell 76 NVDA at market (~$14,166.40). Realizes −$9.12. Attached stop and target are cancelled."
+        overline="Simulated · paper account"
+        cancelLabel="Keep open"
+        confirmLabel="Close position"
+        destructive
+        onCancel={() => setDialogOpen(false)}
+        onConfirm={() => setDialogOpen(false)}
+      />
     </SafeAreaView>
   );
 }
@@ -143,4 +224,5 @@ const styles = StyleSheet.create({
   section: { gap: space[3], padding: space[4], borderRadius: radius.card, borderWidth: 1, borderColor: color.line, backgroundColor: color.surface1 },
   row: { flexDirection: 'row', alignItems: 'center', gap: space[3] },
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: space[2] },
+  checks: { borderRadius: radius.card, borderWidth: 1, borderColor: color.line, overflow: 'hidden' },
 });

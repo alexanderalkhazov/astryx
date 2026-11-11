@@ -3,7 +3,7 @@ import type { LucideIcon } from 'lucide-react-native';
 import type { ReactNode } from 'react';
 import { ActivityIndicator, Pressable, type PressableProps, StyleSheet, Text, type TextStyle, type ViewStyle } from 'react-native';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'destructive' | 'link';
+export type ButtonVariant = 'primary' | 'secondary' | 'destructive' | 'danger' | 'link';
 
 export interface ButtonProps extends Omit<PressableProps, 'children' | 'style'> {
   variant?: ButtonVariant;
@@ -27,6 +27,8 @@ const variants: Record<ButtonVariant, VariantStyle> = {
     container: { backgroundColor: 'rgba(255,107,107,0.10)', borderWidth: 1, borderColor: 'rgba(255,107,107,0.45)' },
     label: { color: color.loss },
   },
+  // Solid red: the confirming action in a destructive dialog (design: "Close position" in the close dialog).
+  danger: { container: { backgroundColor: color.loss }, label: { color: color.bg } },
   link: { container: { minHeight: size.touch, paddingHorizontal: 0 }, label: { color: color.signal } },
 };
 

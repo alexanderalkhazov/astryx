@@ -7,6 +7,7 @@
     "@astryx/design-tokens": "workspace:*",
     "@expo-google-fonts/geist": "^0.4.2",
     "@expo-google-fonts/geist-mono": "^0.4.3",
+    "@gorhom/bottom-sheet": "^5.2.14",
     "@hookform/resolvers": "^7.0.3",
     "@tanstack/react-query": "^5.107.1",
     "@testing-library/react-native": "^14.1.0",

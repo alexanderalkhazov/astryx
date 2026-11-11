@@ -15,5 +15,10 @@ jest.mock('react-native-reanimated', () => {
     withDelay: (_delay: number, value: unknown) => value,
     Easing: { bezier: () => identity, inOut: () => identity, ease: identity, linear: identity },
     ReduceMotion: { System: 'system', Always: 'always', Never: 'never' },
+    useReducedMotion: () => false,
+    FadeInUp: undefined,
+    FadeOutUp: undefined,
   };
 });
+
+jest.mock('@gorhom/bottom-sheet', () => require('@gorhom/bottom-sheet/mock'));
