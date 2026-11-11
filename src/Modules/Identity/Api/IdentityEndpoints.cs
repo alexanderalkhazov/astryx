@@ -1,6 +1,9 @@
 using System.Net.Mail;
+using System.Security.Claims;
 using Astryx.Infrastructure.Http;
 using Astryx.Modules.Identity.Application;
+using Astryx.Modules.Identity.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -15,6 +18,43 @@ public sealed record RegisterResponse(bool EmailVerificationRequired);
 public sealed record VerifyEmailRequest(Guid UserId, string Token);
 
 public sealed record ResendVerificationRequest(string Email);
+
+public sealed record LoginRequest(string Email, string Password, string DeviceId);
+
+public sealed record RefreshRequest(string RefreshToken, string DeviceId);
+
+public sealed record LogoutRequest(string RefreshToken);
+
+public sealed record TokenResponse(string AccessToken, DateTimeOffset AccessTokenExpiresAt, string RefreshToken, DateTimeOffset RefreshTokenExpiresAt, string TokenType = "Bearer");
+
+public sealed record CurrentUserResponse(Guid Id, string Email, bool EmailVerified);
+
+public sealed class LoginRequestValidator : AbstractValidator<LoginRequest>
+{
+    public LoginRequestValidator()
+    {
+        RuleFor(r => r.Email).NotEmpty().MaximumLength(254);
+        RuleFor(r => r.Password).NotEmpty().MaximumLength(128);
+        RuleFor(r => r.DeviceId).Matches(DeviceIdPattern).WithMessage("deviceId must be 8–64 letters, digits or '-'.");
+    }
+
+    internal const string DeviceIdPattern = "^[A-Za-z0-9-]{8,64}$";
+}
+
+public sealed class RefreshRequestValidator : AbstractValidator<RefreshRequest>
+{
+    public RefreshRequestValidator()
+    {
+        RuleFor(r => r.RefreshToken).NotEmpty().Matches("^[A-Za-z0-9_-]{43}$").WithMessage("Malformed refresh token.");
+        RuleFor(r => r.DeviceId).Matches(LoginRequestValidator.DeviceIdPattern).WithMessage("deviceId must be 8–64 letters, digits or '-'.");
+    }
+}
+
+public sealed class LogoutRequestValidator : AbstractValidator<LogoutRequest>
+{
+    public LogoutRequestValidator() =>
+        RuleFor(r => r.RefreshToken).NotEmpty().Matches("^[A-Za-z0-9_-]{43}$").WithMessage("Malformed refresh token.");
+}
 
 public sealed class RegisterRequestValidator : AbstractValidator<RegisterRequest>
 {
@@ -78,6 +118,49 @@ public static class IdentityEndpoints
             .WithValidation<ResendVerificationRequest>()
             .Produces(StatusCodes.Status202Accepted);
 
+        auth.MapPost("/login", async (LoginRequest request, SessionService sessions, CancellationToken ct) =>
+                (await sessions.LoginAsync(request.Email, request.Password, request.DeviceId, ct)).Match(ToResponse, e => e.ToProblem()))
+            .WithName("Login")
+            .WithValidation<LoginRequest>()
+            .Produces<TokenResponse>();
+
+        auth.MapPost("/refresh", async (RefreshRequest request, SessionService sessions, CancellationToken ct) =>
+                (await sessions.RefreshAsync(request.RefreshToken, request.DeviceId, ct)).Match(ToResponse, e => e.ToProblem()))
+            .WithName("RefreshToken")
+            .WithValidation<RefreshRequest>()
+            .Produces<TokenResponse>();
+
+        auth.MapPost("/logout", async (LogoutRequest request, ClaimsPrincipal user, SessionService sessions, CancellationToken ct) =>
+            {
+                await sessions.LogoutAsync(user.UserId(), request.RefreshToken, ct);
+                return Results.NoContent();
+            })
+            .WithName("Logout")
+            .RequireAuthorization(AuthenticationSetup.AuthenticatedPolicy)
+            .WithValidation<LogoutRequest>();
+
+        auth.MapPost("/logout-all", async (ClaimsPrincipal user, SessionService sessions, CancellationToken ct) =>
+            {
+                await sessions.LogoutAllAsync(user.UserId(), ct);
+                return Results.NoContent();
+            })
+            .WithName("LogoutAll")
+            .RequireAuthorization(AuthenticationSetup.AuthenticatedPolicy);
+
+        // A10 minimal form; T-023 adds profile, trading mode and feature flags.
+        app.MapGet("/api/v1/me", async (ClaimsPrincipal user, IdentityDbContext db, CancellationToken ct) =>
+            {
+                var id = user.UserId();
+                var account = await db.Users.AsNoTracking().Where(u => u.Id == id).Select(u => new CurrentUserResponse(u.Id, u.Email, u.EmailConfirmed)).SingleAsync(ct);
+                return Results.Ok(account);
+            })
+            .WithName("GetCurrentUser")
+            .WithTags("Me")
+            .RequireAuthorization(AuthenticationSetup.AuthenticatedPolicy);
+
         return app;
     }
+
+    private static IResult ToResponse(TokenPair pair) =>
+        Results.Ok(new TokenResponse(pair.AccessToken, pair.AccessTokenExpiresAt, pair.RefreshToken, pair.RefreshTokenExpiresAt));
 }

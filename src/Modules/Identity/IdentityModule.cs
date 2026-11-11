@@ -1,3 +1,4 @@
+using Astryx.Infrastructure.Jobs;
 using Astryx.Infrastructure.Outbox;
 using Astryx.Infrastructure.Persistence;
 using Astryx.Modules.Identity.Api;
@@ -29,6 +30,13 @@ public static class IdentityModule
         // Order 5: other modules' tables reference identity.users, so this schema migrates first.
         services.AddModuleDbContext<IdentityDbContext>(IdentityDbContext.SchemaName, historyKey: "identity", order: 5);
         services.AddScoped<RegistrationService>();
+        services.AddOptions<JwtOptions>().Bind(configuration.GetSection("Jwt"));
+        services.AddSingleton<JwtKeyRing>();
+        services.AddSingleton<AccessTokenIssuer>();
+        services.AddScoped<SessionService>();
+        services.AddAstryxAuthentication();
+        services.AddJobHandler<IdentityTokenCleanupJob, IdentityTokenCleanupHandler>();
+        services.AddRecurringJob("identity-token-cleanup", TimeSpan.FromDays(1), _ => new IdentityTokenCleanupJob());
         services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>(includeInternalTypes: true);
         services.AddIntegrationEventHandler<EmailVerificationRequested, EmailVerificationHandler>();
         services.AddIntegrationEventHandler<ExistingAccountRegistrationAttempted, ExistingAccountEmailHandler>();

@@ -18,6 +18,9 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
     public string ConnectionString => _postgres.GetConnectionString();
 
+    /// <summary>A throwaway ES256 key ring for this test run.</summary>
+    public static readonly string SigningKeys = Astryx.Modules.Identity.Application.JwtKeyRing.Generate("test-key");
+
     /// <summary>Every email the API sent; replaces SMTP in tests.</summary>
     public CapturingEmailSender Emails { get; } = new();
 
@@ -36,6 +39,7 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         builder.UseSetting("Database:MigrateOnStartup", MigrateOnStartup ? "true" : "false");
         builder.UseSetting("Ai:Ollama:BaseUrl", "http://127.0.0.1:9");
         builder.UseSetting("Identity:PasswordHashIterations", "10000"); // production uses 600,000
+        builder.UseSetting("Jwt:SigningKeys", SigningKeys);
         builder.ConfigureTestServices(services => services.AddSingleton<IEmailSender>(Emails));
     }
 }

@@ -36,7 +36,7 @@ docs/              design PNGs, ADRs
 ## First run
 
 ```bash
-cp .env.example .env          # set POSTGRES_PASSWORD and JWT_SIGNING_KEYS (any random string for now)
+cp .env.example .env          # set POSTGRES_PASSWORD, and JWT_SIGNING_KEYS from: dotnet run --project apps/api -- --generate-jwt-key
 pnpm install
 pnpm stack:up                 # postgres:17, mailpit, api → http://localhost:5080
 curl localhost:5080/health/deps

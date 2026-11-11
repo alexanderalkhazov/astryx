@@ -9,7 +9,7 @@ public static class ErrorHttpMapping
     private static readonly Dictionary<string, int> StatusByCode = new(StringComparer.Ordinal)
     {
         ["bad_request"] = 400,
-        ["unauthorized"] = 401, ["token_expired"] = 401, ["session_revoked"] = 401, ["invalid_credentials"] = 401,
+        ["unauthorized"] = 401, ["token_expired"] = 401, ["session_revoked"] = 401, ["invalid_credentials"] = 401, ["refresh_token_superseded"] = 401,
         ["forbidden"] = 403, ["email_not_verified"] = 403, ["live_trading_disabled"] = 403,
         ["not_found"] = 404, ["instrument_not_found"] = 404,
         ["conflict"] = 409, ["duplicate"] = 409, ["request_in_progress"] = 409, ["proposal_not_pending"] = 409,

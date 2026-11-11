@@ -24,6 +24,13 @@ using Astryx.Api.TestSupport;
 using Serilog;
 using Serilog.Formatting.Compact;
 
+// `dotnet run --project apps/api -- --generate-jwt-key` prints a new ES256 entry for Jwt:SigningKeys and exits.
+if (args.Contains("--generate-jwt-key", StringComparer.Ordinal))
+{
+    Console.WriteLine(Astryx.Modules.Identity.Application.JwtKeyRing.Generate());
+    return;
+}
+
 var builder = WebApplication.CreateBuilder(args);
 
 StartupGuards.EnsureLiveTradingDisabled(builder.Configuration);
@@ -84,6 +91,8 @@ if (app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
 
 app.UseAstryxHttp();
 app.UseSerilogRequestLogging();
+app.UseAuthentication();
+app.UseAuthorization();
 
 if (app.Environment.IsDevelopment())
 {

@@ -1550,10 +1550,11 @@ IX: `(deleted_at) WHERE deleted_at IS NOT NULL`.
 | user_id | uuid | FK users (cascade) |
 | token_hash | bytea | NOT NULL, UK. SHA-256 of the 256-bit random token |
 | family_id | uuid | NOT NULL |
+| family_started_at | timestamptz | First token of the family; caps the family at 90 days |
 | device_id | text | NOT NULL, ≤ 64 |
 | expires_at | timestamptz | NOT NULL |
 | revoked_at | timestamptz | NULL |
-| revoked_reason | text | CK in (`rotated`,`logout`,`reuse_detected`,`password_changed`,`admin`) |
+| revoked_reason | text | CK in (`rotated`,`logout`,`reuse_detected`,`password_changed`,`superseded`,`admin`); `superseded` = replaced by a new sign-in on the same device |
 | replaced_by_id | uuid | FK refresh_tokens NULL |
 | created_ip | inet | NULL |
 | user_agent | text | NULL, ≤ 256 |
@@ -2096,7 +2097,7 @@ Error envelope (every problem response also carries `correlationId`; unknown rou
 | HTTP | `code` | Meaning |
 |---|---|---|
 | 400 | `bad_request`, `idempotency_key_required`, `idempotency_key_invalid` | Malformed JSON or unknown parameter; missing or malformed `Idempotency-Key` on an idempotent endpoint |
-| 401 | `unauthorized`, `token_expired`, `session_revoked` | Authentication failure |
+| 401 | `unauthorized`, `token_expired`, `session_revoked`, `invalid_credentials`, `refresh_token_superseded` | Authentication failure |
 | 403 | `email_not_verified`, `forbidden`, `live_trading_disabled` | Authorisation failure |
 | 404 | `not_found`, `instrument_not_found` | Resource is missing **or belongs to another user** (never 403, to avoid confirming that IDs exist) |
 | 409 | `conflict`, `duplicate`, `request_in_progress`, `proposal_not_pending`, `assessment_stale`, `quote_stale`, `position_not_open`, `concurrency_conflict` | State conflict |
@@ -2113,8 +2114,8 @@ Error envelope (every problem response also carries `correlationId`; unknown rou
 | A1 | `POST /auth/register` | none | `RegisterRequest {email, password, displayName?}` | `201 {emailVerificationRequired:true}` (no `userId`, so new and existing emails get identical responses; the verification link carries the id) | email RFC 5322 ≤ 254. password 12–128 characters, not in the breached list. displayName ≤ 80 | 409 `duplicate` (returned as a generic 201 to avoid user enumeration, `ASSUMPTION`: the email is sent saying "you already have an account"), 422, 429 |
 | A2 | `POST /auth/verify-email` | none | `{userId, token}` | `204` | token is base64url, 43 characters | 422 `invalid_or_expired_token` |
 | A3 | `POST /auth/resend-verification` | none | `{email}` | `202` (always) | | 429 |
-| A4 | `POST /auth/login` | none | `LoginRequest {email, password, deviceId}` | `200 TokenResponse` | deviceId 8–64 chars `[A-Za-z0-9-]` | 401 `invalid_credentials`, 403 `email_not_verified`, 423 `account_locked`, 429 |
-| A5 | `POST /auth/refresh` | none (refresh token in body) | `{refreshToken, deviceId}` | `200 TokenResponse` | | 401 `session_revoked` (reuse detected or expired) |
+| A4 | `POST /auth/login` | none | `LoginRequest {email, password, deviceId}` | `200 TokenResponse` | deviceId 8–64 chars `[A-Za-z0-9-]` | 401 `invalid_credentials` for wrong password, unknown email **and** locked account (identical body; v0.3 replaces the 423, which revealed that an account exists), 403 `email_not_verified` (only after a correct password), 429 |
+| A5 | `POST /auth/refresh` | none (refresh token in body) | `{refreshToken, deviceId}` | `200 TokenResponse` | refresh token 43-char base64url | 401 `session_revoked` (unknown, expired, family > 90 days, logged out, reuse detected, or presented from another device), 401 `refresh_token_superseded` (rotated < 10 s ago: a client race; the family stays alive) |
 | A6 | `POST /auth/logout` | Bearer | `{refreshToken}` | `204` | | 401 |
 | A7 | `POST /auth/logout-all` | Bearer | — | `204`. Revokes all families and rotates the security stamp | | 401 |
 | A8 | `POST /auth/forgot-password` | none | `{email}` | `202` (always, no enumeration) | | 429 |
@@ -3273,6 +3274,14 @@ ASP.NET Core Identity `PasswordHasher` v3 (PBKDF2-HMAC-SHA512, iteration count �
 - **Reuse detection:** presenting a revoked or rotated token revokes the **whole family**, writes an audit entry and returns `401 session_revoked`. A 10-second grace window for the immediately preceding token handles concurrent refresh races from the same device (`ASSUMPTION`).
 - **Revocation:** logout (family), logout-all (all families plus a security-stamp rotation, which invalidates outstanding JWTs at next validation via the `sstamp` check against a 60-second cached stamp), password change or reset (all families).
 - **Signing keys:** stored in the secret manager. Two active keys allow rotation. JWKS is not exposed (no third-party consumers).
+- Implementation (T-021):
+  - `Jwt:SigningKeys` = `kid:base64-pkcs8-p256[;kid2:…]`. The first key signs and all keys verify. `dotnet run --project apps/api -- --generate-jwt-key` prints a new entry, and startup fails fast on a missing or invalid key.
+  - Rotation is a conditional UPDATE, so concurrent refreshes of one token yield exactly one winner. The losers get `refresh_token_superseded`, as does a replay within the 10 s grace.
+  - A rotated token replayed after the grace window, or a token presented with a different `deviceId`, revokes the family (`reuse_detected`) and writes `auth.refresh_reuse_detected`.
+  - The stamp check uses a 60 s in-memory cache that `logout-all` invalidates immediately on the same instance.
+  - Login hashes against a dummy hash for unknown emails, to equalise timing.
+  - Expired refresh tokens and used single-use tokens are deleted 7 days after they expire or are revoked, by the daily `identity-token-cleanup` job.
+  - `GET /api/v1/me` exists in minimal form (id, email, verified). T-023 extends it.
 
 ### 18.4 Password recovery
 

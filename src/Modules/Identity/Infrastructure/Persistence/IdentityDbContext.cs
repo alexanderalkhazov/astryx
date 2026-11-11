@@ -15,6 +15,8 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
 
     public DbSet<UserToken> UserTokens => Set<UserToken>();
 
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
     protected override void ConfigureModel(ModelBuilder modelBuilder)
     {
         modelBuilder.HasPostgresExtension("citext");
@@ -41,6 +43,24 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
             entity.HasIndex(t => t.SourceMessageId).IsUnique().HasFilter("source_message_id IS NOT NULL");
             entity.HasIndex(t => new { t.UserId, t.Purpose }).HasFilter("consumed_at IS NULL");
             entity.HasOne<UserAccount>().WithMany().HasForeignKey(t => t.UserId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<RefreshToken>(entity =>
+        {
+            entity.ToTable("refresh_tokens", t => t.HasCheckConstraint(
+                "ck_refresh_tokens_revoked_reason",
+                "revoked_reason IS NULL OR revoked_reason IN ('rotated', 'logout', 'reuse_detected', 'password_changed', 'superseded', 'admin')"));
+            entity.HasKey(t => t.Id);
+            entity.Property(t => t.DeviceId).HasMaxLength(64);
+            entity.Property(t => t.RevokedReason).HasMaxLength(32);
+            entity.Property(t => t.CreatedIp).HasColumnType("inet");
+            entity.Property(t => t.UserAgent).HasMaxLength(256);
+            entity.HasIndex(t => t.TokenHash).IsUnique();
+            entity.HasIndex(t => new { t.UserId, t.DeviceId });
+            entity.HasIndex(t => t.FamilyId);
+            entity.HasIndex(t => t.ExpiresAt);
+            entity.HasOne<UserAccount>().WithMany().HasForeignKey(t => t.UserId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne<RefreshToken>().WithMany().HasForeignKey(t => t.ReplacedById).OnDelete(DeleteBehavior.SetNull);
         });
     }
 }
