@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Astryx.Infrastructure.Http;
 using Astryx.Infrastructure.Persistence;
+using Astryx.Infrastructure.Security;
 using Astryx.Api.TestSupport;
 using Serilog;
 using Serilog.Formatting.Compact;
@@ -93,6 +94,7 @@ if (app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
 app.UseAstryxHttp();
 app.UseSerilogRequestLogging();
 app.UseAuthentication();
+app.UseUserScope();
 app.UseAuthorization();
 
 if (app.Environment.IsDevelopment())

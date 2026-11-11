@@ -3,6 +3,7 @@ using Astryx.Contracts.Audit;
 using Astryx.Contracts.Events;
 using Astryx.Infrastructure.Audit;
 using Astryx.Infrastructure.Outbox;
+using Astryx.Infrastructure.Security;
 using Astryx.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,6 +18,12 @@ public abstract class ModuleDbContext(DbContextOptions options) : DbContext(opti
     private readonly List<OutboxMessage> _pendingEvents = [];
     private readonly List<AuditEntry> _pendingAudit = [];
 
+    /// <summary>Captured when the context is created (one per request scope). EF parameterises it per instance.</summary>
+    private readonly Guid? _scopeUserId = UserScope.UserId;
+
+    /// <summary>The user this context's queries are restricted to, or null when unrestricted (workers, anonymous flows).</summary>
+    protected Guid? ScopeUserId => _scopeUserId;
+
     /// <summary>The Postgres schema this context owns.</summary>
     public abstract string Schema { get; }
 
@@ -24,7 +31,22 @@ public abstract class ModuleDbContext(DbContextOptions options) : DbContext(opti
     {
         modelBuilder.HasDefaultSchema(Schema);
         ConfigureModel(modelBuilder);
+        ApplyUserOwnershipFilters(modelBuilder);
     }
+
+    /// <summary>Every <see cref="IUserOwned"/> entity is filtered to <see cref="ScopeUserId"/> (SYSTEM_DESIGN.md §18.5).</summary>
+    private void ApplyUserOwnershipFilters(ModelBuilder modelBuilder)
+    {
+        var apply = typeof(ModuleDbContext).GetMethod(nameof(ApplyUserFilter), System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes().Where(t => typeof(IUserOwned).IsAssignableFrom(t.ClrType)).ToList())
+        {
+            apply.MakeGenericMethod(entityType.ClrType).Invoke(this, [modelBuilder]);
+        }
+    }
+
+    private void ApplyUserFilter<TEntity>(ModelBuilder modelBuilder)
+        where TEntity : class, IUserOwned =>
+        modelBuilder.Entity<TEntity>().HasQueryFilter(e => _scopeUserId == null || e.UserId == _scopeUserId);
 
     protected virtual void ConfigureModel(ModelBuilder modelBuilder)
     {

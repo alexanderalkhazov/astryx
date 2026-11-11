@@ -1,3 +1,5 @@
+using Astryx.Infrastructure.Security;
+
 namespace Astryx.Modules.Portfolio.Domain;
 
 public static class PortfolioMode
@@ -8,7 +10,7 @@ public static class PortfolioMode
 }
 
 /// <summary>Row in <c>portfolio.portfolios</c> (SYSTEM_DESIGN.md §10.4). Cash is the sum of its ledger, cached here.</summary>
-public sealed class Portfolio
+public sealed class Portfolio : IUserOwned
 {
     public Guid Id { get; set; }
 

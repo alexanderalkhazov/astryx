@@ -3301,6 +3301,15 @@ ASP.NET Core Identity `PasswordHasher` v3 (PBKDF2-HMAC-SHA512, iteration count โ
   4. Integration tests try every endpoint with another user's IDs (ยง21.6).
   5. Postgres row-level security is `ASSUMPTION` for Phase 7 (`SET app.user_id` per transaction).
 - Workers run as `system`, outside query filters, through explicit `IgnoreQueryFilters()` calls that are confined to worker code and covered by an architecture test.
+- Implementation (T-024):
+  - **Filtering.** Entities implementing `IUserOwned` (`Astryx.Infrastructure.Security`) get an EF global query filter `UserId == scope` from `ModuleDbContext`. Today these are users' tokens, refresh tokens, profiles, risk settings, notification preferences, watchlists and portfolios. Ledger rows inherit ownership through their portfolio.
+  - **The scope.** `UserScopeMiddleware`, placed right after authentication, sets the scope from `sub`. Contexts capture it when created. An unscoped context (no signed-in user: login, refresh, outbox handlers, jobs) is unrestricted and must address rows explicitly by user id.
+  - **Guards.**
+    - An architecture test fails when a Domain type with a `Guid UserId` is not `IUserOwned` and not on the justified exemption list.
+    - A route matrix test fails when an `/api` route is not authenticated and not on the anonymous allowlist (register, verify, resend, login, refresh, forgot, reset, system status).
+    - The same matrix fails when an authenticated route with a route parameter has no isolation fixture proving that a foreign id returns 404.
+    - Each guard was probed with a deliberate violation.
+  - **Still open.** Postgres row-level security remains a Phase 7 evaluation.
 
 ### 18.6 Secure mobile storage
 

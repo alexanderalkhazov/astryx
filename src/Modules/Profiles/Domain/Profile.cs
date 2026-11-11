@@ -1,7 +1,9 @@
+using Astryx.Infrastructure.Security;
+
 namespace Astryx.Modules.Profiles.Domain;
 
 /// <summary>Row in <c>identity.user_profiles</c>.</summary>
-public sealed class UserProfile
+public sealed class UserProfile : IUserOwned
 {
     public Guid UserId { get; set; }
 
@@ -30,7 +32,7 @@ public sealed class UserProfile
 }
 
 /// <summary>Row in <c>identity.risk_settings</c>; defaults are the design's limits (SYSTEM_DESIGN.md §14.3).</summary>
-public sealed class RiskSettings
+public sealed class RiskSettings : IUserOwned
 {
     public Guid UserId { get; set; }
 
@@ -58,7 +60,7 @@ public sealed class RiskSettings
 }
 
 /// <summary>Row in <c>identity.notification_preferences</c>; categories mirror the design's Settings.</summary>
-public sealed class NotificationPreferences
+public sealed class NotificationPreferences : IUserOwned
 {
     public Guid UserId { get; set; }
 

@@ -28,6 +28,7 @@ public static class PersistenceRegistration
         services.AddOutbox(configuration);
         services.AddJobQueue(configuration);
         services.AddIdempotency(configuration);
+        services.AddScoped<Astryx.Infrastructure.Security.ICurrentUser, Astryx.Infrastructure.Security.CurrentUser>();
         services.AddHealthChecks()
             .AddCheck<PostgresHealthCheck>("postgres", tags: ["ready"])
             .AddCheck<PendingMigrationsHealthCheck>("migrations", tags: ["ready"]);

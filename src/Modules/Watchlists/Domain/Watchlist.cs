@@ -1,7 +1,9 @@
+using Astryx.Infrastructure.Security;
+
 namespace Astryx.Modules.Watchlists.Domain;
 
 /// <summary>Row in <c>watchlist.watchlists</c>. Every user has exactly one default list (the design's star toggle).</summary>
-public sealed class Watchlist
+public sealed class Watchlist : IUserOwned
 {
     public const string DefaultName = "Watchlist";
 

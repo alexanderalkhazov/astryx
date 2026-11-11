@@ -45,6 +45,9 @@ public sealed class PortfolioDbContext(DbContextOptions<PortfolioDbContext> opti
             entity.HasIndex(t => t.IdempotencyRef).IsUnique();
             entity.HasIndex(t => new { t.PortfolioId, t.OccurredAt }).IsDescending(false, true);
             entity.HasOne<PortfolioEntity>().WithMany().HasForeignKey(t => t.PortfolioId).OnDelete(DeleteBehavior.Cascade);
+
+            // Ledger rows carry no user id; they inherit ownership from their portfolio (SYSTEM_DESIGN.md §18.5).
+            entity.HasQueryFilter(t => ScopeUserId == null || Portfolios.Any(p => p.Id == t.PortfolioId && p.UserId == ScopeUserId));
         });
     }
 }

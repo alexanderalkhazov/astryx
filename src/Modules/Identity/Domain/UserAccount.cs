@@ -1,3 +1,5 @@
+using Astryx.Infrastructure.Security;
+
 namespace Astryx.Modules.Identity.Domain;
 
 /// <summary>Row in <c>identity.users</c> (SYSTEM_DESIGN.md §10.4).</summary>
@@ -29,7 +31,7 @@ public sealed class UserAccount
 }
 
 /// <summary>Row in <c>identity.user_tokens</c>: a single-use, hashed email-verification or password-reset token.</summary>
-public sealed class UserToken
+public sealed class UserToken : IUserOwned
 {
     public Guid Id { get; set; }
 

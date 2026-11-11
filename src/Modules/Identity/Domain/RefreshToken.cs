@@ -1,3 +1,5 @@
+using Astryx.Infrastructure.Security;
+
 namespace Astryx.Modules.Identity.Domain;
 
 /// <summary>
@@ -5,7 +7,7 @@ namespace Astryx.Modules.Identity.Domain;
 /// bound to one device, and chained in a family: each refresh revokes the presented token (<c>rotated</c>) and issues
 /// its replacement in the same family.
 /// </summary>
-public sealed class RefreshToken
+public sealed class RefreshToken : IUserOwned
 {
     public Guid Id { get; set; }
 
