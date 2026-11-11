@@ -184,7 +184,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [x] **T-022** Password reset and change (API) — `b305824`
   - **Acceptance:** A8, A9 and A12. 30-minute single-use tokens. A reset revokes all sessions and sends a "password changed" email. Responses never reveal whether an email exists.
   - **Refs:** §18.4 · **Depends:** T-021 · **P1**
-- [ ] **T-023** Current user, profile and risk settings (API)
+- [x] **T-023** Current user, profile and risk settings (API) — `354fdf0`
   - **Acceptance:** A10, A11, S1, S2 and S4 with bounds validation (§14.3), ETag/If-Match, and the `RiskSettingsChanged` event. S5 with `mode:"live"` returns 403 `live_trading_disabled` and is audited.
   - **Refs:** §7.2, §11.3, §14.3 · **Depends:** T-021 · **P0**
 - [ ] **T-024** Authorization and data-isolation guardrails
