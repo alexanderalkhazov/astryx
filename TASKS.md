@@ -219,6 +219,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Story:** As a new user, I want to sign up, verify my email from the link and sign in, all within the app's visual language.
   - **Acceptance:** sign-in, sign-up, verify-email (deep link), forgot and reset password are built with RHF and Zod, with server 422 errors mapped to fields. `(app)` redirects to `(auth)` without a session. Deep links are stashed and replayed after sign-in. **Manual check:** a full register → Mailpit link → sign-in on the simulator.
   - **Refs:** §8.3, §8.10 · **Depends:** T-032, T-033 · **P0**
+  - **Manual check (2026-11-11):** a user was registered through the API, its Mailpit link was opened in Expo Go on the iPhone 17 simulator (screen: "Email verified"), and the API then accepted a login for that user. A signed-out deep link (`stock/NVDA`) landed on Sign in. The sign-in form itself was not typed through on the device, because no simulator UI automation is installed. Typing and submitting the form, and the stash-and-replay, are covered by `src/app/__tests__/auth.test.tsx` running on the real router.
 - [ ] **T-035** App shell to design fidelity
   - **Scope:** root providers, safe areas, iOS push and Android fade-through transitions, edge-swipe back, Android back closes sheets first, Home header (search, alerts, settings icons), PAPER chip component, the "Illustrative sample data" caption component, and Reduce Motion handling.
   - **Acceptance:** navigating every placeholder route works, and the tab bar matches the PNG design.

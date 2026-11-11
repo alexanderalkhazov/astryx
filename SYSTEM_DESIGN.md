@@ -995,6 +995,8 @@ Sheets are not routes. They are `@gorhom/bottom-sheet` modals mounted in the roo
 
 Universal links (`https://app.astryx…/…`) are `OPEN QUESTION Q-15` because no domain exists yet. If the app is not authenticated, the deep link is stashed and replayed after sign-in.
 
+**Implemented (T-034).** Startup restores the session behind the splash (`status: unknown` renders nothing). The `(app)` layout redirects to `/sign-in` when signed out. Unless the sign-out was explicit, it first stashes the current href, including query params, in memory (`state/pendingLink.ts`). The `(auth)` layout redirects a signed-in user to the stashed href or `/`. `verify-email` and `reset-password` are exempt so that email links work on a signed-in device. `(app)` forgets the stash once it is reached. In Expo Go the `astryx://` scheme is not registered: open `exp://127.0.0.1:8081/--/verify-email?…` instead.
+
 **Back behaviour** follows the design. iOS uses edge-swipe back. Android back first closes an open sheet or dialog, then pops the stack. A sheet cannot be dismissed while an order is sending.
 
 ### 8.4 Screen specifications
@@ -1290,6 +1292,8 @@ Stale times (`ASSUMPTION`): quotes 15 s, signals 60 s, portfolio 15 s, strategie
 ### 8.10 Forms & validation
 
 RHF + Zod for: sign-in/up, forgot/reset, risk limits, scanner settings, watchlist names, strategy params (later). Zod schemas mirror server bounds (§14.3) for instant feedback; server remains authoritative and its 422 `errors` map back onto fields via `setError`.
+
+**Implemented (T-034):** `lib/forms.ts` holds the shared field schemas (`emailField` and `newPasswordField`, which mirror the Identity validators), `applyServerErrors` (case-insensitive server→form field map; unmatched errors become the form banner) and `describeError` (network, 429, 5xx, otherwise the problem `detail`). `components/FormField.tsx` binds `Input` to RHF, and `setFocus` moves between fields.
 
 ### 8.11 Error handling (client)
 

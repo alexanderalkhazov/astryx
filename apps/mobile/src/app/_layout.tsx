@@ -17,6 +17,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { ToastHost } from '@/components/ToastHost';
 import { queryClient } from '@/lib/queryClient';
+import { restoreSession } from '@/lib/session';
+import { useSession } from '@/state/session';
 
 void SplashScreen.preventAutoHideAsync();
 
@@ -30,11 +32,18 @@ export default function RootLayout() {
     GeistMono_600SemiBold,
   });
 
+  const sessionKnown = useSession((s) => s.status !== 'unknown');
+
   useEffect(() => {
-    if (fontsLoaded || fontError) {
+    void restoreSession();
+  }, []);
+
+  // The splash covers font loading and session restore, so the first frame is already the right group.
+  useEffect(() => {
+    if ((fontsLoaded || fontError) && sessionKnown) {
       void SplashScreen.hideAsync();
     }
-  }, [fontsLoaded, fontError]);
+  }, [fontsLoaded, fontError, sessionKnown]);
 
   // A failed font load falls back to system fonts rather than blocking the app.
   if (!fontsLoaded && !fontError) {

@@ -4,7 +4,7 @@ module.exports = {
   setupFiles: ['<rootDir>/jest.setup.ts'],
   // pnpm nests packages under node_modules/.pnpm/<id>/node_modules/<name>; allow the RN ecosystem through Babel.
   transformIgnorePatterns: [
-    'node_modules/(?!(?:\\.pnpm/[^/]+/node_modules/)?((jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|decimal\\.js-light|react-native-svg))',
+    'node_modules/(?!(?:\\.pnpm/[^/]+/node_modules/)?((jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|decimal\\.js-light|react-native-svg|standard-navigation))',
   ],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',

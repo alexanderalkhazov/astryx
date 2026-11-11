@@ -2,6 +2,7 @@ import { isApiError } from '@astryx/api-client';
 
 import { auth, clearLocalSession, refreshSession } from '@/lib/api';
 import { secureStorage } from '@/lib/secureStorage';
+import { clearPendingLink } from '@/state/pendingLink';
 import { useSession } from '@/state/session';
 
 /** Signs in and keeps the refresh token in secure storage; the access token stays in memory. */
@@ -24,7 +25,8 @@ export async function signOut(): Promise<void> {
   } catch {
     // Offline or already revoked: local sign-out still happens.
   } finally {
-    await clearLocalSession();
+    await clearLocalSession(true);
+    clearPendingLink();
   }
 }
 

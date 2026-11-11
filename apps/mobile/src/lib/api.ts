@@ -19,8 +19,8 @@ async function refreshSession(): Promise<string> {
 }
 
 /** Clears everything a session left behind: memory, Keychain token and cached server data. */
-export async function clearLocalSession(): Promise<void> {
-  useSession.getState().signOut();
+export async function clearLocalSession(byUser = false): Promise<void> {
+  useSession.getState().signOut(byUser);
   queryClient.clear();
   await secureStorage.clearRefreshToken();
 }

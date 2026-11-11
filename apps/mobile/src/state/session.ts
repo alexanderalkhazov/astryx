@@ -10,9 +10,11 @@ interface SessionState {
   accessToken: string | null;
   accessTokenExpiresAt: string | null;
   user: CurrentUser | null;
+  /** True after an explicit sign-out, so the auth gate does not stash the screen the user left (T-034). */
+  signedOutByUser: boolean;
   signIn: (accessToken: string, expiresAt: string) => void;
   setUser: (user: CurrentUser) => void;
-  signOut: () => void;
+  signOut: (byUser?: boolean) => void;
 }
 
 export const useSession = create<SessionState>((set) => ({
@@ -20,7 +22,8 @@ export const useSession = create<SessionState>((set) => ({
   accessToken: null,
   accessTokenExpiresAt: null,
   user: null,
-  signIn: (accessToken, expiresAt) => set({ status: 'signedIn', accessToken, accessTokenExpiresAt: expiresAt }),
+  signedOutByUser: false,
+  signIn: (accessToken, expiresAt) => set({ status: 'signedIn', accessToken, accessTokenExpiresAt: expiresAt, signedOutByUser: false }),
   setUser: (user) => set({ user }),
-  signOut: () => set({ status: 'signedOut', accessToken: null, accessTokenExpiresAt: null, user: null }),
+  signOut: (byUser = false) => set({ status: 'signedOut', accessToken: null, accessTokenExpiresAt: null, user: null, signedOutByUser: byUser }),
 }));
