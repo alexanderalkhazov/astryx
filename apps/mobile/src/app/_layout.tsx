@@ -1,14 +1,44 @@
+// Per-weight imports: the package root would bundle all 36 faces.
+import { Geist_400Regular } from '@expo-google-fonts/geist/400Regular';
+import { Geist_500Medium } from '@expo-google-fonts/geist/500Medium';
+import { Geist_600SemiBold } from '@expo-google-fonts/geist/600SemiBold';
+import { GeistMono_500Medium } from '@expo-google-fonts/geist-mono/500Medium';
+import { GeistMono_600SemiBold } from '@expo-google-fonts/geist-mono/600SemiBold';
 import { color } from '@astryx/design-tokens';
 import { QueryClientProvider } from '@tanstack/react-query';
+import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { queryClient } from '@/lib/queryClient';
 
-// Root: providers, auth gate (Phase 1), sheet portal (Phase 1), toast host, SignalR lifecycle (SYSTEM_DESIGN.md §8.3).
+void SplashScreen.preventAutoHideAsync();
+
+// Root: providers, auth gate (T-034), sheet portal (T-032), toast host, SignalR lifecycle (SYSTEM_DESIGN.md §8.3).
 export default function RootLayout() {
+  const [fontsLoaded, fontError] = useFonts({
+    Geist_400Regular,
+    Geist_500Medium,
+    Geist_600SemiBold,
+    GeistMono_500Medium,
+    GeistMono_600SemiBold,
+  });
+
+  useEffect(() => {
+    if (fontsLoaded || fontError) {
+      void SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded, fontError]);
+
+  // A failed font load falls back to system fonts rather than blocking the app.
+  if (!fontsLoaded && !fontError) {
+    return null;
+  }
+
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: color.bg }}>
       <SafeAreaProvider>

@@ -190,6 +190,7 @@ Recommended first milestone: **Phase 1 + a walking skeleton of Phase 5.** That m
 | Haptics / biometrics | `expo-haptics`, `expo-local-authentication` | `DECIDED` (design) | |
 | Secure storage | `expo-secure-store` (Keychain / Keystore) | `DECIDED` | Refresh token only |
 | Decimal display math | `decimal.js-light` | `DECIDED` | Only for **non-authoritative previews and formatting** |
+| Formatting | `apps/mobile/src/lib/format.ts` | `DECIDED` (T-030) | Decimal strings only (half-even, real minus U+2212, grouped thousands). `formatMoney/Pnl/Price/Pct/Quantity/Ratio`, `splitMoney` for dimmed cents. A static test fails if `format.ts` uses `Number()`/`parseFloat` on money. `Text` primitives and `Pnl` (always signed, coloured, spoken label) |
 | Icons | `lucide-react-native`, stroke 1.7 | `DECIDED` (design) | |
 | Fonts | Geist, Geist Mono via `expo-font` | `DECIDED` (design) | Tabular figures |
 | Real-time | `@microsoft/signalr` client | `DECIDED` | §9.6 |
@@ -1169,7 +1170,12 @@ export const color = {
   ripple: 'rgba(255,255,255,0.08)', // Android
 } as const;
 
-export const font = { sans: 'Geist', mono: 'GeistMono' } as const;
+// v0.3 (T-030): one family per weight. Custom fonts on Android ignore fontWeight, so styles name exact faces
+// (loaded per weight from @expo-google-fonts/geist and /geist-mono; the package root would bundle all 36 faces).
+export const font = {
+  sans: { regular: 'Geist_400Regular', medium: 'Geist_500Medium', semibold: 'Geist_600SemiBold' },
+  mono: { medium: 'GeistMono_500Medium', semibold: 'GeistMono_600SemiBold' },
+} as const;
 
 export const type = {
   display:  { fontFamily: font.sans, fontSize: 40, fontWeight: '600', letterSpacing: -1.4 },  // −3.5%
@@ -1182,7 +1188,7 @@ export const type = {
   dataSm:   { fontFamily: font.mono, fontSize: 13, fontWeight: '500' },
   caption:  { fontFamily: font.sans, fontSize: 12, fontWeight: '400' },   // 11–12
   overline: { fontFamily: font.mono, fontSize: 11, fontWeight: '600', letterSpacing: 0.88, textTransform: 'uppercase' }, // +8%
-} as const; // all numeric text: fontVariant: ['tabular-nums']
+} as const; // implemented with per-weight families above; numeric styles carry fontVariant: ['tabular-nums']
 
 export const space  = { 1: 4, 2: 8, 3: 12, 4: 16, 5: 22, 6: 32 } as const;
 export const radius = { badge: 4, chip: 8, card: 12, button: 12, dialog: 18, sheet: 20 } as const;

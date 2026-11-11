@@ -13,19 +13,29 @@ export const color = {
   ripple: 'rgba(255,255,255,0.08)',
 } as const;
 
-export const font = { sans: 'Geist', mono: 'GeistMono' } as const;
+/**
+ * One font family per weight: custom fonts on Android ignore `fontWeight`, so each style names its exact face.
+ * The names match the faces loaded from @expo-google-fonts/geist and /geist-mono.
+ */
+export const font = {
+  sans: { regular: 'Geist_400Regular', medium: 'Geist_500Medium', semibold: 'Geist_600SemiBold' },
+  mono: { medium: 'GeistMono_500Medium', semibold: 'GeistMono_600SemiBold' },
+} as const;
+
+/** Prices, P&L, quantities and tickers line up in columns (design: tabular figures throughout). */
+const tabular = { fontVariant: ['tabular-nums'] } as const;
 
 export const type = {
-  display:  { fontFamily: font.sans, fontSize: 40, fontWeight: '600', letterSpacing: -1.4 },
-  priceXl:  { fontFamily: font.mono, fontSize: 32, fontWeight: '600' },
-  title:    { fontFamily: font.sans, fontSize: 22, fontWeight: '600', letterSpacing: -0.44 },
-  headline: { fontFamily: font.sans, fontSize: 19, fontWeight: '600' },
-  section:  { fontFamily: font.sans, fontSize: 15, fontWeight: '600' },
-  body:     { fontFamily: font.sans, fontSize: 14, lineHeight: 22, fontWeight: '400' },
-  data:     { fontFamily: font.mono, fontSize: 14, fontWeight: '500' },
-  dataSm:   { fontFamily: font.mono, fontSize: 13, fontWeight: '500' },
-  caption:  { fontFamily: font.sans, fontSize: 12, fontWeight: '400' },
-  overline: { fontFamily: font.mono, fontSize: 11, fontWeight: '600', letterSpacing: 0.88, textTransform: 'uppercase' },
+  display:  { fontFamily: font.sans.semibold, fontSize: 40, letterSpacing: -1.4, ...tabular },   // 40 / 600 / −3.5%
+  priceXl:  { fontFamily: font.mono.semibold, fontSize: 32, ...tabular },                        // Mono 32 / 600
+  title:    { fontFamily: font.sans.semibold, fontSize: 22, letterSpacing: -0.44 },              // 22 / 600 / −2%
+  headline: { fontFamily: font.sans.semibold, fontSize: 19 },
+  section:  { fontFamily: font.sans.semibold, fontSize: 15 },
+  body:     { fontFamily: font.sans.regular, fontSize: 14, lineHeight: 22 },
+  data:     { fontFamily: font.mono.medium, fontSize: 14, ...tabular },                          // Mono 13–14 / 500
+  dataSm:   { fontFamily: font.mono.medium, fontSize: 13, ...tabular },
+  caption:  { fontFamily: font.sans.regular, fontSize: 12 },
+  overline: { fontFamily: font.mono.semibold, fontSize: 11, letterSpacing: 0.88, textTransform: 'uppercase' }, // +8%
 } as const;
 
 export const space = { 1: 4, 2: 8, 3: 12, 4: 16, 5: 22, 6: 32 } as const;

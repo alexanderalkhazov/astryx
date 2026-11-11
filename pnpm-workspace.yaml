@@ -1,3 +1,8 @@
 packages:
   - apps/mobile
   - packages/*
+
+# Dependency build scripts are blocked unless reviewed here (pnpm allowBuilds).
+# @parcel/watcher ships prebuilt binaries, so its install script is deliberately not run.
+allowBuilds:
+  "@parcel/watcher": false
