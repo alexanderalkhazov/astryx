@@ -11,6 +11,7 @@ using Astryx.Modules.Notifications;
 using Astryx.Modules.Paper;
 using Astryx.Modules.Portfolio;
 using Astryx.Modules.Profiles;
+using Astryx.Modules.Profiles.Api;
 using Astryx.Modules.Quant;
 using Astryx.Modules.Strategies;
 using Astryx.Modules.Trading;
@@ -124,6 +125,7 @@ app.MapGet("/api/v1/system/status", async (HealthCheckService health, IConfigura
 });
 
 app.MapIdentityEndpoints();
+app.MapProfileEndpoints();
 
 if (app.Environment.IsEnvironment("Testing"))
 {

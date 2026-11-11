@@ -2102,6 +2102,7 @@ Error envelope (every problem response also carries `correlationId`; unknown rou
 | 404 | `not_found`, `instrument_not_found` | Resource is missing **or belongs to another user** (never 403, to avoid confirming that IDs exist) |
 | 409 | `conflict`, `duplicate`, `request_in_progress`, `proposal_not_pending`, `assessment_stale`, `quote_stale`, `position_not_open`, `concurrency_conflict` | State conflict |
 | 412 | `precondition_failed` | ETag mismatch |
+| 428 | `precondition_required` | `If-Match` missing on a concurrency-controlled update |
 | 422 | `validation_failed`, `risk_check_failed`, `idempotency_key_reused`, `insufficient_history`, `ai_levels_rejected` | Semantic validation failure |
 | 423 | `account_locked` | Lockout |
 | 429 | `rate_limited`, `ai_quota_exceeded` | Too many requests |
@@ -2153,7 +2154,7 @@ Error envelope (every problem response also carries `correlationId`; unknown rou
 | # | Method & route | Request | Response | Validation / errors |
 |---|---|---|---|---|
 | S1 | `GET /me/settings/risk` | — | `RiskSettingsDto` + `bounds` | |
-| S2 | `PUT /me/settings/risk` (If-Match) | `RiskSettingsDto` | `200 RiskSettingsDto` | Bounds in §14.3 → 422. Emits `RiskSettingsChanged`, so pending assessments become stale |
+| S2 | `PUT /me/settings/risk` (**If-Match required**, `"v{version}"` from the GET's ETag) | `RiskSettingsDto` without version/bounds | `200 RiskSettingsDto` + new ETag | Bounds in §14.3 (one source: `RiskBounds`, also the DB CHECKs); ratios ≤ 6 decimal places; `sectorWarningPct < maxSectorExposurePct` → 422. Missing If-Match → 428 `precondition_required`; stale or unparseable → 412 `precondition_failed`. Bumps `version`, emits `RiskSettingsChanged`, audits before/after |
 | S3 | `GET/PUT /me/settings/scanner` | `{universe, minPrice: "10.00", minAvgDollarVolume: "20000000", minScore?, signalTypes[]}` | | universe ∈ the configured list; minPrice 1–1000; minAvgDollarVolume ≥ 0 |
 | S4 | `GET/PUT /me/settings/notifications` | `{fills, signals, stopProximity, strategyGuard, system, dailySummary, pushEnabled}` | | |
 | S5 | `PUT /me/settings/trading-mode` | `{mode:"paper"|"live", confirmation?:"LIVE"}` | `200` for paper | `mode:"live"` → **403 `live_trading_disabled`** in the MVP, and the attempt is audited |

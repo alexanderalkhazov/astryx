@@ -16,6 +16,7 @@ public static class ErrorHttpMapping
         ["assessment_stale"] = 409, ["quote_stale"] = 409, ["position_not_open"] = 409, ["concurrency_conflict"] = 409,
         ["market_closed"] = 409,
         ["precondition_failed"] = 412,
+        ["precondition_required"] = 428,
         ["validation_failed"] = 422, ["risk_check_failed"] = 422, ["idempotency_key_reused"] = 422,
         ["insufficient_history"] = 422, ["current_password_incorrect"] = 422, ["ai_levels_rejected"] = 422, ["invalid_or_expired_token"] = 422,
         ["account_locked"] = 423,
@@ -27,7 +28,7 @@ public static class ErrorHttpMapping
     {
         [400] = "bad_request", [401] = "unauthorized", [403] = "forbidden", [404] = "not_found",
         [405] = "method_not_allowed", [409] = "conflict", [412] = "precondition_failed", [413] = "payload_too_large",
-        [415] = "unsupported_media_type", [422] = "validation_failed", [423] = "account_locked", [429] = "rate_limited",
+        [415] = "unsupported_media_type", [428] = "precondition_required", [422] = "validation_failed", [423] = "account_locked", [429] = "rate_limited",
         [500] = "internal_error", [503] = "service_unavailable",
     };
 

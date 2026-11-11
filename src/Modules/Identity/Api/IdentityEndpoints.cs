@@ -27,8 +27,6 @@ public sealed record LogoutRequest(string RefreshToken);
 
 public sealed record TokenResponse(string AccessToken, DateTimeOffset AccessTokenExpiresAt, string RefreshToken, DateTimeOffset RefreshTokenExpiresAt, string TokenType = "Bearer");
 
-public sealed record CurrentUserResponse(Guid Id, string Email, bool EmailVerified);
-
 public sealed record ForgotPasswordRequest(string Email);
 
 public sealed record ResetPasswordRequest(Guid UserId, string Token, string NewPassword);
@@ -207,17 +205,6 @@ public static class IdentityEndpoints
             .RequireAuthorization(AuthenticationSetup.AuthenticatedPolicy)
             .WithValidation<ChangePasswordRequest>()
             .Produces(StatusCodes.Status204NoContent);
-
-        // A10 minimal form; T-023 adds profile, trading mode and feature flags.
-        app.MapGet("/api/v1/me", async (ClaimsPrincipal user, IdentityDbContext db, CancellationToken ct) =>
-            {
-                var id = user.UserId();
-                var account = await db.Users.AsNoTracking().Where(u => u.Id == id).Select(u => new CurrentUserResponse(u.Id, u.Email, u.EmailConfirmed)).SingleAsync(ct);
-                return Results.Ok(account);
-            })
-            .WithName("GetCurrentUser")
-            .WithTags("Me")
-            .RequireAuthorization(AuthenticationSetup.AuthenticatedPolicy);
 
         return app;
     }

@@ -1,8 +1,10 @@
 using Astryx.Contracts.Events.Identity;
 using Astryx.Infrastructure.Outbox;
 using Astryx.Infrastructure.Persistence;
+using Astryx.Modules.Profiles.Api;
 using Astryx.Modules.Profiles.Application;
 using Astryx.Modules.Profiles.Infrastructure.Persistence;
+using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,6 +16,9 @@ public static class ProfilesModule
     public static IServiceCollection AddProfilesModule(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddModuleDbContext<ProfilesDbContext>(ProfilesDbContext.SchemaName, historyKey: "profiles");
+        services.AddScoped<ProfileProvisioner>();
+        services.AddScoped<ProfileService>();
+        services.AddValidatorsFromAssemblyContaining<UpdateRiskSettingsRequestValidator>(includeInternalTypes: true);
         services.AddIntegrationEventHandler<UserRegistered, ProvisionProfileHandler>();
         return services;
     }

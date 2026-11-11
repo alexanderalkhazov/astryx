@@ -39,6 +39,7 @@ public static class IdentityModule
         services.AddRecurringJob("identity-token-cleanup", TimeSpan.FromDays(1), _ => new IdentityTokenCleanupJob());
         services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>(includeInternalTypes: true);
         services.AddScoped<TokenEmailIssuer>();
+        services.AddScoped<Astryx.Contracts.Identity.IUserAccountQuery, UserAccountQuery>();
         services.AddScoped<PasswordService>();
         services.AddIntegrationEventHandler<EmailVerificationRequested, EmailVerificationHandler>();
         services.AddIntegrationEventHandler<PasswordResetRequested, PasswordResetEmailHandler>();
