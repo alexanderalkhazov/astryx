@@ -210,7 +210,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Scope:** `StatusBanner` (pending, executed, error, rejected as a discriminated union: executed requires an `orderId`, pending forbids it), `CheckRow`, `Metric` (Hero with dimmed cents, Tile, Grid, ScoreBreakdownBar), `Sheet` (via `@gorhom/bottom-sheet`, portal at root), `Dialog`, `Toast` host (3.8 s, max 3 queued), `useSheet` store.
   - **Acceptance:** type tests prove a `StatusBanner` with tone executed and no `orderId` does not compile. The sheet respects the `dismissible:false` lock.
   - **Refs:** §8.4.13, §8.6 · **Depends:** T-031 · **P0**
-- [ ] **T-033** API client runtime and session management
+- [x] **T-033** API client runtime and session management — `9ceaaa0`
   - **Scope:** `apiFetch` with base URL, Authorization, correlation ID and problem-details parsing; single-flight refresh on 401; session store (Zustand, access token in memory); refresh token and device ID in SecureStore; logout clears the query cache.
   - **Acceptance:** tests show concurrent 401s trigger exactly one refresh, and a refresh failure routes to sign-in with a "Session expired" toast.
   - **Refs:** §8.7–8.9 · **Depends:** T-010, T-021 · **P0**
