@@ -201,7 +201,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Scope:** load Geist and Geist Mono via `expo-font`; tabular-number text components (`Text.Data`, `Text.Caption`, …); formatting utilities for decimal strings (`formatMoney`, `formatPct`, `formatPrice`, signed P&L with a real minus sign); `decimal.js-light` preview helpers.
   - **Acceptance:** unit tests show `formatMoney("-630.8")` returns `"−$630.80"`, P&L always carries a sign, and no `Number()` is applied to money strings in formatters.
   - **Refs:** §8.5, §20.1 · **Depends:** T-000 · **P0**
-- [ ] **T-031** Component library, part 1 (layout and controls)
+- [x] **T-031** Component library, part 1 (layout and controls) — `f72044e`
   - **Scope:** `Button` (primary, secondary, destructive, link, icon), `Badge`, `Chip`/`FilterChip`, `Segmented`, `Tabs`, `Stepper`, `Switch`, `Input`, `Select`, `StackHeader`, custom `TabBar` (5 tabs, colour-only active state, count badge), `Skeleton`, `Spinner`, `EmptyState`.
   - **Acceptance:** a dev-only `/dev/gallery` route renders every variant and visually matches `docs/design/png/Component library.png`. RNTL tests cover disabled and pressed states.
   - **Refs:** §8.6 · **Depends:** T-030 · **P0**
