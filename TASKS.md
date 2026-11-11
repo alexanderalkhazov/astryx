@@ -177,7 +177,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Story:** As a new user, I want to create an account and verify my email so that my workstation is private to me.
   - **Acceptance:** endpoints A1–A3. Passwords are hashed with the configured iterations. A single-use, hashed verification token expires in 24 h and is emailed via Mailpit as an `astryx://verify-email` link. Registration creates the profile, default risk settings, default watchlist and a paper portfolio ($100,000.00 `initial_deposit` ledger entry) via outbox events. No user enumeration.
   - **Refs:** §7.1, §11.3, §18.1–18.2 · **Depends:** T-013, T-014, T-017 · **P0**
-- [ ] **T-021** Login, JWT and refresh-token rotation (API)
+- [x] **T-021** Login, JWT and refresh-token rotation (API) — `1c38fd2`
   - **Story:** As a user, I want to stay signed in securely on my phone so that I don't re-enter my password every time.
   - **Acceptance:** A4–A7. ES256 JWT for 15 min with a `kid`. An opaque 30-day refresh token, stored hashed and family-bound per device. Reuse detection revokes the family and writes an audit row. Lockout after 5 failures. Security-stamp check. Every test in §21.6 passes.
   - **Refs:** §18.3, §6.B · **Depends:** T-020 · **P0**
