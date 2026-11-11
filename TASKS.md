@@ -215,7 +215,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Acceptance:** tests show concurrent 401s trigger exactly one refresh, and a refresh failure routes to sign-in with a "Session expired" toast.
   - **Refs:** §8.7–8.9 · **Depends:** T-010, T-021 · **P0**
   - **Note:** built ahead of T-010 (blocked on T-001) using hand-written auth schemas. `createApiClient` in `packages/api-client` is injected with token, refresh and expiry hooks by `apps/mobile/src/lib/api.ts`.
-- [ ] **T-034** Auth screens and auth gate (PROPOSED screens)
+- [x] **T-034** Auth screens and auth gate (PROPOSED screens) — `2ba3de2`
   - **Story:** As a new user, I want to sign up, verify my email from the link and sign in, all within the app's visual language.
   - **Acceptance:** sign-in, sign-up, verify-email (deep link), forgot and reset password are built with RHF and Zod, with server 422 errors mapped to fields. `(app)` redirects to `(auth)` without a session. Deep links are stashed and replayed after sign-in. **Manual check:** a full register → Mailpit link → sign-in on the simulator.
   - **Refs:** §8.3, §8.10 · **Depends:** T-032, T-033 · **P0**
