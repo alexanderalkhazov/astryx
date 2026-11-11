@@ -1244,6 +1244,12 @@ Colour semantics (enforced by lint rule / component API, not ad hoc):
 | `Sheet`, `Dialog` | Sheet snaps to content, max 88%; `dismissible` flag; Dialog destructive right, never default focus | |
 | `TabBar`, `StackHeader` | 5 tabs; centred title | |
 
+Implementation (T-031):
+- Built in `apps/mobile/src/components`: `Button`/`IconButton`, `Badge`/`SignalBadge`/`PaperBadge`, `Chip`/`RemovableChip`, `Segmented`, `Tabs`, `Stepper` (decimal arithmetic, screen-reader increment/decrement), `Switch`, `Input`/`Select`, `Skeleton`/`SkeletonRow`/`Spinner`/`EmptyState`, `TabBar`/`StackHeader`. Icons come from `lucide-react-native` at stroke 1.7.
+- Expo Router 58 vendors React Navigation, so a custom tab bar receives `{state, descriptors, emitter, navigateToTab, insets}` (no `navigation` prop).
+- Developer gallery: `/dev/gallery` (`?only=buttons|badges|inputs|feedback`); it redirects when `__DEV__` is false.
+- Jest (RNTL 14): `render` and `fireEvent` are async and must be awaited, because un-awaited presses overlap `act()` and corrupt later tests. Reanimated is stubbed in `jest.setup.ts`, and Lucide maps to its CommonJS build in `jest.config.js`.
+
 > Type-level safety rule: research components (`ProposalCard`, `StatusBanner tone="pending"`) cannot receive `orderId`/`fillPrice` props. Enforced with discriminated unions + an ESLint `no-restricted-syntax` rule for `color.gain` outside executed/P&L components.
 
 ### 8.7 State management

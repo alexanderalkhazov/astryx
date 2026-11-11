@@ -1,19 +1,11 @@
-import { color, type } from '@astryx/design-tokens';
 import { Tabs } from 'expo-router';
 
-// Five tabs; the active tab is shown by colour only (design). Custom <TabBar/> replaces this in Phase 1.
+import { TabBar } from '@/components/Navigation';
+
+// Five tabs (design 03 · Navigation); the custom bar shows the active tab by colour only.
 export default function TabsLayout() {
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarStyle: { backgroundColor: color.bar, borderTopColor: color.line },
-        tabBarActiveTintColor: color.text,
-        tabBarInactiveTintColor: color.text3,
-        tabBarLabelStyle: type.caption,
-        tabBarIconStyle: { display: 'none' },
-      }}
-    >
+    <Tabs screenOptions={{ headerShown: false }} tabBar={(props) => <TabBar {...props} />}>
       <Tabs.Screen name="index" options={{ title: 'Home' }} />
       <Tabs.Screen name="discover" options={{ title: 'Discover' }} />
       <Tabs.Screen name="portfolio" options={{ title: 'Portfolio' }} />

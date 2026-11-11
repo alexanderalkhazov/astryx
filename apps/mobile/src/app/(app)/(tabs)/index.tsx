@@ -47,6 +47,7 @@ export default function HomeScreen() {
       <Link href="/stock/NVDA"><Text tone="signal">Stock · NVDA</Text></Link>
       <Link href="/settings"><Text tone="signal">Settings</Text></Link>
       <Link href="/sign-in"><Text tone="signal">Sign in (proposed)</Text></Link>
+      {__DEV__ ? <Link href="/dev/gallery"><Text tone="pending">Component gallery (dev)</Text></Link> : null}
     </PlaceholderScreen>
   );
 }
