@@ -205,7 +205,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Scope:** `Button` (primary, secondary, destructive, link, icon), `Badge`, `Chip`/`FilterChip`, `Segmented`, `Tabs`, `Stepper`, `Switch`, `Input`, `Select`, `StackHeader`, custom `TabBar` (5 tabs, colour-only active state, count badge), `Skeleton`, `Spinner`, `EmptyState`.
   - **Acceptance:** a dev-only `/dev/gallery` route renders every variant and visually matches `docs/design/png/Component library.png`. RNTL tests cover disabled and pressed states.
   - **Refs:** §8.6 · **Depends:** T-030 · **P0**
-- [ ] **T-032** Component library, part 2 (overlays and status)
+- [x] **T-032** Component library, part 2 (overlays and status) — `1800650`
   - **Scope:** `StatusBanner` (pending, executed, error, rejected as a discriminated union: executed requires an `orderId`, pending forbids it), `CheckRow`, `Metric` (Hero with dimmed cents, Tile, Grid, ScoreBreakdownBar), `Sheet` (via `@gorhom/bottom-sheet`, portal at root), `Dialog`, `Toast` host (3.8 s, max 3 queued), `useSheet` store.
   - **Acceptance:** type tests prove a `StatusBanner` with tone executed and no `orderId` does not compile. The sheet respects the `dismissible:false` lock.
   - **Refs:** §8.4.13, §8.6 · **Depends:** T-031 · **P0**
