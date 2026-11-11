@@ -8,6 +8,8 @@ public sealed class AccountOptions
 
     public TimeSpan EmailVerificationLifetime { get; set; } = TimeSpan.FromHours(24);
 
+    public TimeSpan PasswordResetLifetime { get; set; } = TimeSpan.FromMinutes(30);
+
     /// <summary>Base of the verification link opened by the app (custom scheme until a domain exists, Q-15).</summary>
     public string AppLinkBase { get; set; } = "astryx://";
 }

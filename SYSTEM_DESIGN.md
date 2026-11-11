@@ -2119,10 +2119,10 @@ Error envelope (every problem response also carries `correlationId`; unknown rou
 | A6 | `POST /auth/logout` | Bearer | `{refreshToken}` | `204` | | 401 |
 | A7 | `POST /auth/logout-all` | Bearer | — | `204`. Revokes all families and rotates the security stamp | | 401 |
 | A8 | `POST /auth/forgot-password` | none | `{email}` | `202` (always, no enumeration) | | 429 |
-| A9 | `POST /auth/reset-password` | none | `{userId, token, newPassword}` | `204`. All refresh families are revoked | password policy | 422 `invalid_or_expired_token`, 422 `validation_failed` |
+| A9 | `POST /auth/reset-password` | none | `{userId, token, newPassword}` | `204`. All refresh families revoked, security stamp rotated (live access tokens rejected), lockout cleared, email marked verified (the link proved ownership), "password changed" email sent | password policy; a rejected attempt does not consume the token | 422 `invalid_or_expired_token` (wrong, expired, used, superseded, or a verification token), 422 `validation_failed` |
 | A10 | `GET /me` | Bearer | — | `200 CurrentUserResponse` | | 401 |
 | A11 | `PATCH /me` | Bearer | `{displayName?, timezone?, locale?, biometricLock?}` | `200 CurrentUserResponse` | timezone must be a valid IANA zone | 422 |
-| A12 | `POST /me/change-password` | Bearer | `{currentPassword, newPassword}` | `204` | | 401, 422 |
+| A12 | `POST /me/change-password` | Bearer | `{currentPassword, newPassword}` | `204`. Other sessions revoked; the current session's refresh family survives and its next refresh carries the new stamp; "password changed" email | new password 12–128 and different from the current one | 422 `current_password_incorrect` (v0.3: not 401, which clients read as an expired session), 422 `validation_failed` |
 | A13 | `DELETE /me` | Bearer + `{password}` | | `202`. Erasure scheduled | | 401 |
 
 ```json
@@ -3285,7 +3285,7 @@ ASP.NET Core Identity `PasswordHasher` v3 (PBKDF2-HMAC-SHA512, iteration count �
 
 ### 18.4 Password recovery
 
-`POST /auth/forgot-password` always returns 202. The token expires in 30 minutes and is single use. Reset revokes all sessions and emails a "password changed" notice.
+`POST /auth/forgot-password` always returns 202. The token expires in 30 minutes and is single use, and a newer request invalidates older links. Reset revokes all sessions and emails a "password changed" notice. Implementation (T-022): reset and verification tokens share `TokenEmailIssuer` (the hash is committed only after SMTP accepts, idempotent per outbox message), and token purposes are not interchangeable.
 
 ### 18.5 Authorization and data isolation
 

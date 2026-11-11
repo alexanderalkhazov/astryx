@@ -29,6 +29,37 @@ public sealed record TokenResponse(string AccessToken, DateTimeOffset AccessToke
 
 public sealed record CurrentUserResponse(Guid Id, string Email, bool EmailVerified);
 
+public sealed record ForgotPasswordRequest(string Email);
+
+public sealed record ResetPasswordRequest(Guid UserId, string Token, string NewPassword);
+
+public sealed record ChangePasswordRequest(string CurrentPassword, string NewPassword);
+
+public sealed class ForgotPasswordRequestValidator : AbstractValidator<ForgotPasswordRequest>
+{
+    public ForgotPasswordRequestValidator() =>
+        RuleFor(r => r.Email).NotEmpty().MaximumLength(254).Must(RegisterRequestValidator.BeAnEmail).WithMessage("Enter a valid email address.");
+}
+
+public sealed class ResetPasswordRequestValidator : AbstractValidator<ResetPasswordRequest>
+{
+    public ResetPasswordRequestValidator()
+    {
+        RuleFor(r => r.UserId).NotEmpty();
+        RuleFor(r => r.Token).NotEmpty().Matches("^[A-Za-z0-9_-]{43}$").WithMessage("Malformed token.");
+        RuleFor(r => r.NewPassword).NotEmpty().Length(12, 128).WithMessage("Password must be 12–128 characters.");
+    }
+}
+
+public sealed class ChangePasswordRequestValidator : AbstractValidator<ChangePasswordRequest>
+{
+    public ChangePasswordRequestValidator()
+    {
+        RuleFor(r => r.CurrentPassword).NotEmpty().MaximumLength(128);
+        RuleFor(r => r.NewPassword).NotEmpty().Length(12, 128).WithMessage("Password must be 12–128 characters.");
+    }
+}
+
 public sealed class LoginRequestValidator : AbstractValidator<LoginRequest>
 {
     public LoginRequestValidator()
@@ -146,6 +177,36 @@ public static class IdentityEndpoints
             })
             .WithName("LogoutAll")
             .RequireAuthorization(AuthenticationSetup.AuthenticatedPolicy);
+
+        auth.MapPost("/forgot-password", async (ForgotPasswordRequest request, PasswordService passwords, CancellationToken ct) =>
+            {
+                await passwords.RequestResetAsync(request.Email, ct);
+                return Results.Accepted();
+            })
+            .WithName("ForgotPassword")
+            .WithValidation<ForgotPasswordRequest>()
+            .Produces(StatusCodes.Status202Accepted);
+
+        auth.MapPost("/reset-password", async (ResetPasswordRequest request, PasswordService passwords, CancellationToken ct) =>
+            {
+                var result = await passwords.ResetAsync(request.UserId, request.Token, request.NewPassword, ct);
+                return result.IsSuccess ? Results.NoContent() : result.Error.ToProblem();
+            })
+            .WithName("ResetPassword")
+            .WithValidation<ResetPasswordRequest>()
+            .Produces(StatusCodes.Status204NoContent);
+
+        app.MapPost("/api/v1/me/change-password", async (ChangePasswordRequest request, ClaimsPrincipal user, PasswordService passwords, CancellationToken ct) =>
+            {
+                var familyId = Guid.Parse(user.FindFirstValue(AstryxClaims.Session)!);
+                var result = await passwords.ChangeAsync(user.UserId(), familyId, request.CurrentPassword, request.NewPassword, ct);
+                return result.IsSuccess ? Results.NoContent() : result.Error.ToProblem();
+            })
+            .WithName("ChangePassword")
+            .WithTags("Me")
+            .RequireAuthorization(AuthenticationSetup.AuthenticatedPolicy)
+            .WithValidation<ChangePasswordRequest>()
+            .Produces(StatusCodes.Status204NoContent);
 
         // A10 minimal form; T-023 adds profile, trading mode and feature flags.
         app.MapGet("/api/v1/me", async (ClaimsPrincipal user, IdentityDbContext db, CancellationToken ct) =>

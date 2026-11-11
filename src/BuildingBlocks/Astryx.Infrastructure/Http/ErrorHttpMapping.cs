@@ -17,7 +17,7 @@ public static class ErrorHttpMapping
         ["market_closed"] = 409,
         ["precondition_failed"] = 412,
         ["validation_failed"] = 422, ["risk_check_failed"] = 422, ["idempotency_key_reused"] = 422,
-        ["insufficient_history"] = 422, ["ai_levels_rejected"] = 422, ["invalid_or_expired_token"] = 422,
+        ["insufficient_history"] = 422, ["current_password_incorrect"] = 422, ["ai_levels_rejected"] = 422, ["invalid_or_expired_token"] = 422,
         ["account_locked"] = 423,
         ["rate_limited"] = 429, ["ai_quota_exceeded"] = 429,
         ["market_data_unavailable"] = 503, ["scanner_unavailable"] = 503, ["ai_provider_unavailable"] = 503,

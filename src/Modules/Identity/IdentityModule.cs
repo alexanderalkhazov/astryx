@@ -38,7 +38,11 @@ public static class IdentityModule
         services.AddJobHandler<IdentityTokenCleanupJob, IdentityTokenCleanupHandler>();
         services.AddRecurringJob("identity-token-cleanup", TimeSpan.FromDays(1), _ => new IdentityTokenCleanupJob());
         services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>(includeInternalTypes: true);
+        services.AddScoped<TokenEmailIssuer>();
+        services.AddScoped<PasswordService>();
         services.AddIntegrationEventHandler<EmailVerificationRequested, EmailVerificationHandler>();
+        services.AddIntegrationEventHandler<PasswordResetRequested, PasswordResetEmailHandler>();
+        services.AddIntegrationEventHandler<PasswordChanged, PasswordChangedEmailHandler>();
         services.AddIntegrationEventHandler<ExistingAccountRegistrationAttempted, ExistingAccountEmailHandler>();
         return services;
     }
