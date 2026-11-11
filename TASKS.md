@@ -191,7 +191,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Scope:** `ICurrentUser`, EF global query filters on user-owned entities, the `Authenticated` policy, and the "foreign ID returns 404" convention. Also an auto-generated **isolation test matrix** that walks every route with an `{id}` parameter.
   - **Acceptance:** the matrix runs in CI and fails when a new endpoint leaks another user's data.
   - **Refs:** §18.5, §21.6 · **Depends:** T-021 · **P0**
-- [ ] **T-025** Rate limiting policies
+- [x] **T-025** Rate limiting policies — `2f90540`
   - **Acceptance:** `auth-strict`, `default`, `assessment`, `orders`, `analysis` and `sync` policies from §18.10 are configured. Tests assert 429 with `Retry-After` on auth.
   - **Refs:** §18.10 · **Depends:** T-021 · **P1**
 
@@ -517,6 +517,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 |---|---|---|---|
 | 2026-11-09 | Skeleton verified (pre-M0) | — (uncommitted) | 32/32 .NET tests, stack healthy, app running in simulator (§4.5) |
 | 2026-11-10 | T-000 baseline committed | `1b2a253` | Fresh-clone check: 32/32 tests, typecheck green |
+| 2026-11-11 | Backend auth & account APIs complete: T-020..T-025 | `2f90540` | 237/237 tests; register/verify, login/refresh/logout, password reset/change, profile & risk settings, data isolation, rate limits |
 | 2026-11-10 | Platform plumbing complete: T-014..T-017 | `1f35a80` | 155/155 tests; outbox, job queue, idempotency, audit |
 | 2026-11-10 | eToro integration planned (M5b, gated M8) | — | Official eToro API verified; SYSTEM_DESIGN.md v0.3 §17; client flow map in docs/PRODUCT_FLOW.md |
 | 2026-11-10 | Platform core: T-004, T-011, T-012, T-013 | `76db047` | 109/109 tests; float ban, money primitives, per-module migrations, RFC 7807 pipeline |
