@@ -181,7 +181,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Story:** As a user, I want to stay signed in securely on my phone so that I don't re-enter my password every time.
   - **Acceptance:** A4–A7. ES256 JWT for 15 min with a `kid`. An opaque 30-day refresh token, stored hashed and family-bound per device. Reuse detection revokes the family and writes an audit row. Lockout after 5 failures. Security-stamp check. Every test in §21.6 passes.
   - **Refs:** §18.3, §6.B · **Depends:** T-020 · **P0**
-- [ ] **T-022** Password reset and change (API)
+- [x] **T-022** Password reset and change (API) — `b305824`
   - **Acceptance:** A8, A9 and A12. 30-minute single-use tokens. A reset revokes all sessions and sends a "password changed" email. Responses never reveal whether an email exists.
   - **Refs:** §18.4 · **Depends:** T-021 · **P1**
 - [ ] **T-023** Current user, profile and risk settings (API)
