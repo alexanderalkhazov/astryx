@@ -126,6 +126,7 @@ public static class IdentityEndpoints
                 return Results.Json(new RegisterResponse(EmailVerificationRequired: true), statusCode: StatusCodes.Status201Created);
             })
             .WithName("Register")
+            .RequireRateLimiting(RateLimitPolicies.AuthStrict)
             .WithValidation<RegisterRequest>()
             .Produces<RegisterResponse>(StatusCodes.Status201Created);
 
@@ -135,6 +136,7 @@ public static class IdentityEndpoints
                 return result.IsSuccess ? Results.NoContent() : result.Error.ToProblem();
             })
             .WithName("VerifyEmail")
+            .RequireRateLimiting(RateLimitPolicies.AuthStrict)
             .WithValidation<VerifyEmailRequest>()
             .Produces(StatusCodes.Status204NoContent);
 
@@ -144,12 +146,14 @@ public static class IdentityEndpoints
                 return Results.Accepted();
             })
             .WithName("ResendVerification")
+            .RequireRateLimiting(RateLimitPolicies.AuthStrict)
             .WithValidation<ResendVerificationRequest>()
             .Produces(StatusCodes.Status202Accepted);
 
         auth.MapPost("/login", async (LoginRequest request, SessionService sessions, CancellationToken ct) =>
                 (await sessions.LoginAsync(request.Email, request.Password, request.DeviceId, ct)).Match(ToResponse, e => e.ToProblem()))
             .WithName("Login")
+            .RequireRateLimiting(RateLimitPolicies.AuthStrict)
             .WithValidation<LoginRequest>()
             .Produces<TokenResponse>();
 
@@ -182,6 +186,7 @@ public static class IdentityEndpoints
                 return Results.Accepted();
             })
             .WithName("ForgotPassword")
+            .RequireRateLimiting(RateLimitPolicies.AuthStrict)
             .WithValidation<ForgotPasswordRequest>()
             .Produces(StatusCodes.Status202Accepted);
 
@@ -191,6 +196,7 @@ public static class IdentityEndpoints
                 return result.IsSuccess ? Results.NoContent() : result.Error.ToProblem();
             })
             .WithName("ResetPassword")
+            .RequireRateLimiting(RateLimitPolicies.AuthStrict)
             .WithValidation<ResetPasswordRequest>()
             .Produces(StatusCodes.Status204NoContent);
 

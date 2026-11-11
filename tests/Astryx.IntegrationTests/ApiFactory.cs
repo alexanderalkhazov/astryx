@@ -13,6 +13,9 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder("postgres:17").Build();
 
+    /// <summary>Settings applied last, so a derived factory can override defaults.</summary>
+    protected virtual IReadOnlyDictionary<string, string> ExtraSettings => new Dictionary<string, string>();
+
     /// <summary>Whether the API applies migrations on startup (the Development default).</summary>
     protected virtual bool MigrateOnStartup => true;
 
@@ -40,6 +43,15 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         builder.UseSetting("Ai:Ollama:BaseUrl", "http://127.0.0.1:9");
         builder.UseSetting("Identity:PasswordHashIterations", "10000"); // production uses 600,000
         builder.UseSetting("Jwt:SigningKeys", SigningKeys);
+        // All test requests share one client IP, so limits are generous unless a factory overrides them.
+        builder.UseSetting("RateLimits:AuthPerMinute", "100000");
+        builder.UseSetting("RateLimits:AuthPerHour", "100000");
+        builder.UseSetting("RateLimits:UserPerMinute", "100000");
+        builder.UseSetting("RateLimits:AnonymousPerMinute", "100000");
+        foreach (var (key, value) in ExtraSettings)
+        {
+            builder.UseSetting(key, value);
+        }
         builder.ConfigureTestServices(services => services.AddSingleton<IEmailSender>(Emails));
     }
 }

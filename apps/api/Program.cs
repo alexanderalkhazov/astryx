@@ -43,7 +43,7 @@ builder.Services.AddSerilog((services, logger) => logger
     .WriteTo.Console(new RenderedCompactJsonFormatter()));
 
 builder.Services.AddOpenApi();
-builder.Services.AddAstryxHttp();
+builder.Services.AddAstryxHttp(builder.Configuration);
 
 builder.Services.AddAstryxPersistence(builder.Configuration);
 
@@ -95,6 +95,7 @@ app.UseAstryxHttp();
 app.UseSerilogRequestLogging();
 app.UseAuthentication();
 app.UseUserScope();
+app.UseRateLimiter();
 app.UseAuthorization();
 
 if (app.Environment.IsDevelopment())

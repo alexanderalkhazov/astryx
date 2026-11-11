@@ -3338,12 +3338,14 @@ ASP.NET Core `RateLimiter` (partitioned by user id, falling back to IP):
 
 | Policy | Limit |
 |---|---|
-| `auth-strict` (login, register, forgot, reset, resend) | 5 per minute per IP+email, 20 per hour per IP |
-| `default` | 120 requests per minute per user |
+| `auth-strict` (register, verify, resend, login, forgot, reset) | 10 per minute and 50 per hour per client IP (chained). v0.3: per IP, not IP+email, because the email is in the body and isn't parsed when the limiter runs. Per-account brute force is stopped by login lockout (5 failures → 15 min) |
+| `default` (global limiter) | 120 requests per minute per signed-in user; 300 per minute per IP for anonymous requests; `/health` never limited |
 | `assessment` (T4) | 60 per minute per user (stepper spam is debounced client-side) |
 | `orders` (T6, T9, T11) | 10 per minute per user |
 | `analysis` (AI1) | 10 per hour per user + 30 per day quota |
 | `sync` (P10) | 1 per 10 s per user |
+
+Implementation (T-025): ASP.NET Core rate limiter with fixed windows. Limits come from `RateLimits:*` configuration. A rejection is a 429 problem (`code: rate_limited`) with `Retry-After` in seconds. The `assessment`, `orders`, `analysis` and `sync` policies are registered now and get attached when those endpoints land. The limiter runs after authentication, so user partitions use `sub`.
 
 ### 18.11 Audit logging
 

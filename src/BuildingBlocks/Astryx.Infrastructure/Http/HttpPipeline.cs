@@ -12,8 +12,9 @@ namespace Astryx.Infrastructure.Http;
 /// <summary>Request pipeline shared by every endpoint (SYSTEM_DESIGN.md §9.2, §11.1).</summary>
 public static class HttpPipeline
 {
-    public static IServiceCollection AddAstryxHttp(this IServiceCollection services)
+    public static IServiceCollection AddAstryxHttp(this IServiceCollection services, Microsoft.Extensions.Configuration.IConfiguration configuration)
     {
+        services.AddAstryxRateLimiting(configuration);
         services.ConfigureHttpJsonOptions(options =>
         {
             options.SerializerOptions.UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow;
