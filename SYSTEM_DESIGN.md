@@ -1277,6 +1277,7 @@ Stale times (`ASSUMPTION`): quotes 15 s, signals 60 s, portfolio 15 s, strategie
 - **401 handling:** single-flight refresh (one in-flight refresh promise shared); on refresh failure → clear session → `(auth)/sign-in` with toast "Session expired".
 - **Money types:** `Decimal = z.string().regex(/^-?\d+(\.\d+)?$/)`. Never `z.number()` for money, price, quantity or percent fields.
 - Response envelope: none for single resources; lists `{ items, nextCursor, totalCount? }`.
+- **Implemented (T-033):** `createApiClient({ baseUrl, getAccessToken, refresh, onSessionExpired, newCorrelationId })` in `src/client.ts`. It is platform-free: the app injects SecureStore, Zustand and router. `request(path, { method, body, schema, idempotencyKey, ifMatch, auth })` retries a 401 exactly once after the shared refresh. A transport failure is `ApiError{status:0, code:"network_error"}`, and a schema mismatch is `invalid_response`. Auth DTO schemas (`src/auth.ts`) are hand-written until T-010. `Accept-Language` is not sent yet.
 
 ### 8.9 Authentication state & secure storage
 
@@ -1284,6 +1285,7 @@ Stale times (`ASSUMPTION`): quotes 15 s, signals 60 s, portfolio 15 s, strategie
 - Device id: random uuid generated on first launch, stored in SecureStore, sent on login/refresh to bind token families to devices.
 - Biometric app lock (Settings › Security) — `expo-local-authentication` gate on cold start / resume after 5 min (`ASSUMPTION`). Live guard requires biometrics (future).
 - Nothing else sensitive persists; Query cache persisted? `DECIDED`: **no** persistence of financial data to disk in MVP.
+- **Implemented (T-033):** `apps/mobile/src/lib/{secureStorage,api,session}.ts` and `src/state/session.ts`. `restoreSession()` on launch: no token → signed out; refused token → deleted; offline → signed out but token kept for a later retry. Sign-out is best-effort `POST /auth/logout`, then always clears SecureStore, session and the query cache.
 
 ### 8.10 Forms & validation
 

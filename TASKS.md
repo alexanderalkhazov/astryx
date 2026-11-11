@@ -142,6 +142,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Scope:** export `openapi.json` at build (`Microsoft.Extensions.ApiDescription.Server`), and generate types and Zod schemas into `@astryx/api-client`. A `pnpm api:gen` script. CI checks the generated code is up to date.
   - **Acceptance:** changing a DTO without regenerating fails CI. `SystemStatus` comes from generated types.
   - **Refs:** §8.8, §11 · **Depends:** T-001 · **P0**
+  - **Note (T-033):** until this lands, `packages/api-client/src/auth.ts` holds hand-written Zod schemas for the Identity endpoints. Replace them with the generated ones.
 - [x] **T-011** SharedKernel primitives — `a1174af`
   - **Scope:** `Money`, `Price`, `Quantity`, `Percent`, `Currency`, `Result<T>`, `Error`, UUIDv7 `Ids`, `RoundingPolicy` (ledger half-even to cents; tick rounding).
   - **Acceptance:** unit tests cover currency mismatch, rounding at boundaries, negative or zero price rejection, and decimal-string JSON converters (round-trip `"186.50"`).
@@ -213,6 +214,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Scope:** `apiFetch` with base URL, Authorization, correlation ID and problem-details parsing; single-flight refresh on 401; session store (Zustand, access token in memory); refresh token and device ID in SecureStore; logout clears the query cache.
   - **Acceptance:** tests show concurrent 401s trigger exactly one refresh, and a refresh failure routes to sign-in with a "Session expired" toast.
   - **Refs:** §8.7–8.9 · **Depends:** T-010, T-021 · **P0**
+  - **Note:** built ahead of T-010 (blocked on T-001) using hand-written auth schemas. `createApiClient` in `packages/api-client` is injected with token, refresh and expiry hooks by `apps/mobile/src/lib/api.ts`.
 - [ ] **T-034** Auth screens and auth gate (PROPOSED screens)
   - **Story:** As a new user, I want to sign up, verify my email from the link and sign in, all within the app's visual language.
   - **Acceptance:** sign-in, sign-up, verify-email (deep link), forgot and reset password are built with RHF and Zod, with server 422 errors mapped to fields. `(app)` redirects to `(auth)` without a session. Deep links are stashed and replayed after sign-in. **Manual check:** a full register → Mailpit link → sign-in on the simulator.

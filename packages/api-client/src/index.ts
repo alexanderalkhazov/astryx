@@ -1,6 +1,10 @@
 // Typed client for the Astryx API (SYSTEM_DESIGN.md §8.8).
-// Types will be generated from apps/api/openapi.json in Phase 1; this file holds the hand-written primitives.
+// Types will be generated from apps/api/openapi.json (T-010); until then the schemas are hand-written.
 import { z } from 'zod';
+
+export { ApiError, isApiError, toApiError } from './errors';
+export { createApiClient, type ApiClient, type ApiClientOptions, type ApiResponse, type RequestOptions } from './client';
+export { authApi, CurrentUser, RegisterResponse, TokenResponse } from './auth';
 
 /** Money, prices, quantities and percents travel as decimal strings — never JS numbers. */
 export const Decimal = z.string().regex(/^-?\d+(\.\d+)?$/, 'Expected a decimal string');
@@ -8,6 +12,7 @@ export type Decimal = z.infer<typeof Decimal>;
 
 export const SystemStatus = z.object({
   database: z.string(),
+  migrations: z.string().optional(),
   ai: z.object({ status: z.string(), model: z.string().nullable() }),
   marketData: z.object({ provider: z.string().nullable() }),
   broker: z.object({ adapter: z.string().nullable(), mode: z.literal('paper') }),

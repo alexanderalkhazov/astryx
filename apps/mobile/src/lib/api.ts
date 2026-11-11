@@ -1,0 +1,46 @@
+import { authApi, createApiClient } from '@astryx/api-client';
+import { randomUUID } from 'expo-crypto';
+import { router } from 'expo-router';
+
+import { apiUrl } from '@/lib/config';
+import { queryClient } from '@/lib/queryClient';
+import { secureStorage } from '@/lib/secureStorage';
+import { useSession } from '@/state/session';
+import { toast } from '@/state/toasts';
+
+/** Renews the session from the stored refresh token. Throws when there is none or the server refuses it. */
+async function refreshSession(): Promise<string> {
+  const [refreshToken, deviceId] = await Promise.all([secureStorage.getRefreshToken(), secureStorage.getDeviceId()]);
+  if (!refreshToken) throw new Error('No stored session');
+  const { data } = await auth.refresh({ refreshToken, deviceId });
+  await secureStorage.setRefreshToken(data.refreshToken);
+  useSession.getState().signIn(data.accessToken, data.accessTokenExpiresAt);
+  return data.accessToken;
+}
+
+/** Clears everything a session left behind: memory, Keychain token and cached server data. */
+export async function clearLocalSession(): Promise<void> {
+  useSession.getState().signOut();
+  queryClient.clear();
+  await secureStorage.clearRefreshToken();
+}
+
+/** Refresh failed mid-session: tell the user once and send them to sign in. */
+function handleSessionExpired(): void {
+  if (useSession.getState().status !== 'signedIn') return; // already handled by a concurrent request
+  void clearLocalSession();
+  toast({ tone: 'warning', title: 'Session expired', body: 'Sign in again to continue.' });
+  router.replace('/sign-in');
+}
+
+export const api = createApiClient({
+  baseUrl: apiUrl,
+  getAccessToken: () => useSession.getState().accessToken,
+  refresh: refreshSession,
+  onSessionExpired: handleSessionExpired,
+  newCorrelationId: randomUUID,
+});
+
+export const auth = authApi(api);
+
+export { refreshSession };
