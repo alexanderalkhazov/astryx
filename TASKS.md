@@ -187,7 +187,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [x] **T-023** Current user, profile and risk settings (API) — `354fdf0`
   - **Acceptance:** A10, A11, S1, S2 and S4 with bounds validation (§14.3), ETag/If-Match, and the `RiskSettingsChanged` event. S5 with `mode:"live"` returns 403 `live_trading_disabled` and is audited.
   - **Refs:** §7.2, §11.3, §14.3 · **Depends:** T-021 · **P0**
-- [ ] **T-024** Authorization and data-isolation guardrails
+- [x] **T-024** Authorization and data-isolation guardrails — `01dfc45`
   - **Scope:** `ICurrentUser`, EF global query filters on user-owned entities, the `Authenticated` policy, and the "foreign ID returns 404" convention. Also an auto-generated **isolation test matrix** that walks every route with an `{id}` parameter.
   - **Acceptance:** the matrix runs in CI and fails when a new endpoint leaks another user's data.
   - **Refs:** §18.5, §21.6 · **Depends:** T-021 · **P0**
