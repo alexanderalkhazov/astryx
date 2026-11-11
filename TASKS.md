@@ -197,7 +197,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 
 **Mobile foundation**
 
-- [ ] **T-030** Fonts, theme and base primitives
+- [x] **T-030** Fonts, theme and base primitives — `4080bfe`
   - **Scope:** load Geist and Geist Mono via `expo-font`; tabular-number text components (`Text.Data`, `Text.Caption`, …); formatting utilities for decimal strings (`formatMoney`, `formatPct`, `formatPrice`, signed P&L with a real minus sign); `decimal.js-light` preview helpers.
   - **Acceptance:** unit tests show `formatMoney("-630.8")` returns `"−$630.80"`, P&L always carries a sign, and no `Number()` is applied to money strings in formatters.
   - **Refs:** §8.5, §20.1 · **Depends:** T-000 · **P0**
