@@ -354,7 +354,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [x] **T-083** Assessment endpoint
   - **Acceptance:** T4 persists immutable `risk_assessments` matching the §11.7 example. Risk choices above the user's max return 422. A 60/min rate limit. Risk settings changes make existing assessments stale.
   - **Refs:** §11.7, §14.5 · **Depends:** T-082, T-023 · **P0**
-- [ ] **T-084** Paper execution engine and order endpoint
+- [x] **T-084** Paper execution engine and order endpoint
   - **Acceptance:** `trading.orders` and `trading.fills` migrations. `MockBrokerAdapter`/`PaperFillSimulator` (market, buy-stop, limit; slippage max($0.01, 1 bp) rounded up to the cent; commission $0.00). T6 is implemented exactly as the §15.3 transaction: idempotency, portfolio `FOR UPDATE`, risk re-run on a fresh quote, order, fill, position, OCO exits, ledger, outbox, audit. The `SIM-XXXXXX` ID format. **PAPER-01, PAPER-02 and IDEM-01…05 pass.** The design trade fills at 186.52 with cash 21,840.55 → 7,665.03.
   - **Refs:** §15, §20.9 · **Depends:** T-083, T-016 · **P0**
 - [ ] **T-085** Position monitor and session jobs
