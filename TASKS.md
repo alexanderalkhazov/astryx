@@ -260,7 +260,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Story:** As a user, I want to search tickers and companies from any header, with recent searches and "Held" or signal tags.
   - **Acceptance:** M1–M3 (ticker prefix ranks above trigram name match). The Search full-screen modal (design 19) uses a 200 ms debounce and empty and error states. Searching "am" returns AMZN and AMD.
   - **Refs:** §8.4.12, §11.4 · **Depends:** T-045, T-035 · **P0**
-- [ ] **T-047** Watchlists
+- [x] **T-047** Watchlists (bc574fd)
   - **Story:** As a user, I want to star a stock to follow it, and manage my watchlist from Settings.
   - **Acceptance:** W1–W7. Star toggle is optimistic with rollback. A default list is created at registration. The PROPOSED `settings/watchlist` screen supports remove and reorder.
   - **Refs:** §7.5, §11.5 · **Depends:** T-045, T-024 · **P0**
