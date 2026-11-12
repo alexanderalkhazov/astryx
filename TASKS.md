@@ -331,7 +331,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [x] **T-074** Real-time job updates (SignalR hub)
   - **Acceptance:** hub `/hubs/workstation` with JWT auth and per-user groups. `analysis.updated` is published via the outbox. The mobile SignalR client lifecycle (connect on session, reconnect, fall back to polling).
   - **Refs:** §9.6 · **Depends:** T-073, T-033 · **P0**
-- [ ] **T-075** "Analyze with AI" in the Signal tab
+- [x] **T-075** "Analyze with AI" in the Signal tab
   - **Story:** As a user, I want an AI-written explanation of bullish, bearish and neutral scenarios, clearly labelled as experimental research.
   - **Acceptance:** button → job progress → rendered scenarios, evidence (supporting and contradicting), risks, catalysts, and confidence with the "not a calibrated probability" note. The "Experimental AI model" label and disclaimer are shown. Failure shows "Analysis couldn't be generated reliably. Indicators are still available." **Manual check:** a real Ollama run for NVDA.
   - **Refs:** §8.4.3, §12.6 · **Depends:** T-074, T-068 · **P0**
