@@ -11,6 +11,8 @@ export {
   Bars,
   Breadth,
   Fundamentals,
+  IndicatorSnapshot,
+  IndicatorValues,
   Instrument,
   Levels,
   MarketSession,

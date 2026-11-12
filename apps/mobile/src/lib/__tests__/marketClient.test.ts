@@ -1,4 +1,4 @@
-import { Bars, Breadth, MarketSession, Quote } from '@astryx/api-client';
+import { Bars, Breadth, IndicatorSnapshot, MarketSession, Quote } from '@astryx/api-client';
 
 // Payloads as the API sends them (SYSTEM_DESIGN.md §11.4), captured from the local stack.
 describe('market response schemas', () => {
@@ -11,6 +11,21 @@ describe('market response schemas', () => {
 
     expect(typeof quote.last).toBe('string');
     expect(quote.changePct).toBe('0.0342');
+  });
+
+  it('accepts the M7 snapshot, with nulls for insufficient values', () => {
+    const snapshot = IndicatorSnapshot.parse({
+      symbol: 'NVDA', interval: '1d', asOfBar: '2026-11-11', barCount: 300, dataQuality: 'ok',
+      values: {
+        sma20: '182.4545', sma50: '172.0114', ema20: '180.8699', rsi14: '64.2', macd: '1.8760', macdSignal: '2.7341', macdHist: '-0.8581',
+        atr14: '3.4226', relVolume20: '2.34', momentum20Pct: '0.0292', changePct1d: '0.0342', volatility20Ann: '0.1968', relStrength: '99', trend: 'uptrend',
+      },
+      insufficient: [],
+    });
+    expect(snapshot.values.rsi14).toBe('64.2');
+
+    const short = IndicatorSnapshot.parse({ ...snapshot, dataQuality: 'insufficient', values: { ...snapshot.values, sma50: null, trend: null }, insufficient: ['sma50', 'trend'] });
+    expect(short.values.sma50).toBeNull();
   });
 
   it('rejects money sent as a JSON number', () => {

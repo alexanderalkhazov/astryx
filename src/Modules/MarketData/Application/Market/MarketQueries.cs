@@ -231,7 +231,7 @@ public sealed class MarketQueries(
     /// Stored final daily bars, plus the current session's forming bar from the latest quote when the end-of-day sync
     /// has not stored that session yet.
     /// </summary>
-    private async Task<List<BarDto>> DailyBarsAsync(Instrument instrument, DateOnly from, DateOnly to, CancellationToken cancellationToken)
+    internal async Task<List<BarDto>> DailyBarsAsync(Instrument instrument, DateOnly from, DateOnly to, CancellationToken cancellationToken)
     {
         var bars = await db.PriceBars.AsNoTracking()
             .Where(b => b.InstrumentId == instrument.Id && b.Timeframe == Timeframe.OneDay && b.SessionDate >= from && b.SessionDate <= to)
@@ -274,7 +274,7 @@ public sealed class MarketQueries(
         return null;
     }
 
-    private Task<Instrument?> FindAsync(string symbol, CancellationToken cancellationToken)
+    internal Task<Instrument?> FindAsync(string symbol, CancellationToken cancellationToken)
     {
         var normalized = symbol.Trim().ToUpperInvariant();
         return db.Instruments.AsNoTracking().Where(i => i.Symbol == normalized).OrderByDescending(i => i.IsActive).FirstOrDefaultAsync(cancellationToken);

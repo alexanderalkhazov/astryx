@@ -61,6 +61,7 @@ public partial class DataIsolationTests(ApiFactory factory) : IClassFixture<ApiF
         "GET /api/v1/instruments/{symbol}/news",
         "GET /api/v1/market/{symbol}/quote",
         "GET /api/v1/market/{symbol}/bars",
+        "GET /api/v1/market/{symbol}/indicators",
     };
 
     /// <summary>Bob addresses Alice's list by id (with Alice's current ETag): 404, and Alice's list is unchanged.</summary>

@@ -50,6 +50,73 @@
         }
       }
     },
+    "/api/v1/market/{symbol}/indicators": {
+      "get": {
+        "tags": [
+          "Market"
+        ],
+        "operationId": "GetIndicators",
+        "parameters": [
+          {
+            "name": "symbol",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "interval",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IndicatorSnapshot"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/auth/register": {
       "post": {
         "tags": [
@@ -1916,6 +1983,50 @@
         },
         "additionalProperties": false
       },
+      "IndicatorSnapshot": {
+        "required": [
+          "symbol",
+          "interval",
+          "asOfBar",
+          "barCount",
+          "dataQuality",
+          "values",
+          "insufficient"
+        ],
+        "type": "object",
+        "properties": {
+          "symbol": {
+            "type": "string"
+          },
+          "interval": {
+            "type": "string"
+          },
+          "asOfBar": {
+            "type": "string",
+            "format": "date"
+          },
+          "barCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dataQuality": {
+            "type": "string"
+          },
+          "values": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "insufficient": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
       "InstrumentDto": {
         "required": [
           "symbol",
@@ -2849,10 +2960,10 @@
       "name": "Me"
     },
     {
-      "name": "Authentication"
+      "name": "Market"
     },
     {
-      "name": "Market"
+      "name": "Authentication"
     },
     {
       "name": "Search"

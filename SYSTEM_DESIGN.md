@@ -2284,7 +2284,14 @@ Error envelope (every problem response also carries `correlationId`; unknown rou
 }
 ```
 
-**Implemented (T-045).** M4–M6 and M8–M11 are in `MarketData/Api/MarketEndpoints.cs`. M7 lands with the Quant engine (T-06x).
+**Implemented (T-061).** M7 is in `Quant/Api/IndicatorEndpoints.cs`.
+- **Bars:** `IPriceHistoryProvider` (Contracts, implemented by MarketData) returns the latest 300 daily bars, including the forming session, never gap-filled. It reports `Stale` and the trading-calendar sessions that have no bar.
+- **Engine:** `StockAnalysisEngine` builds the snapshot. `changePct1d` is ROC(1). The RS rank comes from `RelativeStrengthRanks`, which runs one universe "close ladder" query over final bars (0/63/126/189/252 sessions back) and caches it in memory for 15 min.
+- **Data quality:** `stale` first, then `insufficient` (any value missing, or more than 2 gaps), then `gaps`, else `ok`. It is re-derived on every read, because staleness depends on the time rather than the bars.
+- **Cache:** `market.indicator_snapshots` (owned by Quant) is keyed by (instrument, timeframe, `params_hash`, `as_of_bar`), where `as_of_bar` is the quote time for a forming bar. Inserts use `ON CONFLICT DO NOTHING`, and the latest 5 per instrument are kept. `params_hash` is the first 16 hex characters of SHA-256 over `quant-v1` plus the parameter list.
+- **Errors:** fewer than 21 bars → 422 `insufficient_history`; an interval other than `1d` → 400. MACD needs 34 bars as a group, so a shorter history lists `macd`, `macdSignal` and `macdHist` as insufficient together.
+
+**Implemented (T-045).** M4–M6 and M8–M11 are in `MarketData/Api/MarketEndpoints.cs`.
 - **Data source:** answers come from stored data, with `asOf`/`stale` from `FreshnessPolicy`. The provider is called only for data that is not stored: intraday bars, a missing quote, or news with nothing ingested in the last 15 minutes. A provider outage there is 503 `market_data_unavailable`, while stored data keeps answering.
 - **Daily bars:** stored final bars plus the current session's bar from the latest quote, with `"final": false`, until the EOD sync stores it. `adjusted` is `false` until T-044.
 - **Display ranges:** `1D` → 5m, `5D` → 15m, `1M`–`ALL` → 1d. The default is `3M`, and `limit` keeps the most recent bars (≤ 1000).
