@@ -1491,6 +1491,18 @@ Hub `/hubs/workstation`, JWT via `access_token` query string (WebSocket), user g
 
 SignalR is an optimisation; every state is also reachable by polling REST (clients fall back when the socket is down).
 
+**Implemented (T-074).**
+
+- `Astryx.Infrastructure/Realtime/WorkstationHub.cs` requires the `Authenticated` policy. The JWT bearer handler reads `access_token` from the query string on `/hubs/*`. On connect, the hub adds the connection to `user:{sub}`.
+- Modules push events through `IRealtimeNotifier`, never `IHubContext`.
+- `analysis.updated` starts as the outbox event `ai.analysis_updated.v1`. It is published in the same transaction as each job transition: processing on claim, pending on a retry, completed/failed/cancelled on settle, and cancelled from AI3. `AnalysisUpdatedHandler` relays it with the payload `{jobId, symbol, status, attempt, resultId, errorCode}`.
+- Mobile: `features/realtime/realtime.ts` uses `@microsoft/signalr`. It reconnects automatically after 0, 2, 10 and 30 s, then restarts every 30 s while signed in. `useRealtime().connected` tells pollers whether to slow down.
+- An event only invalidates the job query (and, on `completed`, the symbol's analysis list), so REST stays the source of truth. A reconnect invalidates every analysis query to catch up on missed events. The access token is refreshed if it has less than 30 s left.
+- `useRealtimeConnection()` is mounted by the `(app)` layout.
+- Verified on 2026-11-12 against the docker stack over WebSockets with `skipNegotiation`.
+
+
+
 ### 9.7 Configuration
 
 `appsettings.json` + environment variables (`__` separator) + secret store. No secrets in `appsettings*.json`. Key sections:

@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using Astryx.Contracts.Events.Ai;
 using Astryx.Contracts.Profiles;
 using Astryx.Modules.Ai.Application.Analysis;
 using Astryx.Modules.Ai.Application.Context;
@@ -64,7 +65,14 @@ public sealed class AnalysisJobProcessor(IServiceProvider services, IOptions<Ana
             .IgnoreQueryFilters()
             .AsNoTracking()
             .ToListAsync(cancellationToken);
-        return claimed.SingleOrDefault();
+        if (claimed.SingleOrDefault() is not { } job)
+        {
+            return null;
+        }
+
+        db.Publish(Updated(job, AnalysisJobStatus.Processing, null, null));
+        await db.SaveChangesAsync(cancellationToken);
+        return job;
     }
 
     /// <summary>A processing job whose lease expired with no attempts left: the worker died on its last try.</summary>
@@ -249,14 +257,24 @@ public sealed class AnalysisJobProcessor(IServiceProvider services, IOptions<Ana
 
     private static string? Truncate(string? text) => text is null || text.Length <= 500 ? text : text[..500];
 
-    private async Task RequeueAsync(AiDbContext db, AnalysisJob job, string workerId, DateTimeOffset retryAt, CancellationToken cancellationToken) =>
-        await db.Jobs.IgnoreQueryFilters()
+    public static AnalysisUpdated Updated(AnalysisJob job, string status, Guid? resultId, string? errorCode) =>
+        new(job.UserId, job.Id, job.Symbol, status, job.Attempt, resultId, errorCode);
+
+    private async Task RequeueAsync(AiDbContext db, AnalysisJob job, string workerId, DateTimeOffset retryAt, CancellationToken cancellationToken)
+    {
+        var requeued = await db.Jobs.IgnoreQueryFilters()
             .Where(j => j.Id == job.Id && j.LockedBy == workerId && j.Status == AnalysisJobStatus.Processing)
             .ExecuteUpdateAsync(
                 s => s.SetProperty(j => j.Status, AnalysisJobStatus.Pending).SetProperty(j => j.RunAfter, retryAt)
                     .SetProperty(j => j.LockedBy, (string?)null).SetProperty(j => j.LockedUntil, (DateTimeOffset?)null)
                     .SetProperty(j => j.ErrorCode, AnalysisErrorCodes.ProviderUnavailable).SetProperty(j => j.ErrorDetail, UnavailableDetail),
                 cancellationToken);
+        if (requeued == 1)
+        {
+            db.Publish(Updated(job, AnalysisJobStatus.Pending, null, AnalysisErrorCodes.ProviderUnavailable));
+            await db.SaveChangesAsync(cancellationToken);
+        }
+    }
 
     /// <summary>
     /// Saves the result (if any) and finishes the job in one transaction, only while this worker holds the lease. A
@@ -283,9 +301,10 @@ public sealed class AnalysisJobProcessor(IServiceProvider services, IOptions<Ana
         if (result is not null)
         {
             db.Results.Add(result);
-            await db.SaveChangesAsync(cancellationToken);
         }
 
+        db.Publish(Updated(job, status, linked, errorCode));
+        await db.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
     }
 }

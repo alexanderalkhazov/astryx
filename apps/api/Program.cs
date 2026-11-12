@@ -3,6 +3,7 @@ using Astryx.Api.Dev;
 using Astryx.Api.OpenApi;
 using Astryx.Infrastructure;
 using Astryx.Infrastructure.Health;
+using Astryx.Infrastructure.Realtime;
 using Astryx.Modules.Ai;
 using Astryx.Modules.Ai.Api;
 using Astryx.Modules.Audit;
@@ -55,6 +56,7 @@ builder.Services.AddOpenApi(options => options.AddSchemaTransformer<DecimalStrin
 builder.Services.AddAstryxHttp(builder.Configuration);
 
 builder.Services.AddAstryxPersistence(builder.Configuration);
+builder.Services.AddRealtime();
 
 builder.Services.AddHttpClient<OllamaHealthCheck>(client =>
 {
@@ -154,6 +156,7 @@ app.MapIndicatorEndpoints();
 app.MapStrategyEndpoints();
 app.MapScannerEndpoints();
 app.MapAnalysisEndpoints();
+app.MapRealtime();
 
 if (DevEndpoints.IsEnabled(app.Environment, app.Configuration))
 {

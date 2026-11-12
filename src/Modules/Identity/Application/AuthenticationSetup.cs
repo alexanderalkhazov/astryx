@@ -35,6 +35,16 @@ public static class AuthenticationSetup
                 };
                 bearer.Events = new JwtBearerEvents
                 {
+                    // WebSocket clients can't set headers: SignalR sends the token as ?access_token= (§9.6).
+                    OnMessageReceived = context =>
+                    {
+                        if (context.Request.Path.StartsWithSegments("/hubs") && context.Request.Query["access_token"].ToString() is { Length: > 0 } token)
+                        {
+                            context.Token = token;
+                        }
+
+                        return Task.CompletedTask;
+                    },
                     OnTokenValidated = async context =>
                     {
                         var principal = context.Principal!;

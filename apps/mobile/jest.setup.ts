@@ -6,6 +6,7 @@ jest.mock('@gorhom/bottom-sheet', () => require('@gorhom/bottom-sheet/mock'));
 
 // Charts (T-048): no native Skia, worklets or gesture recognisers in Jest.
 jest.mock('@shopify/react-native-skia', () => require('./jest/skia'));
+jest.mock('@microsoft/signalr', () => require('./jest/signalr'));
 jest.mock('react-native-worklets', () => ({ scheduleOnRN: (fn: (...args: unknown[]) => void, ...args: unknown[]) => fn(...args) }));
 jest.mock('react-native-gesture-handler', () => ({
   ...jest.requireActual('react-native-gesture-handler/jestSetup'),

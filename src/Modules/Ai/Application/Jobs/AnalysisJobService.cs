@@ -144,6 +144,12 @@ public sealed class AnalysisJobService(AiDbContext db, ICurrentUser user, IInstr
         {
             await db.Jobs.Where(j => j.Id == id && j.Status == AnalysisJobStatus.Processing).ExecuteUpdateAsync(s => s.SetProperty(j => j.CancelRequestedAt, now), cancellationToken);
         }
+        else
+        {
+            db.Entry(job).State = EntityState.Detached;
+            db.Publish(AnalysisJobProcessor.Updated(job, AnalysisJobStatus.Cancelled, null, AnalysisErrorCodes.Cancelled));
+            await db.SaveChangesAsync(cancellationToken);
+        }
 
         return ToDto(await db.Jobs.AsNoTracking().SingleAsync(j => j.Id == id, cancellationToken));
     }

@@ -1,3 +1,5 @@
+using Astryx.Contracts.Events.Ai;
+using Astryx.Infrastructure.Outbox;
 using Astryx.Infrastructure.Persistence;
 using Astryx.Modules.Ai.Api;
 using FluentValidation;
@@ -40,6 +42,7 @@ public static class AiModule
         services.AddScoped<AnalysisJobService>();
         services.AddValidatorsFromAssemblyContaining<CreateAnalysisRequestValidator>(includeInternalTypes: true);
         services.AddSingleton<AnalysisJobProcessor>();
+        services.AddIntegrationEventHandler<AnalysisUpdated, AnalysisUpdatedHandler>();
         services.AddSingleton(new AiConcurrency(configuration.GetValue("Ai:MaxConcurrency", 1)));
         if (configuration.GetValue("Workers:Enabled", true) && configuration.GetValue($"{AnalysisJobOptions.SectionName}:WorkerEnabled", true))
         {
