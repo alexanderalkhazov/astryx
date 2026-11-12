@@ -1266,6 +1266,14 @@ Implementation (T-032):
 - **Toasts:** `ToastHost` plus the `useToasts` store (3.8 s, max 3, tap to dismiss), and the `useSheet` store (one sheet at a time). All are mounted in the root layout.
 - **Known noise:** bottom-sheet 5.2 triggers Reanimated 4.7 "dependencies are ignored on native" warnings from inside the library.
 
+Implementation (T-048):
+- **Charts:** `@shopify/react-native-skia` 2.14 (paths are built with `Skia.PathBuilder`). `components/chart/geometry.ts` holds the pure maths: range, pixel mapping, snapping a touch to a bar, SMA, and spreading gutter tags so they never overlap.
+- **CandleChart:** draws candles, wicks and volume as four batched paths, MA20 (`series[1]`) and MA50 (`series[3]`), and dashed entry/stop/target lines with tags in the 44 pt gutter. `warmup` leading bars feed the moving averages without being drawn, so MA50 starts at the left edge.
+- **Scrub:** gesture-handler 3 `usePanGesture`. The bar index lives in a shared value, so the crosshair moves on the UI thread. JS receives each new bar (`scheduleOnRN`) for the readout, the close tag and a selection haptic throttled to 30 ms. A vertical drag fails over to the ScrollView.
+- **Accessibility:** a summary label plus the last 10 bars as a visually collapsed list.
+- **LineChart:** series in the palette order, a grey dashed benchmark, and the same scrub.
+- **Dev gallery:** `/dev/gallery?only=charts` renders NVDA 3M and 1Y (251 bars) from the local API.
+
 > Type-level safety rule: research components (`ProposalCard`, `StatusBanner tone="pending"`) cannot receive `orderId`/`fillPrice` props. Enforced with discriminated unions + an ESLint `no-restricted-syntax` rule for `color.gain` outside executed/P&L components.
 
 ### 8.7 State management

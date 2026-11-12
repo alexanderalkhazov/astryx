@@ -1,4 +1,5 @@
 import { color, radius, space } from '@astryx/design-tokens';
+import { useQuery } from '@tanstack/react-query';
 import { Redirect, useLocalSearchParams } from 'expo-router';
 import { Search } from 'lucide-react-native';
 import { useEffect, useState, type ReactNode } from 'react';
@@ -22,7 +23,10 @@ import { Stepper } from '@/components/Stepper';
 import { Switch } from '@/components/Switch';
 import { Tabs } from '@/components/Tabs';
 import { Pnl, Text } from '@/components/Text';
-import { formatPct } from '@/lib/format';
+import { CandleChart, type PriceBar } from '@/components/chart/CandleChart';
+import { LineChart } from '@/components/chart/LineChart';
+import { market } from '@/lib/api';
+import { formatPct, formatVolume } from '@/lib/format';
 import { useSheet } from '@/state/sheets';
 import { toast } from '@/state/toasts';
 
@@ -38,7 +42,7 @@ export default function GalleryScreen() {
   return <Gallery />;
 }
 
-type SectionKey = 'buttons' | 'badges' | 'inputs' | 'feedback' | 'status' | 'metrics' | 'overlays';
+type SectionKey = 'buttons' | 'badges' | 'inputs' | 'feedback' | 'status' | 'metrics' | 'overlays' | 'charts';
 
 function Gallery() {
   // `?only=inputs` renders one section, for side-by-side comparison with the design board.
@@ -67,6 +71,7 @@ function Gallery() {
     <SafeAreaView style={styles.safe} edges={['top']}>
       <StackHeader title="Component gallery" subtitle="Dev only · design 03" />
       <ScrollView contentContainerStyle={styles.content}>
+        {show('charts') && <ChartsSection />}
         {show('buttons') && <Section title="Buttons">
           <Button label="Primary · Review proposal" onPress={() => {}} />
           <Button variant="secondary" label="Secondary · View position" onPress={() => {}} />
@@ -207,6 +212,38 @@ function Gallery() {
         onConfirm={() => setDialogOpen(false)}
       />
     </SafeAreaView>
+  );
+}
+
+// Design 04 levels for NVDA; real levels come from signals in M3.
+const DESIGN_LEVELS = { entry: '186.50', stop: '178.20', target: '204.00' };
+
+/** CandleChart and LineChart over real bars from the local API (T-048). `?only=charts` for the device check. */
+function ChartsSection() {
+  const bars = useQuery({ queryKey: ['stock', 'NVDA', 'bars', '1Y'], queryFn: async () => (await market.bars('NVDA', { timeframe: '1Y' })).data.bars });
+  const [readout, setReadout] = useState<PriceBar | null>(null);
+  const [lineIndex, setLineIndex] = useState<number | null>(null);
+  if (!bars.data) return <Section title="Charts"><Spinner /></Section>;
+  const all = bars.data;
+  const shown = readout ?? all.at(-1)!;
+  const line = all.map((b) => ({ t: b.t, v: b.c }));
+  const bench = all.map((b, i) => ({ t: b.t, v: String(Number(all[0]!.c) * (1 + i * 0.0006)) }));
+  return (
+    <>
+      <Section title="CandleChart · NVDA 3M">
+        <Text.DataSm tone="secondary" testID="chart-readout">
+          {`${shown.d}  O ${shown.o}  H ${shown.h}  L ${shown.l}  C ${shown.c}  V ${formatVolume(shown.v)}`}
+        </Text.DataSm>
+        <CandleChart bars={all} warmup={Math.max(0, all.length - 63)} levels={DESIGN_LEVELS} onScrub={setReadout} />
+      </Section>
+      <Section title={`CandleChart · ${all.length} bars (1Y)`}>
+        <CandleChart bars={all} overlays={{ levels: false }} />
+      </Section>
+      <Section title="LineChart · close vs benchmark">
+        <Text.DataSm tone="secondary">{lineIndex === null ? `Latest ${all.at(-1)!.c}` : `${all[lineIndex]!.d} · ${all[lineIndex]!.c}`}</Text.DataSm>
+        <LineChart series={[{ key: 'NVDA', points: line }]} benchmark={bench} onScrub={setLineIndex} accessibilityLabel="NVDA closes over one year against a benchmark" />
+      </Section>
+    </>
   );
 }
 

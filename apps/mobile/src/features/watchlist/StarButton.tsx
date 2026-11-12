@@ -4,7 +4,7 @@ import { Pressable, StyleSheet } from 'react-native';
 
 import { useWatchlistStar } from './useWatchlist';
 
-/** Watchlist star for a stock header (design 04). Filled when the symbol is on the default list. */
+/** Watchlist star for a stock header (design 04): filled amber when the symbol is on the default list. */
 export function StarButton({ symbol }: { symbol: string }) {
   const { starred, ready, toggle } = useWatchlistStar(symbol);
   return (
@@ -19,7 +19,7 @@ export function StarButton({ symbol }: { symbol: string }) {
       testID="watchlist-star"
       style={({ pressed }) => [styles.button, { opacity: !ready ? 0.4 : pressed ? 0.6 : 1 }]}
     >
-      <Star size={22} strokeWidth={1.7} color={color.text} fill={starred ? color.text : 'transparent'} />
+      <Star size={22} strokeWidth={1.7} color={starred ? color.pending : color.text} fill={starred ? color.pending : 'transparent'} />
     </Pressable>
   );
 }

@@ -13,6 +13,7 @@ module.exports = {
   createAnimatedComponent: identity,
   useSharedValue: (initial: unknown) => ({ value: initial }),
   useAnimatedStyle: (factory: () => object) => factory(),
+  useDerivedValue: (factory: () => unknown) => ({ value: factory() }),
   withTiming: identity,
   withRepeat: identity,
   withDelay: (_delay: number, value: unknown) => value,
