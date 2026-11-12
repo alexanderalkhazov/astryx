@@ -54,6 +54,7 @@ public static class MarketDataModule
         services.AddScoped<Astryx.Contracts.MarketData.IPriceHistoryProvider, PriceHistoryProvider>();
         services.AddScoped<Astryx.Contracts.MarketData.IMarketDataFreshness, MarketDataFreshness>();
         services.AddScoped<Astryx.Contracts.MarketData.IInstrumentDirectory, InstrumentDirectory>();
+        services.AddScoped<Astryx.Contracts.MarketData.IStockResearchSource, StockResearchSource>();
 
         services.AddJobHandler<InstrumentSyncJob, InstrumentSyncHandler>();
         services.AddJobHandler<CalendarSyncJob, CalendarSyncHandler>();

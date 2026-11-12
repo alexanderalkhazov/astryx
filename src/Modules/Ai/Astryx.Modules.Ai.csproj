@@ -8,6 +8,10 @@
     <ProjectReference Include="../../BuildingBlocks/Astryx.Infrastructure/Astryx.Infrastructure.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Scriban" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Prompts/**/*" LogicalName="Astryx.Ai.Prompts/%(RecursiveDir)%(Filename)%(Extension)" />
     <EmbeddedResource Include="Infrastructure/Fake/Scenarios/*.txt" LogicalName="Astryx.Ai.Fake.%(Filename).txt" />
   </ItemGroup>
 </Project>

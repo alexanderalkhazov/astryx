@@ -1,3 +1,4 @@
+using Astryx.Contracts.Discovery;
 using Astryx.Contracts.MarketData;
 using Astryx.Modules.Discovery.Domain;
 using Astryx.Modules.Discovery.Infrastructure.Persistence;
@@ -15,6 +16,20 @@ public sealed class SignalChartLevels(DiscoveryDbContext db) : IChartLevelsSourc
             .Where(s => s.Symbol == normalized && s.Status == SignalStatus.Active)
             .OrderByDescending(s => s.Score).ThenByDescending(s => s.EvaluatedAt)
             .Select(s => new ChartLevels(s.EntryPrice, s.StopPrice, s.TargetPrice))
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+}
+
+/// <summary>The active signal behind the chart levels, for the AI context (SYSTEM_DESIGN.md §12.4).</summary>
+public sealed class ActiveSignalSource(DiscoveryDbContext db) : IActiveSignalSource
+{
+    public async Task<ActiveSignal?> GetAsync(string symbol, CancellationToken cancellationToken)
+    {
+        var normalized = symbol.Trim().ToUpperInvariant();
+        return await db.Signals.AsNoTracking()
+            .Where(s => s.Symbol == normalized && s.Status == SignalStatus.Active)
+            .OrderByDescending(s => s.Score).ThenByDescending(s => s.EvaluatedAt)
+            .Select(s => new ActiveSignal(s.SignalType, s.Score, s.Reason, s.OrderType, s.EntryPrice, s.StopPrice, s.TargetPrice, s.EvaluatedAt))
             .FirstOrDefaultAsync(cancellationToken);
     }
 }

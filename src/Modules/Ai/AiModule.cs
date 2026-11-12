@@ -1,4 +1,6 @@
 using Astryx.Infrastructure.Persistence;
+using Astryx.Modules.Ai.Application.Context;
+using Astryx.Modules.Ai.Application.Prompts;
 using Astryx.Modules.Ai.Application.Providers;
 using Astryx.Modules.Ai.Infrastructure.Fake;
 using Astryx.Modules.Ai.Infrastructure.Ollama;
@@ -17,6 +19,15 @@ public static class AiModule
     {
         services.AddModuleDbContext<AiDbContext>(AiDbContext.SchemaName, historyKey: "ai");
         services.TryAddSingleton(TimeProvider.System);
+        services.AddOptions<PromptOptions>().Configure(o =>
+        {
+            foreach (var entry in configuration.GetSection(PromptOptions.SectionName).GetChildren())
+            {
+                o.Active[entry.Key] = entry.Value ?? string.Empty;
+            }
+        });
+        services.AddSingleton<PromptRegistry>();
+        services.AddScoped<AnalysisContextBuilder>();
 
         // `Ai:Provider`: Ollama (default) or Fake (tests, offline development).
         if (string.Equals(configuration["Ai:Provider"], "Fake", StringComparison.OrdinalIgnoreCase))

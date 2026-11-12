@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "analysis.v1",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schemaVersion", "symbol", "analysisTimestamp", "dataTimestamp", "dataQuality", "overallSentiment", "scenarios", "supportingEvidence", "contradictingEvidence", "keyRisks", "relevantIndicators", "catalysts", "confidence", "suggestedLevels", "explanation", "insufficientData"],
+  "$defs": {
+    "price": { "type": ["string", "null"], "pattern": "^[0-9]{1,7}(\\.[0-9]{1,4})?$" },
+    "text": { "type": "string", "minLength": 1, "maxLength": 600 },
+    "list": { "type": "array", "maxItems": 8, "items": { "type": "string", "minLength": 1, "maxLength": 300 } },
+    "scenario": {
+      "type": "object",
+      "required": ["summary", "conditions"],
+      "properties": { "summary": { "$ref": "#/$defs/text" }, "conditions": { "$ref": "#/$defs/list" } }
+    }
+  },
+  "properties": {
+    "schemaVersion": { "const": "analysis.v1" },
+    "symbol": { "type": "string", "pattern": "^[A-Z][A-Z0-9.\\-]{0,9}$" },
+    "analysisTimestamp": { "type": "string", "format": "date-time" },
+    "dataTimestamp": { "type": "string", "format": "date-time" },
+    "dataQuality": {
+      "type": "object",
+      "required": ["status"],
+      "properties": { "status": { "enum": ["ok", "gaps", "stale", "insufficient"] }, "notes": { "$ref": "#/$defs/list" } }
+    },
+    "overallSentiment": { "enum": ["bullish", "bearish", "neutral", "mixed"] },
+    "scenarios": {
+      "type": "object",
+      "required": ["bullish", "bearish", "neutral"],
+      "properties": { "bullish": { "$ref": "#/$defs/scenario" }, "bearish": { "$ref": "#/$defs/scenario" }, "neutral": { "$ref": "#/$defs/scenario" } }
+    },
+    "supportingEvidence": { "$ref": "#/$defs/list" },
+    "contradictingEvidence": { "$ref": "#/$defs/list" },
+    "keyRisks": { "$ref": "#/$defs/list" },
+    "relevantIndicators": {
+      "type": "array",
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "required": ["name", "value", "interpretation"],
+        "properties": { "name": { "type": "string" }, "value": { "type": "string" }, "interpretation": { "type": "string", "maxLength": 300 } }
+      }
+    },
+    "catalysts": {
+      "type": "array",
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "required": ["type", "note"],
+        "properties": { "type": { "enum": ["earnings", "dividend", "split", "news", "macro", "other"] }, "date": { "type": ["string", "null"], "format": "date" }, "note": { "type": "string", "maxLength": 300 } }
+      }
+    },
+    "confidence": {
+      "type": "object",
+      "required": ["value", "explanation"],
+      "properties": { "value": { "type": "number", "minimum": 0, "maximum": 1 }, "explanation": { "$ref": "#/$defs/text" } }
+    },
+    "suggestedLevels": {
+      "type": "object",
+      "required": ["justified", "entryZone", "stopLoss", "takeProfit", "rationale"],
+      "properties": {
+        "justified": { "type": "boolean" },
+        "entryZone": {
+          "type": ["object", "null"],
+          "required": ["low", "high"],
+          "properties": { "low": { "$ref": "#/$defs/price" }, "high": { "$ref": "#/$defs/price" } }
+        },
+        "stopLoss": { "$ref": "#/$defs/price" },
+        "takeProfit": { "$ref": "#/$defs/price" },
+        "rationale": { "type": ["string", "null"], "maxLength": 600 }
+      }
+    },
+    "explanation": { "type": "string", "minLength": 1, "maxLength": 2000 },
+    "insufficientData": { "type": "boolean" }
+  }
+}

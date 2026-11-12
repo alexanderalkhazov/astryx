@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Astryx.Contracts.MarketData;
+using Astryx.Contracts.Quant;
 using Astryx.Modules.Quant.Domain;
 using Astryx.Modules.Quant.Infrastructure.Persistence;
 using Astryx.SharedKernel;
@@ -14,7 +15,7 @@ namespace Astryx.Modules.Quant.Application.Analysis;
 /// because staleness depends on the time, not on the bars.
 /// </summary>
 public sealed class IndicatorSnapshotService(
-    QuantDbContext db, IPriceHistoryProvider history, StockAnalysisEngine engine, RelativeStrengthRanks ranks, TimeProvider timeProvider)
+    QuantDbContext db, IPriceHistoryProvider history, StockAnalysisEngine engine, RelativeStrengthRanks ranks, TimeProvider timeProvider) : IIndicatorSnapshots
 {
     public static readonly Error InstrumentNotFound = new("instrument_not_found", "No instrument with that symbol.");
     public static readonly Error InsufficientHistory = new("insufficient_history", $"At least {StockAnalysisEngine.MinBars} daily bars are needed for indicators.");
@@ -34,11 +35,34 @@ public sealed class IndicatorSnapshotService(
             return InstrumentNotFound;
         }
 
-        if (daily.Bars.Count < StockAnalysisEngine.MinBars || daily.LastBarAt is not { } asOfBar)
+        if (daily.Bars.Count < StockAnalysisEngine.MinBars || daily.LastBarAt is null)
         {
             return InsufficientHistory;
         }
 
+        return await SnapshotAsync(daily, cancellationToken);
+    }
+
+    /// <summary>The snapshot for the AI context (§12.4), with the gaps that explain its data quality.</summary>
+    public async Task<IndicatorReadout?> GetDailyAsync(string symbol, CancellationToken cancellationToken)
+    {
+        if (await history.GetDailyAsync(symbol, StockAnalysisEngine.LookbackBars, cancellationToken) is not { } daily)
+        {
+            return null;
+        }
+
+        if (daily.Bars.Count < StockAnalysisEngine.MinBars || daily.LastBarAt is null)
+        {
+            return new IndicatorReadout(daily.Symbol, daily.Bars.Count > 0 ? daily.Bars[^1].SessionDate : null, daily.Bars.Count, DataQuality.Insufficient, daily.MissingSessions, new Dictionary<string, string?>());
+        }
+
+        var snapshot = await SnapshotAsync(daily, cancellationToken);
+        return new IndicatorReadout(snapshot.Symbol, snapshot.AsOfBar, snapshot.BarCount, snapshot.DataQuality, daily.MissingSessions, snapshot.Values);
+    }
+
+    private async Task<IndicatorSnapshot> SnapshotAsync(DailyHistory daily, CancellationToken cancellationToken)
+    {
+        var asOfBar = daily.LastBarAt!.Value;
         var hash = StockAnalysisEngine.ParamsHash;
         var cached = await db.IndicatorSnapshots.AsNoTracking()
             .SingleOrDefaultAsync(s => s.InstrumentId == daily.InstrumentId && s.Timeframe == Timeframe && s.ParamsHash == hash && s.AsOfBar == asOfBar, cancellationToken);
