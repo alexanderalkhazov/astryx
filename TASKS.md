@@ -106,6 +106,8 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 | **M7** E2E and hardening | Automated journey, failure tests, observability, release gate | §21.10 release gate passes |
 | **M8** eToro Real (gated) | Real-money trading on eToro, only after legal, operational and safety gates | Every §17.9 gate ticked, owner sign-off |
 
+**Priority (owner, 2026-11-12): a working local app first.** Work runs M2 → M3 → M4 → M5 → M5b → M6 on the local stack (Docker, simulator, dev build). The CI, scanning and lint tasks (T-001, T-002, T-003, the CI check in T-010) and release or deployment work are deferred until the end-to-end journey works locally. A `Depends:` on one of them does not block local work. T-010's local generation (`pnpm api:gen`) is done with the market endpoints (T-045). Rule A.1 (real money disabled) and every safety rule still apply.
+
 ---
 
 ## Part C — Backlog
