@@ -30,7 +30,7 @@ export interface BadgeProps {
   tone?: BadgeTone;
   /** Mono uppercase, for status badges such as NEW and "1.2% to stop". */
   mono?: boolean;
-  /** Outlined with a leading dot, for the PAPER chip. */
+  /** Outlined with a leading dot. */
   outlined?: boolean;
   testID?: string;
 }
@@ -51,11 +51,6 @@ export function Badge({ label, tone = 'neutral', mono = false, outlined = false,
 export function SignalBadge({ type }: { type: SignalType }) {
   const { label, tone } = signalBadge[type];
   return <Badge label={label} tone={tone} />;
-}
-
-/** The PAPER chip shown on Home and Portfolio (design safety rule 4). */
-export function PaperBadge() {
-  return <Badge label="Paper" tone="pending" mono outlined />;
 }
 
 const styles = StyleSheet.create({

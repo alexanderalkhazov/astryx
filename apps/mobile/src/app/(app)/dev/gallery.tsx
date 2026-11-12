@@ -5,7 +5,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Badge, PaperBadge, SignalBadge } from '@/components/Badge';
+import { Badge, SignalBadge } from '@/components/Badge';
 import { Button, IconButton } from '@/components/Button';
 import { CheckRow } from '@/components/CheckRow';
 import { Chip, RemovableChip } from '@/components/Chip';
@@ -16,6 +16,7 @@ import { MetricGrid, MetricHero, MetricTile, ScoreBreakdownBar } from '@/compone
 import { StackHeader } from '@/components/Navigation';
 import { Segmented } from '@/components/Segmented';
 import { Sheet } from '@/components/Sheet';
+import { PaperChip } from '@/components/Shell';
 import { StatusBanner } from '@/components/StatusBanner';
 import { Stepper } from '@/components/Stepper';
 import { Switch } from '@/components/Switch';
@@ -89,7 +90,7 @@ function Gallery() {
           <View style={styles.wrap}>
             <Badge label="New" tone="gain" mono />
             <Badge label="1.2% to stop" tone="pending" mono />
-            <PaperBadge />
+            <PaperChip />
             <Badge label="Active" tone="gain" />
             <Badge label="Research" />
           </View>

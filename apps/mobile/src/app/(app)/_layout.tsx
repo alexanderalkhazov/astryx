@@ -1,7 +1,9 @@
-import { color, motion } from '@astryx/design-tokens';
+import { color } from '@astryx/design-tokens';
 import { Redirect, Stack, useGlobalSearchParams, usePathname, useSegments } from 'expo-router';
 import { useEffect } from 'react';
+import { useReducedMotion } from 'react-native-reanimated';
 
+import { stackTransition } from '@/lib/motion';
 import { clearPendingLink, currentHref, stashPendingLink } from '@/state/pendingLink';
 import { useSession } from '@/state/session';
 
@@ -12,6 +14,7 @@ export default function AppLayout() {
   const pathname = usePathname();
   const segments = useSegments();
   const params = useGlobalSearchParams();
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     if (status === 'signedOut' && !signedOutByUser) stashPendingLink(currentHref(pathname, segments, params));
@@ -29,7 +32,7 @@ export default function AppLayout() {
       screenOptions={{
         headerShown: false,
         contentStyle: { backgroundColor: color.bg },
-        animationDuration: motion.push,
+        ...stackTransition(reduceMotion),
       }}
     >
       <Stack.Screen name="(tabs)" />

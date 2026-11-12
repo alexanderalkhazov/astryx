@@ -3,13 +3,14 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 import { Search } from 'lucide-react-native';
 import { StyleSheet } from 'react-native';
 
-import { Badge, PaperBadge, SignalBadge } from '../Badge';
+import { Badge, SignalBadge } from '../Badge';
 import { Button, buttonStyle, IconButton } from '../Button';
 import { Chip, RemovableChip } from '../Chip';
 import { EmptyState } from '../Feedback';
 import { Input, Select } from '../Input';
 import { StackHeader, TabBar, type TabBarProps } from '../Navigation';
 import { Segmented } from '../Segmented';
+import { PaperChip } from '../Shell';
 import { Stepper } from '../Stepper';
 import { Switch } from '../Switch';
 import { Tabs } from '../Tabs';
@@ -102,7 +103,7 @@ describe('Badges', () => {
     await render(
       <>
         <Badge label="1.2% to stop" tone="pending" mono />
-        <PaperBadge />
+        <PaperChip />
       </>,
     );
 

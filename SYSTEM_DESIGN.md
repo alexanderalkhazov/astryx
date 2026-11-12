@@ -1314,6 +1314,7 @@ RHF + Zod for: sign-in/up, forgot/reset, risk limits, scanner settings, watchlis
 - iOS: push from right, edge-swipe back. Android: fade-through, edge-to-edge, 8% white ripple, back pops sheet/dialog first.
 - Tablets: not targeted (`ASSUMPTION`); content centred at max 430 width.
 - Charts expose `accessibilityLabel` summary and the last 10 bars as an accessible list.
+- **Implemented (T-035):** `lib/motion.ts` maps the motion tokens onto Expo Router. Pushed screens use `slide_from_right` with edge-swipe on iOS and `fade` on Android. Tab changes fade and rise 6 pt over 200 ms with the design easing. Under Reduce Motion (`useReducedMotion`) iOS cross-fades, Android does not animate, and tabs switch instantly. `components/Shell.tsx` provides `Screen` (top safe area, 16 pt gutter, column centred at max 430), `ScreenHeader`, `PaperChip`, `SampleDataNotice` and `HomeHeader` (search → `/search`, bell → `/activity?filter=alerts` with an unread dot, sliders → `/settings`). Android back reaches the open sheet before the router, because listeners run newest first. A test checks this with the real router.
 
 ---
 

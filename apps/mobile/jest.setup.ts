@@ -1,24 +1,5 @@
-// Reanimated 4 needs the native worklets runtime, and its bundled Jest mock still loads the real library, so tests
-// use this stub of the APIs our components call. Values settle immediately; motion is verified on the simulator.
-jest.mock('react-native-reanimated', () => {
-  const { View, Text } = require('react-native');
-  const identity = (value: unknown) => value;
-  return {
-    __esModule: true,
-    default: { View, Text },
-    View,
-    Text,
-    useSharedValue: (initial: unknown) => ({ value: initial }),
-    useAnimatedStyle: (factory: () => object) => factory(),
-    withTiming: identity,
-    withRepeat: identity,
-    withDelay: (_delay: number, value: unknown) => value,
-    Easing: { bezier: () => identity, inOut: () => identity, ease: identity, linear: identity },
-    ReduceMotion: { System: 'system', Always: 'always', Never: 'never' },
-    useReducedMotion: () => false,
-    FadeInUp: undefined,
-    FadeOutUp: undefined,
-  };
-});
+// Expo Router's testing library re-mocks Reanimated with `react-native-reanimated/mock`, so both resolve to our stub.
+jest.mock('react-native-reanimated', () => require('./jest/reanimated'));
+jest.mock('react-native-reanimated/mock', () => require('./jest/reanimated'));
 
 jest.mock('@gorhom/bottom-sheet', () => require('@gorhom/bottom-sheet/mock'));
