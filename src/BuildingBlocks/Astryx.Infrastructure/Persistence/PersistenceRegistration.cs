@@ -24,6 +24,7 @@ public static class PersistenceRegistration
         }
 
         services.AddSingleton(_ => NpgsqlDataSource.Create(connectionString));
+        services.AddScoped<ModuleUnitOfWork>();
         services.AddModuleDbContext<InfraDbContext>(InfraDbContext.SchemaName, historyKey: "infra", order: 0);
         services.AddOutbox(configuration);
         services.AddJobQueue(configuration);
@@ -43,9 +44,31 @@ public static class PersistenceRegistration
         where TContext : ModuleDbContext
     {
         var historyTable = $"__ef_migrations_{historyKey}";
-        services.AddDbContext<TContext>((provider, options) => options
-            .UseNpgsql(provider.GetRequiredService<NpgsqlDataSource>(), npgsql => npgsql.MigrationsHistoryTable(historyTable, schema))
-            .UseSnakeCaseNamingConvention());
+        services.AddDbContext<TContext>((provider, options) =>
+        {
+            // Inside an active unit of work every context shares its connection (see ModuleUnitOfWork).
+            var unit = provider.GetService<ModuleUnitOfWork>();
+            if (unit is { Active: true })
+            {
+                options.UseNpgsql(unit.Connection!, npgsql => npgsql.MigrationsHistoryTable(historyTable, schema));
+            }
+            else
+            {
+                options.UseNpgsql(provider.GetRequiredService<NpgsqlDataSource>(), npgsql => npgsql.MigrationsHistoryTable(historyTable, schema));
+            }
+
+            options.UseSnakeCaseNamingConvention();
+        });
+        services.AddScoped(provider =>
+        {
+            var context = ActivatorUtilities.CreateInstance<TContext>(provider, provider.GetRequiredService<DbContextOptions<TContext>>());
+            if (provider.GetService<ModuleUnitOfWork>() is { Active: true } unit)
+            {
+                context.Database.UseTransaction(unit.Transaction);
+            }
+
+            return context;
+        });
         services.AddSingleton(new ModuleDbContextRegistration(typeof(TContext), schema, historyTable, order));
         return services;
     }

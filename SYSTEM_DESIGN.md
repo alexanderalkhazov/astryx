@@ -3275,6 +3275,27 @@ BEGIN (READ COMMITTED)
 COMMIT
 ```
 
+**Implemented (T-084).**
+
+- **One transaction across modules:** `ModuleUnitOfWork` (Infrastructure) opens one connection and a READ COMMITTED transaction. Every module DbContext resolved later in the same DI scope shares that connection and enlists through `UseTransaction`. T6 runs in a fresh scope inside it, so the following commit or roll back together:
+  - the portfolio lock (`IPortfolioLedger.LockAsync`);
+  - the proposal lock and fresh risk run (`IExecutionGate`, owned by Trading);
+  - the order, fill and OCO exits (Paper, in `trading.orders`/`trading.fills`);
+  - the position (`IPositionBook`) and ledger postings;
+  - the proposal approval, outbox events and audit row.
+- `DECIDED`: the idempotency record stays outside this transaction. The idempotency filter claims the key first and stores the response after, and an abandoned claim is taken over once its lease expires.
+- **Execution gate:**
+  - It refuses an assessment that is unapprovable, older than 60 s, made under other risk settings, or for another proposal version (409 `assessment_stale`).
+  - It then re-runs the engine at the same quantity and risk.
+  - A failing session or data check is 409 `market_closed` or `quote_stale`; any other failing check is 422 `risk_check_failed`.
+  - A changed quantity or a price move over 0.5% is 409 `assessment_stale`.
+- **Fills:** `PaperFillSimulator` (pure) fills a buy stop at max(stop, last) + slippage once last ≥ stop, a touched limit at min(limit, last) with no slippage, and a market order at last + slippage.
+  - An untriggered entry works as a day order, expiring at the close, and reserves qty × (entry + slip) + fee, kept on the order as `reserved_amount`.
+  - A fill posts `buy` (and `fee` when non-zero) to the ledger, opens the position, and attaches GTC OCO exits: a sell stop at the stop and a limit sell at the target.
+- Broker ids are `SIM-` plus six base32 characters.
+- `IOpenOrders` feeds working entries into the risk engine's `max_open_positions` and `no_duplicate` checks.
+- **Tests:** PAPER-01 (fill at 186.62, ledger −64 × 186.62), PAPER-02 (working, 64 × 186.52 reserved), IDEM-01/02/03/05 and RISK-07 pass, and the ledger invariants hold after each. Unit tests cover the design trade: 186.52, cash 21,840.55 → 7,665.03.
+
 `portfolio.reserved_cash`: `ASSUMPTION`. Add `reserved_cash numeric(20,4)` to `portfolio.portfolios`, giving `Cash` = `cash_balance − reserved_cash`. This is required so working orders can't over-commit cash.
 
 ### 15.4 Monitoring loop

@@ -5,6 +5,7 @@ using System.Text.Json;
 using Astryx.Contracts.Ai;
 using Astryx.Contracts.Discovery;
 using Astryx.Contracts.MarketData;
+using Astryx.Contracts.Paper;
 using Astryx.Contracts.Portfolio;
 using Astryx.Contracts.Profiles;
 using Astryx.Contracts.Quant;
@@ -53,6 +54,7 @@ public sealed class AssessmentService(
     IPortfolioStateSource portfolios,
     IRiskSettingsSource riskSettings,
     IMarketSessionClock sessions,
+    IOpenOrders openOrders,
     IConfiguration configuration)
 {
     public static readonly IReadOnlyList<decimal> RiskChoices = [0.0050m, 0.0075m, 0.0100m];
@@ -212,13 +214,14 @@ public sealed class AssessmentService(
             ? (await signals.GetAsync(proposal.SignalId!.Value, cancellationToken))?.Status == "active"
             : (await analyses.GetAsync(proposal.UserId, proposal.AnalysisResultId!.Value, cancellationToken)) is { Stale: false };
 
+        var working = await openOrders.GetWorkingEntriesAsync(proposal.PortfolioId, cancellationToken);
         var inputs = new RiskInputs(
             proposal.Symbol, proposal.OrderType, proposal.EntryPrice, proposal.StopPrice, proposal.TargetPrice,
             riskPerTradePct ?? DefaultRisk(limits), quantity,
             quote.Last, quote.AsOf, BarsStale: facts?.History.Stale ?? true, SignalActive: sourceActive,
             equity, portfolio.CashBalance - portfolio.ReservedCash, sector, sectorValue,
-            portfolio.OpenPositions.Count, WorkingEntries: 0, // working entry orders arrive with the paper engine (T-084)
-            HoldsSymbol: portfolio.OpenPositions.Any(p => p.InstrumentId == proposal.InstrumentId), WorkingEntryForSymbol: false,
+            portfolio.OpenPositions.Count, working.Count,
+            HoldsSymbol: portfolio.OpenPositions.Any(p => p.InstrumentId == proposal.InstrumentId), WorkingEntryForSymbol: working.InstrumentIds.Contains(proposal.InstrumentId),
             portfolio.StartOfDayEquity, facts?.Atr14, await sessions.TodayAsync(cancellationToken), sessions.Now, limits, Costs());
         return (inputs, new HashContext(quote.QuoteSeq, portfolio.Version, limits.Version));
     }

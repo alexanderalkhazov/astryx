@@ -1087,6 +1087,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/paper/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListPaperOrders"];
+        put?: never;
+        post: operations["PlacePaperOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/paper/orders/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetPaperOrder"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1205,6 +1237,14 @@ export interface components {
             last: string;
             /** Format: date-time */
             asOf: string;
+        };
+        AttachedExitsDto: {
+            /** Format: uuid */
+            ocoGroupId: string;
+            /** Format: decimal */
+            stop: string;
+            /** Format: decimal */
+            target: string;
         };
         BacktestRunDto: {
             /** Format: uuid */
@@ -1331,6 +1371,20 @@ export interface components {
             liveTrading: boolean;
             strategyConfigure: boolean;
             push: boolean;
+        };
+        FillDto: {
+            /** Format: decimal */
+            price: string;
+            /** Format: decimal */
+            referencePrice: string;
+            /** Format: decimal */
+            slippagePerShare: string;
+            /** Format: decimal */
+            slippage: string;
+            /** Format: decimal */
+            fee: string;
+            /** Format: date-time */
+            filledAt: string;
         };
         ForgotPasswordRequest: {
             email: string;
@@ -1466,6 +1520,37 @@ export interface components {
             dailySummary: boolean;
             pushEnabled: boolean;
         };
+        OrderDto: {
+            /** Format: uuid */
+            id: string;
+            brokerOrderId: string;
+            mode: string;
+            broker: string;
+            status: string;
+            purpose: string;
+            symbol: string;
+            side: string;
+            orderType: string;
+            /** Format: decimal */
+            quantity: string;
+            /** Format: decimal */
+            stopPrice: null | string;
+            /** Format: decimal */
+            limitPrice: null | string;
+            fill: null | components["schemas"]["FillDto"];
+            attached: null | components["schemas"]["AttachedExitsDto"];
+            /** Format: uuid */
+            positionId: null | string;
+            /** Format: uuid */
+            proposalId: null | string;
+            /** Format: date-time */
+            submittedAt: string;
+            /** Format: date-time */
+            expiresAt: null | string;
+        };
+        OrderPageDto: {
+            items: components["schemas"]["OrderDto"][];
+        };
         ParameterDto: {
             key: string;
             label: string;
@@ -1475,6 +1560,12 @@ export interface components {
             max: null | components["schemas"]["JsonNode"];
             step: null | components["schemas"]["JsonNode"];
             value: null | components["schemas"]["JsonNode"];
+        };
+        PlaceOrderRequest: {
+            /** Format: uuid */
+            proposalId: string;
+            /** Format: uuid */
+            assessmentId: string;
         };
         PriceZoneDto: {
             low: null | string;
@@ -3549,6 +3640,111 @@ export interface operations {
             };
             /** @description Conflict */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    ListPaperOrders: {
+        parameters: {
+            query?: {
+                status?: string;
+                limit?: null | number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderPageDto"];
+                };
+            };
+        };
+    };
+    PlacePaperOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlaceOrderRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDto"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    GetPaperOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDto"];
+                };
+            };
+            /** @description Not Found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

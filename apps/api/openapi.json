@@ -2541,6 +2541,145 @@
           }
         }
       }
+    },
+    "/api/v1/paper/orders": {
+      "post": {
+        "tags": [
+          "Paper orders"
+        ],
+        "operationId": "PlacePaperOrder",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaceOrderRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Paper orders"
+        ],
+        "operationId": "ListPaperOrders",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": [
+                "null",
+                "integer"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderPageDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/paper/orders/{id}": {
+      "get": {
+        "tags": [
+          "Paper orders"
+        ],
+        "operationId": "GetPaperOrder",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2996,6 +3135,31 @@
           "asOf": {
             "type": "string",
             "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AttachedExitsDto": {
+        "required": [
+          "ocoGroupId",
+          "stop",
+          "target"
+        ],
+        "type": "object",
+        "properties": {
+          "ocoGroupId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "stop": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "target": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
           }
         },
         "additionalProperties": false
@@ -3462,6 +3626,49 @@
           },
           "push": {
             "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "FillDto": {
+        "required": [
+          "price",
+          "referencePrice",
+          "slippagePerShare",
+          "slippage",
+          "fee",
+          "filledAt"
+        ],
+        "type": "object",
+        "properties": {
+          "price": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "referencePrice": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "slippagePerShare": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "slippage": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "fee": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "filledAt": {
+            "type": "string",
+            "format": "date-time"
           }
         },
         "additionalProperties": false
@@ -4003,6 +4210,141 @@
         },
         "additionalProperties": false
       },
+      "OrderDto": {
+        "required": [
+          "id",
+          "brokerOrderId",
+          "mode",
+          "broker",
+          "status",
+          "purpose",
+          "symbol",
+          "side",
+          "orderType",
+          "quantity",
+          "stopPrice",
+          "limitPrice",
+          "fill",
+          "attached",
+          "positionId",
+          "proposalId",
+          "submittedAt",
+          "expiresAt"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "brokerOrderId": {
+            "type": "string"
+          },
+          "mode": {
+            "type": "string"
+          },
+          "broker": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "symbol": {
+            "type": "string"
+          },
+          "side": {
+            "type": "string"
+          },
+          "orderType": {
+            "type": "string"
+          },
+          "quantity": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "stopPrice": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "decimal"
+          },
+          "limitPrice": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "decimal"
+          },
+          "fill": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/FillDto"
+              }
+            ]
+          },
+          "attached": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/AttachedExitsDto"
+              }
+            ]
+          },
+          "positionId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "proposalId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "submittedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expiresAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "OrderPageDto": {
+        "required": [
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderDto"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
       "ParameterDto": {
         "required": [
           "key",
@@ -4074,6 +4416,24 @@
                 "$ref": "#/components/schemas/JsonNode"
               }
             ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "PlaceOrderRequest": {
+        "required": [
+          "proposalId",
+          "assessmentId"
+        ],
+        "type": "object",
+        "properties": {
+          "proposalId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentId": {
+            "type": "string",
+            "format": "uuid"
           }
         },
         "additionalProperties": false
@@ -5935,6 +6295,9 @@
     },
     {
       "name": "Proposals"
+    },
+    {
+      "name": "Paper orders"
     }
   ]
 }

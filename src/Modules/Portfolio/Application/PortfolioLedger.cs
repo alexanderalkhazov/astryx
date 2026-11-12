@@ -109,6 +109,53 @@ public sealed class PortfolioLedger(PortfolioDbContext db, TimeProvider timeProv
         }
     }
 
+    public async Task<bool> LockAsync(Guid portfolioId, CancellationToken cancellationToken) =>
+        (await db.Portfolios.FromSql($"SELECT * FROM portfolio.portfolios WHERE id = {portfolioId} FOR UPDATE")
+            .IgnoreQueryFilters().AsNoTracking().ToListAsync(cancellationToken)).Count == 1;
+
+    public async Task<Result<LedgerPosting>> ReserveAsync(Guid portfolioId, decimal delta, CancellationToken cancellationToken)
+    {
+        if (delta == 0 || delta != RoundingPolicy.Ledger(delta))
+        {
+            return Error.Validation("A reservation change must be non-zero and rounded to cents.");
+        }
+
+        var own = db.Database.CurrentTransaction is null ? await db.Database.BeginTransactionAsync(cancellationToken) : null;
+        try
+        {
+            var portfolio = (await db.Portfolios.FromSql($"SELECT * FROM portfolio.portfolios WHERE id = {portfolioId} FOR UPDATE")
+                .IgnoreQueryFilters().ToListAsync(cancellationToken)).FirstOrDefault();
+            if (portfolio is null)
+            {
+                return NotFound;
+            }
+
+            var reserved = portfolio.ReservedCash + delta;
+            if (reserved > portfolio.CashBalance)
+            {
+                return InsufficientFunds;
+            }
+
+            portfolio.ReservedCash = Math.Max(0, reserved);
+            portfolio.Version++;
+            portfolio.UpdatedAt = timeProvider.GetUtcNow();
+            await db.SaveChangesAsync(cancellationToken);
+            if (own is not null)
+            {
+                await own.CommitAsync(cancellationToken);
+            }
+
+            return new LedgerPosting(portfolio.CashBalance, portfolio.ReservedCash, portfolio.Version, [], Replayed: false);
+        }
+        finally
+        {
+            if (own is not null)
+            {
+                await own.DisposeAsync();
+            }
+        }
+    }
+
     private static Error? Validate(IReadOnlyList<LedgerEntry> entries)
     {
         if (entries.Count == 0)

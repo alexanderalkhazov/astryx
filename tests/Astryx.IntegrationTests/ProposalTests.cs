@@ -36,7 +36,12 @@ public class TradingApiFactory : SyncedMarketApiFactory
 {
     public TestSessionClock Session { get; } = new();
 
-    protected override IReadOnlyDictionary<string, string> ExtraSettings => new Dictionary<string, string> { ["Ai:Provider"] = "Fake" };
+    protected override IReadOnlyDictionary<string, string> ExtraSettings => new Dictionary<string, string>
+    {
+        ["Ai:Provider"] = "Fake",
+        ["RateLimits:OrdersPerMinute"] = "1000",
+        ["RateLimits:AssessmentPerMinute"] = "1000",
+    };
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -45,13 +50,17 @@ public class TradingApiFactory : SyncedMarketApiFactory
     }
 
     /// <summary>Stamps the symbol's stored quote as just received, as during a live session (the fake feed stamps closes after hours).</summary>
-    public async Task MakeQuoteLiveAsync(string symbol)
+    public async Task MakeQuoteLiveAsync(string symbol, decimal? last = null)
     {
         await using var scope = Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<MarketDataDbContext>();
         var now = DateTimeOffset.UtcNow;
-        await db.Quotes.Where(q => db.Instruments.Any(i => i.Id == q.InstrumentId && i.Symbol == symbol))
-            .ExecuteUpdateAsync(s => s.SetProperty(q => q.AsOf, now).SetProperty(q => q.QuoteSeq, q => q.QuoteSeq + 1));
+        var quotes = db.Quotes.Where(q => db.Instruments.Any(i => i.Id == q.InstrumentId && i.Symbol == symbol));
+        await quotes.ExecuteUpdateAsync(s => s.SetProperty(q => q.AsOf, now).SetProperty(q => q.QuoteSeq, q => q.QuoteSeq + 1));
+        if (last is { } price)
+        {
+            await quotes.ExecuteUpdateAsync(s => s.SetProperty(q => q.Last, price));
+        }
     }
 
     public async Task PrepareAsync()

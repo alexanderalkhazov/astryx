@@ -6,6 +6,8 @@ using Astryx.Infrastructure.Security;
 using Astryx.Modules.Ai.Domain;
 using Astryx.Modules.Ai.Infrastructure.Persistence;
 using Astryx.Modules.Identity.Infrastructure.Persistence;
+using Astryx.Modules.Paper.Domain;
+using Astryx.Modules.Paper.Infrastructure.Persistence;
 using Astryx.Modules.Trading.Domain;
 using Astryx.Modules.Trading.Infrastructure.Persistence;
 using Astryx.Modules.Portfolio.Infrastructure.Persistence;
@@ -57,6 +59,7 @@ public partial class DataIsolationTests(ApiFactory factory) : IClassFixture<ApiF
         ["GET /api/v1/analyses/{id:guid}"] = t => t.AssertForeignAnalysisIs404Async(HttpMethod.Get, a => $"/api/v1/analyses/{a.ResultId}"),
         ["GET /api/v1/proposals/{id:guid}"] = t => t.AssertForeignProposalIs404Async(HttpMethod.Get, ""),
         ["POST /api/v1/proposals/{id:guid}/reject"] = t => t.AssertForeignProposalIs404Async(HttpMethod.Post, "/reject"),
+        ["GET /api/v1/paper/orders/{id:guid}"] = t => t.AssertForeignOrderIs404Async(),
         ["POST /api/v1/proposals/{id:guid}/assessments"] = t => t.AssertForeignProposalIs404Async(HttpMethod.Post, "/assessments", new { riskPerTradePct = "0.0075" }),
     };
 
@@ -135,6 +138,29 @@ public partial class DataIsolationTests(ApiFactory factory) : IClassFixture<ApiF
         (await bob.SendAsync(new HttpRequestMessage(method, path(ids)))).StatusCode.ShouldBe(HttpStatusCode.NotFound);
 
         (await alice.GetFromJsonAsync<JsonElement>($"/api/v1/analyses/jobs/{ids.JobId}")).GetProperty("status").GetString().ShouldBe("pending");
+    }
+
+    /// <summary>Bob addresses Alice's paper order: 404.</summary>
+    private async Task AssertForeignOrderIs404Async()
+    {
+        var alice = await TestUsers.SignedInClientAsync(factory);
+        var bob = await TestUsers.SignedInClientAsync(factory);
+        var aliceId = (await alice.GetFromJsonAsync<JsonElement>("/api/v1/me")).GetProperty("id").GetGuid();
+        var id = Guid.NewGuid();
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<PaperDbContext>();
+            db.Orders.Add(new Order
+            {
+                Id = id, UserId = aliceId, PortfolioId = Guid.NewGuid(), InstrumentId = Guid.NewGuid(), Symbol = "NVDA", ProposalId = Guid.NewGuid(), AssessmentId = Guid.NewGuid(),
+                ClientOrderId = $"isolation-{id:N}", BrokerOrderId = $"SIM-{id:N}"[..10], Purpose = "entry", Side = "buy", OrderType = "buy_stop", TimeInForce = "day",
+                Quantity = 1, StopPrice = 186.5m, Status = "working", SubmittedAt = DateTimeOffset.UtcNow,
+            });
+            await db.SaveChangesAsync();
+        }
+
+        (await bob.GetAsync($"/api/v1/paper/orders/{id}")).StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        (await alice.GetAsync($"/api/v1/paper/orders/{id}")).StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
     /// <summary>Bob addresses Alice's trade proposal: 404, and it stays pending.</summary>
