@@ -351,7 +351,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [x] **T-082** Risk engine
   - **Acceptance:** sizing (min of risk, weight cap and cash; `sized_by`), all 12 checks with pass, warn and fail thresholds, `inputs_hash`, 60 s validity. **RISK-01…RISK-10 pass**, including the exact design numbers (76 sh, $14,174.00, −$630.80, +$1,330.00, R:R 2.11, sized by weight cap).
   - **Refs:** §14 · **Depends:** T-080, T-043 · **P0**
-- [ ] **T-083** Assessment endpoint
+- [x] **T-083** Assessment endpoint
   - **Acceptance:** T4 persists immutable `risk_assessments` matching the §11.7 example. Risk choices above the user's max return 422. A 60/min rate limit. Risk settings changes make existing assessments stale.
   - **Refs:** §11.7, §14.5 · **Depends:** T-082, T-023 · **P0**
 - [ ] **T-084** Paper execution engine and order endpoint
