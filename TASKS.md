@@ -335,7 +335,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Story:** As a user, I want an AI-written explanation of bullish, bearish and neutral scenarios, clearly labelled as experimental research.
   - **Acceptance:** button → job progress → rendered scenarios, evidence (supporting and contradicting), risks, catalysts, and confidence with the "not a calibrated probability" note. The "Experimental AI model" label and disclaimer are shown. Failure shows "Analysis couldn't be generated reliably. Indicators are still available." **Manual check:** a real Ollama run for NVDA.
   - **Refs:** §8.4.3, §12.6 · **Depends:** T-074, T-068 · **P0**
-- [ ] **T-076** AI evaluation harness
+- [x] **T-076** AI evaluation harness
   - **Acceptance:** `tools/Astryx.AiEval` runs ≥ 50 golden contexts, including injection headlines, and writes a Markdown and JSON report (schema-valid rate, grounding violations, policy hits, p50/p95 latency). A baseline report for `qwen3.5:0.8b` is committed.
   - **Refs:** §12.10 · **Depends:** T-072 · **P1**
 
