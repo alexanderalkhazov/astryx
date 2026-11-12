@@ -235,7 +235,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 
 ### M2 · Market data
 
-- [ ] **T-040** Market schema and instrument master
+- [x] **T-040** Market schema and instrument master — `9fbe123`
   - **Acceptance:** migrations for `instruments`, `quotes`, `price_bars`, `corporate_actions`, `fundamentals`, `news_articles`, `instrument_news`, `trading_calendar` and `provider_sync_state`, with every constraint and index from §10.4. Constraint tests cover OHLC sanity and unique `(symbol, mic)`.
   - **Refs:** §10.4 (market) · **Depends:** T-012 · **P0**
 - [ ] **T-041** `IMarketDataProvider` and the deterministic fake provider
