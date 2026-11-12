@@ -3162,6 +3162,18 @@ valid ⇔ approvable ∧ now < expires_at (60 s) ∧ inputs_hash recomputed at e
 
 `quote_seq` changes with every quote update. At execution the engine therefore **re-runs the full assessment** on the fresh quote. If all checks still pass and `|P_last_new − P_last_old| / P_last_old ≤ 0.5%` and `Q` is unchanged, execution proceeds and stores the new assessment. Otherwise it returns 409 `assessment_stale` with the new assessment so the user can review again. This avoids spurious rejections from tick noise while never executing on unchecked numbers.
 
+**Implemented (T-082).**
+
+- `Trading/Domain/Risk/RiskEngine.cs` is a pure function from `RiskInputs` to `RiskResult`. It has no I/O, uses no clock of its own, and contains no floating point.
+- **Sizing** takes the smallest of the three bounds, with the tie order risk, weight cap, cash. A requested quantity becomes `sized_by=user`.
+- **Costs:** slippage per share is `max(MinSlippage, ceil_cent(P_e × bps / 10000))` and fees are flat per order (`CostModel`).
+- **Checks:** all twelve run, in a fixed order with the six design checks first (`RiskEngine.DesignChecks`). Each carries an unrounded `actual` and `limit`. Messages follow §14.6, e.g. "Position weight 12.62% exceeds 12% cap. Max 76 shares." and "Daily loss halt reached (−2.05% ≤ −2.00%). …".
+- `risk_per_trade` compares `MaxLossInclCosts` (risk including costs) with min(r, max). An `r` above the user's max fails outright, and T4 also refuses it with 422.
+  - `NOTE`: §11.7's example shows `actual` 0.0053, which is the risk without costs. The engine reports 0.0054, risk with costs, as the rule says.
+- `session_open` passes from the open until 30 minutes before the close, warns until 5 minutes before, then fails. With no session today it fails.
+- `data_fresh` fails for a quote older than 90 s, stale bars, or an inactive signal.
+- Tests cover RISK-01…04, 08 and 09 and examples R1–R10 exactly, plus an FsCheck property for RISK-10 (500 cases). RISK-05 (stop ≥ entry is refused with 422 before the table's check constraint) is in the proposal service. RISK-06 and RISK-07 belong to the endpoints (T-083, T-084).
+
 ### 14.6 Worked examples
 
 Context for all examples (the design's Home values): E = $118,181.30, Cash = $21,840.55, NVDA last 186.40, entry 186.50, stop 178.20, target 204.00, ATR14 5.53, slip 0.02, fee 0.00, Semiconductors exposure before = 12.1%, 5 open positions, day P&L −0.12%.
