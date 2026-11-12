@@ -245,7 +245,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [x] **T-042** Ingestion jobs — `8a84087`
   - **Acceptance:** `InstrumentSync`, `CalendarSync`, `EodBarSync`, `QuoteSync` (priority order: positions, then working orders, then watchlist, then the rest), `FundamentalsSync` and `NewsSync` are scheduled via the job queue with an idempotent upsert. A rate-budget limiter is respected. `QuoteUpdated` events are emitted.
   - **Refs:** §16.3, §19.2 · **Depends:** T-015, T-041 · **P0**
-- [ ] **T-043** Freshness and market session service
+- [x] **T-043** Freshness and market session service — `4571583`
   - **Acceptance:** freshness budgets (§20.5) are applied. `asOf`/`stale` appear on every market response. NodaTime calendar handles DST and half days. `GET /market/session` exists. Tests use `FakeTimeProvider` across the DST switch and a half day.
   - **Refs:** §20.3–20.5 · **Depends:** T-042 · **P0**
 - [ ] **T-044** Corporate action adjustments
