@@ -299,7 +299,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Scope:** a deterministic rule from the §8.4.9 parameters (base length 6 wk, volume multiple 2.2×, min RS 80, stop 1.5× ATR) producing entry, stop, target, a reason string and component scores. The rule definition is documented in `SYSTEM_DESIGN.md` (partly answers Q-09).
   - **Acceptance:** NVDA fixture produces buy_stop 186.50 / stop 178.20 / target 204.00 / score 87 and the reason "Cleared a 6-week base at $185.90 on 2.4× average volume."
   - **Refs:** §13.4, Q-09 · **Depends:** T-060, T-063 · **P0**
-- [ ] **T-065** Scanner runs and signals
+- [x] **T-065** Scanner runs and signals (eceafd0)
   - **Acceptance:** `discovery.*` migrations. `ScannerRunJob` after EOD and every 15 min in session. Universe filters from Settings (min price $10, avg $ volume $20M). Signals with score breakdown. Superseding of old signals. `SignalDetected` event. `CompletedWithWarnings` and `failed` states with `SCN-xxx` codes.
   - **Refs:** §7.4, §19.2 · **Depends:** T-064, T-042 · **P0**
 - [ ] **T-066** Scanner and signal endpoints
