@@ -238,7 +238,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [x] **T-040** Market schema and instrument master — `9fbe123`
   - **Acceptance:** migrations for `instruments`, `quotes`, `price_bars`, `corporate_actions`, `fundamentals`, `news_articles`, `instrument_news`, `trading_calendar` and `provider_sync_state`, with every constraint and index from §10.4. Constraint tests cover OHLC sanity and unique `(symbol, mic)`.
   - **Refs:** §10.4 (market) · **Depends:** T-012 · **P0**
-- [ ] **T-041** `IMarketDataProvider` and the deterministic fake provider
+- [x] **T-041** `IMarketDataProvider` and the deterministic fake provider — `783e97e`
   - **Scope:** the interfaces from §16.1; `FakeMarketDataProvider` and `FakeNewsProvider` backed by `tests/fixtures/market` (a universe of about 1,034 symbols, 300+ daily bars, NVDA tuned to the design: 186.40 / +3.42% / O 180.60 H 186.77 L 180.05 / V 412.8M); seeded intraday random walk; fault injection (down, stale, bad tick).
   - **Acceptance:** the same seed produces identical outputs. Fault modes can be toggled at runtime via `/dev/faults` (Development only).
   - **Refs:** §16.1, §11.11, §21.1 · **Depends:** T-040 · **P0**
