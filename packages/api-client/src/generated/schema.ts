@@ -847,6 +847,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/strategies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListStrategies"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/strategies/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StrategySummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/strategies/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetStrategy"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/strategies/{id}/runs/{runId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetBacktestRun"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -857,6 +921,33 @@ export interface components {
         AddWatchlistItemRequest: {
             symbol: string;
             note: null | string;
+        };
+        BacktestRunDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            strategyId: string;
+            /** Format: int32 */
+            runNumber: number;
+            /** Format: int32 */
+            version: number;
+            status: string;
+            /** Format: date */
+            periodStart: string;
+            /** Format: date */
+            periodEnd: string;
+            /** Format: date */
+            oosStart: string;
+            /** Format: decimal */
+            initialCapital: string;
+            assumptions: components["schemas"]["JsonNode"];
+            metrics: components["schemas"]["JsonNode"];
+            equityCurve: components["schemas"]["JsonNode"];
+            drawdownCurve: components["schemas"]["JsonNode"];
+            monthlyReturns: components["schemas"]["JsonNode"];
+            /** Format: date-time */
+            finishedAt: null | string;
+            errorCode: null | string;
         };
         BarDto: {
             /** Format: date-time */
@@ -1003,6 +1094,7 @@ export interface components {
         ItemsResponseOfNewsItemDto: {
             items: components["schemas"]["NewsItemDto"][];
         };
+        JsonNode: unknown;
         LevelsDto: {
             /** Format: decimal */
             entry: string;
@@ -1010,6 +1102,14 @@ export interface components {
             stop: string;
             /** Format: decimal */
             target: string;
+        };
+        LiveResultsDto: {
+            sinceInceptionPct: string;
+            mtdPct: string;
+            mtdPnl: string;
+            /** Format: int32 */
+            mtdTrades: number;
+            illustrative: boolean;
         };
         LoginRequest: {
             email: string;
@@ -1048,6 +1148,16 @@ export interface components {
             system: boolean;
             dailySummary: boolean;
             pushEnabled: boolean;
+        };
+        ParameterDto: {
+            key: string;
+            label: string;
+            unit: string;
+            default: null | components["schemas"]["JsonNode"];
+            min: null | components["schemas"]["JsonNode"];
+            max: null | components["schemas"]["JsonNode"];
+            step: null | components["schemas"]["JsonNode"];
+            value: null | components["schemas"]["JsonNode"];
         };
         ProblemDetails: {
             type?: null | string;
@@ -1136,8 +1246,75 @@ export interface components {
             version: number;
             bounds: components["schemas"]["RiskBoundsDto"];
         };
+        RunSummaryDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: int32 */
+            runNumber: number;
+            status: string;
+            /** Format: date */
+            periodStart: string;
+            /** Format: date */
+            periodEnd: string;
+            /** Format: date */
+            oosStart: string;
+            /** Format: date-time */
+            finishedAt: null | string;
+            metrics: components["schemas"]["JsonNode"];
+        };
         SearchItemsResponse: {
             items: components["schemas"]["InstrumentSearchItem"][];
+        };
+        StrategiesResponse: {
+            items: components["schemas"]["StrategySummaryDto"][];
+        };
+        StrategyDetailDto: {
+            summary: components["schemas"]["StrategySummaryDto"];
+            rules: string[];
+            version: components["schemas"]["VersionDto"];
+            latestRun: null | components["schemas"]["RunSummaryDto"];
+            todaysSignals: unknown[];
+        };
+        StrategyMetricsDto: {
+            cagr: string;
+            sharpe: string;
+            maxDrawdown: string;
+            winRate: string;
+        };
+        StrategyPeriodDto: {
+            /** Format: uuid */
+            strategyId: string;
+            name: string;
+            pnl: string;
+            pnlPct: string;
+            /** Format: int32 */
+            trades: number;
+            illustrative: boolean;
+        };
+        StrategyPeriodResponse: {
+            period: string;
+            items: components["schemas"]["StrategyPeriodDto"][];
+        };
+        StrategySummaryDto: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+            name: string;
+            description: string;
+            status: string;
+            /** Format: int32 */
+            displayOrder: number;
+            /** Format: int32 */
+            version: number;
+            /** Format: date */
+            liveSince: null | string;
+            live: null | components["schemas"]["LiveResultsDto"];
+            metrics: null | components["schemas"]["StrategyMetricsDto"];
+            sparkline: string[];
+            /** Format: date */
+            backtestStart: null | string;
+            /** Format: date */
+            backtestEnd: null | string;
         };
         TokenResponse: {
             accessToken: string;
@@ -1187,6 +1364,15 @@ export interface components {
             /** Format: uuid */
             userId: string;
             token: string;
+        };
+        VersionDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: int32 */
+            number: number;
+            state: string;
+            codeVersion: string;
+            parameters: components["schemas"]["ParameterDto"][];
         };
         WatchlistDto: {
             /** Format: uuid */
@@ -2136,6 +2322,120 @@ export interface operations {
             };
             /** @description Precondition Required */
             428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    ListStrategies: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StrategiesResponse"];
+                };
+            };
+        };
+    };
+    StrategySummary: {
+        parameters: {
+            query?: {
+                period?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StrategyPeriodResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    GetStrategy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StrategyDetailDto"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    GetBacktestRun: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                runId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BacktestRunDto"];
+                };
+            };
+            /** @description Not Found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

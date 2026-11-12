@@ -23,6 +23,7 @@ using Astryx.Modules.Trading;
 using Astryx.Modules.Watchlists;
 using Astryx.Modules.Watchlists.Api;
 using Astryx.Modules.Quant.Api;
+using Astryx.Modules.Strategies.Api;
 using Astryx.Workers;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -149,6 +150,7 @@ app.MapMarketEndpoints();
 app.MapSearchEndpoints();
 app.MapWatchlistEndpoints();
 app.MapIndicatorEndpoints();
+app.MapStrategyEndpoints();
 
 if (DevEndpoints.IsEnabled(app.Environment, app.Configuration))
 {

@@ -1537,6 +1537,153 @@
           }
         }
       }
+    },
+    "/api/v1/strategies": {
+      "get": {
+        "tags": [
+          "Strategies"
+        ],
+        "operationId": "ListStrategies",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StrategiesResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/strategies/summary": {
+      "get": {
+        "tags": [
+          "Strategies"
+        ],
+        "operationId": "StrategySummary",
+        "parameters": [
+          {
+            "name": "period",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StrategyPeriodResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/strategies/{id}": {
+      "get": {
+        "tags": [
+          "Strategies"
+        ],
+        "operationId": "GetStrategy",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StrategyDetailDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/strategies/{id}/runs/{runId}": {
+      "get": {
+        "tags": [
+          "Strategies"
+        ],
+        "operationId": "GetBacktestRun",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "runId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BacktestRunDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1564,6 +1711,94 @@
             "type": "string"
           },
           "note": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "BacktestRunDto": {
+        "required": [
+          "id",
+          "strategyId",
+          "runNumber",
+          "version",
+          "status",
+          "periodStart",
+          "periodEnd",
+          "oosStart",
+          "initialCapital",
+          "assumptions",
+          "metrics",
+          "equityCurve",
+          "drawdownCurve",
+          "monthlyReturns",
+          "finishedAt",
+          "errorCode"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "strategyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "runNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "status": {
+            "type": "string"
+          },
+          "periodStart": {
+            "type": "string",
+            "format": "date"
+          },
+          "periodEnd": {
+            "type": "string",
+            "format": "date"
+          },
+          "oosStart": {
+            "type": "string",
+            "format": "date"
+          },
+          "initialCapital": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "assumptions": {
+            "$ref": "#/components/schemas/JsonNode"
+          },
+          "metrics": {
+            "$ref": "#/components/schemas/JsonNode"
+          },
+          "equityCurve": {
+            "$ref": "#/components/schemas/JsonNode"
+          },
+          "drawdownCurve": {
+            "$ref": "#/components/schemas/JsonNode"
+          },
+          "monthlyReturns": {
+            "$ref": "#/components/schemas/JsonNode"
+          },
+          "finishedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "errorCode": {
             "type": [
               "null",
               "string"
@@ -2149,6 +2384,7 @@
         },
         "additionalProperties": false
       },
+      "JsonNode": {},
       "LevelsDto": {
         "required": [
           "entry",
@@ -2171,6 +2407,35 @@
             "pattern": "^-?\\d+(\\.\\d+)?$",
             "type": "string",
             "format": "decimal"
+          }
+        },
+        "additionalProperties": false
+      },
+      "LiveResultsDto": {
+        "required": [
+          "sinceInceptionPct",
+          "mtdPct",
+          "mtdPnl",
+          "mtdTrades",
+          "illustrative"
+        ],
+        "type": "object",
+        "properties": {
+          "sinceInceptionPct": {
+            "type": "string"
+          },
+          "mtdPct": {
+            "type": "string"
+          },
+          "mtdPnl": {
+            "type": "string"
+          },
+          "mtdTrades": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "illustrative": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -2311,6 +2576,81 @@
           },
           "pushEnabled": {
             "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ParameterDto": {
+        "required": [
+          "key",
+          "label",
+          "unit",
+          "default",
+          "min",
+          "max",
+          "step",
+          "value"
+        ],
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "default": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/JsonNode"
+              }
+            ]
+          },
+          "min": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/JsonNode"
+              }
+            ]
+          },
+          "max": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/JsonNode"
+              }
+            ]
+          },
+          "step": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/JsonNode"
+              }
+            ]
+          },
+          "value": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/JsonNode"
+              }
+            ]
           }
         },
         "additionalProperties": false
@@ -2635,6 +2975,55 @@
         },
         "additionalProperties": false
       },
+      "RunSummaryDto": {
+        "required": [
+          "id",
+          "runNumber",
+          "status",
+          "periodStart",
+          "periodEnd",
+          "oosStart",
+          "finishedAt",
+          "metrics"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "runNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "status": {
+            "type": "string"
+          },
+          "periodStart": {
+            "type": "string",
+            "format": "date"
+          },
+          "periodEnd": {
+            "type": "string",
+            "format": "date"
+          },
+          "oosStart": {
+            "type": "string",
+            "format": "date"
+          },
+          "finishedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "metrics": {
+            "$ref": "#/components/schemas/JsonNode"
+          }
+        },
+        "additionalProperties": false
+      },
       "SearchItemsResponse": {
         "required": [
           "items"
@@ -2646,6 +3035,228 @@
             "items": {
               "$ref": "#/components/schemas/InstrumentSearchItem"
             }
+          }
+        },
+        "additionalProperties": false
+      },
+      "StrategiesResponse": {
+        "required": [
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StrategySummaryDto"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "StrategyDetailDto": {
+        "required": [
+          "summary",
+          "rules",
+          "version",
+          "latestRun",
+          "todaysSignals"
+        ],
+        "type": "object",
+        "properties": {
+          "summary": {
+            "$ref": "#/components/schemas/StrategySummaryDto"
+          },
+          "rules": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "version": {
+            "$ref": "#/components/schemas/VersionDto"
+          },
+          "latestRun": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/RunSummaryDto"
+              }
+            ]
+          },
+          "todaysSignals": {
+            "type": "array"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StrategyMetricsDto": {
+        "required": [
+          "cagr",
+          "sharpe",
+          "maxDrawdown",
+          "winRate"
+        ],
+        "type": "object",
+        "properties": {
+          "cagr": {
+            "type": "string"
+          },
+          "sharpe": {
+            "type": "string"
+          },
+          "maxDrawdown": {
+            "type": "string"
+          },
+          "winRate": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StrategyPeriodDto": {
+        "required": [
+          "strategyId",
+          "name",
+          "pnl",
+          "pnlPct",
+          "trades",
+          "illustrative"
+        ],
+        "type": "object",
+        "properties": {
+          "strategyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "pnl": {
+            "type": "string"
+          },
+          "pnlPct": {
+            "type": "string"
+          },
+          "trades": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "illustrative": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StrategyPeriodResponse": {
+        "required": [
+          "period",
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "period": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StrategyPeriodDto"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "StrategySummaryDto": {
+        "required": [
+          "id",
+          "code",
+          "name",
+          "description",
+          "status",
+          "displayOrder",
+          "version",
+          "liveSince",
+          "live",
+          "metrics",
+          "sparkline",
+          "backtestStart",
+          "backtestEnd"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "displayOrder": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "liveSince": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date"
+          },
+          "live": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/LiveResultsDto"
+              }
+            ]
+          },
+          "metrics": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/StrategyMetricsDto"
+              }
+            ]
+          },
+          "sparkline": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "backtestStart": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date"
+          },
+          "backtestEnd": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date"
           }
         },
         "additionalProperties": false
@@ -2836,6 +3447,39 @@
         },
         "additionalProperties": false
       },
+      "VersionDto": {
+        "required": [
+          "id",
+          "number",
+          "state",
+          "codeVersion",
+          "parameters"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "state": {
+            "type": "string"
+          },
+          "codeVersion": {
+            "type": "string"
+          },
+          "parameters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ParameterDto"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
       "WatchlistDto": {
         "required": [
           "id",
@@ -2970,6 +3614,9 @@
     },
     {
       "name": "Watchlists"
+    },
+    {
+      "name": "Strategies"
     }
   ]
 }

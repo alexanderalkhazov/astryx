@@ -775,6 +775,25 @@ flowchart TD
 | Failure scenarios | Backtest with insufficient history → `Failed` `insufficient_history`. Survivorship bias → documented limitation in UI copy (`ASSUMPTION` until point-in-time universe data is licensed). |
 | Endpoints | `/api/v1/strategies/*` |
 
+**Implemented (T-063).**
+- **Tables:** `strategy.strategies`, `strategy_versions`, `backtest_runs` and `backtest_trades`, as specified in §10.4. Additions:
+  - `strategies`: `rules` (jsonb sentences), `param_schema` (jsonb key/label/unit/default/min/max/step) and `display_order`.
+  - `illustrative_live` (jsonb) holds since-inception and month-to-date results until Portfolio attributes fills to strategies (M5). Every response built from it carries `illustrative: true`.
+- **Immutability:** a trigger rejects a change to `params` on published or archived versions, and any return to `draft` (SQLSTATE 23514).
+- **Seed:** the `StrategyCatalog` migration seeds the five design strategies from the embedded `Infrastructure/Seed/catalog.json`, written by `tools/gen_strategy_seed.py`. Ids are name-based (MD5 of `strategy:<code>` …), so they are stable across databases.
+  - Base Breakout is published at version 3, with versions 1–2 archived. Its parameters are design 12's defaults: 6 wk, 1.8×, 80 pct, 1.50× ATR. The 2.2× in the design is an unsaved draft.
+  - Each strategy has one completed illustrative run: monthly equity from Jan 2015 to Jun 2026, generated to hit the design's growth multiple and max drawdown, OOS from Jan 2023, plus drawdown and monthly-return series.
+- **Values not in the designs (`ASSUMPTION`, illustrative):**
+  - RSI(2) Mean Reversion and Earnings Drift: CAGR is derived from the design's ×2.27 and ×2.61; their other metrics are assumed.
+  - All live dates and month-to-date figures except Base Breakout's and Trend Momentum's.
+  - The in-sample/out-of-sample blocks other than Base Breakout's.
+- **Endpoints:**
+  - ST1 `GET /strategies` returns a 60-point sparkline from the latest run.
+  - ST3 `GET /strategies/{id|code}`.
+  - ST4 `GET /strategies/{id}/runs/{runId|latest}`; a run from another strategy is 404.
+  - ST5 `GET /strategies/summary?period=mtd`; other periods are 400.
+  - The catalog is shared reference data (no owner), so its parameterised routes are exempt from the isolation fixtures.
+
 ### 7.9 Trading — Proposals
 
 | Aspect | Detail |

@@ -10,7 +10,7 @@ jest.mock('@gorhom/bottom-sheet', () => {
   const { View } = jest.requireActual('react-native');
   const { forwardRef, useImperativeHandle } = jest.requireActual('react');
   return {
-    BottomSheetModal: forwardRef(({ children }: { children: React.ReactNode }, ref) => {
+    BottomSheetModal: forwardRef(({ children }: { children: React.ReactNode }, ref: React.Ref<unknown>) => {
       useImperativeHandle(ref, () => ({ present: mockPresent, dismiss: mockDismiss }));
       return <View>{children}</View>;
     }),

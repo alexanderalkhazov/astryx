@@ -7,4 +7,7 @@
     <ProjectReference Include="../../BuildingBlocks/Astryx.Contracts/Astryx.Contracts.csproj" />
     <ProjectReference Include="../../BuildingBlocks/Astryx.Infrastructure/Astryx.Infrastructure.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Infrastructure/Seed/catalog.json" LogicalName="Astryx.Strategies.Seed.catalog.json" />
+  </ItemGroup>
 </Project>
