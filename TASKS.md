@@ -319,7 +319,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [x] **T-070** `IAiProvider` for Ollama with a capability probe
   - **Acceptance:** `OllamaAiProvider` (`/api/chat`, `stream:false`, `think:false`) sends `format` **only** if a startup probe shows support (`qwen3.5:0.8b` → unsupported, per §4.5). Model info and digest come via `/api/show`. A circuit breaker is configured. `FakeAiProvider` covers the fixture scenarios (valid, invalid JSON, schema error, hallucinated numbers, timeout, 500).
   - **Refs:** §12.3, §4.5 · **Depends:** T-013 · **P0**
-- [ ] **T-071** Prompt registry and context builder
+- [x] **T-071** Prompt registry and context builder
   - **Acceptance:** versioned prompts in `src/Modules/Ai/Prompts/<id>/<version>/`. The active version comes from config. `AnalysisContextBuilder` produces `ctx.v1` (20 bars, indicators, signal, fundamentals, ≤ 10 sanitised news items in an untrusted `<news>` block, price band). It fails early on stale or insufficient data without calling the model.
   - **Refs:** §12.4–12.5 · **Depends:** T-061, T-070 · **P0**
 - [ ] **T-072** Output validator and LevelValidator
