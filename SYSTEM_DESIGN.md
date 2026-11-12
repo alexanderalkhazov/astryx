@@ -2825,6 +2825,19 @@ The score is 0–100, computed **by strategy-specific weights**, and is never AI
 - **Determinism:** the same snapshot hash across runs and OSes (CI matrix linux/macos).
 - **Insufficient-data tests:** every indicator with `minBars − 1` bars returns `Insufficient`.
 
+**Implemented (T-060).**
+- **Library:** `Astryx.Modules.Quant` contains `IndicatorCalculator` (SMA, EMA, Wilder RSI, MACD, Wilder ATR, relative volume, ROC, volatility), `RelativeStrength` (score, plus a percentile rank `1 + 98 × below / (N − 1)` rounded half-even, ties shared, a universe of one = 50) and `TrendClassifier`. A series is `decimal?[]` aligned to its bars, with `MinBars` and `ReliableFrom` (2n for EMA-based series).
+- **Volatility:** the only `double` code is the volatility helper, under a scoped `RS0030` suppression with `float-ok` markers. It converts back through C#'s 15-significant-digit `(decimal)double` and rounds to 6 dp half-even.
+- **Golden files (deviation, `DECIDED` in T-060):** `tools/gen_golden.py` is a standard-library Python reference written from §13.3 with exact `Fraction` arithmetic, not TA-Lib.
+  - TA-Lib isn't installed on the dev machine, and its MACD seeds the two EMAs differently from §13.3, so it couldn't serve as a reference for this spec anyway.
+  - Inputs are `tests/fixtures/quant/{nvda,tsla}_daily.csv`, 401 fake-provider sessions exported from the local stack. Outputs are `*.expected.csv` (every column, every bar) and `*.summary.csv` (RS score, trend).
+  - The tests compare every value at 1e-6, not only after warm-up, because both sides are exact.
+- **Property tests:** FsCheck.Xunit 3.6.
+  - SMA stays within its window.
+  - RSI ∈ [0, 100] and ATR ≥ 0.
+  - A price shift leaves RSI, ATR and the MACD histogram unchanged (to 1e-9, which is stronger than "same sign").
+  - Scaling prices by k scales ATR by k.
+
 ---
 
 ## 14. Risk Management Engine

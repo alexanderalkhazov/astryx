@@ -4,6 +4,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="FsCheck.Xunit" />
     <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="Shouldly" />
@@ -18,5 +19,6 @@
     <ProjectReference Include="../../src/BuildingBlocks/Astryx.Infrastructure/Astryx.Infrastructure.csproj" />
     <ProjectReference Include="../../src/BuildingBlocks/Astryx.SharedKernel/Astryx.SharedKernel.csproj" />
     <ProjectReference Include="../../src/Modules/MarketData/Astryx.Modules.MarketData.csproj" />
+    <ProjectReference Include="../../src/Modules/Quant/Astryx.Modules.Quant.csproj" />
   </ItemGroup>
 </Project>
