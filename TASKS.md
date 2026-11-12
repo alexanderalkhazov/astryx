@@ -292,7 +292,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [x] **T-062** RSI and MACD panes plus the Technicals tab (265cad0)
   - **Acceptance:** RSI pane 64 with 30/70 guides, MACD pane 64 with histogram, an `IndicatorsSheet`, and a Technicals table with `as of` (design 05).
   - **Refs:** §8.4.3 · **Depends:** T-061, T-048 · **P0**
-- [ ] **T-063** Strategies catalog and versioning
+- [x] **T-063** Strategies catalog and versioning (ba77a72)
   - **Acceptance:** `strategy.*` migrations. The five design strategies are seeded (Base Breakout v3, Trend Momentum, Trend Pullback, RSI(2) Mean Reversion, Earnings Drift) with immutable published versions and parameter schemas. ST1, ST3 and ST5 return seeded data.
   - **Refs:** §7.8, §10.4 (strategy) · **Depends:** T-012 · **P0**
 - [ ] **T-064** Base Breakout rule (first `IStrategyRule`)
