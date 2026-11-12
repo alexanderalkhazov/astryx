@@ -251,9 +251,10 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [ ] **T-044** Corporate action adjustments
   - **Acceptance:** split-only and total-return adjustment modes over unadjusted storage. Indicator cache is invalidated on a new action. Tests cover a 4:1 split and a dividend.
   - **Refs:** §20.7 · **Depends:** T-040 · **P1**
-- [ ] **T-045** Market endpoints
+- [x] **T-045** Market endpoints — `12eb01e`
   - **Acceptance:** M4–M11 with the example payloads from §11.4, decimal strings, `levels` included on bars when a signal exists, and 503 `market_data_unavailable` on provider outage.
   - **Refs:** §11.4 · **Depends:** T-043 · **P0**
+  - **Note:** M7 (indicators) ships with the Quant engine task, which owns it.
 - [ ] **T-046** Search with recents and tags
   - **Story:** As a user, I want to search tickers and companies from any header, with recent searches and "Held" or signal tags.
   - **Acceptance:** M1–M3 (ticker prefix ranks above trigram name match). The Search full-screen modal (design 19) uses a 200 ms debounce and empty and error states. Searching "am" returns AMZN and AMD.
