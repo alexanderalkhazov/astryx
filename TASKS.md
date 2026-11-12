@@ -316,7 +316,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 
 ### M4 · AI research
 
-- [ ] **T-070** `IAiProvider` for Ollama with a capability probe
+- [x] **T-070** `IAiProvider` for Ollama with a capability probe
   - **Acceptance:** `OllamaAiProvider` (`/api/chat`, `stream:false`, `think:false`) sends `format` **only** if a startup probe shows support (`qwen3.5:0.8b` → unsupported, per §4.5). Model info and digest come via `/api/show`. A circuit breaker is configured. `FakeAiProvider` covers the fixture scenarios (valid, invalid JSON, schema error, hallucinated numbers, timeout, 500).
   - **Refs:** §12.3, §4.5 · **Depends:** T-013 · **P0**
 - [ ] **T-071** Prompt registry and context builder
