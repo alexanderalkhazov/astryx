@@ -47,6 +47,8 @@ export const Signal = z.object({
   sparkline: z.array(Decimal),
   /** Today's volume, shares. */
   volume: z.number().int().nullable(),
+  /** The signal lapses here unless a newer scan confirms it. */
+  expiresAt: z.string(),
 });
 export type Signal = z.infer<typeof Signal>;
 

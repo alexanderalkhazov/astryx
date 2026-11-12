@@ -22,7 +22,7 @@ const NVDA = {
   levels: { orderType: 'buy_stop', entry: '186.50', stop: '178.20', target: '204.00' },
   strategy: { id: 'st', name: 'Base Breakout v3', version: 3 },
   evaluatedAt: '2026-11-09T19:32:00Z', dataAsOf: '2026-11-09T19:31:00Z', status: 'active', scoreBreakdown: null, proposalId: null,
-  sparkline: ['180.24', '186.40'], volume: 412800000,
+  sparkline: ['180.24', '186.40'], volume: 412800000, expiresAt: '2026-11-10T19:32:00Z',
 };
 const counts = (all: number) => ({ all, momentum: 0, breakout: all, pullback: 0, unusualVolume: 0, earnings: 0 });
 const page = (items: unknown[], all = items.length) => ({ data: { items, nextCursor: null, counts: counts(all), scanner: { lastRunAt: '2026-11-09T19:32:00Z', dataAsOf: null } } });

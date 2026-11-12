@@ -1,12 +1,12 @@
-import type { Bar, Quote } from '@astryx/api-client';
+import type { Bar, Quote, Signal } from '@astryx/api-client';
 import { isApiError } from '@astryx/api-client';
 import { chart as chartSize, color, space } from '@astryx/design-tokens';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ChartLine, Search } from 'lucide-react-native';
+import { ChartLine, ChevronRight, Search } from 'lucide-react-native';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
-import { Badge } from '@/components/Badge';
+import { Badge, SignalBadge } from '@/components/Badge';
 import { Button, IconButton } from '@/components/Button';
 import { CandleChart, type CandleOverlays } from '@/components/chart/CandleChart';
 import { IndicatorPane, MACD_COLOR, SIGNAL_COLOR } from '@/components/chart/IndicatorPane';
@@ -21,7 +21,10 @@ import { Tabs } from '@/components/Tabs';
 import { Text } from '@/components/Text';
 import { FundamentalsTab } from '@/features/stock/FundamentalsTab';
 import { NewsTab } from '@/features/stock/NewsTab';
+import { SignalTab } from '@/features/stock/SignalTab';
 import { TechnicalsTab } from '@/features/stock/TechnicalsTab';
+import { useActiveSignal } from '@/features/stock/useActiveSignal';
+import { useScannerStatus } from '@/features/discover/useSignals';
 import { TIMEFRAMES, type Timeframe, useIndicators, useStock } from '@/features/stock/useStock';
 import { StarButton } from '@/features/watchlist/StarButton';
 import { useWatchlistStar } from '@/features/watchlist/useWatchlist';
@@ -60,6 +63,8 @@ export default function StockScreen() {
   const indicatorsSheet = useSheet('indicators');
   const { instrument, quote, chart } = useStock(symbol, timeframe);
   const indicators = useIndicators(symbol, instrument.isSuccess);
+  const active = useActiveSignal(symbol, instrument.isSuccess);
+  const scannerStatus = useScannerStatus();
   const star = useWatchlistStar(symbol);
 
   const header = (
@@ -100,7 +105,13 @@ export default function StockScreen() {
   const footer = (
     <View style={styles.footer}>
       <View style={styles.footerText}>
-        <Text.Data>{quote.data ? `Last ${formatPrice(quote.data.last)}` : symbol}</Text.Data>
+        <Text.Data>
+          {active.data
+            ? `Entry ${formatPrice(active.data.levels.entry)} · R:R ${active.data.metrics.rewardRisk ? formatRatio(active.data.metrics.rewardRisk) : '—'}`
+            : quote.data
+              ? `Last ${formatPrice(quote.data.last)}`
+              : symbol}
+        </Text.Data>
         <Text.Caption tone="pending">Research only · not executed</Text.Caption>
       </View>
       <Button
@@ -121,10 +132,7 @@ export default function StockScreen() {
           <StatusBanner tone="error" title="Prices may be out of date" body={`Last update ${formatEtTime(quote.data.asOf)}. Values refresh when the data feed recovers.`} />
         ) : null}
 
-        <View style={styles.ribbon}>
-          <Badge label="No active signal" />
-          <Text.Caption tone="tertiary">Signals arrive with the scanner</Text.Caption>
-        </View>
+        <SignalRibbon signal={active.data} unavailable={active.unavailable} pending={active.isPending} />
 
         <Readout bar={readoutBar} intraday={intraday} />
 
@@ -207,7 +215,7 @@ export default function StockScreen() {
 
         <Tabs tabs={TABS} value={tab} onChange={setTab} />
         {tab === 'signal' ? (
-          <EmptyState title="No active signal" body="Signals and AI reasoning arrive with the scanner. Star the stock to keep an eye on it." />
+          <SignalTab signal={active.data} pending={active.isPending} unavailable={active.unavailable} evaluatedAt={scannerStatus.data?.lastRunAt} />
         ) : tab === 'technicals' ? (
           <TechnicalsTab snapshot={indicators.data} pending={indicators.isPending} failed={indicators.isError} onRetry={() => void indicators.refetch()} />
         ) : tab === 'fundamentals' ? (
@@ -289,6 +297,35 @@ function Readout({ bar, intraday }: { bar: Bar | null; intraday: boolean }) {
   );
 }
 
+/** "Breakout · Score 87 · Base Breakout v3 ›" (design 04), or why there is no signal. */
+function SignalRibbon({ signal, unavailable, pending }: { signal: Signal | null | undefined; unavailable: boolean; pending: boolean }) {
+  if (pending) return <View style={styles.ribbon} />;
+  if (!signal) {
+    return (
+      <View style={styles.ribbon}>
+        <Badge label={unavailable ? 'Signals unavailable' : 'No active signal'} />
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.ribbon} testID="signal-ribbon">
+      <SignalBadge type={signal.type} />
+      <Badge label={`Score ${signal.score}`} />
+      <Pressable
+        accessibilityRole="link"
+        accessibilityLabel={`${signal.strategy.name}, open strategy`}
+        onPress={() => router.push({ pathname: '/strategy/[id]', params: { id: signal.strategy.id } })}
+        hitSlop={8}
+        style={({ pressed }) => [styles.strategyLink, { opacity: pressed ? 0.7 : 1 }]}
+      >
+        <Text.Body tone="signal">{signal.strategy.name}</Text.Body>
+        <ChevronRight size={16} strokeWidth={1.7} color={color.signal} />
+      </Pressable>
+    </View>
+  );
+}
+
 function MacdReadout({ macd, signal }: { macd: string | null; signal: string | null }) {
   return (
     <Text.Data testID="macd-readout">
@@ -317,7 +354,8 @@ function OverlayToggle({ label, swatch, on, onPress }: { label: string; swatch: 
 const styles = StyleSheet.create({
   price: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: space[3] },
   priceMeta: { alignItems: 'flex-end', gap: 2 },
-  ribbon: { flexDirection: 'row', alignItems: 'center', gap: space[2] },
+  ribbon: { flexDirection: 'row', alignItems: 'center', gap: space[2], minHeight: 28 },
+  strategyLink: { flexDirection: 'row', alignItems: 'center', gap: 2 },
   readout: { minHeight: 18 },
   chartBox: { height: chartSize.pricePane + chartSize.volumePane + space[2], justifyContent: 'center' },
   toggles: { gap: space[2] },

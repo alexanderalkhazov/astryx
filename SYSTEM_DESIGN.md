@@ -1111,6 +1111,18 @@ Implementation (T-049):
 - **States:** price and chart skeletons; "Price history unavailable" with Retry; "No bars yet today" before the open on 1D; a stale-quote banner; unknown symbol leads to Search.
 - **Bottom bar:** "Add to watchlist" / "On watchlist" until signals exist. It isn't disabled on stale quotes, because only order-related actions are.
 
+**Implemented (T-068).**
+- **Data:** `useActiveSignal` reads the symbol's highest-scoring active signal (D2 `?symbol=` with limit 1), then D4 for the breakdown. It refreshes every 60 s.
+- **Ribbon:** `SignalBadge` · "Score N" · strategy name ›, which links to `strategy/[id]`. Otherwise it reads "No active signal", or "Signals unavailable" when the scanner is down.
+- **Bottom bar:** "Entry X · R:R Y · Research only · not executed". The button stays the watchlist toggle until proposals exist (M4).
+- **Signal tab:** headline from a per-type template, the reason as the summary, and a buy stop / stop / target strip (stop and target as % of entry, a decimal display preview).
+  - Evidence comes from the metrics: volume ×, RS of 99, R:R from entry to target, and RSI.
+  - The score breakdown shows `ScoreBreakdownBar` per component (points of weight, half-even to 0.1).
+  - Invalidation is template copy: a close below the stop; the buy stop lapsing at `expiresAt` (now on `SignalDto`) unless a newer scan confirms it; and a newer scan no longer finding the setup.
+  - It ends with "Deterministic … not AI" and a research-only note.
+- **States:** "No active signal · Evaluated HH:MM ET" (time from D1) and "Signal unavailable" (signals hidden).
+- **Later:** AI reasoning and "Analyze with AI" arrive with M4.
+
 #### 8.4.4 Trade proposal (`proposal/[id]`) — design 06
 
 | Aspect | Spec |

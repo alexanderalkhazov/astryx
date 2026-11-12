@@ -26,7 +26,7 @@ public sealed record SignalStrategyDto(Guid Id, string Name, int Version);
 public sealed record SignalDto(
     Guid Id, int Rank, string Symbol, string Name, string? Sector, string Type, string Horizon, decimal? Price, decimal? ChangePct, string Score,
     SignalMetricsDto Metrics, string Reason, SignalLevelsDto Levels, SignalStrategyDto Strategy, DateTimeOffset EvaluatedAt, DateTimeOffset DataAsOf, string Status,
-    JsonNode? ScoreBreakdown, Guid? ProposalId, IReadOnlyList<decimal> Sparkline, long? Volume);
+    JsonNode? ScoreBreakdown, Guid? ProposalId, IReadOnlyList<decimal> Sparkline, long? Volume, DateTimeOffset ExpiresAt);
 
 public sealed record SignalCountsDto(int All, int Momentum, int Breakout, int Pullback, int UnusualVolume, int Earnings);
 
@@ -252,7 +252,8 @@ public sealed class SignalQueries(
             withBreakdown ? JsonNode.Parse(s.ScoreBreakdown) : null,
             ProposalId: null,
             trail.Closes,
-            trail.Volume);
+            trail.Volume,
+            s.ExpiresAt);
     }
 
     /// <summary>Stored at 6 dp; prices go out at cents (four places below $1).</summary>

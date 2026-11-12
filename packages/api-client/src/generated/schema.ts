@@ -1393,6 +1393,8 @@ export interface components {
             sparkline: unknown[];
             /** Format: int64 */
             volume: null | number;
+            /** Format: date-time */
+            expiresAt: string;
         };
         SignalLevelsDto: {
             orderType: string;

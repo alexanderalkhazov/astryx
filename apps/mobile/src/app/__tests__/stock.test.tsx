@@ -11,10 +11,12 @@ jest.mock('expo-secure-store', () => ({ WHEN_UNLOCKED_THIS_DEVICE_ONLY: 'x', get
 jest.mock('@/lib/api', () => ({
   market: { instrument: jest.fn(), quote: jest.fn(), bars: jest.fn(), fundamentals: jest.fn(), news: jest.fn(), indicators: jest.fn() },
   watchlists: { list: jest.fn(), star: jest.fn(), unstar: jest.fn() },
+  scanner: { list: jest.fn(), get: jest.fn(), status: jest.fn(), count: jest.fn() },
 }));
 const api = jest.requireMock('@/lib/api') as {
   market: Record<'instrument' | 'quote' | 'bars' | 'fundamentals' | 'news' | 'indicators', jest.Mock>;
   watchlists: Record<'list' | 'star' | 'unstar', jest.Mock>;
+  scanner: Record<'list' | 'get' | 'status' | 'count', jest.Mock>;
 };
 
 const NVDA = { symbol: 'NVDA', exchange: 'XNAS', name: 'NVIDIA Corp.', assetType: 'stock', currency: 'USD', sector: 'Information Technology', industry: 'Semiconductors', marketCap: '4550000000000', isActive: true };
@@ -39,6 +41,22 @@ const SNAPSHOT = {
   },
 };
 
+const SIGNAL = {
+  id: 'sig-1', rank: 1, symbol: 'NVDA', name: 'NVIDIA Corp.', sector: 'Semiconductors', type: 'breakout', horizon: 'swing', price: '186.40', changePct: '0.0342', score: '87',
+  metrics: { relVolume: '2.40', relStrength: '94', rewardRisk: '2.11', rsi14: '64.2' },
+  reason: 'Cleared a 6-week base at $185.90 on 2.4× average volume.',
+  levels: { orderType: 'buy_stop', entry: '186.50', stop: '178.20', target: '204.00' },
+  strategy: { id: 'strat-1', name: 'Base Breakout v3', version: 3 },
+  evaluatedAt: '2026-11-09T19:32:00Z', dataAsOf: '2026-11-09T19:31:00Z', status: 'active', proposalId: null, sparkline: [], volume: 412800000, expiresAt: '2026-11-10T19:32:00Z',
+  scoreBreakdown: [
+    { component: 'setup', weight: '30', value: '0.8617', contribution: '25.85' },
+    { component: 'relativeStrength', weight: '20', value: '0.9495', contribution: '18.99' },
+    { component: 'volume', weight: '20', value: '0.8', contribution: '16.00' },
+    { component: 'trend', weight: '15', value: '1', contribution: '15.00' },
+    { component: 'rewardRisk', weight: '15', value: '0.7028', contribution: '10.54' },
+  ],
+};
+
 function renderStock(symbol = 'NVDA') {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return renderRouter(
@@ -50,6 +68,7 @@ function renderStock(symbol = 'NVDA') {
       ),
       'stock/[ticker]': StockScreen,
       search: () => <Text>Search screen</Text>,
+      'strategy/[id]': () => <Text>Strategy screen</Text>,
     },
     { initialUrl: `/stock/${symbol}` },
   );
@@ -65,6 +84,8 @@ beforeEach(() => {
   });
   api.market.news.mockResolvedValue({ data: { items: [{ id: 'n1', headline: 'NVIDIA shares climb', source: 'Sample Wire', url: 'https://example.com/n1', publishedAt: '2026-11-12T12:05:00Z', summary: null }] } });
   api.market.indicators.mockResolvedValue({ data: SNAPSHOT });
+  api.scanner.list.mockResolvedValue({ data: { items: [], nextCursor: null, counts: {}, scanner: {} } });
+  api.scanner.status.mockResolvedValue({ data: { status: 'live', symbolsTotal: 1031, lastRunAt: '2026-11-09T19:32:00Z', dataAsOf: null, errorCode: null } });
   api.watchlists.list.mockResolvedValue({ data: { items: [{ id: 'list-1', name: 'Watchlist', isDefault: true, sortOrder: 0, version: 1, items: [] }] } });
   api.watchlists.star.mockResolvedValue({ data: undefined });
 });
@@ -182,5 +203,44 @@ describe('Stock screen', () => {
     expect(screen.getByLabelText('Momentum (20 days), +2.92%')).toBeOnTheScreen();
     expect(screen.getByLabelText('Relative strength, not enough history')).toBeOnTheScreen();
     expect(screen.getByText('Short history')).toBeOnTheScreen();
+  });
+
+  it('shows the signal ribbon, the entry and R:R in the bar, and the Signal tab (design 04, T-068)', async () => {
+    api.scanner.list.mockResolvedValue({ data: { items: [{ ...SIGNAL, scoreBreakdown: null }], nextCursor: null, counts: {}, scanner: {} } });
+    api.scanner.get.mockResolvedValue({ data: SIGNAL });
+    await renderStock();
+
+    expect(await screen.findByTestId('signal-ribbon')).toBeOnTheScreen();
+    expect(screen.getByText('Score 87')).toBeOnTheScreen();
+    expect(screen.getByRole('link', { name: 'Base Breakout v3, open strategy' })).toBeOnTheScreen();
+    expect(screen.getByText('Entry 186.50 · R:R 2.11')).toBeOnTheScreen();
+    expect(api.scanner.list).toHaveBeenCalledWith({ symbol: 'NVDA', sort: 'score' }, { limit: 1 });
+
+    expect(screen.getByText('Breaking out of its base')).toBeOnTheScreen();
+    expect(screen.getAllByText('Cleared a 6-week base at $185.90 on 2.4× average volume.').length).toBeGreaterThan(0);
+    expect(screen.getByLabelText('Stop −4.45%: 178.20')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Target +9.38%: 204.00')).toBeOnTheScreen();
+    expect(screen.getByText('Volume 2.4× its 20-day average')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Setup quality: 25.8 of 30')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Reward/risk: 10.5 of 15')).toBeOnTheScreen();
+    expect(screen.getByText('A close below the stop at 178.20.')).toBeOnTheScreen();
+
+    await fireEvent.press(screen.getByRole('link', { name: 'Base Breakout v3, open strategy' }));
+    await waitFor(() => expect(screen).toHavePathname('/strategy/strat-1'));
+  });
+
+  it('says when no strategy finds a setup, with the evaluation time', async () => {
+    await renderStock();
+
+    expect(await screen.findByText('No active signal · Evaluated 14:32 ET')).toBeOnTheScreen();
+    expect(screen.getByText('Last 186.40')).toBeOnTheScreen();
+  });
+
+  it('hides the signal when the scanner is unavailable', async () => {
+    api.scanner.list.mockRejectedValue(new ApiError({ status: 503, code: 'scanner_unavailable', title: 'Unavailable' }));
+    await renderStock();
+
+    expect(await screen.findByText('Signal unavailable')).toBeOnTheScreen();
+    expect(screen.getByText('Signals unavailable')).toBeOnTheScreen();
   });
 });

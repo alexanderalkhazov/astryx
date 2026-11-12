@@ -28,4 +28,9 @@ export function previewSubtract(a: DecimalString, b: DecimalString): DecimalStri
   return toDecimal(a).minus(toDecimal(b)).toString();
 }
 
+/** Display-only quotient, e.g. a level as a percentage of entry; never sent back to the server. */
+export function previewDivide(a: DecimalString, b: DecimalString): DecimalString {
+  return toDecimal(a).dividedBy(toDecimal(b)).toString();
+}
+
 export { D as PreviewDecimal };

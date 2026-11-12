@@ -18,6 +18,9 @@ env:
       id: candle-chart
     timeout: 30000
 - assertVisible: "186\\.40, up 3\\.42% today, Semiconductors, as of .*" # the price block's accessibility label (a regex)
+- assertVisible:
+    id: signal-ribbon # Breakout · Score 87 · Base Breakout v3 (T-068)
+- assertVisible: "Entry 186\\.50 · R:R 2\\.11"
 - waitForAnimationToEnd
 - takeScreenshot: stock-3m
 - tapOn: 1Y
