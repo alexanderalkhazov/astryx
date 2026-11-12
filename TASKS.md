@@ -305,7 +305,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [x] **T-066** Scanner and signal endpoints (e677bde)
   - **Acceptance:** D1–D4 with filters, sorts, counts per chip and cursor pagination. 503 `scanner_unavailable` when the latest run failed or is older than two intervals.
   - **Refs:** §11.4 (scanner) · **Depends:** T-065 · **P0**
-- [ ] **T-067** Discover screen with filters and states
+- [x] **T-067** Discover screen with filters and states (9817c2f)
   - **Story:** As a user, I want a ranked list of today's setups that I can narrow by signal type, sector, market cap, timeframe and score.
   - **Acceptance:** scanner status line, signal chips with counts, removable active filter chips, `OpportunityRow` list (FlashList), `FiltersSheet` with a live "Show N setups" count, filters persisted per user. Loading skeletons (5 rows, staggered 120 ms), empty state (Reset filters / Adjust), error state ("Scanner feed unavailable", signals hidden, code, Retry now), pull to refresh. The Discover tab badge shows the count. Matches designs 02, 03, 20, 21 and 23.
   - **Refs:** §8.4.2 · **Depends:** T-066, T-032 · **P0**
