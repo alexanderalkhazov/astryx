@@ -309,7 +309,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Story:** As a user, I want a ranked list of today's setups that I can narrow by signal type, sector, market cap, timeframe and score.
   - **Acceptance:** scanner status line, signal chips with counts, removable active filter chips, `OpportunityRow` list (FlashList), `FiltersSheet` with a live "Show N setups" count, filters persisted per user. Loading skeletons (5 rows, staggered 120 ms), empty state (Reset filters / Adjust), error state ("Scanner feed unavailable", signals hidden, code, Retry now), pull to refresh. The Discover tab badge shows the count. Matches designs 02, 03, 20, 21 and 23.
   - **Refs:** §8.4.2 · **Depends:** T-066, T-032 · **P0**
-- [ ] **T-068** Signal tab: evidence, score breakdown, invalidation
+- [x] **T-068** Signal tab: evidence, score breakdown, invalidation (9ff6e10)
   - **Story:** As a user, I want to understand *why* a setup was flagged before I consider trading it.
   - **Acceptance:** the Stock › Signal tab shows a headline, summary, evidence, `ScoreBreakdownBar`, invalidation (deterministic template copy) and the "No active signal · Evaluated HH:MM ET" state. The bottom bar shows "Entry · R:R · Research only · not executed".
   - **Refs:** §8.4.3, §13.4 · **Depends:** T-066, T-049 · **P0**
