@@ -322,7 +322,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [x] **T-071** Prompt registry and context builder
   - **Acceptance:** versioned prompts in `src/Modules/Ai/Prompts/<id>/<version>/`. The active version comes from config. `AnalysisContextBuilder` produces `ctx.v1` (20 bars, indicators, signal, fundamentals, ≤ 10 sanitised news items in an untrusted `<news>` block, price band). It fails early on stale or insufficient data without calling the model.
   - **Refs:** §12.4–12.5 · **Depends:** T-061, T-070 · **P0**
-- [ ] **T-072** Output validator and LevelValidator
+- [x] **T-072** Output validator and LevelValidator
   - **Acceptance:** all 8 validation steps from §12.7 (parse with fence strip and one repair retry, schema `analysis.v1`, identity, temporal, numeric grounding, levels via ATR/band/R:R, content policy, forbidden fields). The backend computes `rewardRisk`. Fixture tests cover every rejection path.
   - **Refs:** §12.6–12.7 · **Depends:** T-071 · **P0**
 - [ ] **T-073** Analysis jobs, worker and endpoints
