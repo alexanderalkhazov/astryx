@@ -27,7 +27,7 @@ const DETAIL = {
     { value: '1', weight: '15', component: 'trend', contribution: '15' },
     { value: '0.7027', weight: '15', component: 'rewardRisk', contribution: '10.54' },
   ],
-  proposalId: null,
+  proposalId: null, sparkline: ['180.24', '186.40'], volume: 412800000,
 };
 const PAGE = {
   items: [
@@ -50,7 +50,7 @@ const PAGE = {
       dataAsOf: '2026-11-12T15:00:00.491065Z',
       status: 'active',
       scoreBreakdown: null,
-      proposalId: null,
+      proposalId: null, sparkline: ['180.24', '186.40'], volume: 412800000,
     },
   ],
   nextCursor: null,

@@ -1068,6 +1068,23 @@ Shared for every screen:
 | Error (23) | "Scanner feed unavailable": signals **hidden, not stale**, error code shown (e.g. `SCN-503`), **Retry now** |
 | State | Filters in Zustand (`useDiscoverFilters`), persisted to MMKV/AsyncStorage per user (`ASSUMPTION`) |
 
+**Implemented (T-067).**
+- **Screen:** `(tabs)/discover` has a header with Search and Filters; the Filters button shows a count badge.
+- **Scanner line:** "● Scanner live · 1,031 symbols · Updated HH:MM ET" from D1; amber when degraded, red when unavailable.
+- **Type chips:** a chip row with counts from D2.
+- **Active filters:** removable chips with Clear all.
+- **List:** "N setups · ranked by …" over a FlashList of `OpportunityRow`s: rank, ticker and signal badge, company · industry, Skia sparkline, price and day change, reason, then score with bar (blue ≥ 80), volume (×, shares), relative strength, R:R and RSI.
+  - Pages load by cursor, pull to refresh refetches, and the list refreshes every 60 s. Tapping a row opens the stock.
+- **States:**
+  - Loading: five staggered skeleton rows (design 20).
+  - Empty: "No setups match these filters" with Reset filters and Adjust (21).
+  - Unavailable: on 503 or an unavailable D1, "Scanner feed unavailable" with signals hidden, the `SCN-xxx` code, Retry now and an automatic retry every 60 s (23).
+- **FiltersSheet (design 03):** sector, market cap (mega > $200B, large $10–200B), timeframe, minimum score and sort, with a live "Show N setups" count from D3.
+- **Persistence:** filters persist per user on the device (AsyncStorage, `discover-filters:<userId>`).
+- **Tab badge:** the Discover tab shows the active signal count.
+- **API additions:** D2/D4 items gained `sparkline` (20 closes) and `volume`, and the market-cap buckets are now mega, large, mid and small.
+- **Sheet accessibility fix:** `@gorhom/bottom-sheet` makes its container one accessible element by default, which hid every control in every sheet from VoiceOver. `Sheet` now passes `accessible={false}` and marks its content `accessibilityViewIsModal`.
+
 #### 8.4.3 Stock analysis (`stock/[ticker]`) — design 04, 05, 16
 
 | Aspect | Spec |

@@ -43,6 +43,10 @@ export const Signal = z.object({
   /** D4 only. */
   scoreBreakdown: z.array(ScoreComponent).nullable(),
   proposalId: z.string().nullable(),
+  /** The last 20 daily closes (drawing only). */
+  sparkline: z.array(Decimal),
+  /** Today's volume, shares. */
+  volume: z.number().int().nullable(),
 });
 export type Signal = z.infer<typeof Signal>;
 
@@ -59,7 +63,7 @@ export const SignalCount = z.object({ count: z.number().int() }) satisfies z.Zod
 export interface SignalFilters {
   type?: SignalType;
   sector?: string;
-  marketCap?: 'large' | 'mid' | 'small';
+  marketCap?: 'mega' | 'large' | 'mid' | 'small';
   horizon?: 'intraday' | 'swing' | 'position';
   minScore?: number;
   sort?: 'score' | 'rr' | 'relStrength' | 'change';

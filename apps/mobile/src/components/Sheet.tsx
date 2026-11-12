@@ -84,11 +84,13 @@ export function Sheet({ open, onClose, children, dismissible = true, accessibili
       backgroundStyle={styles.background}
       handleIndicatorStyle={styles.handle}
       animationConfigs={{ duration: reduceMotion ? 0 : motion.sheet, reduceMotion: ReduceMotion.System }}
-      accessible
-      accessibilityLabel={accessibilityLabel}
       style={styles.shadow}
+      // bottom-sheet makes the container one accessible element by default, hiding every control inside from VoiceOver.
+      accessible={false}
     >
-      <BottomSheetView style={styles.content}>{children}</BottomSheetView>
+      <BottomSheetView style={styles.content} accessibilityViewIsModal accessibilityLabel={accessibilityLabel}>
+        {children}
+      </BottomSheetView>
     </BottomSheetModal>
   );
 }

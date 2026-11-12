@@ -78,7 +78,7 @@ export function formatQuantity(value: DecimalString): string {
 /** Reward:risk ratio "2.108" → "2.11". */
 export function formatRatio(value: DecimalString, dp = 2): string {
   const { sign, whole, fraction } = fixed(value, dp, false);
-  return `${sign}${whole}.${fraction}`;
+  return dp > 0 ? `${sign}${whole}.${fraction}` : `${sign}${whole}`;
 }
 
 /**

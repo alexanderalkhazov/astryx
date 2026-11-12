@@ -26,7 +26,7 @@ public sealed record SignalStrategyDto(Guid Id, string Name, int Version);
 public sealed record SignalDto(
     Guid Id, int Rank, string Symbol, string Name, string? Sector, string Type, string Horizon, decimal? Price, decimal? ChangePct, string Score,
     SignalMetricsDto Metrics, string Reason, SignalLevelsDto Levels, SignalStrategyDto Strategy, DateTimeOffset EvaluatedAt, DateTimeOffset DataAsOf, string Status,
-    JsonNode? ScoreBreakdown, Guid? ProposalId);
+    JsonNode? ScoreBreakdown, Guid? ProposalId, IReadOnlyList<decimal> Sparkline, long? Volume);
 
 public sealed record SignalCountsDto(int All, int Momentum, int Breakout, int Pullback, int UnusualVolume, int Earnings);
 
@@ -38,7 +38,8 @@ public sealed record SignalPageDto(IReadOnlyList<SignalDto> Items, string? NextC
 public sealed record SignalFilter(string? Type, string? Sector, string? MarketCap, string? Horizon, int? MinScore, string? Sort, string? Symbol, int? Limit, string? Cursor);
 
 /// <summary>Scanner status and the active signal list (§11.4 D1–D4). Signals are global; the same list for every user.</summary>
-public sealed class SignalQueries(DiscoveryDbContext db, IInstrumentDirectory instruments, IMarketDataFreshness freshness, IOptions<ScannerOptions> options, TimeProvider timeProvider)
+public sealed class SignalQueries(
+    DiscoveryDbContext db, IInstrumentDirectory instruments, IPriceHistoryProvider history, IMarketDataFreshness freshness, IOptions<ScannerOptions> options, TimeProvider timeProvider)
 {
     public static readonly Error NotFound = new("not_found", "No signal with that id.");
 
@@ -110,7 +111,12 @@ public sealed class SignalQueries(DiscoveryDbContext db, IInstrumentDirectory in
         var sorted = Sort(withoutType.Where(r => Matches(r, filter)), filter.Sort ?? "score").ToList();
         var offset = DecodeCursor(filter.Cursor);
         var limit = filter.Limit ?? DefaultLimit;
-        var page = sorted.Skip(offset).Take(limit).Select((r, i) => ToDto(r, offset + i + 1, withBreakdown: false)).ToList();
+        var page = new List<SignalDto>();
+        foreach (var (row, i) in sorted.Skip(offset).Take(limit).Select((r, i) => (r, i)))
+        {
+            page.Add(ToDto(row, offset + i + 1, withBreakdown: false, await TrailAsync(row.Signal.Symbol, cancellationToken)));
+        }
+
         var next = offset + limit < sorted.Count ? EncodeCursor(offset + limit) : null;
         return new SignalPageDto(page, next, counts, new ScannerRefDto(scanner.LastRunAt, scanner.DataAsOf));
     }
@@ -144,7 +150,7 @@ public sealed class SignalQueries(DiscoveryDbContext db, IInstrumentDirectory in
         var rank = signal.Status == SignalStatus.Active
             ? await db.Signals.CountAsync(s => s.Status == SignalStatus.Active && s.Score > signal.Score, cancellationToken) + 1
             : 0;
-        return ToDto(new Row(signal, summary), rank, withBreakdown: true);
+        return ToDto(new Row(signal, summary), rank, withBreakdown: true, await TrailAsync(signal.Symbol, cancellationToken));
     }
 
     private sealed record Row(Signal Signal, InstrumentSummary? Instrument);
@@ -163,9 +169,9 @@ public sealed class SignalQueries(DiscoveryDbContext db, IInstrumentDirectory in
             return new Error("bad_request", "type must be momentum, breakout, pullback, unusual_volume or earnings.");
         }
 
-        if (filter.MarketCap is { } cap && cap is not ("large" or "mid" or "small"))
+        if (filter.MarketCap is { } cap && cap is not ("mega" or "large" or "mid" or "small"))
         {
-            return new Error("bad_request", "marketCap must be large, mid or small.");
+            return new Error("bad_request", "marketCap must be mega, large, mid or small.");
         }
 
         if (filter.Horizon is { } horizon && horizon is not ("intraday" or "swing" or "position"))
@@ -197,7 +203,8 @@ public sealed class SignalQueries(DiscoveryDbContext db, IInstrumentDirectory in
             && (filter.Sector is null || string.Equals(row.Instrument?.Sector, filter.Sector, StringComparison.OrdinalIgnoreCase) || string.Equals(row.Instrument?.Industry, filter.Sector, StringComparison.OrdinalIgnoreCase))
             && (filter.MarketCap is null || filter.MarketCap switch
             {
-                "large" => cap >= 10_000_000_000m,
+                "mega" => cap >= 200_000_000_000m,
+                "large" => cap is >= 10_000_000_000m and < 200_000_000_000m,
                 "mid" => cap is >= 2_000_000_000m and < 10_000_000_000m,
                 _ => cap < 2_000_000_000m,
             })
@@ -219,7 +226,17 @@ public sealed class SignalQueries(DiscoveryDbContext db, IInstrumentDirectory in
     private static decimal Metric(Signal signal, string key) =>
         JsonNode.Parse(signal.Metrics)?[key]?.GetValue<string>() is { } text ? decimal.Parse(text, CultureInfo.InvariantCulture) : decimal.MinValue;
 
-    private static SignalDto ToDto(Row row, int rank, bool withBreakdown)
+    /// <summary>Sessions in a row's sparkline (design 02).</summary>
+    public const int SparklineSessions = 20;
+
+    /// <summary>The last 20 daily closes and today's volume, for the row's sparkline and "412M".</summary>
+    private async Task<(IReadOnlyList<decimal> Closes, long? Volume)> TrailAsync(string symbol, CancellationToken cancellationToken)
+    {
+        var daily = await history.GetDailyAsync(symbol, SparklineSessions, cancellationToken);
+        return daily is null || daily.Bars.Count == 0 ? ([], null) : (daily.Bars.Select(b => Price(b.Close)).ToList(), daily.Bars[^1].Volume);
+    }
+
+    private static SignalDto ToDto(Row row, int rank, bool withBreakdown, (IReadOnlyList<decimal> Closes, long? Volume) trail)
     {
         var s = row.Signal;
         var metrics = JsonNode.Parse(s.Metrics)!;
@@ -233,7 +250,9 @@ public sealed class SignalQueries(DiscoveryDbContext db, IInstrumentDirectory in
             new SignalStrategyDto(s.StrategyId, s.StrategyName, s.StrategyVersion),
             s.EvaluatedAt, s.DataAsOf, s.Status,
             withBreakdown ? JsonNode.Parse(s.ScoreBreakdown) : null,
-            ProposalId: null);
+            ProposalId: null,
+            trail.Closes,
+            trail.Volume);
     }
 
     /// <summary>Stored at 6 dp; prices go out at cents (four places below $1).</summary>

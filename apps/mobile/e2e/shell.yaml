@@ -24,7 +24,10 @@ env:
 - runFlow: close-dev-menu.yaml
 - tapOn:
     id: tab-discover
-- assertVisible: "(?i)not implemented · 02, 03, 20, 21, 23"
+- extendedWaitUntil:
+    visible:
+      id: scanner-status
+    timeout: 15000
 - runFlow: close-dev-menu.yaml
 - tapOn:
     id: tab-portfolio

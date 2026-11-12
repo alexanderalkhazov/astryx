@@ -3461,7 +3461,9 @@
           "dataAsOf",
           "status",
           "scoreBreakdown",
-          "proposalId"
+          "proposalId",
+          "sparkline",
+          "volume"
         ],
         "type": "object",
         "properties": {
@@ -3549,6 +3551,16 @@
               "string"
             ],
             "format": "uuid"
+          },
+          "sparkline": {
+            "type": "array"
+          },
+          "volume": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int64"
           }
         },
         "additionalProperties": false

@@ -65,6 +65,10 @@ public class SignalEndpointTests(SyncedMarketApiFactory factory) : IClassFixture
         var strategy = nvda.GetProperty("strategy");
         (strategy.GetProperty("name").GetString(), strategy.GetProperty("version").GetInt32()).ShouldBe(("Base Breakout v3", 3));
         nvda.GetProperty("scoreBreakdown").ValueKind.ShouldBe(JsonValueKind.Null); // D4 only
+        var sparkline = nvda.GetProperty("sparkline").EnumerateArray().Select(p => p.GetString()).ToList();
+        sparkline.Count.ShouldBe(20);
+        sparkline[^1].ShouldBe("186.40");
+        nvda.GetProperty("volume").GetInt64().ShouldBe(412_800_000);
         var counts = page.GetProperty("counts");
         counts.GetProperty("breakout").GetInt32().ShouldBeGreaterThanOrEqualTo(1);
         counts.GetProperty("all").GetInt32().ShouldBe(page.GetProperty("items").GetArrayLength());
@@ -75,7 +79,8 @@ public class SignalEndpointTests(SyncedMarketApiFactory factory) : IClassFixture
     [InlineData("type=momentum", 0)]
     [InlineData("type=breakout&symbol=nvda", 1)]
     [InlineData("minScore=88", 0)]
-    [InlineData("minScore=87&marketCap=large&sector=semiconductors&horizon=swing", 1)]
+    [InlineData("minScore=87&marketCap=mega&sector=semiconductors&horizon=swing", 1)]
+    [InlineData("marketCap=large&symbol=NVDA", 0)] // $4.55T is mega
     [InlineData("marketCap=small&symbol=NVDA", 0)]
     public async Task Filters_narrow_the_list_and_the_count(string query, int expected)
     {

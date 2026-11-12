@@ -98,7 +98,8 @@ internal static class FakeSeries
         for (var k = 0; k < BaseSessions; k++)
         {
             var last = k == BaseSessions - 1;
-            closes[k] = last ? bars[start + k].Close : Round(Math.Clamp(bars[start + k].Close, mid + 0.10m, top - 0.20m));
+            // A seeded spread across the upper half, so the base wanders instead of sitting on a clamp.
+            closes[k] = last ? bars[start + k].Close : Round(mid + 0.30m + (top - mid - 0.80m) * random.Between(0m, 1m));
             upWicks[k] = Math.Abs(random.NextGaussian());
             downWicks[k] = 0.5m + Math.Abs(random.NextGaussian());
         }

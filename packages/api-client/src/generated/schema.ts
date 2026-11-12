@@ -1390,6 +1390,9 @@ export interface components {
             scoreBreakdown: null | components["schemas"]["JsonNode"];
             /** Format: uuid */
             proposalId: null | string;
+            sparkline: unknown[];
+            /** Format: int64 */
+            volume: null | number;
         };
         SignalLevelsDto: {
             orderType: string;

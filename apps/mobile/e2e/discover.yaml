@@ -1,0 +1,63 @@
+# Discover (T-067): scanner line, chips, ranked rows, filters sheet with live count, empty state, row → stock. Signed in.
+appId: ${APP_ID}
+env:
+  APP_ID: app.astryx.mobile
+  LINK: astryx://
+---
+- openLink: ${LINK}discover
+- tapOn:
+    text: Open
+    optional: true
+- runFlow: close-dev-menu.yaml
+- runFlow: # a sheet left open by an earlier run
+    when:
+      visible: Filter scanner
+    commands:
+      - tapOn:
+          point: "50%,12%"
+- extendedWaitUntil:
+    visible: "All, \\d+"
+    timeout: 30000
+- tapOn: "All, \\d+" # filters persist per user: start from the full list
+- runFlow:
+    when:
+      visible: Clear all
+    commands:
+      - tapOn: Clear all
+- extendedWaitUntil:
+    visible:
+      id: opportunity-NVDA
+    timeout: 30000
+- assertVisible:
+    id: scanner-status
+- assertVisible: "All, \\d+"
+- waitForAnimationToEnd
+- takeScreenshot: discover
+- tapOn:
+    id: discover-filters
+- extendedWaitUntil:
+    visible: "Show \\d+ setups?"
+    timeout: 10000
+- tapOn: "Staples"
+- extendedWaitUntil:
+    visible: "Show 0 setups"
+    timeout: 10000
+- takeScreenshot: discover-filters
+- tapOn:
+    id: filters-apply
+- extendedWaitUntil:
+    visible:
+      id: discover-empty
+    timeout: 10000
+- takeScreenshot: discover-empty
+- tapOn: Reset filters
+- extendedWaitUntil:
+    visible:
+      id: opportunity-NVDA
+    timeout: 10000
+- tapOn:
+    id: opportunity-NVDA
+- extendedWaitUntil:
+    visible:
+      id: candle-chart
+    timeout: 20000

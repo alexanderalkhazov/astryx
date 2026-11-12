@@ -17,3 +17,10 @@ jest.mock('expo-haptics', () => ({ selectionAsync: jest.fn(), impactAsync: jest.
 
 // Connection banner (T-050): NetInfo's own mock reports a connected wifi network.
 jest.mock('@react-native-community/netinfo', () => require('@react-native-community/netinfo/jest/netinfo-mock.js'));
+
+// Discover (T-067): AsyncStorage's own mock; FlashList renders through FlatList so rows appear in tests.
+jest.mock('@react-native-async-storage/async-storage', () => require('@react-native-async-storage/async-storage/jest/async-storage-mock'));
+jest.mock('@shopify/flash-list', () => {
+  const { FlatList } = jest.requireActual('react-native');
+  return { FlashList: FlatList };
+});
