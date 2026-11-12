@@ -242,7 +242,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Scope:** the interfaces from §16.1; `FakeMarketDataProvider` and `FakeNewsProvider` backed by `tests/fixtures/market` (a universe of about 1,034 symbols, 300+ daily bars, NVDA tuned to the design: 186.40 / +3.42% / O 180.60 H 186.77 L 180.05 / V 412.8M); seeded intraday random walk; fault injection (down, stale, bad tick).
   - **Acceptance:** the same seed produces identical outputs. Fault modes can be toggled at runtime via `/dev/faults` (Development only).
   - **Refs:** §16.1, §11.11, §21.1 · **Depends:** T-040 · **P0**
-- [ ] **T-042** Ingestion jobs
+- [x] **T-042** Ingestion jobs — `8a84087`
   - **Acceptance:** `InstrumentSync`, `CalendarSync`, `EodBarSync`, `QuoteSync` (priority order: positions, then working orders, then watchlist, then the rest), `FundamentalsSync` and `NewsSync` are scheduled via the job queue with an idempotent upsert. A rate-budget limiter is respected. `QuoteUpdated` events are emitted.
   - **Refs:** §16.3, §19.2 · **Depends:** T-015, T-041 · **P0**
 - [ ] **T-043** Freshness and market session service
