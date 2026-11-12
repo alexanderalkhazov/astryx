@@ -264,7 +264,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Story:** As a user, I want to star a stock to follow it, and manage my watchlist from Settings.
   - **Acceptance:** W1–W7. Star toggle is optimistic with rollback. A default list is created at registration. The PROPOSED `settings/watchlist` screen supports remove and reorder.
   - **Refs:** §7.5, §11.5 · **Depends:** T-045, T-024 · **P0**
-- [ ] **T-048** CandleChart and LineChart (Skia)
+- [x] **T-048** CandleChart and LineChart (Skia) (9b7ebf3)
   - **Scope:** price pane 210, volume 40, MA20 and MA50 overlays, entry, stop and target level lines with gutter tags, scrub that snaps to a bar (OHLCV readout, haptic throttled to 30 ms, release returns to the last bar), and an accessibility summary plus a last-10-bars list. `LineChart` with a benchmark dashed overlay and scrub readout.
   - **Acceptance:** 60 fps scrub on the simulator with 250 bars. Visually matches design 04.
   - **Refs:** §8.4.3, §8.6 · **Depends:** T-036 · **P0**
