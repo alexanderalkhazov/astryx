@@ -1,4 +1,6 @@
+using Astryx.Infrastructure.Jobs;
 using Astryx.Infrastructure.Persistence;
+using Astryx.Modules.MarketData.Application.Ingestion;
 using Astryx.Modules.MarketData.Application.Providers;
 using Astryx.Modules.MarketData.Infrastructure.Persistence;
 using Astryx.Modules.MarketData.Infrastructure.Providers.Fake;
@@ -29,6 +31,39 @@ public static class MarketDataModule
         services.AddSingleton<MarketDataFaults>();
         services.AddSingleton<IMarketDataProvider, FakeMarketDataProvider>();
         services.AddSingleton<INewsProvider, FakeNewsProvider>();
+
+        return services.AddIngestion(configuration);
+    }
+
+    /// <summary>Sync jobs (SYSTEM_DESIGN.md §16.3). Each runs on a short interval and decides itself whether it is due.</summary>
+    private static IServiceCollection AddIngestion(this IServiceCollection services, IConfiguration configuration)
+    {
+        var section = configuration.GetSection(IngestionOptions.SectionName);
+        services.AddOptions<IngestionOptions>().Bind(section);
+        services.AddSingleton<RateBudget>();
+        services.AddSingleton<QuoteRotation>();
+        services.AddScoped<MarketClock>();
+        services.AddScoped<SyncStateStore>();
+        services.AddScoped<SyncRunner>();
+        services.AddScoped<NewsIngestor>();
+
+        services.AddJobHandler<InstrumentSyncJob, InstrumentSyncHandler>();
+        services.AddJobHandler<CalendarSyncJob, CalendarSyncHandler>();
+        services.AddJobHandler<EodBarSyncJob, EodBarSyncHandler>();
+        services.AddJobHandler<QuoteSyncJob, QuoteSyncHandler>();
+        services.AddJobHandler<FundamentalsSyncJob, FundamentalsSyncHandler>();
+        services.AddJobHandler<NewsSyncJob, NewsSyncHandler>();
+
+        if (section.GetValue(nameof(IngestionOptions.Enabled), true))
+        {
+            services.AddRecurringJob("market.quote_sync", TimeSpan.FromMinutes(1), _ => new QuoteSyncJob());
+            services.AddRecurringJob("market.eod_bar_sync", TimeSpan.FromMinutes(5), _ => new EodBarSyncJob());
+            services.AddRecurringJob("market.instrument_sync", TimeSpan.FromMinutes(15), _ => new InstrumentSyncJob());
+            services.AddRecurringJob("market.fundamentals_sync", TimeSpan.FromMinutes(15), _ => new FundamentalsSyncJob());
+            services.AddRecurringJob("market.news_sync", TimeSpan.FromMinutes(15), _ => new NewsSyncJob());
+            services.AddRecurringJob("market.calendar_sync", TimeSpan.FromHours(1), _ => new CalendarSyncJob());
+        }
+
         return services;
     }
 }

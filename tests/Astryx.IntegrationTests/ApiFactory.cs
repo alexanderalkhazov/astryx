@@ -48,6 +48,8 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         builder.UseSetting("RateLimits:AuthPerHour", "100000");
         builder.UseSetting("RateLimits:UserPerMinute", "100000");
         builder.UseSetting("RateLimits:AnonymousPerMinute", "100000");
+        // Market data sync would load ~400k bars into every test database; ingestion tests run handlers directly.
+        builder.UseSetting("MarketData:Ingestion:Enabled", "false");
         foreach (var (key, value) in ExtraSettings)
         {
             builder.UseSetting(key, value);

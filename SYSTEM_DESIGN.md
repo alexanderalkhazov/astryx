@@ -3115,6 +3115,15 @@ Fallback behaviour regardless of vendor:
 
 Priority rule: **positions and working orders always get fresh quotes first**, because stop and target monitoring depends on them.
 
+**Implemented (T-042).**
+- **Scheduling:** each job is a recurring job on a short interval: quotes 1 min, EOD 5 min, instruments, fundamentals and news 15 min, calendar 1 h. The handler decides whether it is due from `provider_sync_state` and the session calendar, with New York times via NodaTime. An empty database therefore loads at once, and EOD and fundamentals wait for the first instrument sync instead of recording an empty success.
+- **Request budget:** a token bucket (`MarketData:Ingestion:RequestsPerMinute`). When it runs dry the run stops, records `rate_budget` and resumes next cycle.
+- **EOD backfill:** `BackfillDays`, default 730. Upserts are bulk `unnest` statements.
+- **Quote sync:** runs during the session, once after the close, and whenever quotes are missing. Bad ticks are dropped (`MaxQuoteMoveFromPrevClose`, default 50 %). `quote_seq` bumps only when a quote changed.
+- **QuotesUpdated:** one batched `market.quotes_updated.v1` event per cycle instead of one per instrument, published in the upsert's transaction.
+- **Priority symbols:** modules contribute them through `IPrioritySymbolSource` (`Astryx.Contracts.MarketData`). None are registered until positions, watchlists and signals exist.
+- **Tests:** integration tests set `MarketData:Ingestion:Enabled=false` and call the handlers directly on a `FakeTimeProvider`.
+
 ### 16.4 Instrument identity
 
 `(symbol, exchange_mic)` is unique. Ticker changes are handled by updating `symbol` on the same `instrument_id` (the history stays attached). Delisted instruments become `is_active=false` and their positions are frozen with a System alert (`ASSUMPTION`, rare in the MVP).
