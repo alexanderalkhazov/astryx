@@ -348,7 +348,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [x] **T-081** Trading proposals
   - **Acceptance:** `trading.proposals` migration. T1–T3 and T5. Created from a signal (deterministic levels) or a validated analysis (levels accepted only). One pending proposal per instrument. Expiry at session end minus 30 min (`ProposalExpiryJob`). The Reject flow keeps the signal for hit-rate audit.
   - **Refs:** §7.9, §11.7 · **Depends:** T-066, T-073, T-080 · **P0**
-- [ ] **T-082** Risk engine
+- [x] **T-082** Risk engine
   - **Acceptance:** sizing (min of risk, weight cap and cash; `sized_by`), all 12 checks with pass, warn and fail thresholds, `inputs_hash`, 60 s validity. **RISK-01…RISK-10 pass**, including the exact design numbers (76 sh, $14,174.00, −$630.80, +$1,330.00, R:R 2.11, sized by weight cap).
   - **Refs:** §14 · **Depends:** T-080, T-043 · **P0**
 - [ ] **T-083** Assessment endpoint
