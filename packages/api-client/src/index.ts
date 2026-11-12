@@ -14,7 +14,14 @@ export const SystemStatus = z.object({
   database: z.string(),
   migrations: z.string().optional(),
   ai: z.object({ status: z.string(), model: z.string().nullable() }),
-  marketData: z.object({ provider: z.string().nullable() }),
+  marketData: z.object({
+    provider: z.string().nullable(),
+    // Freshness (SYSTEM_DESIGN.md §20.5); drives the connection-lost banner.
+    quotesAsOf: z.string().nullable().optional(),
+    quotesStale: z.boolean().optional(),
+    dailyBarsThrough: z.string().nullable().optional(),
+    dailyBarsStale: z.boolean().optional(),
+  }),
   broker: z.object({ adapter: z.string().nullable(), mode: z.literal('paper') }),
   features: z.object({ liveTrading: z.literal(false) }),
 });

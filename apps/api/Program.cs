@@ -8,6 +8,8 @@ using Astryx.Modules.Discovery;
 using Astryx.Modules.Identity;
 using Astryx.Modules.Identity.Api;
 using Astryx.Modules.MarketData;
+using Astryx.Modules.MarketData.Api;
+using Astryx.Modules.MarketData.Application.Market;
 using Astryx.Modules.Notifications;
 using Astryx.Modules.Paper;
 using Astryx.Modules.Portfolio;
@@ -113,16 +115,24 @@ app.MapHealthChecks("/health/deps", new HealthCheckOptions
     ResultStatusCodes = { [HealthStatus.Degraded] = StatusCodes.Status200OK },
 });
 
-app.MapGet("/api/v1/system/status", async (HealthCheckService health, IConfiguration config, CancellationToken ct) =>
+app.MapGet("/api/v1/system/status", async (HealthCheckService health, FreshnessPolicy freshness, IConfiguration config, CancellationToken ct) =>
 {
     var report = await health.CheckHealthAsync(ct);
+    var market = await freshness.StatusAsync(ct);
     string Status(string name) => report.Entries.TryGetValue(name, out var e) ? e.Status.ToString().ToLowerInvariant() : "unknown";
     return Results.Ok(new
     {
         database = Status("postgres"),
         migrations = Status("migrations"),
         ai = new { status = Status("ollama"), model = config["Ai:Ollama:Model"] },
-        marketData = new { provider = config["MarketData:Provider"] },
+        marketData = new
+        {
+            provider = config["MarketData:Provider"],
+            quotesAsOf = market.Quotes.AsOf,
+            quotesStale = market.Quotes.Stale,
+            dailyBarsThrough = market.DailyBarsThrough,
+            dailyBarsStale = market.DailyBarsStale,
+        },
         broker = new { adapter = config["Broker:Adapter"], mode = "paper" },
         features = new { liveTrading = config.GetValue<bool>("Features:LiveTrading") },
     });
@@ -130,6 +140,7 @@ app.MapGet("/api/v1/system/status", async (HealthCheckService health, IConfigura
 
 app.MapIdentityEndpoints();
 app.MapProfileEndpoints();
+app.MapMarketEndpoints();
 
 if (DevEndpoints.IsEnabled(app.Environment, app.Configuration))
 {

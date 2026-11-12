@@ -3536,6 +3536,13 @@ All instants are UTC (`timestamptz`, `DateTimeOffset` with offset 0). The API em
 
 Every response with market-derived numbers returns `asOf` and `stale`. **Stale data blocks approvals** (`data_fresh` check) and triggers the banner.
 
+**Implemented (T-043).**
+- **FreshnessPolicy** (MarketData): quotes are fresh for 90 s while the session is open, otherwise if they reflect the latest close. Daily bars must include every session whose 18:00 ET deadline has passed. Budgets are under `MarketData:Freshness`.
+- **MarketSessionService:** pre 04:00 ET → open → post until 20:00 ET (17:00 on half days) → closed, from `market.trading_calendar` with NodaTime. It backs `GET /api/v1/market/session` (M10).
+- **System status:** `/system/status` `marketData` now carries `quotesAsOf`, `quotesStale`, `dailyBarsThrough` and `dailyBarsStale` for the banner.
+- **Market endpoints:** M4–M9 attach `asOf`/`stale` through the policy in T-045.
+- **Time format:** every API instant is now written in UTC with `Z` (`UtcDateTimeOffsetJsonConverter`, §20.3).
+
 ### 20.6 Missing market data
 
 Never interpolate, forward-fill or reuse another symbol's data. Missing quotes leave positions valued at the last known price with `stale:true`. Missing bars make indicators `insufficient`. Proposals are blocked for that instrument.

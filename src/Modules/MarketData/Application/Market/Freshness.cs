@@ -1,0 +1,79 @@
+using Astryx.Modules.MarketData.Application.Ingestion;
+using Astryx.Modules.MarketData.Domain;
+using Astryx.Modules.MarketData.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+
+namespace Astryx.Modules.MarketData.Application.Market;
+
+/// <summary><c>MarketData:Freshness</c> budgets (SYSTEM_DESIGN.md §20.5).</summary>
+public sealed class FreshnessOptions
+{
+    public const string SectionName = "MarketData:Freshness";
+
+    /// <summary>A quote older than this while the regular session is open is stale (ASSUMPTION; tighter with real-time data).</summary>
+    public int QuoteMaxAgeSeconds { get; set; } = 90;
+
+    /// <summary>Daily bars must include the latest completed session by this hour, New York time.</summary>
+    public int DailyBarsDeadlineHour { get; set; } = 18;
+}
+
+/// <summary>Every market-derived value goes out with when it was true and whether it is still within budget.</summary>
+public sealed record Freshness(DateTimeOffset? AsOf, bool Stale);
+
+/// <summary>Freshness of the market data as a whole, for <c>/system/status</c> and the connection-lost banner (§8.11).</summary>
+public sealed record MarketDataStatus(Freshness Quotes, DateOnly? DailyBarsThrough, bool DailyBarsStale);
+
+/// <summary>
+/// Applies the freshness budgets (SYSTEM_DESIGN.md §20.5). Stale data blocks approvals (<c>data_fresh</c>) and shows
+/// the banner; callers attach <see cref="Freshness"/> to every response carrying market numbers.
+/// </summary>
+public sealed class FreshnessPolicy(MarketDataDbContext db, MarketClock clock, IOptions<FreshnessOptions> options)
+{
+    /// <summary>
+    /// Session open: fresh if no older than <see cref="FreshnessOptions.QuoteMaxAgeSeconds"/>. Otherwise fresh if it
+    /// reflects the most recent close ("at close").
+    /// </summary>
+    public async Task<Freshness> QuoteAsync(DateTimeOffset? asOf, CancellationToken cancellationToken)
+    {
+        if (asOf is null)
+        {
+            return new Freshness(null, Stale: true);
+        }
+
+        var session = await clock.CurrentSessionAsync(cancellationToken);
+        var now = clock.Now;
+        var stale = now < session.CloseAt
+            ? now - asOf.Value > TimeSpan.FromSeconds(options.Value.QuoteMaxAgeSeconds)
+            : asOf.Value < session.CloseAt!.Value;
+        return new Freshness(asOf, stale);
+    }
+
+    /// <summary>Fresh if the stored history includes every session whose deadline (18:00 ET on its date) has passed.</summary>
+    public async Task<bool> DailyBarsStaleAsync(DateOnly? lastFinalSession, CancellationToken cancellationToken)
+    {
+        var required = await RequiredDailySessionAsync(cancellationToken);
+        return required is not null && (lastFinalSession is null || lastFinalSession < required);
+    }
+
+    public async Task<MarketDataStatus> StatusAsync(CancellationToken cancellationToken)
+    {
+        var newestQuote = await db.Quotes.MaxAsync(q => (DateTimeOffset?)q.AsOf, cancellationToken);
+        var barsThrough = await db.PriceBars.Where(b => b.Timeframe == Timeframe.OneDay && b.IsFinal).MaxAsync(b => (DateOnly?)b.SessionDate, cancellationToken);
+        return new MarketDataStatus(await QuoteAsync(newestQuote, cancellationToken), barsThrough, await DailyBarsStaleAsync(barsThrough, cancellationToken));
+    }
+
+    private async Task<DateOnly?> RequiredDailySessionAsync(CancellationToken cancellationToken)
+    {
+        for (var date = clock.Today; date >= clock.Today.AddDays(-14); date = date.AddDays(-1))
+        {
+            if (await clock.SessionAsync(date, cancellationToken) is { IsHoliday: false } session
+                && MarketClock.At(session.SessionDate, options.Value.DailyBarsDeadlineHour, 0) <= clock.Now)
+            {
+                return session.SessionDate;
+            }
+        }
+
+        return null;
+    }
+}

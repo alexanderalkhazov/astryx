@@ -1,6 +1,7 @@
 using Astryx.Infrastructure.Jobs;
 using Astryx.Infrastructure.Persistence;
 using Astryx.Modules.MarketData.Application.Ingestion;
+using Astryx.Modules.MarketData.Application.Market;
 using Astryx.Modules.MarketData.Application.Providers;
 using Astryx.Modules.MarketData.Infrastructure.Persistence;
 using Astryx.Modules.MarketData.Infrastructure.Providers.Fake;
@@ -46,6 +47,9 @@ public static class MarketDataModule
         services.AddScoped<SyncStateStore>();
         services.AddScoped<SyncRunner>();
         services.AddScoped<NewsIngestor>();
+        services.AddOptions<FreshnessOptions>().Bind(configuration.GetSection(FreshnessOptions.SectionName));
+        services.AddScoped<MarketSessionService>();
+        services.AddScoped<FreshnessPolicy>();
 
         services.AddJobHandler<InstrumentSyncJob, InstrumentSyncHandler>();
         services.AddJobHandler<CalendarSyncJob, CalendarSyncHandler>();

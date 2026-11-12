@@ -37,7 +37,7 @@ public partial class ProfileTests(ApiFactory factory) : IClassFixture<ApiFactory
 
         var match = LinkPattern().Match(factory.Emails.To(email).Single().TextBody);
         var userId = Guid.Parse(match.Groups["user"].Value);
-        (await _client.PostAsJsonAsync("/api/v1/auth/verify-email", new { userId, token = match.Groups["token"].Value })).EnsureSuccessStatusCode();
+        await TestUsers.VerifyEmailAsync(_client, userId, match.Groups["token"].Value);
         var login = await _client.PostAsJsonAsync("/api/v1/auth/login", new { email, password = Password, deviceId = "ios-device-0001" });
         var accessToken = (await login.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("accessToken").GetString()!;
         return (userId, accessToken);

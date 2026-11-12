@@ -84,7 +84,7 @@ public partial class UserRateLimitTests(UserLimitApiFactory factory) : IClassFix
         }
 
         var match = LinkPattern().Match(factory.Emails.To(email).Single().TextBody);
-        (await _client.PostAsJsonAsync("/api/v1/auth/verify-email", new { userId = Guid.Parse(match.Groups["user"].Value), token = match.Groups["token"].Value })).EnsureSuccessStatusCode();
+        await TestUsers.VerifyEmailAsync(_client, Guid.Parse(match.Groups["user"].Value), match.Groups["token"].Value);
         var login = await _client.PostAsJsonAsync("/api/v1/auth/login", new { email, password = "correct horse battery staple", deviceId = "ios-device-0001" });
         return (await login.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("accessToken").GetString()!;
     }

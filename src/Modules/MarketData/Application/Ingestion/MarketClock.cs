@@ -54,5 +54,37 @@ public sealed class MarketClock(MarketDataDbContext db, IMarketDataProvider prov
         }
     }
 
+    /// <summary>The first trading session on or after <paramref name="from"/> (holidays and weekends skipped; looks two weeks ahead).</summary>
+    public async Task<ProviderSession?> NextSessionAsync(DateOnly from, CancellationToken cancellationToken)
+    {
+        for (var date = from; date <= from.AddDays(14); date = date.AddDays(1))
+        {
+            if (await SessionAsync(date, cancellationToken) is { IsHoliday: false } session)
+            {
+                return session;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>The most recent session that has closed by now.</summary>
+    public async Task<ProviderSession?> LatestClosedSessionAsync(CancellationToken cancellationToken)
+    {
+        for (var date = Today; date >= Today.AddDays(-14); date = date.AddDays(-1))
+        {
+            if (await SessionAsync(date, cancellationToken) is { IsHoliday: false } session && session.CloseAt <= Now)
+            {
+                return session;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>New York wall-clock <paramref name="hour"/>:<paramref name="minute"/> on <paramref name="date"/>, in UTC.</summary>
+    public static DateTimeOffset At(DateOnly date, int hour, int minute) =>
+        new LocalDate(date.Year, date.Month, date.Day).At(new LocalTime(hour, minute)).InZoneLeniently(NewYork).ToDateTimeOffset().ToUniversalTime();
+
     private static DateOnly ToDate(LocalDate date) => new(date.Year, date.Month, date.Day);
 }

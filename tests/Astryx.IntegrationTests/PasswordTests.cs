@@ -62,7 +62,7 @@ public partial class PasswordTests(ApiFactory factory) : IClassFixture<ApiFactor
         var (_, userId, token) = await WaitForLinkAsync(email, "Verify your Astryx email");
         if (verify)
         {
-            (await _client.PostAsJsonAsync("/api/v1/auth/verify-email", new { userId, token })).EnsureSuccessStatusCode();
+            await TestUsers.VerifyEmailAsync(_client, userId, token);
         }
 
         return (email, userId);

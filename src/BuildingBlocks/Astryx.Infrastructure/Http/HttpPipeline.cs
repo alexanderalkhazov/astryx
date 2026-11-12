@@ -19,6 +19,7 @@ public static class HttpPipeline
         {
             options.SerializerOptions.UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow;
             options.SerializerOptions.AddFinancialConverters();
+            options.SerializerOptions.Converters.Add(new UtcDateTimeOffsetJsonConverter());
         });
 
         services.AddProblemDetails(options => options.CustomizeProblemDetails = context =>

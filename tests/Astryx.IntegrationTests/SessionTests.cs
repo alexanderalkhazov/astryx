@@ -41,7 +41,7 @@ public partial class SessionTests(ApiFactory factory) : IClassFixture<ApiFactory
         var userId = Guid.Parse(match.Groups["user"].Value);
         if (verify)
         {
-            (await _client.PostAsJsonAsync("/api/v1/auth/verify-email", new { userId, token = match.Groups["token"].Value })).EnsureSuccessStatusCode();
+            await TestUsers.VerifyEmailAsync(_client, userId, match.Groups["token"].Value);
         }
 
         return (email, userId);
