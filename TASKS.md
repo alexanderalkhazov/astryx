@@ -289,7 +289,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [x] **T-061** Indicator snapshot service and endpoint (d2078f2)
   - **Acceptance:** `IStockAnalysisEngine.Analyze`, the `indicator_snapshots` cache keyed by `params_hash`, data-quality flags (`ok`, `gaps`, `stale`, `insufficient`), and M7 matching the §11.4 example.
   - **Refs:** §13.5, §11.4 · **Depends:** T-060, T-045 · **P0**
-- [ ] **T-062** RSI and MACD panes plus the Technicals tab
+- [x] **T-062** RSI and MACD panes plus the Technicals tab (265cad0)
   - **Acceptance:** RSI pane 64 with 30/70 guides, MACD pane 64 with histogram, an `IndicatorsSheet`, and a Technicals table with `as of` (design 05).
   - **Refs:** §8.4.3 · **Depends:** T-061, T-048 · **P0**
 - [ ] **T-063** Strategies catalog and versioning
