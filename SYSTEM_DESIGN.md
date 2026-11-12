@@ -1121,7 +1121,17 @@ Implementation (T-049):
   - Invalidation is template copy: a close below the stop; the buy stop lapsing at `expiresAt` (now on `SignalDto`) unless a newer scan confirms it; and a newer scan no longer finding the setup.
   - It ends with "Deterministic … not AI" and a research-only note.
 - **States:** "No active signal · Evaluated HH:MM ET" (time from D1) and "Signal unavailable" (signals hidden).
-- **Later:** AI reasoning and "Analyze with AI" arrive with M4.
+**Implemented (T-075).**
+
+- `features/analysis/AnalysisCard.tsx` sits at the end of the Signal tab. It also appears without an active signal, and when signals are hidden, because analysis works for any instrument (FR-07). The card has a dashed border and an "Experimental AI model" badge.
+- **Request:** "Analyze with AI" sends AI1 with a fresh `Idempotency-Key` per tap. A 409 `duplicate` follows the job named in the problem's `jobId`; `ApiError.extensions` now carries such members. The job each symbol is waiting on is kept per app session, so leaving and returning resumes its progress.
+- **Progress:** Queued / Analyzing NVDA (· attempt N of 3) / Waiting to retry, with Cancel (AI3). AI2 is polled at `pollAfterMs` while the socket is down, and every 15 s while `analysis.updated` is flowing.
+- **Result:** the latest valid analysis (AI5, then AI4) shows sentiment, a Stale badge, the explanation, the three scenarios with their conditions, supporting and contradicting evidence, key risks and catalysts. Confidence carries "Not a calibrated probability."
+  - Suggested levels show with the backend's R:R when accepted. Otherwise the card shows the LevelValidator's reasons and says the levels can't seed a proposal.
+  - Below that come model · prompt version · analysis time and the disclaimer, then "Run a new analysis".
+- **Failure:** `ai_output_invalid` shows "Analysis couldn't be generated reliably. Indicators are still available." Other codes show the server's user-safe detail. Both offer Try again.
+- **Manual check (2026-11-12):** a real `qwen3.5:0.8b` run for NVDA took three calls of about 40 s each, all hitting the 1,500-token cap, and ended in the failure state as designed. With `AI_PROVIDER=Fake` the full result renders (`e2e/analysis.yaml`).
+- A quick experiment replaced the embedded JSON Schema with a filled-in JSON skeleton. Output got much closer to `analysis.v1` (24–35 s), but only one run in three parsed. Comparing these prompt variants is T-076's job.
 
 #### 8.4.4 Trade proposal (`proposal/[id]`) — design 06
 
@@ -2842,7 +2852,7 @@ Fields added **by the backend** after validation (never accepted from the model)
 - Invalid outputs are stored with `parsed` null and are never linked from their job or served by AI4/AI5.
 - One `ai_requests` row is written per model call; the repair retry shares its job attempt's number.
 - `AiAnalysisWorker` runs `Ai:MaxConcurrency` loops when `Workers:Enabled` and `Ai:Jobs:WorkerEnabled` are set. Tests switch it off and call the processor directly.
-- `NOT IMPLEMENTED` yet: the "Analysis failed" notification and the SignalR `analysis.updated` event (T-074). Clients poll AI2.
+- `NOT IMPLEMENTED` yet: the "Analysis failed" notification. (SignalR `analysis.updated` landed with T-074.)
 - Observed on 2026-11-12 with the real `qwen3.5:0.8b` and no `format` support: each call takes about 37 s for roughly 1,500 output tokens. The output began correctly, then nested `conditions` recursively until it hit the token cap. Both calls failed to parse, and the job ended `ai_output_invalid` as designed. Prompt tuning for small models is measured in T-076.
 
 ### 12.9 Logging and tracking

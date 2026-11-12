@@ -1,0 +1,60 @@
+# "Analyze with AI" in Stock › Signal (T-075). Signed in (run sign-in.yaml first). With AI_PROVIDER=Fake the result
+# renders; against a real Ollama the run may end in the reliability message, which the flow accepts.
+appId: ${APP_ID}
+env:
+  APP_ID: app.astryx.mobile
+  LINK: astryx://
+  SYMBOL: NVDA
+---
+- openLink: ${LINK}stock/${SYMBOL}
+- tapOn:
+    text: Open
+    optional: true
+- runFlow: close-dev-menu.yaml
+- extendedWaitUntil:
+    visible: NVIDIA Corp\.|.*
+    timeout: 30000
+- scrollUntilVisible: # the screen keeps its scroll position between runs
+    element: Signal
+    direction: UP
+    timeout: 20000
+- tapOn: Signal
+- scrollUntilVisible: # the card can be taller than the screen, so aim for its header badge
+    element: Experimental AI model
+    direction: DOWN
+    timeout: 20000
+- scrollUntilVisible:
+    element: "Analyze with AI|Run a new analysis|Try again|Cancel"
+    direction: DOWN
+    timeout: 20000
+- runFlow:
+    when:
+      visible: Run a new analysis # a result from an earlier run: start a fresh one
+    commands:
+      - tapOn: Run a new analysis
+- runFlow:
+    when:
+      visible:
+        id: analyze-with-ai
+    commands:
+      - tapOn:
+          id: analyze-with-ai
+- runFlow:
+    when:
+      visible: Try again
+    commands:
+      - tapOn: Try again
+- runFlow:
+    when:
+      visible:
+        id: analysis-progress # the fake provider can finish before this is seen
+    commands:
+      - takeScreenshot: analysis-progress
+- extendedWaitUntil:
+    notVisible:
+      id: analysis-progress
+    timeout: 300000 # a local model takes a minute or two, plus the repair retry
+- extendedWaitUntil: # the bottom of the card: a result, or the reliability message with Try again
+    visible: "Run a new analysis|Try again"
+    timeout: 15000
+- takeScreenshot: analysis-done

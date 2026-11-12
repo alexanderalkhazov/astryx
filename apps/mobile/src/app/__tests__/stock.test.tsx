@@ -12,6 +12,7 @@ jest.mock('@/lib/api', () => ({
   market: { instrument: jest.fn(), quote: jest.fn(), bars: jest.fn(), fundamentals: jest.fn(), news: jest.fn(), indicators: jest.fn() },
   watchlists: { list: jest.fn(), star: jest.fn(), unstar: jest.fn() },
   scanner: { list: jest.fn(), get: jest.fn(), status: jest.fn(), count: jest.fn() },
+  analyses: { list: jest.fn(async () => ({ data: { items: [], nextCursor: null } })), get: jest.fn(), job: jest.fn(), create: jest.fn(), cancel: jest.fn() },
 }));
 const api = jest.requireMock('@/lib/api') as {
   market: Record<'instrument' | 'quote' | 'bars' | 'fundamentals' | 'news' | 'indicators', jest.Mock>;

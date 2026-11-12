@@ -215,7 +215,7 @@ export default function StockScreen() {
 
         <Tabs tabs={TABS} value={tab} onChange={setTab} />
         {tab === 'signal' ? (
-          <SignalTab signal={active.data} pending={active.isPending} unavailable={active.unavailable} evaluatedAt={scannerStatus.data?.lastRunAt} />
+          <SignalTab symbol={symbol} signal={active.data} pending={active.isPending} unavailable={active.unavailable} evaluatedAt={scannerStatus.data?.lastRunAt} />
         ) : tab === 'technicals' ? (
           <TechnicalsTab snapshot={indicators.data} pending={indicators.isPending} failed={indicators.isError} onRetry={() => void indicators.refetch()} />
         ) : tab === 'fundamentals' ? (

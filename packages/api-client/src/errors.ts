@@ -8,6 +8,8 @@ export class ApiError extends Error {
   readonly errors: Record<string, string[]> | undefined;
   readonly traceId: string | undefined;
   readonly correlationId: string | undefined;
+  /** Problem extension members beyond the standard ones, e.g. `jobId` on a 409 `duplicate` analysis request. */
+  readonly extensions: Record<string, unknown>;
 
   constructor(init: {
     status: number;
@@ -17,6 +19,7 @@ export class ApiError extends Error {
     errors?: Record<string, string[]>;
     traceId?: string;
     correlationId?: string;
+    extensions?: Record<string, unknown>;
   }) {
     super(init.detail ?? init.title ?? init.code);
     this.name = 'ApiError';
@@ -27,6 +30,7 @@ export class ApiError extends Error {
     this.errors = init.errors;
     this.traceId = init.traceId;
     this.correlationId = init.correlationId;
+    this.extensions = init.extensions ?? {};
   }
 
   /** The request never reached the API (offline, DNS, timeout). */
@@ -39,7 +43,10 @@ export function isApiError(error: unknown): error is ApiError {
   return error instanceof ApiError;
 }
 
+const STANDARD_MEMBERS = new Set(['type', 'title', 'status', 'detail', 'instance', 'code', 'errors', 'traceId', 'correlationId']);
+
 interface ProblemBody {
+  [member: string]: unknown;
   code?: unknown;
   title?: unknown;
   detail?: unknown;
@@ -70,5 +77,6 @@ export async function toApiError(response: Response, correlationId: string): Pro
     errors,
     traceId: str(body.traceId),
     correlationId: str(body.correlationId) ?? correlationId,
+    extensions: Object.fromEntries(Object.entries(body).filter(([member]) => !STANDARD_MEMBERS.has(member))),
   });
 }

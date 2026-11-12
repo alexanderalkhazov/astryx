@@ -1,12 +1,15 @@
 import type { Signal } from '@astryx/api-client';
-import { color, space } from '@astryx/design-tokens';
+import { space } from '@astryx/design-tokens';
 import { StyleSheet, View } from 'react-native';
 
 import { EmptyState, SkeletonRow } from '@/components/Feedback';
 import { MetricGrid, ScoreBreakdownBar } from '@/components/Metric';
 import { Text } from '@/components/Text';
+import { AnalysisCard } from '@/features/analysis/AnalysisCard';
 import { formatEtTime, formatPct, formatPrice, formatRatio, formatSessionDate } from '@/lib/format';
 import { previewDivide, previewSubtract } from '@/lib/decimal';
+
+import { Bullet, Section } from './Sections';
 
 const HEADLINES: Record<Signal['type'], string> = {
   breakout: 'Breaking out of its base',
@@ -29,31 +32,41 @@ const when = (instant: string) => `${formatSessionDate(instant.slice(0, 10))} ·
 
 /**
  * Stock › Signal tab (SYSTEM_DESIGN.md §8.4.3, T-068): headline, summary, levels, evidence, the deterministic score
- * breakdown and invalidation, all from the scanner's signal. Template copy only; AI reasoning arrives with M4.
+ * breakdown and invalidation, all from the scanner's signal (template copy), then the on-demand AI analysis (T-075).
  */
 export function SignalTab({
+  symbol,
   signal,
   pending,
   unavailable,
   evaluatedAt,
 }: {
+  symbol: string;
   signal: Signal | null | undefined;
   pending: boolean;
   unavailable: boolean;
   evaluatedAt: string | null | undefined;
 }) {
   if (unavailable) {
-    return <EmptyState title="Signal unavailable" body="The scanner feed is unavailable, so signals are hidden rather than shown stale." />;
+    return (
+      <View style={styles.tab}>
+        <EmptyState title="Signal unavailable" body="The scanner feed is unavailable, so signals are hidden rather than shown stale." />
+        <AnalysisCard symbol={symbol} />
+      </View>
+    );
   }
 
   if (pending) return <SkeletonRow />;
 
   if (!signal) {
     return (
-      <EmptyState
-        title={`No active signal${evaluatedAt ? ` · Evaluated ${formatEtTime(evaluatedAt)}` : ''}`}
-        body="No strategy finds a setup in this stock right now. Star it to keep an eye on it."
-      />
+      <View style={styles.tab}>
+        <EmptyState
+          title={`No active signal${evaluatedAt ? ` · Evaluated ${formatEtTime(evaluatedAt)}` : ''}`}
+          body="No strategy finds a setup in this stock right now. Star it to keep an eye on it."
+        />
+        <AnalysisCard symbol={symbol} />
+      </View>
     );
   }
 
@@ -104,24 +117,8 @@ export function SignalTab({
       <Text.Caption tone="tertiary">
         {`Deterministic: ${signal.strategy.name} rules, evaluated ${when(signal.evaluatedAt)}. Scores come from strategy rules, not AI. Research only, not investment advice.`}
       </Text.Caption>
-    </View>
-  );
-}
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <View style={styles.section}>
-      <Text.Overline tone="tertiary">{title}</Text.Overline>
-      {children}
-    </View>
-  );
-}
-
-function Bullet({ text }: { text: string }) {
-  return (
-    <View style={styles.bullet}>
-      <View style={styles.dot} />
-      <Text.Body style={styles.bulletText}>{text}</Text.Body>
+      <AnalysisCard symbol={symbol} />
     </View>
   );
 }
@@ -129,7 +126,4 @@ function Bullet({ text }: { text: string }) {
 const styles = StyleSheet.create({
   tab: { gap: space[5], paddingTop: space[3] },
   section: { gap: space[2] },
-  bullet: { flexDirection: 'row', gap: space[2], alignItems: 'flex-start' },
-  dot: { width: 4, height: 4, borderRadius: 2, backgroundColor: color.text3, marginTop: 9 },
-  bulletText: { flex: 1 },
 });
