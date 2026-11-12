@@ -345,7 +345,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Note:** `portfolio.portfolios` (incl. `reserved_cash`) and `portfolio.transactions` already exist from T-020; this task adds positions, the append-only guard and the ledger service.
   - **Acceptance:** remaining `portfolio.*` migrations. `IPortfolioLedger` posts append-only transactions with a unique `idempotency_ref`. Cash cache plus `version` increment. The DB role has no UPDATE or DELETE on `transactions`. A ledger-sum invariant helper is used by tests.
   - **Refs:** §10.4 (portfolio), §15.3, §20.8 · **Depends:** T-012, T-020 · **P0**
-- [ ] **T-081** Trading proposals
+- [x] **T-081** Trading proposals
   - **Acceptance:** `trading.proposals` migration. T1–T3 and T5. Created from a signal (deterministic levels) or a validated analysis (levels accepted only). One pending proposal per instrument. Expiry at session end minus 30 min (`ProposalExpiryJob`). The Reject flow keeps the signal for hit-rate audit.
   - **Refs:** §7.9, §11.7 · **Depends:** T-066, T-073, T-080 · **P0**
 - [ ] **T-082** Risk engine
