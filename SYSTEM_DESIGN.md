@@ -2797,6 +2797,17 @@ Fields added **by the backend** after validation (never accepted from the model)
 
 `ValidationStatus = Invalid` → job `Failed` (`ai_output_invalid`). The raw output is kept for evaluation, and the user sees "Analysis couldn't be generated reliably. Indicators are still available."
 
+**Implemented (T-072).**
+
+- `Application/Validation/AiOutputValidator.cs` runs the steps in this order: parse, forbidden fields, schema, identity, temporal, grounding, levels, content policy. Forbidden fields are removed before the schema check so that they are recorded as `forbidden_field` rather than failing the schema. The forbidden set also covers the backend-owned keys `accepted`, `levelValidation`, `stale`, `model`, `promptVersion` and `disclaimer`.
+- The schema check uses JsonSchema.Net with format validation on.
+- Grounding compares `relevantIndicators` against the context's `indicators` and `quote` values. Numbers may differ by ±0.5%; text must match apart from case. Indicators the context doesn't have are dropped. A catalyst date must match a `yyyy-MM-dd` that appears anywhere in the context; undated catalysts are kept.
+- `DECIDED`: R:R and the ATR stop distance use the **top of the entry zone**, the worst fill for a long. The design's analysis gives (204.00 − 187.50) ÷ (187.50 − 178.20) = 1.77, which passes the default `min_reward_risk` of 1.5.
+- Unjustified levels, or `insufficientData`, give `accepted:false` without counting as a rejection.
+- `stale` comes from `IMarketDataFreshness.IsQuoteFreshAsync(dataAsOf)`, the same budget as everywhere else.
+- `Application/Analysis/AnalysisGenerator.cs` makes the call. A parse or schema failure gets exactly one repair retry: the previous output is sent back as an assistant turn, followed by the error. Provider failures propagate so the job can retry (§12.8).
+- Sampling settings come from `Ai:Generation` (temperature 0.2, 1500 output tokens, 90 s).
+
 ### 12.8 Timeouts, retries, fallback
 
 | Concern | Policy |

@@ -1,7 +1,9 @@
 using Astryx.Infrastructure.Persistence;
+using Astryx.Modules.Ai.Application.Analysis;
 using Astryx.Modules.Ai.Application.Context;
 using Astryx.Modules.Ai.Application.Prompts;
 using Astryx.Modules.Ai.Application.Providers;
+using Astryx.Modules.Ai.Application.Validation;
 using Astryx.Modules.Ai.Infrastructure.Fake;
 using Astryx.Modules.Ai.Infrastructure.Ollama;
 using Astryx.Modules.Ai.Infrastructure.Persistence;
@@ -28,6 +30,9 @@ public static class AiModule
         });
         services.AddSingleton<PromptRegistry>();
         services.AddScoped<AnalysisContextBuilder>();
+        services.AddSingleton<AiOutputValidator>();
+        services.AddOptions<AiGenerationOptions>().Bind(configuration.GetSection(AiGenerationOptions.SectionName));
+        services.AddScoped<AnalysisGenerator>();
 
         // `Ai:Provider`: Ollama (default) or Fake (tests, offline development).
         if (string.Equals(configuration["Ai:Provider"], "Fake", StringComparison.OrdinalIgnoreCase))

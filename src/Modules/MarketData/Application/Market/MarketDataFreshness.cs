@@ -10,4 +10,7 @@ public sealed class MarketDataFreshness(FreshnessPolicy freshness) : IMarketData
         var status = await freshness.StatusAsync(cancellationToken);
         return new MarketFreshness(status.Quotes.AsOf, status.DailyBarsThrough, status.Quotes.Stale);
     }
+
+    public async Task<bool> IsQuoteFreshAsync(DateTimeOffset asOf, CancellationToken cancellationToken) =>
+        !(await freshness.QuoteAsync(asOf, cancellationToken)).Stale;
 }

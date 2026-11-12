@@ -28,8 +28,8 @@ public sealed class PromptTemplate(string id, string version, string system, Tem
 
     public string System { get; } = system;
 
-    /// <summary>The output contract, e.g. <c>analysis.v1</c> (the schema's <c>$id</c>).</summary>
-    public string SchemaVersion { get; } = schema.RootElement.GetProperty("$id").GetString()!;
+    /// <summary>The output contract, e.g. <c>analysis.v1</c> (the schema's <c>schemaVersion</c> const).</summary>
+    public string SchemaVersion { get; } = schema.RootElement.GetProperty("properties").GetProperty("schemaVersion").GetProperty("const").GetString()!;
 
     public JsonDocument Schema { get; } = schema;
 

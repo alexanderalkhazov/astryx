@@ -7,6 +7,8 @@ public sealed record AiMessage(string Role, string Content)
     public static AiMessage System(string content) => new("system", content);
 
     public static AiMessage User(string content) => new("user", content);
+
+    public static AiMessage Assistant(string content) => new("assistant", content);
 }
 
 /// <summary>A JSON completion request (SYSTEM_DESIGN.md §12.3).</summary>

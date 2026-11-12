@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "analysis.v1",
+  "$id": "https://schemas.astryx.local/ai/analysis.v1.json",
   "type": "object",
   "additionalProperties": true,
   "required": ["schemaVersion", "symbol", "analysisTimestamp", "dataTimestamp", "dataQuality", "overallSentiment", "scenarios", "supportingEvidence", "contradictingEvidence", "keyRisks", "relevantIndicators", "catalysts", "confidence", "suggestedLevels", "explanation", "insufficientData"],

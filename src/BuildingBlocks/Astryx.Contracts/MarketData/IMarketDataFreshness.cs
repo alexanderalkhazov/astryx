@@ -7,4 +7,7 @@ public sealed record MarketFreshness(DateTimeOffset? QuotesAsOf, DateOnly? Daily
 public interface IMarketDataFreshness
 {
     Task<MarketFreshness> GetAsync(CancellationToken cancellationToken);
+
+    /// <summary>Whether a quote taken at <paramref name="asOf"/> is still within the freshness budget now (§20.5).</summary>
+    Task<bool> IsQuoteFreshAsync(DateTimeOffset asOf, CancellationToken cancellationToken);
 }

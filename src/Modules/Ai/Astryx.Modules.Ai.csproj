@@ -9,6 +9,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Scriban" />
+    <PackageReference Include="JsonSchema.Net" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Prompts/**/*" LogicalName="Astryx.Ai.Prompts/%(RecursiveDir)%(Filename)%(Extension)" />
