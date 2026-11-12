@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "analysis.v1",
+  "symbol": "NVDA",
+  "analysisTimestamp": "2026-11-09T19:32:41Z",
+  "dataTimestamp": "2026-11-09T19:32:00Z",
+  "dataQuality": { "status": "ok", "notes": [] },
+  "overallSentiment": "bullish",
+  "scenarios": {
+    "bullish": { "summary": "Shares rocket past $250 on AI demand.", "conditions": ["Breaks 250.00"] },
+    "bearish": { "summary": "Falls back to $120.", "conditions": ["Close below 120.00"] },
+    "neutral": { "summary": "Ranges between 150 and 250.", "conditions": ["Holds 150.00"] }
+  },
+  "supportingEvidence": ["RSI at 91 shows unstoppable momentum", "Volume 8× average"],
+  "contradictingEvidence": [],
+  "keyRisks": ["None significant"],
+  "relevantIndicators": [
+    { "name": "rsi14", "value": "91.0", "interpretation": "Extremely strong" },
+    { "name": "relVolume20", "value": "8.00", "interpretation": "Record participation" }
+  ],
+  "catalysts": [],
+  "confidence": { "value": 0.97, "explanation": "Very likely to go up." },
+  "suggestedLevels": {
+    "justified": true,
+    "entryZone": { "low": "240.00", "high": "245.00" },
+    "stopLoss": "150.00",
+    "takeProfit": "400.00",
+    "rationale": "Big upside."
+  },
+  "rewardRisk": "1.70",
+  "positionSize": 500,
+  "explanation": "Buy now before it doubles.",
+  "insufficientData": false
+}

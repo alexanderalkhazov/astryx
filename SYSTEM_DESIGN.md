@@ -2682,6 +2682,14 @@ public sealed record AiAnalysisOutcome(
 - `GetModelInfoAsync` uses `POST /api/show` (digest, parameters) and is cached for 10 minutes. On startup, if the model is missing, `/health/ready` reports AI `degraded` (it does not fail readiness).
 - Verified: the `qwen3.5:0.8b` tag exists and runs locally, and Ollama structured output (`format`) is **not** available for it. Still `NOT VERIFIED`: context length, JSON reliability over the golden set, latency under load. These are measured in Phase 4 with `Astryx.AiEval`.
 
+**Implemented (T-070).** `Application/Providers/AiProvider.cs` defines `IAiProvider` (`CompleteJsonAsync`, `GetModelInfoAsync`) and `AiProviderUnavailableException(reason)`. `Infrastructure/Ollama/OllamaAiProvider.cs`:
+
+- Takes the capability from `Ai:Ollama:SupportsStructuredOutput` when it is set. Otherwise `OllamaCapabilityProbe` (a hosted service) sends one 1-token `format:{"type":"object"}` request at startup: 200 means supported, 501 means unsupported, and anything else leaves it unknown. Unknown is treated as unsupported. A 501 on a real call also turns the capability off and retries once with the schema in the prompt. Re-checked on 2026-11-12: the local `qwen3.5:0.8b` returns 501.
+- The digest, parameter size and quantisation come from `GET /api/tags`, because `/api/show` does not return a digest. The context length comes from `POST /api/show` (`model_info.*.context_length`). Both are cached for 10 minutes.
+- The circuit breaker is `Infrastructure/Ollama/CircuitBreaker.cs` rather than a Polly pipeline. 5 failures within 60 s open it for 60 s, then it allows one trial call; a failed trial reopens it. Non-2xx responses, timeouts, network errors and malformed responses all count as failures. Each one throws `AiProviderUnavailableException` with a reason (`http_<status>`, `timeout`, `unreachable`, `empty_response`, `malformed_response`, `model_missing`, `circuit_open`). There are no HTTP retries.
+- `Ai:Provider=Fake` swaps in `Infrastructure/Fake/FakeAiProvider.cs`. It plays queued `FakeAiScenario`s (Valid, InvalidJson, SchemaError, HallucinatedNumbers, Timeout, ServerError) from embedded fixtures in `Infrastructure/Fake/Scenarios/`, and records every request.
+- `NOT IMPLEMENTED` yet: the AI-`degraded` readiness check.
+
 ### 12.4 Input context construction
 
 `AnalysisContextBuilder` produces a **validated, bounded, deterministic** context. Only data that passed MarketData freshness and quality checks goes in.

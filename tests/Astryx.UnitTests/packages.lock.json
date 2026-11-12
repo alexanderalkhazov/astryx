@@ -273,6 +273,14 @@
           "Npgsql.EntityFrameworkCore.PostgreSQL": "[10.0.3, )"
         }
       },
+      "astryx.modules.ai": {
+        "type": "Project",
+        "dependencies": {
+          "Astryx.Contracts": "[1.0.0, )",
+          "Astryx.Infrastructure": "[1.0.0, )",
+          "Astryx.SharedKernel": "[1.0.0, )"
+        }
+      },
       "astryx.modules.marketdata": {
         "type": "Project",
         "dependencies": {

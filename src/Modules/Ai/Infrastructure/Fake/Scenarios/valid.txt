@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "analysis.v1",
+  "symbol": "NVDA",
+  "analysisTimestamp": "2026-11-09T19:32:41Z",
+  "dataTimestamp": "2026-11-09T19:32:00Z",
+  "dataQuality": { "status": "ok", "notes": ["Prices are illustrative sample data."] },
+  "overallSentiment": "bullish",
+  "scenarios": {
+    "bullish": { "summary": "Breakout holds above $185.90 and volume confirms; momentum extends toward prior highs.", "conditions": ["Closes above 185.90 for 2 sessions", "Volume stays above 1.5× average"] },
+    "bearish": { "summary": "Breakout fails and price returns into the base; earnings adds gap risk.", "conditions": ["Daily close below 182.00", "Sector weakness"] },
+    "neutral": { "summary": "Price consolidates between 182 and 190 ahead of earnings.", "conditions": ["RSI drifts toward 55", "Volume normalises"] }
+  },
+  "supportingEvidence": ["Close above 6-week base high on 2.4× average volume", "Price above rising 20- and 50-day averages", "MACD histogram positive"],
+  "contradictingEvidence": ["RSI near 64 leaves limited room before overbought", "Earnings within two weeks"],
+  "keyRisks": ["Earnings gap through the stop", "High volatility", "Sector concentration"],
+  "relevantIndicators": [
+    { "name": "rsi14", "value": "64.2", "interpretation": "Strong but not overbought" },
+    { "name": "relVolume20", "value": "2.40", "interpretation": "Unusually heavy participation" }
+  ],
+  "catalysts": [ { "type": "earnings", "date": "2026-11-19", "note": "Scheduled earnings report" } ],
+  "confidence": { "value": 0.55, "explanation": "Subjective model rating of evidence alignment. NOT a calibrated probability of profit and has not been validated." },
+  "suggestedLevels": {
+    "justified": true,
+    "entryZone": { "low": "186.00", "high": "187.50" },
+    "stopLoss": "178.20",
+    "takeProfit": "204.00",
+    "rationale": "Stop below the base midpoint (~1.5 ATR); target at the measured move."
+  },
+  "explanation": "NVDA has broken out of a six-week base on heavy volume while trading above rising averages. The setup is constructive but earnings within two weeks add gap risk.",
+  "insufficientData": false
+}

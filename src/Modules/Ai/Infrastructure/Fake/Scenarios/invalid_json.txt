@@ -1,0 +1,12 @@
+Sure! Here is my analysis of NVDA:
+
+```json
+{
+  "schemaVersion": "analysis.v1",
+  "symbol": "NVDA",
+  "overallSentiment": "bullish",
+  "supportingEvidence": ["Breakout on heavy volume",
+  "explanation": "The stock looks strong
+```
+
+Let me know if you need anything else!

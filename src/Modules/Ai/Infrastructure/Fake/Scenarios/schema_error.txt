@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "analysis.v1",
+  "symbol": "NVDA",
+  "overallSentiment": "very bullish",
+  "supportingEvidence": "Breakout on heavy volume",
+  "confidence": 0.9,
+  "explanation": 42
+}
