@@ -1,0 +1,1035 @@
+symbol,exchange_mic,name,asset_type,sector,industry,market_cap,last,prev_close,open,high,low,volume,avg_volume,pattern,level,beta,pe_ratio,eps_ttm,earnings_in_days
+NVDA,XNAS,NVIDIA Corp.,equity,Information Technology,Semiconductors,4550000000000.00,186.40,180.24,180.60,186.77,180.05,412800000,172000000,breakout,185.90,1.72,48.6,3.84,14
+AMD,XNAS,Advanced Micro Devices,equity,Information Technology,Semiconductors,272000000000.00,168.25,164.66,,,,74000000,43500000,momentum,,1.94,96.2,1.75,28
+CRM,XNYS,Salesforce Inc.,equity,Information Technology,Software,300000000000.00,312.40,315.05,,,,6100000,6800000,pullback,,1.28,51.4,6.08,21
+PLTR,XNAS,Palantir Technologies,equity,Information Technology,Software,360000000000.00,152.60,146.10,,,,168000000,52000000,unusual_volume,,2.41,310.0,0.49,80
+UBER,XNYS,Uber Technologies,equity,Industrials,Ground Transportation,190000000000.00,91.80,89.95,,,,31000000,18000000,breakout,90.40,1.36,16.8,5.46,88
+COST,XNAS,Costco Wholesale,equity,Consumer Staples,Consumer Staples Merchandise Retail,405000000000.00,912.30,916.06,,,,1900000,2100000,pullback,,0.79,53.1,17.18,36
+AVGO,XNAS,Broadcom Inc.,equity,Information Technology,Semiconductors,1580000000000.00,336.70,331.20,,,,24000000,21000000,earnings,,1.21,71.3,4.72,30
+TSLA,XNAS,Tesla Inc.,equity,Consumer Discretionary,Automobile Manufacturers,800000000000.00,248.90,251.10,,,,96000000,104000000,downtrend,,2.29,118.0,2.11,70
+JPM,XNYS,JPMorgan Chase & Co.,equity,Financials,Diversified Banks,620000000000.00,221.30,220.40,,,,8900000,9400000,trend,,1.08,12.4,17.85,62
+AAPL,XNAS,Apple Inc.,equity,Information Technology,Technology Hardware,3420000000000.00,226.15,224.90,,,,48000000,52000000,trend,,1.19,34.6,6.54,78
+MSFT,XNAS,Microsoft Corp.,equity,Information Technology,Systems Software,3190000000000.00,428.70,426.85,,,,19000000,21000000,trend,,0.98,35.2,12.18,76
+LLY,XNYS,Eli Lilly and Co.,equity,Health Care,Pharmaceuticals,770000000000.00,812.40,808.10,,,,3100000,3300000,trend,,0.52,62.8,12.94,86
+AMZN,XNAS,Amazon.com Inc.,equity,Consumer Discretionary,Broadline Retail,2380000000000.00,226.85,225.70,,,,38000000,41000000,trend,,1.24,41.7,5.44,80
+GOOGL,XNAS,Alphabet Inc. Class A,equity,Communication Services,Interactive Media,2310000000000.00,188.40,187.15,,,,26000000,28000000,trend,,1.04,23.9,7.88,79
+META,XNAS,Meta Platforms Inc.,equity,Communication Services,Interactive Media,1580000000000.00,628.30,624.70,,,,11000000,12500000,trend,,1.27,27.6,22.76,79
+NFLX,XNAS,Netflix Inc.,equity,Communication Services,Movies & Entertainment,410000000000.00,958.20,962.40,,,,3200000,3500000,flat,,1.31,48.1,19.92,64
+ORCL,XNYS,Oracle Corp.,equity,Information Technology,Application Software,470000000000.00,168.90,167.30,,,,9800000,10200000,trend,,1.02,41.2,4.10,27
+ADBE,XNAS,Adobe Inc.,equity,Information Technology,Application Software,210000000000.00,478.60,481.20,,,,3300000,3600000,flat,,1.22,38.4,12.46,30
+INTC,XNAS,Intel Corp.,equity,Information Technology,Semiconductors,98000000000.00,22.40,22.75,,,,61000000,66000000,downtrend,,1.05,,-0.38,72
+QCOM,XNAS,Qualcomm Inc.,equity,Information Technology,Semiconductors,182000000000.00,163.20,162.10,,,,7100000,7800000,flat,,1.33,17.6,9.27,77
+MU,XNAS,Micron Technology,equity,Information Technology,Semiconductors,118000000000.00,105.70,103.90,,,,19000000,21000000,momentum,,1.47,24.2,4.37,35
+TXN,XNAS,Texas Instruments,equity,Information Technology,Semiconductors,178000000000.00,194.80,195.60,,,,5100000,5600000,flat,,1.01,35.8,5.44,72
+ARM,XNAS,Arm Holdings plc ADR,equity,Information Technology,Semiconductors,150000000000.00,141.30,138.60,,,,6200000,7400000,momentum,,2.12,190.0,0.74,84
+SMCI,XNAS,Super Micro Computer,equity,Information Technology,Technology Hardware,26000000000.00,44.10,45.30,,,,26000000,28000000,downtrend,,1.89,22.3,1.98,86
+CSCO,XNAS,Cisco Systems,equity,Information Technology,Communications Equipment,230000000000.00,57.40,57.10,,,,17000000,19000000,trend,,0.84,22.1,2.60,7
+IBM,XNYS,International Business Machines,equity,Information Technology,IT Consulting,206000000000.00,223.10,222.40,,,,4200000,4600000,trend,,0.71,25.0,8.92,70
+NOW,XNYS,ServiceNow Inc.,equity,Information Technology,Systems Software,205000000000.00,995.40,990.10,,,,1200000,1300000,trend,,1.03,148.0,6.73,72
+SHOP,XNAS,Shopify Inc.,equity,Information Technology,Internet Services,142000000000.00,109.60,108.20,,,,9200000,9800000,momentum,,2.28,96.0,1.14,86
+SNOW,XNYS,Snowflake Inc.,equity,Information Technology,Internet Services,56000000000.00,168.40,170.90,,,,5600000,6100000,flat,,1.66,,-2.68,14
+PANW,XNAS,Palo Alto Networks,equity,Information Technology,Systems Software,128000000000.00,196.20,195.10,,,,4900000,5300000,trend,,1.12,51.5,3.81,8
+CRWD,XNAS,CrowdStrike Holdings,equity,Information Technology,Systems Software,92000000000.00,373.80,369.40,,,,3200000,3600000,momentum,,1.39,,-0.08,21
+INTU,XNAS,Intuit Inc.,equity,Information Technology,Application Software,180000000000.00,642.10,645.30,,,,1500000,1700000,flat,,1.24,59.1,10.86,14
+AMAT,XNAS,Applied Materials,equity,Information Technology,Semiconductor Equipment,160000000000.00,192.70,191.40,,,,6400000,7000000,trend,,1.58,21.8,8.84,9
+LRCX,XNAS,Lam Research,equity,Information Technology,Semiconductor Equipment,104000000000.00,80.20,79.60,,,,10200000,11000000,trend,,1.49,23.4,3.43,77
+V,XNYS,Visa Inc. Class A,equity,Financials,Transaction & Payment Processing,620000000000.00,316.80,315.90,,,,6100000,6600000,trend,,0.93,31.2,10.15,77
+MA,XNYS,Mastercard Inc. Class A,equity,Financials,Transaction & Payment Processing,490000000000.00,528.40,526.70,,,,2400000,2700000,trend,,1.07,38.7,13.65,77
+BAC,XNYS,Bank of America,equity,Financials,Diversified Banks,345000000000.00,44.60,44.40,,,,33000000,36000000,trend,,1.33,13.6,3.28,62
+WFC,XNYS,Wells Fargo & Co.,equity,Financials,Diversified Banks,240000000000.00,71.20,70.90,,,,15000000,16500000,trend,,1.17,14.1,5.05,62
+GS,XNYS,Goldman Sachs Group,equity,Financials,Investment Banking & Brokerage,180000000000.00,578.30,575.10,,,,2100000,2300000,trend,,1.36,16.9,34.22,62
+MS,XNYS,Morgan Stanley,equity,Financials,Investment Banking & Brokerage,210000000000.00,128.40,127.60,,,,6300000,6900000,trend,,1.31,18.4,6.98,62
+BRK.B,XNYS,Berkshire Hathaway Class B,equity,Financials,Multi-Sector Holdings,1000000000000.00,471.20,470.60,,,,3700000,4000000,flat,,0.87,9.6,49.08,95
+COIN,XNAS,Coinbase Global,equity,Financials,Financial Exchanges & Data,72000000000.00,281.40,274.90,,,,11000000,9800000,momentum,,3.62,34.0,8.28,84
+UNH,XNYS,UnitedHealth Group,equity,Health Care,Managed Health Care,470000000000.00,512.30,516.90,,,,4100000,3900000,downtrend,,0.58,20.8,24.63,62
+JNJ,XNYS,Johnson & Johnson,equity,Health Care,Pharmaceuticals,380000000000.00,158.60,158.20,,,,6900000,7400000,flat,,0.51,22.6,7.02,62
+ABBV,XNYS,AbbVie Inc.,equity,Health Care,Biotechnology,330000000000.00,187.40,186.10,,,,5400000,5900000,trend,,0.62,64.0,2.93,76
+MRK,XNYS,Merck & Co.,equity,Health Care,Pharmaceuticals,250000000000.00,99.80,100.40,,,,9100000,9700000,downtrend,,0.39,14.7,6.79,76
+PFE,XNYS,Pfizer Inc.,equity,Health Care,Pharmaceuticals,150000000000.00,26.40,26.55,,,,36000000,39000000,flat,,0.57,35.2,0.75,76
+TMO,XNYS,Thermo Fisher Scientific,equity,Health Care,Life Sciences Tools,210000000000.00,548.90,546.20,,,,1500000,1700000,trend,,0.79,33.4,16.43,76
+ISRG,XNAS,Intuitive Surgical,equity,Health Care,Health Care Equipment,190000000000.00,528.70,524.10,,,,1500000,1600000,momentum,,1.18,81.3,6.50,70
+WMT,XNYS,Walmart Inc.,equity,Consumer Staples,Consumer Staples Merchandise Retail,680000000000.00,84.70,84.30,,,,13000000,14500000,trend,,0.51,34.9,2.43,7
+PG,XNYS,Procter & Gamble,equity,Consumer Staples,Household Products,400000000000.00,169.30,169.80,,,,6200000,6700000,flat,,0.42,27.1,6.25,76
+KO,XNYS,Coca-Cola Co.,equity,Consumer Staples,Soft Drinks,290000000000.00,67.10,67.25,,,,12000000,13000000,flat,,0.59,27.8,2.41,90
+PEP,XNAS,PepsiCo Inc.,equity,Consumer Staples,Soft Drinks,225000000000.00,163.80,164.60,,,,5300000,5800000,downtrend,,0.53,24.0,6.82,90
+HD,XNYS,Home Depot,equity,Consumer Discretionary,Home Improvement Retail,405000000000.00,408.20,406.70,,,,3200000,3500000,trend,,1.01,27.2,15.01,5
+MCD,XNYS,McDonald's Corp.,equity,Consumer Discretionary,Restaurants,220000000000.00,306.40,305.10,,,,2900000,3200000,flat,,0.71,26.7,11.48,90
+NKE,XNYS,Nike Inc. Class B,equity,Consumer Discretionary,Footwear,110000000000.00,74.30,75.10,,,,11000000,11800000,downtrend,,1.13,25.4,2.92,42
+SBUX,XNAS,Starbucks Corp.,equity,Consumer Discretionary,Restaurants,112000000000.00,98.70,98.20,,,,8800000,9600000,flat,,0.98,31.0,3.18,76
+ABNB,XNAS,Airbnb Inc.,equity,Consumer Discretionary,Hotels & Resorts,86000000000.00,136.40,135.20,,,,4700000,5200000,flat,,1.31,33.6,4.06,88
+XOM,XNYS,Exxon Mobil Corp.,equity,Energy,Integrated Oil & Gas,480000000000.00,115.30,114.90,,,,14000000,15500000,flat,,0.88,14.5,7.95,76
+CVX,XNYS,Chevron Corp.,equity,Energy,Integrated Oil & Gas,280000000000.00,156.20,155.70,,,,7200000,7800000,flat,,0.95,16.1,9.70,76
+COP,XNYS,ConocoPhillips,equity,Energy,Oil & Gas Exploration,132000000000.00,104.60,104.10,,,,6100000,6700000,flat,,1.02,13.2,7.92,84
+CAT,XNYS,Caterpillar Inc.,equity,Industrials,Construction Machinery,190000000000.00,392.40,390.80,,,,2500000,2700000,trend,,1.07,18.9,20.76,77
+GE,XNYS,GE Aerospace,equity,Industrials,Aerospace & Defense,215000000000.00,198.60,196.90,,,,5600000,6100000,momentum,,1.18,36.4,5.46,70
+BA,XNYS,Boeing Co.,equity,Industrials,Aerospace & Defense,130000000000.00,172.90,174.20,,,,8400000,9000000,downtrend,,1.45,,-11.43,70
+RTX,XNYS,RTX Corp.,equity,Industrials,Aerospace & Defense,170000000000.00,126.80,126.30,,,,4900000,5300000,trend,,0.79,34.2,3.71,70
+HON,XNAS,Honeywell International,equity,Industrials,Industrial Conglomerates,145000000000.00,222.40,221.60,,,,3100000,3400000,flat,,0.98,25.0,8.90,77
+UPS,XNYS,United Parcel Service,equity,Industrials,Air Freight & Logistics,112000000000.00,130.70,131.40,,,,4300000,4700000,downtrend,,1.02,19.6,6.67,77
+DE,XNYS,Deere & Co.,equity,Industrials,Agricultural Machinery,115000000000.00,418.30,416.90,,,,1400000,1500000,trend,,0.96,17.1,24.46,7
+NEE,XNYS,NextEra Energy,equity,Utilities,Electric Utilities,150000000000.00,73.10,72.80,,,,9600000,10400000,flat,,0.55,21.6,3.38,76
+DUK,XNYS,Duke Energy,equity,Utilities,Electric Utilities,88000000000.00,114.20,114.50,,,,3200000,3500000,flat,,0.43,19.8,5.77,86
+LIN,XNAS,Linde plc,equity,Materials,Industrial Gases,215000000000.00,452.60,451.30,,,,1900000,2100000,trend,,0.88,34.1,13.27,84
+FCX,XNYS,Freeport-McMoRan,equity,Materials,Copper,66000000000.00,45.80,45.20,,,,13000000,14500000,momentum,,1.71,34.7,1.32,76
+PLD,XNYS,Prologis Inc.,equity,Real Estate,Industrial REITs,105000000000.00,113.40,113.90,,,,3700000,4000000,flat,,1.08,34.4,3.30,70
+AMT,XNYS,American Tower Corp.,equity,Real Estate,Telecom Tower REITs,92000000000.00,197.80,198.40,,,,2600000,2800000,downtrend,,0.86,42.0,4.71,84
+DIS,XNYS,Walt Disney Co.,equity,Communication Services,Movies & Entertainment,205000000000.00,112.60,111.90,,,,8200000,8800000,trend,,1.24,38.5,2.92,7
+T,XNYS,AT&T Inc.,equity,Communication Services,Integrated Telecom,160000000000.00,22.40,22.35,,,,31000000,34000000,flat,,0.64,18.1,1.24,70
+VZ,XNYS,Verizon Communications,equity,Communication Services,Integrated Telecom,178000000000.00,42.30,42.45,,,,17000000,18500000,flat,,0.41,17.9,2.36,70
+SPOT,XNYS,Spotify Technology,equity,Communication Services,Movies & Entertainment,120000000000.00,602.40,597.10,,,,1800000,2000000,momentum,,1.52,88.0,6.85,84
+RBLX,XNYS,Roblox Corp.,equity,Communication Services,Interactive Home Entertainment,40000000000.00,61.80,62.40,,,,7600000,8200000,flat,,1.68,,-1.62,84
+SQ,XNYS,Block Inc.,equity,Financials,Transaction & Payment Processing,45000000000.00,73.20,73.90,,,,7400000,8000000,downtrend,,2.33,42.0,1.74,84
+PYPL,XNAS,PayPal Holdings,equity,Financials,Transaction & Payment Processing,80000000000.00,78.40,78.10,,,,11000000,12000000,flat,,1.43,18.6,4.21,77
+SPY,ARCX,SPDR S&P 500 ETF Trust,etf,,,620000000000.00,601.20,599.40,,,,54000000,60000000,trend,,1.00,,,
+QQQ,XNAS,Invesco QQQ Trust,etf,,,330000000000.00,522.80,520.30,,,,33000000,36000000,trend,,1.12,,,
+IWM,ARCX,iShares Russell 2000 ETF,etf,,,70000000000.00,224.10,223.60,,,,27000000,30000000,flat,,1.19,,,
+ZZ001,XNYS,Sample Holdings 001 (synthetic),equity,Information Technology,Application Software,373440000.00,15.56,15.69,,,,845391,900000,random,,1.64,43.1,0.33,31
+ZZ002,XNYS,Sample Holdings 002 (synthetic),equity,Health Care,Biotechnology,7925400000.00,77.70,76.25,,,,769301,900000,random,,1.04,24.0,2.49,58
+ZZ003,XNAS,Sample Holdings 003 (synthetic),equity,Financials,Regional Banks,87255700000.00,281.47,286.20,,,,1042028,900000,random,,1.61,13.3,13.62,86
+ZZ004,XNYS,Sample Holdings 004 (synthetic),equity,Industrials,Industrial Machinery,34513040000.00,91.79,91.93,,,,6460248,5000000,random,,0.70,13.8,2.82,35
+ZZ005,XNYS,Sample Holdings 005 (synthetic),equity,Consumer Discretionary,Specialty Retail,750780000.00,7.74,7.82,,,,1947150,1500000,downtrend,,1.39,35.3,0.22,55
+ZZ006,XNAS,Sample Holdings 006 (synthetic),equity,Consumer Staples,Packaged Foods,27859440000.00,189.52,186.47,,,,2808043,2800000,random,,0.60,42.6,11.92,14
+ZZ007,XNYS,Sample Holdings 007 (synthetic),equity,Energy,Oil & Gas Equipment,238740000.00,10.38,10.54,,,,1927160,2800000,random,,0.96,39.4,0.38,51
+ZZ008,XNYS,Sample Holdings 008 (synthetic),equity,Materials,Specialty Chemicals,54040800000.00,195.80,194.58,,,,4007306,5000000,random,,0.85,19.9,7.68,47
+ZZ009,XNAS,Sample Holdings 009 (synthetic),equity,Utilities,Multi-Utilities,853120000.00,6.88,6.83,,,,1246356,1500000,random,,1.38,22.9,0.19,57
+ZZ010,XNYS,Sample Holdings 010 (synthetic),equity,Real Estate,Office REITs,2510620000.00,11.06,11.09,,,,2137169,2800000,random,,1.17,46.6,1.27,29
+ZZ011,XNYS,Sample Holdings 011 (synthetic),equity,Communication Services,Advertising,1416480000.00,13.62,13.70,,,,3444715,2800000,downtrend,,1.70,46.7,0.54,76
+ZZ012,XNAS,Sample Holdings 012 (synthetic),equity,Information Technology,Application Software,12484830000.00,44.43,43.95,,,,2211707,2800000,random,,1.26,17.7,1.34,36
+ZZ013,XNYS,Sample Holdings 013 (synthetic),equity,Health Care,Biotechnology,798400000.00,24.95,24.70,,,,4554968,5000000,random,,1.34,20.8,0.83,84
+ZZ014,XNYS,Sample Holdings 014 (synthetic),equity,Financials,Regional Banks,112606140000.00,282.93,278.98,,,,3631738,2800000,random,,1.36,34.7,13.65,31
+ZZ015,XNAS,Sample Holdings 015 (synthetic),equity,Industrials,Industrial Machinery,342760000.00,9.02,9.16,,,,5306782,5000000,random,,1.42,32.0,0.41,42
+ZZ016,XNYS,Sample Holdings 016 (synthetic),equity,Consumer Discretionary,Specialty Retail,1725750000.00,8.85,8.73,,,,2342376,2800000,random,,0.97,15.3,0.20,23
+ZZ017,XNYS,Sample Holdings 017 (synthetic),equity,Consumer Staples,Packaged Foods,28426740000.00,170.22,168.60,,,,1864401,2800000,random,,1.02,21.2,3.60,61
+ZZ018,XNAS,Sample Holdings 018 (synthetic),equity,Energy,Oil & Gas Equipment,9396640000.00,123.64,121.65,,,,3478228,5000000,random,,1.10,9.2,4.52,29
+ZZ019,XNYS,Sample Holdings 019 (synthetic),equity,Materials,Specialty Chemicals,4057500000.00,16.23,16.15,,,,494579,400000,random,,1.79,35.8,0.69,61
+ZZ020,XNYS,Sample Holdings 020 (synthetic),equity,Utilities,Multi-Utilities,10653780000.00,95.98,94.17,,,,321436,400000,random,,0.91,22.3,2.59,83
+ZZ021,XNAS,Sample Holdings 021 (synthetic),equity,Real Estate,Office REITs,2661330000.00,20.01,19.97,,,,2580076,2800000,downtrend,,0.88,38.2,0.65,54
+ZZ022,XNYS,Sample Holdings 022 (synthetic),equity,Communication Services,Advertising,22190400000.00,64.32,64.63,,,,2970003,2800000,trend,,1.10,8.2,1.95,45
+ZZ023,XNYS,Sample Holdings 023 (synthetic),equity,Information Technology,Application Software,6488100000.00,36.45,36.24,,,,2680125,2800000,random,,1.57,24.1,1.04,33
+ZZ024,XNAS,Sample Holdings 024 (synthetic),equity,Health Care,Biotechnology,16637590000.00,161.53,163.53,,,,878781,900000,random,,1.45,8.1,4.53,36
+ZZ025,XNYS,Sample Holdings 025 (synthetic),equity,Financials,Regional Banks,25620540000.00,105.87,107.86,,,,359957,400000,random,,1.25,8.9,5.00,51
+ZZ026,XNYS,Sample Holdings 026 (synthetic),equity,Industrials,Industrial Machinery,6007600000.00,32.65,33.14,,,,992240,1500000,random,,1.79,44.2,1.68,81
+ZZ027,XNAS,Sample Holdings 027 (synthetic),equity,Consumer Discretionary,Specialty Retail,9900000000.00,26.40,26.09,,,,2996096,2800000,random,,1.13,13.2,1.54,9
+ZZ028,XNYS,Sample Holdings 028 (synthetic),equity,Consumer Staples,Packaged Foods,14203940000.00,45.38,46.26,,,,1236787,900000,random,,0.97,42.2,2.09,62
+ZZ029,XNYS,Sample Holdings 029 (synthetic),equity,Energy,Oil & Gas Equipment,36185160000.00,114.51,113.19,,,,1117018,900000,random,,1.54,44.6,11.32,28
+ZZ030,XNAS,Sample Holdings 030 (synthetic),equity,Materials,Specialty Chemicals,22452880000.00,184.04,183.68,,,,3593691,5000000,trend,,1.24,40.9,9.06,61
+ZZ031,XNYS,Sample Holdings 031 (synthetic),equity,Utilities,Multi-Utilities,11931180000.00,68.57,67.35,,,,910575,1500000,flat,,0.86,43.1,2.83,83
+ZZ032,XNYS,Sample Holdings 032 (synthetic),equity,Real Estate,Office REITs,6206800000.00,23.60,23.99,,,,613043,900000,random,,0.98,10.2,0.54,55
+ZZ033,XNAS,Sample Holdings 033 (synthetic),equity,Communication Services,Advertising,54969720000.00,260.52,264.34,,,,2546229,2800000,random,,1.71,25.2,22.54,82
+ZZ034,XNYS,Sample Holdings 034 (synthetic),equity,Information Technology,Application Software,18303530000.00,95.83,97.40,,,,928330,900000,random,,1.17,10.7,2.91,18
+ZZ035,XNYS,Sample Holdings 035 (synthetic),equity,Health Care,Biotechnology,7482240000.00,38.97,38.62,,,,1741916,2800000,random,,1.13,38.9,0.85,80
+ZZ036,XNAS,Sample Holdings 036 (synthetic),equity,Financials,Regional Banks,32880260000.00,125.02,126.39,,,,2052714,2800000,trend,,1.31,15.8,6.58,31
+ZZ037,XNYS,Sample Holdings 037 (synthetic),equity,Industrials,Industrial Machinery,96712000000.00,251.20,246.35,,,,5474485,5000000,random,,0.95,45.3,30.37,73
+ZZ038,XNYS,Sample Holdings 038 (synthetic),equity,Consumer Discretionary,Specialty Retail,775920000.00,7.32,7.40,,,,2552339,2800000,downtrend,,0.74,39.6,0.22,17
+ZZ039,XNAS,Sample Holdings 039 (synthetic),equity,Consumer Staples,Packaged Foods,4680720000.00,17.73,17.92,,,,1501546,1500000,random,,1.67,18.6,0.48,52
+ZZ040,XNYS,Sample Holdings 040 (synthetic),equity,Energy,Oil & Gas Equipment,9985120000.00,36.71,36.05,,,,922995,1500000,random,,0.91,24.2,2.38,12
+ZZ041,XNYS,Sample Holdings 041 (synthetic),equity,Materials,Specialty Chemicals,17995080000.00,103.42,104.10,,,,366053,400000,random,,1.49,26.3,2.18,72
+ZZ042,XNAS,Sample Holdings 042 (synthetic),equity,Utilities,Multi-Utilities,17724300000.00,53.71,52.85,,,,3750981,5000000,trend,,1.12,29.6,1.59,55
+ZZ043,XNYS,Sample Holdings 043 (synthetic),equity,Real Estate,Office REITs,1735200000.00,28.92,29.15,,,,1243356,900000,random,,1.78,40.3,0.81,13
+ZZ044,XNYS,Sample Holdings 044 (synthetic),equity,Communication Services,Advertising,9162140000.00,34.97,34.96,,,,6825754,5000000,random,,1.07,26.2,2.21,5
+ZZ045,XNAS,Sample Holdings 045 (synthetic),equity,Information Technology,Application Software,694260000.00,11.97,12.08,,,,2414094,2800000,random,,0.90,36.8,0.44,40
+ZZ046,XNYS,Sample Holdings 046 (synthetic),equity,Health Care,Biotechnology,15859620000.00,64.47,64.00,,,,909070,1500000,downtrend,,0.64,12.1,2.29,32
+ZZ047,XNYS,Sample Holdings 047 (synthetic),equity,Financials,Regional Banks,11758920000.00,31.61,32.25,,,,4751596,5000000,random,,1.25,35.3,0.68,68
+ZZ048,XNAS,Sample Holdings 048 (synthetic),equity,Industrials,Industrial Machinery,12120840000.00,37.41,37.64,,,,510522,400000,random,,1.63,30.5,0.96,87
+ZZ049,XNYS,Sample Holdings 049 (synthetic),equity,Consumer Discretionary,Specialty Retail,8027020000.00,29.62,29.81,,,,839327,900000,random,,1.11,20.5,1.12,79
+ZZ050,XNYS,Sample Holdings 050 (synthetic),equity,Consumer Staples,Packaged Foods,12636890000.00,38.41,38.18,,,,2987413,2800000,random,,0.69,44.2,3.20,7
+ZZ051,XNAS,Sample Holdings 051 (synthetic),equity,Energy,Oil & Gas Equipment,23386640000.00,97.04,96.49,,,,1203802,900000,random,,1.46,32.7,2.40,87
+ZZ052,XNYS,Sample Holdings 052 (synthetic),equity,Materials,Specialty Chemicals,2739910000.00,8.81,8.76,,,,1216552,1500000,random,,1.63,39.7,0.57,32
+ZZ053,XNYS,Sample Holdings 053 (synthetic),equity,Utilities,Multi-Utilities,312800000.00,15.64,15.45,,,,5629093,5000000,downtrend,,0.74,40.8,1.26,36
+ZZ054,XNAS,Sample Holdings 054 (synthetic),equity,Real Estate,Office REITs,2106810000.00,7.29,7.43,,,,1720958,2800000,random,,1.25,44.0,0.32,17
+ZZ055,XNYS,Sample Holdings 055 (synthetic),equity,Communication Services,Advertising,16267500000.00,120.50,119.00,,,,537166,400000,random,,0.63,15.2,7.60,19
+ZZ056,XNYS,Sample Holdings 056 (synthetic),equity,Information Technology,Application Software,1922460000.00,10.74,10.81,,,,1810925,1500000,random,,0.91,45.3,0.45,62
+ZZ057,XNAS,Sample Holdings 057 (synthetic),equity,Health Care,Biotechnology,5448000000.00,24.00,23.90,,,,6675134,5000000,random,,0.83,8.2,0.58,53
+ZZ058,XNYS,Sample Holdings 058 (synthetic),equity,Financials,Regional Banks,19270400000.00,60.22,60.29,,,,1230425,900000,trend,,0.85,44.0,1.99,68
+ZZ059,XNYS,Sample Holdings 059 (synthetic),equity,Industrials,Industrial Machinery,7478300000.00,141.10,138.56,,,,1832400,1500000,random,,0.76,47.2,6.23,12
+ZZ060,XNAS,Sample Holdings 060 (synthetic),equity,Consumer Discretionary,Specialty Retail,5814400000.00,145.36,144.22,,,,935119,900000,random,,0.61,47.7,7.20,54
+ZZ061,XNYS,Sample Holdings 061 (synthetic),equity,Consumer Staples,Packaged Foods,3889080000.00,11.08,10.96,,,,1013018,1500000,trend,,0.77,31.5,0.24,70
+ZZ062,XNYS,Sample Holdings 062 (synthetic),equity,Energy,Oil & Gas Equipment,17167200000.00,55.20,54.39,,,,2045799,1500000,random,,0.99,12.2,3.11,22
+ZZ063,XNAS,Sample Holdings 063 (synthetic),equity,Materials,Specialty Chemicals,2050960000.00,8.27,8.13,,,,593441,900000,random,,0.92,16.5,0.56,89
+ZZ064,XNYS,Sample Holdings 064 (synthetic),equity,Utilities,Multi-Utilities,6591970000.00,85.61,86.06,,,,1171986,900000,random,,1.60,30.5,5.11,50
+ZZ065,XNYS,Sample Holdings 065 (synthetic),equity,Real Estate,Office REITs,14342270000.00,62.63,63.36,,,,459860,400000,random,,0.81,39.7,1.53,60
+ZZ066,XNAS,Sample Holdings 066 (synthetic),equity,Communication Services,Advertising,1214480000.00,8.93,9.00,,,,3739069,5000000,random,,1.18,12.7,0.67,53
+ZZ067,XNYS,Sample Holdings 067 (synthetic),equity,Information Technology,Application Software,7211760000.00,18.12,18.19,,,,1091370,1500000,random,,0.87,10.1,0.38,23
+ZZ068,XNYS,Sample Holdings 068 (synthetic),equity,Health Care,Biotechnology,10518220000.00,28.66,28.66,,,,927320,900000,random,,1.29,12.2,1.01,19
+ZZ069,XNAS,Sample Holdings 069 (synthetic),equity,Financials,Regional Banks,1233960000.00,7.91,8.05,,,,543549,400000,trend,,0.69,30.3,0.20,19
+ZZ070,XNYS,Sample Holdings 070 (synthetic),equity,Industrials,Industrial Machinery,3116960000.00,20.24,20.11,,,,955104,900000,random,,0.78,18.8,1.19,7
+ZZ071,XNYS,Sample Holdings 071 (synthetic),equity,Consumer Discretionary,Specialty Retail,683060000.00,6.97,6.94,,,,4639311,5000000,random,,1.62,25.4,0.62,58
+ZZ072,XNAS,Sample Holdings 072 (synthetic),equity,Consumer Staples,Packaged Foods,9959040000.00,40.32,40.26,,,,557063,900000,downtrend,,1.13,40.2,0.87,49
+ZZ073,XNYS,Sample Holdings 073 (synthetic),equity,Energy,Oil & Gas Equipment,2324640000.00,6.96,7.07,,,,1002149,1500000,random,,1.16,22.3,0.53,30
+ZZ074,XNYS,Sample Holdings 074 (synthetic),equity,Materials,Specialty Chemicals,13103190000.00,35.51,36.23,,,,2260006,2800000,trend,,1.40,19.6,0.86,60
+ZZ075,XNAS,Sample Holdings 075 (synthetic),equity,Utilities,Multi-Utilities,15850400000.00,198.13,200.63,,,,6921385,5000000,random,,1.55,18.7,7.78,57
+ZZ076,XNYS,Sample Holdings 076 (synthetic),equity,Real Estate,Office REITs,5728490000.00,184.79,188.28,,,,365370,400000,downtrend,,1.47,29.2,9.25,35
+ZZ077,XNYS,Sample Holdings 077 (synthetic),equity,Communication Services,Advertising,3894640000.00,43.76,43.59,,,,244641,400000,random,,1.60,42.7,1.71,34
+ZZ078,XNAS,Sample Holdings 078 (synthetic),equity,Information Technology,Application Software,9287540000.00,138.62,139.33,,,,3382799,5000000,downtrend,,1.17,22.2,6.05,47
+ZZ079,XNYS,Sample Holdings 079 (synthetic),equity,Health Care,Biotechnology,12534780000.00,245.78,248.61,,,,1045566,900000,flat,,1.71,16.8,8.45,10
+ZZ080,XNYS,Sample Holdings 080 (synthetic),equity,Financials,Regional Banks,24352160000.00,89.53,90.06,,,,2062592,1500000,random,,1.53,12.4,8.24,19
+ZZ081,XNAS,Sample Holdings 081 (synthetic),equity,Industrials,Industrial Machinery,51432850000.00,149.95,152.89,,,,967620,900000,random,,1.61,39.9,3.86,61
+ZZ082,XNYS,Sample Holdings 082 (synthetic),equity,Consumer Discretionary,Specialty Retail,3184800000.00,53.08,52.69,,,,374825,400000,random,,1.63,17.5,1.85,63
+ZZ083,XNYS,Sample Holdings 083 (synthetic),equity,Consumer Staples,Packaged Foods,8514480000.00,54.58,55.68,,,,571482,900000,random,,0.88,23.0,1.32,8
+ZZ084,XNAS,Sample Holdings 084 (synthetic),equity,Energy,Oil & Gas Equipment,28610280000.00,161.64,163.51,,,,3175564,5000000,random,,1.60,40.3,6.52,32
+ZZ085,XNYS,Sample Holdings 085 (synthetic),equity,Materials,Specialty Chemicals,1745920000.00,7.04,7.07,,,,264082,400000,random,,1.67,47.8,0.18,53
+ZZ086,XNYS,Sample Holdings 086 (synthetic),equity,Utilities,Multi-Utilities,4403360000.00,18.98,19.29,,,,3684396,2800000,trend,,1.15,14.1,2.14,81
+ZZ087,XNAS,Sample Holdings 087 (synthetic),equity,Real Estate,Office REITs,34648140000.00,90.94,90.44,,,,702500,900000,random,,1.35,9.4,3.23,36
+ZZ088,XNYS,Sample Holdings 088 (synthetic),equity,Communication Services,Advertising,1879020000.00,28.47,28.50,,,,489554,400000,random,,1.36,14.6,2.01,13
+ZZ089,XNYS,Sample Holdings 089 (synthetic),equity,Information Technology,Application Software,17212670000.00,53.29,54.37,,,,1227987,900000,random,,0.72,41.6,3.52,35
+ZZ090,XNAS,Sample Holdings 090 (synthetic),equity,Health Care,Biotechnology,58066740000.00,158.22,156.75,,,,1122968,900000,trend,,1.33,38.2,6.29,7
+ZZ091,XNYS,Sample Holdings 091 (synthetic),equity,Financials,Regional Banks,9254800000.00,68.05,69.08,,,,3684473,2800000,random,,0.66,46.5,4.98,34
+ZZ092,XNYS,Sample Holdings 092 (synthetic),equity,Industrials,Industrial Machinery,32082500000.00,156.50,153.52,,,,1411984,1500000,random,,1.17,47.3,3.94,18
+ZZ093,XNAS,Sample Holdings 093 (synthetic),equity,Consumer Discretionary,Specialty Retail,1211730000.00,7.17,7.14,,,,3695066,2800000,random,,1.73,31.7,0.15,79
+ZZ094,XNYS,Sample Holdings 094 (synthetic),equity,Consumer Staples,Packaged Foods,2102400000.00,26.28,25.79,,,,3710647,2800000,flat,,0.99,43.0,0.60,56
+ZZ095,XNYS,Sample Holdings 095 (synthetic),equity,Energy,Oil & Gas Equipment,12099900000.00,38.05,38.42,,,,386286,400000,flat,,1.77,31.2,0.97,25
+ZZ096,XNAS,Sample Holdings 096 (synthetic),equity,Materials,Specialty Chemicals,47563080000.00,172.33,173.92,,,,402603,400000,random,,1.08,24.5,6.41,77
+ZZ097,XNYS,Sample Holdings 097 (synthetic),equity,Utilities,Multi-Utilities,860160000.00,8.96,9.14,,,,6083033,5000000,random,,0.61,35.1,0.23,60
+ZZ098,XNYS,Sample Holdings 098 (synthetic),equity,Real Estate,Office REITs,3063600000.00,8.51,8.45,,,,6342224,5000000,random,,1.17,21.2,0.39,62
+ZZ099,XNAS,Sample Holdings 099 (synthetic),equity,Communication Services,Advertising,30732000000.00,76.83,76.60,,,,902870,900000,flat,,0.85,27.2,7.54,55
+ZZ100,XNYS,Sample Holdings 100 (synthetic),equity,Information Technology,Application Software,14286950000.00,87.65,85.97,,,,1231527,900000,random,,1.30,27.3,2.01,17
+ZZ101,XNYS,Sample Holdings 101 (synthetic),equity,Health Care,Biotechnology,1997840000.00,9.04,9.15,,,,1920643,2800000,random,,1.57,22.6,0.63,42
+ZZ102,XNAS,Sample Holdings 102 (synthetic),equity,Financials,Regional Banks,4266000000.00,11.85,12.01,,,,1227595,900000,random,,1.54,42.2,0.31,58
+ZZ103,XNYS,Sample Holdings 103 (synthetic),equity,Industrials,Industrial Machinery,472770000.00,17.51,17.32,,,,389937,400000,trend,,1.47,18.0,0.58,67
+ZZ104,XNYS,Sample Holdings 104 (synthetic),equity,Consumer Discretionary,Specialty Retail,7241010000.00,35.67,35.73,,,,5078852,5000000,random,,0.68,44.7,0.89,72
+ZZ105,XNAS,Sample Holdings 105 (synthetic),equity,Consumer Staples,Packaged Foods,33851730000.00,161.97,162.02,,,,516982,400000,random,,0.87,9.2,4.76,53
+ZZ106,XNYS,Sample Holdings 106 (synthetic),equity,Energy,Oil & Gas Equipment,26759460000.00,294.06,291.27,,,,3299728,5000000,random,,1.05,11.8,7.29,88
+ZZ107,XNYS,Sample Holdings 107 (synthetic),equity,Materials,Specialty Chemicals,2565320000.00,21.74,22.17,,,,1834649,2800000,random,,1.34,8.3,0.62,65
+ZZ108,XNAS,Sample Holdings 108 (synthetic),equity,Utilities,Multi-Utilities,5891600000.00,20.60,20.39,,,,537164,400000,random,,0.73,42.1,1.95,63
+ZZ109,XNYS,Sample Holdings 109 (synthetic),equity,Real Estate,Office REITs,3136000000.00,17.92,18.25,,,,6780442,5000000,trend,,1.19,30.5,0.45,15
+ZZ110,XNYS,Sample Holdings 110 (synthetic),equity,Communication Services,Advertising,3137280000.00,13.76,13.64,,,,489567,400000,random,,1.02,34.8,0.46,21
+ZZ111,XNAS,Sample Holdings 111 (synthetic),equity,Information Technology,Application Software,2807820000.00,16.42,16.19,,,,2206316,2800000,random,,1.68,35.9,0.76,21
+ZZ112,XNYS,Sample Holdings 112 (synthetic),equity,Health Care,Biotechnology,8472920000.00,68.33,67.80,,,,5286045,5000000,random,,1.73,20.9,2.39,86
+ZZ113,XNYS,Sample Holdings 113 (synthetic),equity,Financials,Regional Banks,18918540000.00,51.69,51.75,,,,719933,900000,flat,,1.44,41.8,1.18,61
+ZZ114,XNAS,Sample Holdings 114 (synthetic),equity,Industrials,Industrial Machinery,8092710000.00,27.81,27.69,,,,505933,400000,random,,0.72,14.3,0.83,21
+ZZ115,XNYS,Sample Holdings 115 (synthetic),equity,Consumer Discretionary,Specialty Retail,14898000000.00,49.66,48.93,,,,1323265,1500000,random,,1.74,12.0,1.74,43
+ZZ116,XNYS,Sample Holdings 116 (synthetic),equity,Consumer Staples,Packaged Foods,1387360000.00,60.32,59.44,,,,6943184,5000000,downtrend,,1.70,10.3,6.50,11
+ZZ117,XNAS,Sample Holdings 117 (synthetic),equity,Energy,Oil & Gas Equipment,20652450000.00,57.85,57.90,,,,728114,900000,trend,,1.74,39.6,1.43,31
+ZZ118,XNYS,Sample Holdings 118 (synthetic),equity,Materials,Specialty Chemicals,69721680000.00,185.43,184.41,,,,3329359,2800000,random,,1.41,14.2,13.19,74
+ZZ119,XNYS,Sample Holdings 119 (synthetic),equity,Utilities,Multi-Utilities,15377040000.00,45.36,45.58,,,,887065,900000,random,,1.62,47.6,3.42,84
+ZZ120,XNAS,Sample Holdings 120 (synthetic),equity,Real Estate,Office REITs,4977000000.00,19.75,19.74,,,,3152681,5000000,flat,,1.03,25.5,1.21,29
+ZZ121,XNYS,Sample Holdings 121 (synthetic),equity,Communication Services,Advertising,3945600000.00,49.32,48.66,,,,3768849,2800000,random,,1.34,9.0,1.22,51
+ZZ122,XNYS,Sample Holdings 122 (synthetic),equity,Information Technology,Application Software,10464000000.00,48.00,48.69,,,,5753038,5000000,random,,1.74,9.4,1.90,58
+ZZ123,XNAS,Sample Holdings 123 (synthetic),equity,Health Care,Biotechnology,36518000000.00,96.10,95.50,,,,5855469,5000000,random,,0.82,13.4,9.02,60
+ZZ124,XNYS,Sample Holdings 124 (synthetic),equity,Financials,Regional Banks,1907850000.00,27.65,27.71,,,,1523369,1500000,random,,1.08,16.9,0.79,88
+ZZ125,XNYS,Sample Holdings 125 (synthetic),equity,Industrials,Industrial Machinery,37480100000.00,152.98,155.14,,,,1277638,1500000,downtrend,,0.92,39.2,4.22,74
+ZZ126,XNAS,Sample Holdings 126 (synthetic),equity,Consumer Discretionary,Specialty Retail,60059340000.00,202.22,200.64,,,,327418,400000,random,,1.19,36.9,6.19,11
+ZZ127,XNYS,Sample Holdings 127 (synthetic),equity,Consumer Staples,Packaged Foods,7008780000.00,17.61,17.34,,,,902125,1500000,flat,,0.94,29.9,0.78,81
+ZZ128,XNYS,Sample Holdings 128 (synthetic),equity,Energy,Oil & Gas Equipment,44680590000.00,292.03,296.96,,,,3508427,2800000,downtrend,,1.45,13.3,10.02,48
+ZZ129,XNAS,Sample Holdings 129 (synthetic),equity,Materials,Specialty Chemicals,52955100000.00,178.30,174.82,,,,533233,400000,flat,,0.88,42.3,14.17,32
+ZZ130,XNYS,Sample Holdings 130 (synthetic),equity,Utilities,Multi-Utilities,1181590000.00,6.83,6.80,,,,3355028,2800000,downtrend,,1.12,15.2,0.26,51
+ZZ131,XNYS,Sample Holdings 131 (synthetic),equity,Real Estate,Office REITs,1687050000.00,8.15,8.06,,,,2303974,2800000,random,,1.05,45.5,0.19,28
+ZZ132,XNAS,Sample Holdings 132 (synthetic),equity,Communication Services,Advertising,14305800000.00,63.30,63.98,,,,856461,900000,flat,,1.11,26.6,1.93,79
+ZZ133,XNYS,Sample Holdings 133 (synthetic),equity,Information Technology,Application Software,1968330000.00,19.11,19.08,,,,1984887,1500000,random,,1.64,32.5,0.43,85
+ZZ134,XNYS,Sample Holdings 134 (synthetic),equity,Health Care,Biotechnology,9329940000.00,274.41,277.88,,,,6314378,5000000,random,,1.56,38.4,11.15,49
+ZZ135,XNAS,Sample Holdings 135 (synthetic),equity,Financials,Regional Banks,38527910000.00,137.11,135.10,,,,2211144,2800000,random,,1.09,30.3,6.48,41
+ZZ136,XNYS,Sample Holdings 136 (synthetic),equity,Industrials,Industrial Machinery,39109960000.00,163.64,161.58,,,,624836,900000,random,,1.65,25.8,7.01,78
+ZZ137,XNYS,Sample Holdings 137 (synthetic),equity,Consumer Discretionary,Specialty Retail,6750000000.00,27.00,27.46,,,,6735074,5000000,random,,1.23,46.0,1.20,8
+ZZ138,XNAS,Sample Holdings 138 (synthetic),equity,Consumer Staples,Packaged Foods,7691160000.00,23.96,24.37,,,,2702615,2800000,random,,1.07,39.5,0.57,46
+ZZ139,XNYS,Sample Holdings 139 (synthetic),equity,Energy,Oil & Gas Equipment,1927900000.00,74.15,73.81,,,,4368167,5000000,random,,0.98,44.3,1.63,57
+ZZ140,XNYS,Sample Holdings 140 (synthetic),equity,Materials,Specialty Chemicals,61318920000.00,205.08,202.91,,,,1784996,1500000,random,,1.03,19.7,6.53,53
+ZZ141,XNAS,Sample Holdings 141 (synthetic),equity,Utilities,Multi-Utilities,28458150000.00,271.03,276.36,,,,270807,400000,downtrend,,1.79,44.0,7.25,35
+ZZ142,XNYS,Sample Holdings 142 (synthetic),equity,Real Estate,Office REITs,30548070000.00,207.81,208.35,,,,6778223,5000000,random,,0.88,46.5,7.78,57
+ZZ143,XNYS,Sample Holdings 143 (synthetic),equity,Communication Services,Advertising,30866640000.00,183.73,186.91,,,,2837080,2800000,random,,1.59,39.0,4.74,73
+ZZ144,XNAS,Sample Holdings 144 (synthetic),equity,Information Technology,Application Software,32459700000.00,131.95,133.37,,,,3730206,2800000,random,,1.38,28.4,3.34,40
+ZZ145,XNYS,Sample Holdings 145 (synthetic),equity,Health Care,Biotechnology,6118000000.00,21.85,21.73,,,,1470012,1500000,random,,1.24,20.0,1.97,71
+ZZ146,XNYS,Sample Holdings 146 (synthetic),equity,Financials,Regional Banks,1649800000.00,7.30,7.36,,,,1551129,1500000,random,,0.74,9.2,0.16,72
+ZZ147,XNAS,Sample Holdings 147 (synthetic),equity,Industrials,Industrial Machinery,7138560000.00,18.59,18.26,,,,633805,900000,random,,1.75,23.2,0.65,42
+ZZ148,XNYS,Sample Holdings 148 (synthetic),equity,Consumer Discretionary,Specialty Retail,43038800000.00,161.80,160.56,,,,2700292,2800000,downtrend,,1.24,20.7,6.31,52
+ZZ149,XNYS,Sample Holdings 149 (synthetic),equity,Consumer Staples,Packaged Foods,5926140000.00,24.09,24.43,,,,3764816,2800000,random,,0.86,31.0,1.01,43
+ZZ150,XNAS,Sample Holdings 150 (synthetic),equity,Energy,Oil & Gas Equipment,2931500000.00,22.55,22.36,,,,899330,900000,random,,0.97,25.7,0.67,66
+ZZ151,XNYS,Sample Holdings 151 (synthetic),equity,Materials,Specialty Chemicals,24289900000.00,91.66,92.47,,,,1199006,900000,random,,1.21,24.4,3.58,85
+ZZ152,XNYS,Sample Holdings 152 (synthetic),equity,Utilities,Multi-Utilities,3143140000.00,10.99,10.81,,,,2836832,2800000,trend,,1.35,17.4,0.54,57
+ZZ153,XNAS,Sample Holdings 153 (synthetic),equity,Real Estate,Office REITs,3852000000.00,26.75,26.42,,,,286364,400000,trend,,1.58,19.8,0.56,64
+ZZ154,XNYS,Sample Holdings 154 (synthetic),equity,Communication Services,Advertising,48528000000.00,161.76,162.03,,,,2095203,1500000,downtrend,,1.78,15.0,3.89,53
+ZZ155,XNYS,Sample Holdings 155 (synthetic),equity,Information Technology,Application Software,18753760000.00,47.12,46.43,,,,4463214,5000000,random,,0.71,32.7,1.89,25
+ZZ156,XNAS,Sample Holdings 156 (synthetic),equity,Health Care,Biotechnology,24727150000.00,115.01,116.00,,,,1985600,2800000,random,,1.64,41.1,9.67,64
+ZZ157,XNYS,Sample Holdings 157 (synthetic),equity,Financials,Regional Banks,98357740000.00,247.13,244.34,,,,500654,400000,random,,1.69,35.2,24.63,74
+ZZ158,XNYS,Sample Holdings 158 (synthetic),equity,Industrials,Industrial Machinery,19902000000.00,99.51,100.24,,,,1167660,1500000,trend,,1.38,22.0,4.09,48
+ZZ159,XNAS,Sample Holdings 159 (synthetic),equity,Consumer Discretionary,Specialty Retail,15317220000.00,88.03,88.12,,,,272065,400000,random,,1.07,14.2,2.49,17
+ZZ160,XNYS,Sample Holdings 160 (synthetic),equity,Consumer Staples,Packaged Foods,21393290000.00,101.39,100.01,,,,5495194,5000000,trend,,1.30,40.6,6.57,73
+ZZ161,XNYS,Sample Holdings 161 (synthetic),equity,Energy,Oil & Gas Equipment,3201330000.00,11.99,12.07,,,,5836061,5000000,random,,1.59,47.9,0.40,46
+ZZ162,XNAS,Sample Holdings 162 (synthetic),equity,Materials,Specialty Chemicals,27525960000.00,92.68,94.03,,,,5104635,5000000,random,,0.64,15.6,2.17,72
+ZZ163,XNYS,Sample Holdings 163 (synthetic),equity,Utilities,Multi-Utilities,5380000000.00,269.00,269.27,,,,6517352,5000000,random,,1.07,14.8,15.63,34
+ZZ164,XNYS,Sample Holdings 164 (synthetic),equity,Real Estate,Office REITs,64381200000.00,165.08,162.23,,,,2767045,2800000,random,,1.53,44.8,5.27,40
+ZZ165,XNAS,Sample Holdings 165 (synthetic),equity,Communication Services,Advertising,4594200000.00,18.60,18.94,,,,284735,400000,random,,0.89,18.2,1.02,90
+ZZ166,XNYS,Sample Holdings 166 (synthetic),equity,Information Technology,Application Software,43124620000.00,280.03,274.70,,,,254621,400000,flat,,0.81,30.7,21.01,52
+ZZ167,XNYS,Sample Holdings 167 (synthetic),equity,Health Care,Biotechnology,5338200000.00,57.40,57.47,,,,2634830,2800000,random,,1.41,12.4,1.54,71
+ZZ168,XNAS,Sample Holdings 168 (synthetic),equity,Financials,Regional Banks,11699400000.00,125.80,123.85,,,,2357315,2800000,random,,1.25,30.2,8.15,60
+ZZ169,XNYS,Sample Holdings 169 (synthetic),equity,Industrials,Industrial Machinery,17318070000.00,117.81,117.62,,,,442264,400000,random,,0.74,8.3,14.41,15
+ZZ170,XNYS,Sample Holdings 170 (synthetic),equity,Consumer Discretionary,Specialty Retail,8379570000.00,147.01,145.91,,,,6154887,5000000,random,,1.00,17.4,3.29,28
+ZZ171,XNAS,Sample Holdings 171 (synthetic),equity,Consumer Staples,Packaged Foods,7202720000.00,33.04,32.91,,,,4756435,5000000,trend,,1.39,22.4,0.80,20
+ZZ172,XNYS,Sample Holdings 172 (synthetic),equity,Energy,Oil & Gas Equipment,1346020000.00,8.06,8.19,,,,1974924,2800000,random,,1.77,24.7,0.17,11
+ZZ173,XNYS,Sample Holdings 173 (synthetic),equity,Materials,Specialty Chemicals,5190250000.00,15.97,15.67,,,,668585,900000,downtrend,,1.47,11.8,0.35,86
+ZZ174,XNAS,Sample Holdings 174 (synthetic),equity,Utilities,Multi-Utilities,8203800000.00,124.30,125.00,,,,1243204,1500000,random,,0.78,40.5,4.68,12
+ZZ175,XNYS,Sample Holdings 175 (synthetic),equity,Real Estate,Office REITs,2087400000.00,29.82,30.11,,,,1144982,900000,random,,0.84,13.5,1.03,44
+ZZ176,XNYS,Sample Holdings 176 (synthetic),equity,Communication Services,Advertising,20966400000.00,161.28,158.87,,,,5449848,5000000,random,,1.09,20.2,3.96,81
+ZZ177,XNAS,Sample Holdings 177 (synthetic),equity,Information Technology,Application Software,63355320000.00,291.96,294.53,,,,2044506,1500000,trend,,0.64,14.5,7.68,23
+ZZ178,XNYS,Sample Holdings 178 (synthetic),equity,Health Care,Biotechnology,34487740000.00,95.27,95.40,,,,1126346,1500000,random,,1.42,38.8,3.55,28
+ZZ179,XNYS,Sample Holdings 179 (synthetic),equity,Financials,Regional Banks,15588870000.00,53.57,52.71,,,,5363169,5000000,random,,1.14,43.3,1.49,22
+ZZ180,XNAS,Sample Holdings 180 (synthetic),equity,Industrials,Industrial Machinery,12500000000.00,62.50,61.59,,,,1452478,1500000,random,,1.38,38.0,2.45,67
+ZZ181,XNYS,Sample Holdings 181 (synthetic),equity,Consumer Discretionary,Specialty Retail,6563430000.00,59.13,59.63,,,,6730763,5000000,random,,1.63,20.9,1.36,51
+ZZ182,XNYS,Sample Holdings 182 (synthetic),equity,Consumer Staples,Packaged Foods,3000380000.00,36.59,36.24,,,,917745,900000,random,,0.69,33.5,1.26,36
+ZZ183,XNAS,Sample Holdings 183 (synthetic),equity,Energy,Oil & Gas Equipment,4629030000.00,94.47,92.76,,,,3798543,2800000,random,,1.62,19.4,2.79,85
+ZZ184,XNYS,Sample Holdings 184 (synthetic),equity,Materials,Specialty Chemicals,730940000.00,15.89,15.85,,,,2710140,2800000,random,,1.28,13.3,0.99,74
+ZZ185,XNYS,Sample Holdings 185 (synthetic),equity,Utilities,Multi-Utilities,3832400000.00,11.44,11.63,,,,3480770,2800000,random,,0.65,46.7,0.45,32
+ZZ186,XNAS,Sample Holdings 186 (synthetic),equity,Real Estate,Office REITs,43309200000.00,164.05,160.85,,,,6540683,5000000,trend,,0.91,29.7,5.04,41
+ZZ187,XNYS,Sample Holdings 187 (synthetic),equity,Communication Services,Advertising,10093860000.00,80.11,78.67,,,,722078,900000,random,,1.19,10.8,1.76,71
+ZZ188,XNYS,Sample Holdings 188 (synthetic),equity,Information Technology,Application Software,37621710000.00,94.29,95.37,,,,411727,400000,random,,1.74,28.3,10.54,14
+ZZ189,XNAS,Sample Holdings 189 (synthetic),equity,Health Care,Biotechnology,23547190000.00,86.89,85.89,,,,4113701,5000000,random,,0.76,11.4,1.93,11
+ZZ190,XNYS,Sample Holdings 190 (synthetic),equity,Financials,Regional Banks,3593790000.00,16.41,16.27,,,,284503,400000,random,,1.30,39.5,0.91,53
+ZZ191,XNYS,Sample Holdings 191 (synthetic),equity,Industrials,Industrial Machinery,46028400000.00,174.35,176.71,,,,1054422,900000,random,,1.56,22.3,3.75,82
+ZZ192,XNAS,Sample Holdings 192 (synthetic),equity,Consumer Discretionary,Specialty Retail,16043520000.00,62.67,62.72,,,,5947641,5000000,random,,0.68,21.3,4.22,65
+ZZ193,XNYS,Sample Holdings 193 (synthetic),equity,Consumer Staples,Packaged Foods,31433050000.00,93.83,93.76,,,,499896,400000,trend,,1.76,24.5,2.37,56
+ZZ194,XNYS,Sample Holdings 194 (synthetic),equity,Energy,Oil & Gas Equipment,1307280000.00,8.38,8.38,,,,2773203,2800000,random,,0.68,28.4,0.30,67
+ZZ195,XNAS,Sample Holdings 195 (synthetic),equity,Materials,Specialty Chemicals,49547920000.00,199.79,197.62,,,,1069048,900000,random,,0.72,29.8,4.17,77
+ZZ196,XNYS,Sample Holdings 196 (synthetic),equity,Utilities,Multi-Utilities,34523850000.00,138.65,140.32,,,,1496162,1500000,trend,,1.79,28.4,3.60,28
+ZZ197,XNYS,Sample Holdings 197 (synthetic),equity,Real Estate,Office REITs,12351470000.00,34.99,35.63,,,,5766726,5000000,random,,1.21,45.7,1.84,79
+ZZ198,XNAS,Sample Holdings 198 (synthetic),equity,Communication Services,Advertising,6468770000.00,23.87,23.62,,,,1067476,1500000,random,,0.85,9.7,1.23,17
+ZZ199,XNYS,Sample Holdings 199 (synthetic),equity,Information Technology,Application Software,22715340000.00,136.02,138.65,,,,266505,400000,random,,1.16,13.0,14.21,29
+ZZ200,XNYS,Sample Holdings 200 (synthetic),equity,Health Care,Biotechnology,25472460000.00,115.26,113.45,,,,1670869,1500000,random,,1.25,40.8,2.48,40
+ZZ201,XNAS,Sample Holdings 201 (synthetic),equity,Financials,Regional Banks,12150090000.00,31.89,32.32,,,,5564074,5000000,trend,,0.85,11.6,1.20,47
+ZZ202,XNYS,Sample Holdings 202 (synthetic),equity,Industrials,Industrial Machinery,1729920000.00,8.16,8.01,,,,538900,400000,random,,1.34,37.7,0.28,52
+ZZ203,XNYS,Sample Holdings 203 (synthetic),equity,Consumer Discretionary,Specialty Retail,1278870000.00,9.07,9.19,,,,1085262,900000,random,,1.00,37.8,0.59,38
+ZZ204,XNAS,Sample Holdings 204 (synthetic),equity,Consumer Staples,Packaged Foods,28270080000.00,147.24,150.24,,,,754987,900000,random,,1.14,32.5,3.69,15
+ZZ205,XNYS,Sample Holdings 205 (synthetic),equity,Energy,Oil & Gas Equipment,256560000.00,10.69,10.87,,,,1489181,1500000,downtrend,,1.66,9.5,0.32,46
+ZZ206,XNYS,Sample Holdings 206 (synthetic),equity,Materials,Specialty Chemicals,11227350000.00,126.15,125.84,,,,1569278,1500000,random,,0.69,35.4,3.09,23
+ZZ207,XNAS,Sample Holdings 207 (synthetic),equity,Utilities,Multi-Utilities,11119540000.00,36.22,35.77,,,,2746806,2800000,random,,1.65,12.3,2.58,29
+ZZ208,XNYS,Sample Holdings 208 (synthetic),equity,Real Estate,Office REITs,1363400000.00,8.02,8.11,,,,825868,900000,random,,1.55,41.1,0.22,42
+ZZ209,XNYS,Sample Holdings 209 (synthetic),equity,Communication Services,Advertising,6526740000.00,98.89,99.42,,,,3358526,5000000,random,,1.46,11.7,7.15,26
+ZZ210,XNAS,Sample Holdings 210 (synthetic),equity,Information Technology,Application Software,12978810000.00,110.93,111.42,,,,4715200,5000000,random,,1.57,35.6,3.00,77
+ZZ211,XNYS,Sample Holdings 211 (synthetic),equity,Health Care,Biotechnology,975550000.00,8.95,8.78,,,,319872,400000,random,,0.96,15.0,0.37,18
+ZZ212,XNYS,Sample Holdings 212 (synthetic),equity,Financials,Regional Banks,14513240000.00,121.96,120.17,,,,2539741,2800000,downtrend,,1.36,9.5,6.59,24
+ZZ213,XNAS,Sample Holdings 213 (synthetic),equity,Industrials,Industrial Machinery,19237200000.00,58.65,58.01,,,,956181,900000,trend,,1.78,9.9,2.21,22
+ZZ214,XNYS,Sample Holdings 214 (synthetic),equity,Consumer Discretionary,Specialty Retail,29412240000.00,94.27,93.09,,,,419736,400000,random,,0.78,32.7,4.72,24
+ZZ215,XNYS,Sample Holdings 215 (synthetic),equity,Consumer Staples,Packaged Foods,1643040000.00,22.82,22.60,,,,957847,1500000,random,,1.19,14.5,1.38,8
+ZZ216,XNAS,Sample Holdings 216 (synthetic),equity,Energy,Oil & Gas Equipment,3015360000.00,55.84,55.50,,,,2778502,2800000,trend,,1.14,45.0,3.71,13
+ZZ217,XNYS,Sample Holdings 217 (synthetic),equity,Materials,Specialty Chemicals,14436900000.00,53.47,53.28,,,,258918,400000,flat,,0.96,25.7,1.64,52
+ZZ218,XNYS,Sample Holdings 218 (synthetic),equity,Utilities,Multi-Utilities,7335720000.00,25.83,25.67,,,,432602,400000,random,,0.62,12.5,0.54,56
+ZZ219,XNAS,Sample Holdings 219 (synthetic),equity,Real Estate,Office REITs,8734360000.00,37.01,37.60,,,,1160714,900000,flat,,1.17,15.0,0.97,39
+ZZ220,XNYS,Sample Holdings 220 (synthetic),equity,Communication Services,Advertising,8023440000.00,26.48,26.82,,,,2956848,2800000,random,,1.69,43.1,0.92,30
+ZZ221,XNYS,Sample Holdings 221 (synthetic),equity,Information Technology,Application Software,2576100000.00,83.10,81.69,,,,4142642,5000000,random,,0.84,32.0,5.30,34
+ZZ222,XNAS,Sample Holdings 222 (synthetic),equity,Health Care,Biotechnology,15267000000.00,87.24,88.99,,,,946866,900000,flat,,1.49,27.2,4.35,82
+ZZ223,XNYS,Sample Holdings 223 (synthetic),equity,Financials,Regional Banks,2385900000.00,7.23,7.15,,,,278236,400000,random,,0.61,40.2,0.22,89
+ZZ224,XNYS,Sample Holdings 224 (synthetic),equity,Industrials,Industrial Machinery,1677580000.00,22.67,22.77,,,,2267434,2800000,random,,0.72,34.9,0.54,16
+ZZ225,XNAS,Sample Holdings 225 (synthetic),equity,Consumer Discretionary,Specialty Retail,15136800000.00,63.60,62.48,,,,5080500,5000000,trend,,1.03,41.3,1.39,74
+ZZ226,XNYS,Sample Holdings 226 (synthetic),equity,Consumer Staples,Packaged Foods,5311480000.00,18.19,18.14,,,,1940241,1500000,random,,0.80,13.1,0.87,5
+ZZ227,XNYS,Sample Holdings 227 (synthetic),equity,Energy,Oil & Gas Equipment,2856700000.00,11.66,11.61,,,,595270,900000,trend,,0.97,34.1,0.35,42
+ZZ228,XNAS,Sample Holdings 228 (synthetic),equity,Materials,Specialty Chemicals,3572800000.00,15.95,16.23,,,,6493074,5000000,random,,0.91,45.0,0.60,8
+ZZ229,XNYS,Sample Holdings 229 (synthetic),equity,Utilities,Multi-Utilities,8083390000.00,31.21,31.10,,,,404437,400000,random,,1.78,43.2,0.73,32
+ZZ230,XNYS,Sample Holdings 230 (synthetic),equity,Real Estate,Office REITs,4330360000.00,29.66,29.87,,,,370450,400000,random,,1.44,31.2,1.64,82
+ZZ231,XNAS,Sample Holdings 231 (synthetic),equity,Communication Services,Advertising,39229200000.00,108.97,107.88,,,,2962189,2800000,trend,,1.75,26.1,4.01,37
+ZZ232,XNYS,Sample Holdings 232 (synthetic),equity,Information Technology,Application Software,18118600000.00,53.29,52.57,,,,2005979,1500000,random,,1.55,22.3,3.00,82
+ZZ233,XNYS,Sample Holdings 233 (synthetic),equity,Health Care,Biotechnology,577490000.00,7.31,7.43,,,,5994720,5000000,random,,1.01,27.2,0.56,66
+ZZ234,XNAS,Sample Holdings 234 (synthetic),equity,Financials,Regional Banks,10664640000.00,66.24,66.30,,,,413136,400000,random,,0.65,27.1,2.58,73
+ZZ235,XNYS,Sample Holdings 235 (synthetic),equity,Industrials,Industrial Machinery,3678930000.00,29.91,30.17,,,,2613163,2800000,random,,1.57,22.8,2.30,85
+ZZ236,XNYS,Sample Holdings 236 (synthetic),equity,Consumer Discretionary,Specialty Retail,4833860000.00,23.93,23.65,,,,293528,400000,random,,1.19,40.5,0.61,12
+ZZ237,XNAS,Sample Holdings 237 (synthetic),equity,Consumer Staples,Packaged Foods,15717360000.00,60.92,60.94,,,,3726026,2800000,random,,0.91,36.1,4.47,70
+ZZ238,XNYS,Sample Holdings 238 (synthetic),equity,Energy,Oil & Gas Equipment,2353560000.00,106.98,105.12,,,,1114715,900000,random,,1.16,32.0,10.85,62
+ZZ239,XNYS,Sample Holdings 239 (synthetic),equity,Materials,Specialty Chemicals,5083890000.00,16.89,17.07,,,,1876981,1500000,downtrend,,0.73,38.2,0.37,47
+ZZ240,XNAS,Sample Holdings 240 (synthetic),equity,Utilities,Multi-Utilities,3217710000.00,11.37,11.44,,,,1185858,900000,random,,0.88,33.6,1.30,33
+ZZ241,XNYS,Sample Holdings 241 (synthetic),equity,Real Estate,Office REITs,17018280000.00,46.12,46.36,,,,378067,400000,random,,0.66,14.4,4.50,39
+ZZ242,XNYS,Sample Holdings 242 (synthetic),equity,Communication Services,Advertising,1724800000.00,7.70,7.72,,,,332528,400000,downtrend,,0.79,18.4,0.55,66
+ZZ243,XNAS,Sample Holdings 243 (synthetic),equity,Information Technology,Application Software,53161750000.00,157.75,160.93,,,,2729472,2800000,random,,0.83,20.7,3.40,40
+ZZ244,XNYS,Sample Holdings 244 (synthetic),equity,Health Care,Biotechnology,27300000000.00,72.80,72.20,,,,427633,400000,random,,0.71,8.3,5.01,59
+ZZ245,XNYS,Sample Holdings 245 (synthetic),equity,Financials,Regional Banks,1368730000.00,59.51,59.07,,,,968336,900000,random,,0.91,47.5,1.53,79
+ZZ246,XNAS,Sample Holdings 246 (synthetic),equity,Industrials,Industrial Machinery,21575840000.00,65.78,66.67,,,,818817,900000,random,,0.68,15.0,1.56,59
+ZZ247,XNYS,Sample Holdings 247 (synthetic),equity,Consumer Discretionary,Specialty Retail,42263140000.00,109.49,107.93,,,,2786700,2800000,random,,1.60,32.5,8.50,22
+ZZ248,XNYS,Sample Holdings 248 (synthetic),equity,Consumer Staples,Packaged Foods,5476900000.00,84.26,83.79,,,,1854147,2800000,random,,1.80,38.3,5.84,21
+ZZ249,XNAS,Sample Holdings 249 (synthetic),equity,Energy,Oil & Gas Equipment,8716680000.00,46.12,46.26,,,,698627,900000,flat,,1.41,11.8,1.24,90
+ZZ250,XNYS,Sample Holdings 250 (synthetic),equity,Materials,Specialty Chemicals,22982920000.00,108.41,109.50,,,,441698,400000,random,,0.76,47.8,3.56,75
+ZZ251,XNYS,Sample Holdings 251 (synthetic),equity,Utilities,Multi-Utilities,7073190000.00,102.51,102.35,,,,1022548,1500000,random,,0.73,42.3,2.77,65
+ZZ252,XNAS,Sample Holdings 252 (synthetic),equity,Real Estate,Office REITs,16508480000.00,89.72,89.48,,,,488147,400000,random,,1.21,12.0,3.35,8
+ZZ253,XNYS,Sample Holdings 253 (synthetic),equity,Communication Services,Advertising,18008050000.00,185.65,188.88,,,,540718,400000,random,,1.70,43.9,8.44,63
+ZZ254,XNYS,Sample Holdings 254 (synthetic),equity,Information Technology,Application Software,14162250000.00,123.15,122.14,,,,4260156,5000000,random,,1.53,46.1,6.14,79
+ZZ255,XNAS,Sample Holdings 255 (synthetic),equity,Health Care,Biotechnology,7753680000.00,21.78,22.10,,,,1181906,900000,random,,1.69,38.3,1.16,45
+ZZ256,XNYS,Sample Holdings 256 (synthetic),equity,Financials,Regional Banks,78887850000.00,297.69,303.07,,,,1913878,1500000,random,,1.30,30.5,11.21,84
+ZZ257,XNYS,Sample Holdings 257 (synthetic),equity,Industrials,Industrial Machinery,19639260000.00,121.23,119.13,,,,3750768,2800000,random,,1.71,18.4,9.67,51
+ZZ258,XNAS,Sample Holdings 258 (synthetic),equity,Consumer Discretionary,Specialty Retail,2609290000.00,8.39,8.42,,,,1667650,1500000,downtrend,,0.90,19.7,0.23,6
+ZZ259,XNYS,Sample Holdings 259 (synthetic),equity,Consumer Staples,Packaged Foods,2161530000.00,34.31,34.48,,,,450664,400000,random,,1.65,19.7,1.38,39
+ZZ260,XNYS,Sample Holdings 260 (synthetic),equity,Energy,Oil & Gas Equipment,65678800000.00,285.56,288.99,,,,1873716,2800000,random,,1.43,9.2,8.95,7
+ZZ261,XNAS,Sample Holdings 261 (synthetic),equity,Materials,Specialty Chemicals,20307800000.00,86.05,85.68,,,,566332,900000,flat,,1.77,41.1,4.20,15
+ZZ262,XNYS,Sample Holdings 262 (synthetic),equity,Utilities,Multi-Utilities,3765600000.00,47.07,46.69,,,,1144046,1500000,random,,1.13,30.3,4.31,45
+ZZ263,XNYS,Sample Holdings 263 (synthetic),equity,Real Estate,Office REITs,1965220000.00,20.26,20.45,,,,1457115,1500000,random,,0.83,28.2,0.81,77
+ZZ264,XNAS,Sample Holdings 264 (synthetic),equity,Communication Services,Advertising,3180520000.00,21.49,21.65,,,,6225979,5000000,random,,1.14,41.8,0.56,78
+ZZ265,XNYS,Sample Holdings 265 (synthetic),equity,Information Technology,Application Software,795760000.00,27.44,27.11,,,,1532978,1500000,flat,,1.65,28.9,0.79,40
+ZZ266,XNYS,Sample Holdings 266 (synthetic),equity,Health Care,Biotechnology,11358640000.00,34.63,34.35,,,,1072598,900000,random,,0.60,41.7,1.82,11
+ZZ267,XNAS,Sample Holdings 267 (synthetic),equity,Financials,Regional Banks,47674800000.00,155.80,153.25,,,,4466736,5000000,flat,,1.58,16.3,5.29,46
+ZZ268,XNYS,Sample Holdings 268 (synthetic),equity,Industrials,Industrial Machinery,61530000000.00,210.00,213.95,,,,550618,900000,flat,,0.62,23.7,8.89,63
+ZZ269,XNYS,Sample Holdings 269 (synthetic),equity,Consumer Discretionary,Specialty Retail,22560840000.00,259.32,254.28,,,,5286224,5000000,random,,1.20,33.5,5.68,51
+ZZ270,XNAS,Sample Holdings 270 (synthetic),equity,Consumer Staples,Packaged Foods,1623450000.00,6.85,6.76,,,,957552,900000,trend,,0.63,17.5,0.25,27
+ZZ271,XNYS,Sample Holdings 271 (synthetic),equity,Energy,Oil & Gas Equipment,33225990000.00,93.07,93.16,,,,2006552,1500000,downtrend,,1.56,21.9,8.88,59
+ZZ272,XNYS,Sample Holdings 272 (synthetic),equity,Materials,Specialty Chemicals,65144800000.00,232.66,232.66,,,,324877,400000,random,,0.85,18.0,6.83,85
+ZZ273,XNAS,Sample Holdings 273 (synthetic),equity,Utilities,Multi-Utilities,13338680000.00,215.14,215.04,,,,772281,900000,random,,1.57,30.9,16.51,82
+ZZ274,XNYS,Sample Holdings 274 (synthetic),equity,Real Estate,Office REITs,5107840000.00,27.76,28.09,,,,1000973,1500000,random,,1.76,42.0,0.65,83
+ZZ275,XNYS,Sample Holdings 275 (synthetic),equity,Communication Services,Advertising,1710000000.00,42.75,42.98,,,,2015524,2800000,trend,,0.95,13.2,1.40,71
+ZZ276,XNAS,Sample Holdings 276 (synthetic),equity,Information Technology,Application Software,75051000000.00,269.00,269.65,,,,988173,1500000,trend,,1.18,31.1,7.84,54
+ZZ277,XNYS,Sample Holdings 277 (synthetic),equity,Health Care,Biotechnology,1972220000.00,63.62,62.66,,,,2027440,1500000,random,,1.07,30.7,1.76,87
+ZZ278,XNYS,Sample Holdings 278 (synthetic),equity,Financials,Regional Banks,8660840000.00,52.81,53.44,,,,1413409,1500000,flat,,1.29,22.8,1.53,73
+ZZ279,XNAS,Sample Holdings 279 (synthetic),equity,Industrials,Industrial Machinery,2992000000.00,17.00,17.22,,,,2012405,1500000,random,,1.47,43.9,0.45,38
+ZZ280,XNYS,Sample Holdings 280 (synthetic),equity,Consumer Discretionary,Specialty Retail,20419560000.00,61.32,60.47,,,,486735,400000,random,,0.85,23.9,7.17,63
+ZZ281,XNYS,Sample Holdings 281 (synthetic),equity,Consumer Staples,Packaged Foods,14485440000.00,183.36,180.12,,,,1132614,900000,random,,0.92,9.5,6.53,36
+ZZ282,XNAS,Sample Holdings 282 (synthetic),equity,Energy,Oil & Gas Equipment,7556400000.00,104.95,104.22,,,,4092104,5000000,flat,,1.36,45.6,7.37,25
+ZZ283,XNYS,Sample Holdings 283 (synthetic),equity,Materials,Specialty Chemicals,52617540000.00,282.89,279.86,,,,261151,400000,random,,1.01,26.0,12.21,74
+ZZ284,XNYS,Sample Holdings 284 (synthetic),equity,Utilities,Multi-Utilities,24544090000.00,69.53,69.64,,,,1007183,900000,random,,1.23,33.4,1.48,88
+ZZ285,XNAS,Sample Holdings 285 (synthetic),equity,Real Estate,Office REITs,67006720000.00,190.36,188.09,,,,552393,900000,random,,0.90,13.3,11.68,50
+ZZ286,XNYS,Sample Holdings 286 (synthetic),equity,Communication Services,Advertising,5178240000.00,26.97,27.17,,,,4030959,5000000,random,,1.37,10.9,0.58,61
+ZZ287,XNYS,Sample Holdings 287 (synthetic),equity,Information Technology,Application Software,3075800000.00,8.45,8.49,,,,1005939,1500000,trend,,0.93,13.3,0.23,33
+ZZ288,XNAS,Sample Holdings 288 (synthetic),equity,Health Care,Biotechnology,31672500000.00,84.46,83.30,,,,402470,400000,random,,0.88,16.1,3.61,66
+ZZ289,XNYS,Sample Holdings 289 (synthetic),equity,Financials,Regional Banks,14248330000.00,35.89,35.44,,,,4294451,5000000,random,,1.39,12.0,0.80,27
+ZZ290,XNYS,Sample Holdings 290 (synthetic),equity,Industrials,Industrial Machinery,1854960000.00,7.08,6.97,,,,3807176,2800000,random,,1.21,32.2,0.21,83
+ZZ291,XNAS,Sample Holdings 291 (synthetic),equity,Consumer Discretionary,Specialty Retail,1653900000.00,8.94,8.87,,,,1042175,900000,flat,,1.60,13.1,0.24,85
+ZZ292,XNYS,Sample Holdings 292 (synthetic),equity,Consumer Staples,Packaged Foods,16516920000.00,51.94,52.29,,,,1898586,1500000,random,,1.74,12.6,1.88,70
+ZZ293,XNYS,Sample Holdings 293 (synthetic),equity,Energy,Oil & Gas Equipment,4329150000.00,41.23,40.68,,,,4085506,5000000,flat,,1.47,36.4,2.80,14
+ZZ294,XNAS,Sample Holdings 294 (synthetic),equity,Materials,Specialty Chemicals,1888560000.00,26.23,26.53,,,,1656595,1500000,random,,1.44,12.6,1.29,82
+ZZ295,XNYS,Sample Holdings 295 (synthetic),equity,Utilities,Multi-Utilities,3552000000.00,11.10,11.19,,,,2012253,1500000,random,,0.65,30.8,0.25,87
+ZZ296,XNYS,Sample Holdings 296 (synthetic),equity,Real Estate,Office REITs,2234400000.00,7.98,7.92,,,,1338953,1500000,random,,0.85,36.6,0.36,23
+ZZ297,XNAS,Sample Holdings 297 (synthetic),equity,Communication Services,Advertising,859510000.00,37.37,37.79,,,,6090567,5000000,random,,1.22,44.8,3.84,21
+ZZ298,XNYS,Sample Holdings 298 (synthetic),equity,Information Technology,Application Software,1518030000.00,9.09,9.07,,,,465106,400000,trend,,0.63,44.4,0.41,36
+ZZ299,XNYS,Sample Holdings 299 (synthetic),equity,Health Care,Biotechnology,3442800000.00,114.76,114.16,,,,4836368,5000000,random,,0.67,47.5,2.66,48
+ZZ300,XNAS,Sample Holdings 300 (synthetic),equity,Financials,Regional Banks,2045750000.00,58.45,58.83,,,,2282245,2800000,flat,,0.63,10.1,3.31,17
+ZZ301,XNYS,Sample Holdings 301 (synthetic),equity,Industrials,Industrial Machinery,11936390000.00,80.11,79.74,,,,1105998,900000,random,,0.84,21.6,3.28,77
+ZZ302,XNYS,Sample Holdings 302 (synthetic),equity,Consumer Discretionary,Specialty Retail,11326530000.00,130.19,132.32,,,,1721803,1500000,random,,1.02,24.6,2.98,31
+ZZ303,XNAS,Sample Holdings 303 (synthetic),equity,Consumer Staples,Packaged Foods,2256640000.00,13.76,13.64,,,,2957263,2800000,random,,0.92,14.5,0.55,59
+ZZ304,XNYS,Sample Holdings 304 (synthetic),equity,Energy,Oil & Gas Equipment,9889440000.00,37.46,37.78,,,,1082244,900000,downtrend,,0.92,26.9,1.38,60
+ZZ305,XNYS,Sample Holdings 305 (synthetic),equity,Materials,Specialty Chemicals,7643520000.00,53.08,52.38,,,,1666199,1500000,random,,0.67,37.1,1.12,76
+ZZ306,XNAS,Sample Holdings 306 (synthetic),equity,Utilities,Multi-Utilities,3061660000.00,11.51,11.39,,,,433066,400000,random,,1.71,35.9,0.33,12
+ZZ307,XNYS,Sample Holdings 307 (synthetic),equity,Real Estate,Office REITs,623500000.00,7.25,7.26,,,,282790,400000,random,,1.36,14.6,0.15,46
+ZZ308,XNYS,Sample Holdings 308 (synthetic),equity,Communication Services,Advertising,33768000000.00,187.60,190.78,,,,1764169,1500000,random,,1.77,47.1,5.31,86
+ZZ309,XNAS,Sample Holdings 309 (synthetic),equity,Information Technology,Application Software,8992880000.00,172.94,174.03,,,,865487,900000,random,,1.06,12.6,11.01,9
+ZZ310,XNYS,Sample Holdings 310 (synthetic),equity,Health Care,Biotechnology,9661500000.00,64.41,63.35,,,,1327925,1500000,downtrend,,1.58,29.7,1.39,33
+ZZ311,XNYS,Sample Holdings 311 (synthetic),equity,Financials,Regional Banks,25653660000.00,175.71,177.00,,,,437986,400000,random,,0.73,11.6,5.34,28
+ZZ312,XNAS,Sample Holdings 312 (synthetic),equity,Industrials,Industrial Machinery,21692900000.00,81.86,81.73,,,,3388163,2800000,random,,1.01,26.7,3.09,6
+ZZ313,XNYS,Sample Holdings 313 (synthetic),equity,Consumer Discretionary,Specialty Retail,14677720000.00,44.21,43.62,,,,256046,400000,random,,1.38,44.9,1.63,62
+ZZ314,XNYS,Sample Holdings 314 (synthetic),equity,Consumer Staples,Packaged Foods,10646210000.00,46.49,47.20,,,,3765647,5000000,random,,1.59,40.0,2.52,37
+ZZ315,XNAS,Sample Holdings 315 (synthetic),equity,Energy,Oil & Gas Equipment,4266080000.00,11.72,11.57,,,,1124143,900000,downtrend,,0.88,16.8,1.24,57
+ZZ316,XNYS,Sample Holdings 316 (synthetic),equity,Materials,Specialty Chemicals,50585220000.00,190.17,192.57,,,,6395879,5000000,random,,1.28,27.9,7.53,41
+ZZ317,XNYS,Sample Holdings 317 (synthetic),equity,Utilities,Multi-Utilities,1756650000.00,11.95,12.05,,,,489974,400000,random,,1.40,33.5,0.32,16
+ZZ318,XNAS,Sample Holdings 318 (synthetic),equity,Real Estate,Office REITs,103009830000.00,258.17,254.80,,,,3655439,2800000,random,,1.73,38.8,24.00,54
+ZZ319,XNYS,Sample Holdings 319 (synthetic),equity,Communication Services,Advertising,16771500000.00,111.81,110.85,,,,1024460,900000,random,,1.70,41.1,2.76,63
+ZZ320,XNYS,Sample Holdings 320 (synthetic),equity,Information Technology,Application Software,1189760000.00,22.88,23.13,,,,254186,400000,trend,,1.53,38.5,0.99,36
+ZZ321,XNAS,Sample Holdings 321 (synthetic),equity,Health Care,Biotechnology,40239100000.00,128.15,130.17,,,,646209,900000,flat,,0.81,36.2,4.67,34
+ZZ322,XNYS,Sample Holdings 322 (synthetic),equity,Financials,Regional Banks,49838880000.00,182.56,185.34,,,,549690,900000,random,,1.32,13.9,13.88,65
+ZZ323,XNYS,Sample Holdings 323 (synthetic),equity,Industrials,Industrial Machinery,763000000.00,7.00,7.12,,,,1193315,1500000,trend,,1.61,30.2,0.17,78
+ZZ324,XNAS,Sample Holdings 324 (synthetic),equity,Consumer Discretionary,Specialty Retail,5499270000.00,18.27,18.23,,,,2539997,2800000,random,,1.69,21.0,0.47,6
+ZZ325,XNYS,Sample Holdings 325 (synthetic),equity,Consumer Staples,Packaged Foods,20726160000.00,122.64,122.70,,,,1118891,900000,random,,0.67,26.0,4.46,67
+ZZ326,XNYS,Sample Holdings 326 (synthetic),equity,Energy,Oil & Gas Equipment,15238770000.00,118.13,118.17,,,,3405282,2800000,random,,1.75,15.2,3.41,34
+ZZ327,XNAS,Sample Holdings 327 (synthetic),equity,Materials,Specialty Chemicals,8964540000.00,38.31,38.46,,,,304179,400000,random,,0.95,20.1,1.22,75
+ZZ328,XNYS,Sample Holdings 328 (synthetic),equity,Utilities,Multi-Utilities,2760000000.00,9.20,9.06,,,,577152,900000,random,,1.34,45.8,0.67,25
+ZZ329,XNYS,Sample Holdings 329 (synthetic),equity,Real Estate,Office REITs,20484740000.00,52.66,52.88,,,,3021317,5000000,random,,1.51,43.7,1.72,68
+ZZ330,XNAS,Sample Holdings 330 (synthetic),equity,Communication Services,Advertising,12626640000.00,175.37,177.06,,,,1992699,2800000,random,,1.55,34.7,3.84,58
+ZZ331,XNYS,Sample Holdings 331 (synthetic),equity,Information Technology,Application Software,797940000.00,12.09,12.09,,,,1259056,900000,trend,,1.50,26.0,1.01,63
+ZZ332,XNYS,Sample Holdings 332 (synthetic),equity,Health Care,Biotechnology,54962700000.00,215.54,218.02,,,,1249610,900000,flat,,1.41,34.1,9.39,87
+ZZ333,XNAS,Sample Holdings 333 (synthetic),equity,Financials,Regional Banks,45895600000.00,256.40,257.32,,,,2125561,2800000,random,,1.35,31.4,25.38,6
+ZZ334,XNYS,Sample Holdings 334 (synthetic),equity,Industrials,Industrial Machinery,871920000.00,12.11,11.89,,,,5180239,5000000,random,,1.67,25.8,0.44,16
+ZZ335,XNYS,Sample Holdings 335 (synthetic),equity,Consumer Discretionary,Specialty Retail,5701080000.00,43.19,43.11,,,,1162062,1500000,random,,1.18,42.8,0.97,67
+ZZ336,XNAS,Sample Holdings 336 (synthetic),equity,Consumer Staples,Packaged Foods,46389600000.00,272.88,277.10,,,,441124,400000,flat,,0.73,27.5,7.15,88
+ZZ337,XNYS,Sample Holdings 337 (synthetic),equity,Energy,Oil & Gas Equipment,4413440000.00,17.24,17.10,,,,458129,400000,random,,1.41,46.8,0.41,49
+ZZ338,XNYS,Sample Holdings 338 (synthetic),equity,Materials,Specialty Chemicals,2831800000.00,141.59,140.12,,,,1252974,1500000,trend,,1.47,30.9,3.19,19
+ZZ339,XNAS,Sample Holdings 339 (synthetic),equity,Utilities,Multi-Utilities,7760480000.00,27.04,26.78,,,,2259051,2800000,random,,1.02,44.4,0.81,50
+ZZ340,XNYS,Sample Holdings 340 (synthetic),equity,Real Estate,Office REITs,35066520000.00,110.97,113.18,,,,319087,400000,random,,1.24,35.8,2.34,62
+ZZ341,XNYS,Sample Holdings 341 (synthetic),equity,Communication Services,Advertising,7214970000.00,23.97,24.06,,,,2944533,2800000,random,,0.89,37.9,0.94,67
+ZZ342,XNAS,Sample Holdings 342 (synthetic),equity,Information Technology,Application Software,48688770000.00,123.89,123.71,,,,474344,400000,random,,1.67,21.1,3.62,40
+ZZ343,XNYS,Sample Holdings 343 (synthetic),equity,Health Care,Biotechnology,1773720000.00,11.37,11.45,,,,870612,900000,random,,0.77,29.1,0.74,56
+ZZ344,XNYS,Sample Holdings 344 (synthetic),equity,Financials,Regional Banks,3060800000.00,38.26,37.75,,,,553889,900000,flat,,1.07,22.4,0.95,22
+ZZ345,XNAS,Sample Holdings 345 (synthetic),equity,Industrials,Industrial Machinery,17767040000.00,125.12,124.03,,,,1229466,1500000,trend,,1.13,17.8,10.00,17
+ZZ346,XNYS,Sample Holdings 346 (synthetic),equity,Consumer Discretionary,Specialty Retail,3090240000.00,41.76,41.14,,,,1007789,1500000,downtrend,,1.77,22.2,1.61,34
+ZZ347,XNYS,Sample Holdings 347 (synthetic),equity,Consumer Staples,Packaged Foods,3702300000.00,12.30,12.16,,,,355031,400000,trend,,1.51,30.4,0.30,53
+ZZ348,XNAS,Sample Holdings 348 (synthetic),equity,Energy,Oil & Gas Equipment,3436090000.00,13.37,13.64,,,,922206,1500000,random,,1.61,37.8,0.50,56
+ZZ349,XNYS,Sample Holdings 349 (synthetic),equity,Materials,Specialty Chemicals,5779200000.00,24.08,24.50,,,,1157388,1500000,random,,0.80,10.8,0.64,14
+ZZ350,XNYS,Sample Holdings 350 (synthetic),equity,Utilities,Multi-Utilities,3946800000.00,15.60,15.67,,,,6954818,5000000,trend,,0.81,20.9,0.37,65
+ZZ351,XNAS,Sample Holdings 351 (synthetic),equity,Real Estate,Office REITs,11056100000.00,52.90,52.46,,,,5934901,5000000,flat,,1.64,12.0,1.94,15
+ZZ352,XNYS,Sample Holdings 352 (synthetic),equity,Communication Services,Advertising,7447000000.00,27.08,27.40,,,,3582920,2800000,random,,1.33,38.8,0.77,58
+ZZ353,XNYS,Sample Holdings 353 (synthetic),equity,Information Technology,Application Software,70881480000.00,270.54,266.21,,,,1173834,1500000,random,,1.52,38.2,7.42,71
+ZZ354,XNAS,Sample Holdings 354 (synthetic),equity,Health Care,Biotechnology,8355810000.00,37.47,36.78,,,,2000670,1500000,flat,,0.66,45.4,1.59,34
+ZZ355,XNYS,Sample Holdings 355 (synthetic),equity,Financials,Regional Banks,7057050000.00,150.15,152.42,,,,3313235,2800000,random,,1.29,26.5,4.70,86
+ZZ356,XNYS,Sample Holdings 356 (synthetic),equity,Industrials,Industrial Machinery,2146130000.00,13.33,13.58,,,,889513,900000,random,,0.67,22.0,0.54,62
+ZZ357,XNAS,Sample Holdings 357 (synthetic),equity,Consumer Discretionary,Specialty Retail,2917200000.00,7.48,7.56,,,,766737,900000,trend,,1.61,33.8,0.22,18
+ZZ358,XNYS,Sample Holdings 358 (synthetic),equity,Consumer Staples,Packaged Foods,1116250000.00,11.75,11.56,,,,1499147,1500000,random,,1.35,21.3,0.88,46
+ZZ359,XNYS,Sample Holdings 359 (synthetic),equity,Energy,Oil & Gas Equipment,2960650000.00,7.69,7.74,,,,3662016,2800000,flat,,0.61,41.1,0.16,5
+ZZ360,XNAS,Sample Holdings 360 (synthetic),equity,Materials,Specialty Chemicals,19914400000.00,90.52,89.07,,,,5357108,5000000,trend,,0.90,38.2,7.16,80
+ZZ361,XNYS,Sample Holdings 361 (synthetic),equity,Utilities,Multi-Utilities,21466380000.00,56.94,58.02,,,,1843265,1500000,random,,1.09,46.7,1.97,69
+ZZ362,XNYS,Sample Holdings 362 (synthetic),equity,Real Estate,Office REITs,63229760000.00,261.28,264.69,,,,5720576,5000000,random,,0.73,10.8,12.40,8
+ZZ363,XNAS,Sample Holdings 363 (synthetic),equity,Communication Services,Advertising,13035330000.00,43.89,43.20,,,,1720322,1500000,flat,,1.76,34.3,1.27,49
+ZZ364,XNYS,Sample Holdings 364 (synthetic),equity,Information Technology,Application Software,1569920000.00,8.92,8.85,,,,290224,400000,random,,1.34,18.0,1.10,48
+ZZ365,XNYS,Sample Holdings 365 (synthetic),equity,Health Care,Biotechnology,17404200000.00,290.07,284.41,,,,1268498,1500000,random,,0.65,47.9,7.54,61
+ZZ366,XNAS,Sample Holdings 366 (synthetic),equity,Financials,Regional Banks,22240260000.00,55.74,56.26,,,,540525,400000,random,,1.68,11.9,1.63,49
+ZZ367,XNYS,Sample Holdings 367 (synthetic),equity,Industrials,Industrial Machinery,41377440000.00,136.11,137.75,,,,285451,400000,random,,1.07,18.6,12.81,52
+ZZ368,XNYS,Sample Holdings 368 (synthetic),equity,Consumer Discretionary,Specialty Retail,51136380000.00,151.74,151.35,,,,3390114,2800000,random,,1.07,32.2,6.37,33
+ZZ369,XNAS,Sample Holdings 369 (synthetic),equity,Consumer Staples,Packaged Foods,37396080000.00,93.96,95.25,,,,2034343,1500000,random,,1.59,9.6,2.31,64
+ZZ370,XNYS,Sample Holdings 370 (synthetic),equity,Energy,Oil & Gas Equipment,11044140000.00,34.73,34.69,,,,883490,900000,random,,0.95,18.8,3.68,24
+ZZ371,XNYS,Sample Holdings 371 (synthetic),equity,Materials,Specialty Chemicals,15942850000.00,157.85,156.64,,,,509799,400000,trend,,1.24,17.2,11.67,6
+ZZ372,XNAS,Sample Holdings 372 (synthetic),equity,Utilities,Multi-Utilities,2473800000.00,8.68,8.84,,,,1683324,1500000,random,,1.66,16.7,0.55,25
+ZZ373,XNYS,Sample Holdings 373 (synthetic),equity,Real Estate,Office REITs,5595500000.00,15.50,15.51,,,,553605,400000,downtrend,,0.87,19.7,1.10,46
+ZZ374,XNYS,Sample Holdings 374 (synthetic),equity,Communication Services,Advertising,3478200000.00,11.22,11.19,,,,544195,900000,random,,0.67,27.6,0.31,27
+ZZ375,XNAS,Sample Holdings 375 (synthetic),equity,Information Technology,Application Software,108302800000.00,296.72,291.85,,,,6164221,5000000,random,,0.84,8.1,17.95,41
+ZZ376,XNYS,Sample Holdings 376 (synthetic),equity,Health Care,Biotechnology,8563590000.00,41.37,41.11,,,,6598513,5000000,trend,,1.10,15.0,1.47,75
+ZZ377,XNYS,Sample Holdings 377 (synthetic),equity,Financials,Regional Banks,27553750000.00,82.25,82.75,,,,2632117,2800000,random,,1.12,31.1,1.94,83
+ZZ378,XNAS,Sample Holdings 378 (synthetic),equity,Industrials,Industrial Machinery,64606200000.00,274.92,275.94,,,,3400519,2800000,random,,1.76,33.9,12.98,35
+ZZ379,XNYS,Sample Holdings 379 (synthetic),equity,Consumer Discretionary,Specialty Retail,5797000000.00,93.50,94.86,,,,2962910,2800000,flat,,1.64,13.2,1.96,65
+ZZ380,XNYS,Sample Holdings 380 (synthetic),equity,Consumer Staples,Packaged Foods,10914000000.00,80.25,80.91,,,,395198,400000,downtrend,,1.24,25.5,4.97,64
+ZZ381,XNAS,Sample Holdings 381 (synthetic),equity,Energy,Oil & Gas Equipment,6952500000.00,77.25,76.09,,,,311294,400000,downtrend,,0.69,25.8,2.70,13
+ZZ382,XNYS,Sample Holdings 382 (synthetic),equity,Materials,Specialty Chemicals,33681600000.00,140.34,141.90,,,,5684395,5000000,random,,0.68,44.7,5.80,50
+ZZ383,XNYS,Sample Holdings 383 (synthetic),equity,Utilities,Multi-Utilities,3884430000.00,16.39,16.55,,,,1922847,1500000,random,,0.91,17.3,0.36,57
+ZZ384,XNAS,Sample Holdings 384 (synthetic),equity,Real Estate,Office REITs,47600000000.00,297.50,298.73,,,,5356119,5000000,random,,0.68,12.2,21.16,14
+ZZ385,XNYS,Sample Holdings 385 (synthetic),equity,Communication Services,Advertising,3744090000.00,59.43,60.17,,,,1844720,1500000,random,,0.72,46.0,5.59,52
+ZZ386,XNYS,Sample Holdings 386 (synthetic),equity,Information Technology,Application Software,853550000.00,19.85,20.02,,,,1173869,900000,random,,0.64,30.2,0.63,69
+ZZ387,XNAS,Sample Holdings 387 (synthetic),equity,Health Care,Biotechnology,2526160000.00,27.76,27.96,,,,1410710,1500000,random,,1.72,25.2,0.95,90
+ZZ388,XNYS,Sample Holdings 388 (synthetic),equity,Financials,Regional Banks,61279200000.00,226.96,230.25,,,,5091878,5000000,random,,0.68,28.4,26.78,38
+ZZ389,XNYS,Sample Holdings 389 (synthetic),equity,Industrials,Industrial Machinery,8682240000.00,22.61,22.86,,,,1385732,1500000,trend,,0.78,30.6,0.89,19
+ZZ390,XNAS,Sample Holdings 390 (synthetic),equity,Consumer Discretionary,Specialty Retail,10240540000.00,25.73,25.57,,,,1097608,1500000,downtrend,,0.71,33.4,1.71,70
+ZZ391,XNYS,Sample Holdings 391 (synthetic),equity,Consumer Staples,Packaged Foods,68894000000.00,186.20,187.21,,,,1454203,1500000,random,,1.22,44.6,6.53,38
+ZZ392,XNYS,Sample Holdings 392 (synthetic),equity,Energy,Oil & Gas Equipment,561000000.00,8.50,8.66,,,,1534968,1500000,random,,1.74,35.8,0.22,14
+ZZ393,XNAS,Sample Holdings 393 (synthetic),equity,Materials,Specialty Chemicals,4054680000.00,64.36,65.25,,,,6779233,5000000,random,,1.63,43.8,7.15,75
+ZZ394,XNYS,Sample Holdings 394 (synthetic),equity,Utilities,Multi-Utilities,2639100000.00,27.78,28.26,,,,743284,900000,random,,1.40,36.3,0.63,71
+ZZ395,XNYS,Sample Holdings 395 (synthetic),equity,Real Estate,Office REITs,7728690000.00,112.01,113.72,,,,2403767,2800000,random,,0.61,25.0,7.25,10
+ZZ396,XNAS,Sample Holdings 396 (synthetic),equity,Communication Services,Advertising,6009750000.00,133.55,135.11,,,,502558,400000,random,,0.93,27.9,9.44,75
+ZZ397,XNYS,Sample Holdings 397 (synthetic),equity,Information Technology,Application Software,7602380000.00,85.42,86.97,,,,5633353,5000000,downtrend,,1.05,24.1,3.77,66
+ZZ398,XNYS,Sample Holdings 398 (synthetic),equity,Health Care,Biotechnology,20872810000.00,80.59,79.32,,,,1254216,1500000,random,,0.62,13.0,7.98,67
+ZZ399,XNAS,Sample Holdings 399 (synthetic),equity,Financials,Regional Banks,27351180000.00,290.97,295.91,,,,3959799,5000000,random,,1.18,26.2,22.67,18
+ZZ400,XNYS,Sample Holdings 400 (synthetic),equity,Industrials,Industrial Machinery,2648940000.00,9.01,8.92,,,,1671882,1500000,random,,1.29,13.8,0.59,72
+ZZ401,XNYS,Sample Holdings 401 (synthetic),equity,Consumer Discretionary,Specialty Retail,13347360000.00,53.82,54.71,,,,3342309,2800000,random,,1.75,27.0,1.60,41
+ZZ402,XNAS,Sample Holdings 402 (synthetic),equity,Consumer Staples,Packaged Foods,10080510000.00,27.77,28.13,,,,548989,400000,flat,,0.61,24.7,1.83,51
+ZZ403,XNYS,Sample Holdings 403 (synthetic),equity,Energy,Oil & Gas Equipment,50087200000.00,182.80,185.31,,,,4929249,5000000,random,,1.04,46.8,3.87,39
+ZZ404,XNYS,Sample Holdings 404 (synthetic),equity,Materials,Specialty Chemicals,11528600000.00,48.85,49.51,,,,1241566,1500000,random,,1.35,38.5,1.11,57
+ZZ405,XNAS,Sample Holdings 405 (synthetic),equity,Utilities,Multi-Utilities,922250000.00,7.75,7.81,,,,3356386,5000000,random,,0.71,29.3,0.58,90
+ZZ406,XNYS,Sample Holdings 406 (synthetic),equity,Real Estate,Office REITs,6536040000.00,30.12,30.13,,,,6280415,5000000,downtrend,,1.76,47.1,2.86,69
+ZZ407,XNYS,Sample Holdings 407 (synthetic),equity,Communication Services,Advertising,6769160000.00,65.72,66.15,,,,2203844,2800000,random,,1.68,27.7,3.61,55
+ZZ408,XNAS,Sample Holdings 408 (synthetic),equity,Information Technology,Application Software,35597430000.00,96.47,96.67,,,,2042129,1500000,random,,0.70,30.6,2.17,41
+ZZ409,XNYS,Sample Holdings 409 (synthetic),equity,Health Care,Biotechnology,29813040000.00,105.72,107.51,,,,2503026,2800000,downtrend,,0.99,24.1,5.68,60
+ZZ410,XNYS,Sample Holdings 410 (synthetic),equity,Financials,Regional Banks,16929000000.00,102.60,103.68,,,,2550106,2800000,random,,0.96,45.8,4.57,74
+ZZ411,XNAS,Sample Holdings 411 (synthetic),equity,Industrials,Industrial Machinery,1561950000.00,24.03,24.24,,,,3637954,2800000,random,,1.04,13.7,1.09,85
+ZZ412,XNYS,Sample Holdings 412 (synthetic),equity,Consumer Discretionary,Specialty Retail,20698170000.00,186.47,184.48,,,,6634815,5000000,trend,,0.63,36.7,5.97,73
+ZZ413,XNYS,Sample Holdings 413 (synthetic),equity,Consumer Staples,Packaged Foods,6605220000.00,23.34,23.15,,,,1892328,1500000,random,,1.09,9.0,2.22,36
+ZZ414,XNAS,Sample Holdings 414 (synthetic),equity,Energy,Oil & Gas Equipment,7255360000.00,44.24,43.68,,,,3601669,2800000,random,,1.17,43.3,2.17,12
+ZZ415,XNYS,Sample Holdings 415 (synthetic),equity,Materials,Specialty Chemicals,383240000.00,17.42,17.40,,,,2452791,2800000,random,,1.27,10.9,0.40,27
+ZZ416,XNYS,Sample Holdings 416 (synthetic),equity,Utilities,Multi-Utilities,7587950000.00,19.21,19.20,,,,1650770,1500000,random,,1.14,43.0,0.42,14
+ZZ417,XNAS,Sample Holdings 417 (synthetic),equity,Real Estate,Office REITs,24840440000.00,68.62,67.67,,,,3193767,2800000,downtrend,,1.30,21.2,6.99,62
+ZZ418,XNYS,Sample Holdings 418 (synthetic),equity,Communication Services,Advertising,38841600000.00,277.44,278.92,,,,1701131,2800000,random,,1.07,15.0,12.52,48
+ZZ419,XNYS,Sample Holdings 419 (synthetic),equity,Information Technology,Application Software,3506100000.00,17.98,18.18,,,,6105467,5000000,random,,1.62,47.8,0.45,5
+ZZ420,XNAS,Sample Holdings 420 (synthetic),equity,Health Care,Biotechnology,20176620000.00,66.81,66.06,,,,597783,900000,trend,,1.70,30.5,5.93,33
+ZZ421,XNYS,Sample Holdings 421 (synthetic),equity,Financials,Regional Banks,14192620000.00,41.99,41.21,,,,6157517,5000000,trend,,0.91,38.5,4.04,15
+ZZ422,XNYS,Sample Holdings 422 (synthetic),equity,Industrials,Industrial Machinery,3191040000.00,8.31,8.34,,,,1798358,1500000,flat,,1.04,18.0,0.40,8
+ZZ423,XNAS,Sample Holdings 423 (synthetic),equity,Consumer Discretionary,Specialty Retail,4942840000.00,19.46,19.75,,,,580540,900000,random,,1.60,8.2,0.93,6
+ZZ424,XNYS,Sample Holdings 424 (synthetic),equity,Consumer Staples,Packaged Foods,8998560000.00,124.98,124.50,,,,1970371,2800000,random,,1.75,46.6,3.34,34
+ZZ425,XNYS,Sample Holdings 425 (synthetic),equity,Energy,Oil & Gas Equipment,1940220000.00,35.93,35.97,,,,1382651,1500000,trend,,1.54,43.5,1.02,72
+ZZ426,XNAS,Sample Holdings 426 (synthetic),equity,Materials,Specialty Chemicals,3408230000.00,12.67,12.72,,,,1254963,1500000,random,,1.33,37.1,0.47,63
+ZZ427,XNYS,Sample Holdings 427 (synthetic),equity,Utilities,Multi-Utilities,2472140000.00,112.37,113.85,,,,3233676,5000000,random,,1.67,9.9,4.24,64
+ZZ428,XNYS,Sample Holdings 428 (synthetic),equity,Real Estate,Office REITs,3091480000.00,110.41,111.64,,,,2755360,2800000,flat,,1.14,42.9,2.56,14
+ZZ429,XNAS,Sample Holdings 429 (synthetic),equity,Communication Services,Advertising,15634900000.00,91.97,90.60,,,,691303,900000,random,,1.72,18.1,2.44,46
+ZZ430,XNYS,Sample Holdings 430 (synthetic),equity,Information Technology,Application Software,23727360000.00,61.79,62.79,,,,4649234,5000000,random,,0.88,17.6,3.77,87
+ZZ431,XNYS,Sample Holdings 431 (synthetic),equity,Health Care,Biotechnology,15041450000.00,53.15,52.14,,,,3263292,2800000,random,,1.07,27.0,3.40,83
+ZZ432,XNAS,Sample Holdings 432 (synthetic),equity,Financials,Regional Banks,47419420000.00,244.43,247.98,,,,2342437,2800000,random,,0.86,44.5,9.17,55
+ZZ433,XNYS,Sample Holdings 433 (synthetic),equity,Industrials,Industrial Machinery,1067260000.00,7.31,7.31,,,,1827704,1500000,downtrend,,0.76,26.9,0.15,50
+ZZ434,XNYS,Sample Holdings 434 (synthetic),equity,Consumer Discretionary,Specialty Retail,6092800000.00,21.76,21.74,,,,3363584,5000000,downtrend,,0.99,26.2,0.66,24
+ZZ435,XNAS,Sample Holdings 435 (synthetic),equity,Consumer Staples,Packaged Foods,31356560000.00,114.44,116.61,,,,1178057,1500000,downtrend,,1.11,13.8,11.75,8
+ZZ436,XNYS,Sample Holdings 436 (synthetic),equity,Energy,Oil & Gas Equipment,1960980000.00,42.63,43.49,,,,3087150,2800000,random,,1.78,34.5,1.91,41
+ZZ437,XNYS,Sample Holdings 437 (synthetic),equity,Materials,Specialty Chemicals,28889350000.00,97.93,99.20,,,,5472459,5000000,flat,,0.74,45.9,3.13,61
+ZZ438,XNAS,Sample Holdings 438 (synthetic),equity,Utilities,Multi-Utilities,9655000000.00,38.62,37.89,,,,5571352,5000000,random,,1.00,16.1,0.81,47
+ZZ439,XNYS,Sample Holdings 439 (synthetic),equity,Real Estate,Office REITs,3529350000.00,17.05,17.30,,,,2976150,2800000,random,,1.70,32.0,1.20,19
+ZZ440,XNYS,Sample Holdings 440 (synthetic),equity,Communication Services,Advertising,4039680000.00,15.78,15.91,,,,421312,400000,flat,,1.23,8.8,1.77,21
+ZZ441,XNAS,Sample Holdings 441 (synthetic),equity,Information Technology,Application Software,17646240000.00,90.96,90.26,,,,543493,400000,random,,1.24,19.6,10.72,41
+ZZ442,XNYS,Sample Holdings 442 (synthetic),equity,Health Care,Biotechnology,7022800000.00,38.80,39.55,,,,868874,900000,random,,0.64,27.1,1.13,32
+ZZ443,XNYS,Sample Holdings 443 (synthetic),equity,Financials,Regional Banks,59958750000.00,159.89,161.50,,,,695067,900000,random,,1.65,43.4,5.18,17
+ZZ444,XNAS,Sample Holdings 444 (synthetic),equity,Industrials,Industrial Machinery,111120000000.00,296.32,297.61,,,,1176427,900000,random,,0.76,33.6,27.62,64
+ZZ445,XNYS,Sample Holdings 445 (synthetic),equity,Consumer Discretionary,Specialty Retail,67432440000.00,181.27,183.21,,,,5033836,5000000,random,,1.57,33.4,5.17,14
+ZZ446,XNYS,Sample Holdings 446 (synthetic),equity,Consumer Staples,Packaged Foods,9715850000.00,45.19,46.03,,,,717076,900000,random,,1.40,43.7,2.33,40
+ZZ447,XNAS,Sample Holdings 447 (synthetic),equity,Energy,Oil & Gas Equipment,9562160000.00,53.72,53.55,,,,2641991,2800000,random,,1.53,21.4,1.40,48
+ZZ448,XNYS,Sample Holdings 448 (synthetic),equity,Materials,Specialty Chemicals,932650000.00,8.11,8.27,,,,1232609,900000,random,,1.71,37.8,0.27,60
+ZZ449,XNYS,Sample Holdings 449 (synthetic),equity,Utilities,Multi-Utilities,5938800000.00,29.40,29.75,,,,519428,400000,random,,0.72,27.9,0.67,24
+ZZ450,XNAS,Sample Holdings 450 (synthetic),equity,Real Estate,Office REITs,14194320000.00,144.84,146.67,,,,5330572,5000000,trend,,1.26,39.7,5.12,65
+ZZ451,XNYS,Sample Holdings 451 (synthetic),equity,Communication Services,Advertising,1541120000.00,6.88,7.01,,,,6368803,5000000,random,,1.08,39.4,0.18,62
+ZZ452,XNYS,Sample Holdings 452 (synthetic),equity,Information Technology,Application Software,6290240000.00,17.87,17.76,,,,5980673,5000000,random,,1.16,18.7,0.68,32
+ZZ453,XNAS,Sample Holdings 453 (synthetic),equity,Health Care,Biotechnology,14703390000.00,41.89,42.50,,,,437713,400000,flat,,0.85,16.6,1.31,27
+ZZ454,XNYS,Sample Holdings 454 (synthetic),equity,Financials,Regional Banks,4511400000.00,21.90,21.91,,,,1163876,900000,trend,,0.65,47.0,0.60,52
+ZZ455,XNYS,Sample Holdings 455 (synthetic),equity,Industrials,Industrial Machinery,30040980000.00,145.83,148.09,,,,4040742,5000000,random,,1.53,27.7,11.65,59
+ZZ456,XNAS,Sample Holdings 456 (synthetic),equity,Consumer Discretionary,Specialty Retail,40634880000.00,115.44,114.84,,,,3547009,2800000,random,,1.53,15.1,3.54,43
+ZZ457,XNYS,Sample Holdings 457 (synthetic),equity,Consumer Staples,Packaged Foods,15035920000.00,64.81,65.15,,,,558707,400000,random,,1.65,33.2,2.96,69
+ZZ458,XNYS,Sample Holdings 458 (synthetic),equity,Energy,Oil & Gas Equipment,3024990000.00,16.53,16.42,,,,2027497,1500000,random,,0.81,22.7,0.40,70
+ZZ459,XNAS,Sample Holdings 459 (synthetic),equity,Materials,Specialty Chemicals,2679280000.00,25.04,24.56,,,,6975621,5000000,random,,1.54,14.8,1.82,34
+ZZ460,XNYS,Sample Holdings 460 (synthetic),equity,Utilities,Multi-Utilities,8406840000.00,53.89,53.06,,,,4894814,5000000,random,,1.42,16.4,1.25,14
+ZZ461,XNYS,Sample Holdings 461 (synthetic),equity,Real Estate,Office REITs,5757200000.00,19.45,19.61,,,,2715553,2800000,random,,0.95,17.4,1.85,72
+ZZ462,XNAS,Sample Holdings 462 (synthetic),equity,Communication Services,Advertising,33872800000.00,130.28,132.48,,,,1722253,2800000,random,,1.51,33.1,7.25,72
+ZZ463,XNYS,Sample Holdings 463 (synthetic),equity,Information Technology,Application Software,103248000000.00,286.80,281.48,,,,1564873,1500000,random,,0.73,48.0,6.22,75
+ZZ464,XNYS,Sample Holdings 464 (synthetic),equity,Health Care,Biotechnology,2115280000.00,10.96,10.91,,,,2831612,2800000,random,,1.63,8.0,0.59,21
+ZZ465,XNAS,Sample Holdings 465 (synthetic),equity,Financials,Regional Banks,1015200000.00,10.80,10.75,,,,1094438,900000,random,,1.76,17.9,0.78,69
+ZZ466,XNYS,Sample Holdings 466 (synthetic),equity,Industrials,Industrial Machinery,46924290000.00,222.39,223.67,,,,1112390,1500000,random,,1.66,43.4,8.33,50
+ZZ467,XNYS,Sample Holdings 467 (synthetic),equity,Consumer Discretionary,Specialty Retail,32246500000.00,99.22,97.88,,,,3814175,5000000,random,,1.54,45.0,3.83,78
+ZZ468,XNAS,Sample Holdings 468 (synthetic),equity,Consumer Staples,Packaged Foods,1320390000.00,25.89,25.77,,,,311473,400000,random,,1.70,10.4,0.63,32
+ZZ469,XNYS,Sample Holdings 469 (synthetic),equity,Energy,Oil & Gas Equipment,1423920000.00,6.98,6.96,,,,6095198,5000000,random,,1.72,31.1,0.22,81
+ZZ470,XNYS,Sample Holdings 470 (synthetic),equity,Materials,Specialty Chemicals,13536400000.00,157.40,158.08,,,,356084,400000,flat,,1.43,32.5,5.86,73
+ZZ471,XNAS,Sample Holdings 471 (synthetic),equity,Utilities,Multi-Utilities,60659710000.00,236.03,234.21,,,,2554373,2800000,downtrend,,1.49,19.5,10.98,27
+ZZ472,XNYS,Sample Holdings 472 (synthetic),equity,Real Estate,Office REITs,1013880000.00,36.21,35.58,,,,553497,400000,trend,,0.77,40.5,1.64,53
+ZZ473,XNYS,Sample Holdings 473 (synthetic),equity,Communication Services,Advertising,77604040000.00,204.76,202.87,,,,4688415,5000000,random,,1.00,35.4,9.17,74
+ZZ474,XNAS,Sample Holdings 474 (synthetic),equity,Information Technology,Application Software,16304060000.00,48.38,47.60,,,,1130491,900000,random,,1.00,9.3,1.53,47
+ZZ475,XNYS,Sample Holdings 475 (synthetic),equity,Health Care,Biotechnology,9468300000.00,85.30,86.78,,,,2899276,2800000,random,,1.36,35.8,2.17,76
+ZZ476,XNYS,Sample Holdings 476 (synthetic),equity,Financials,Regional Banks,3197040000.00,10.38,10.45,,,,1218546,1500000,trend,,1.43,18.8,0.66,44
+ZZ477,XNAS,Sample Holdings 477 (synthetic),equity,Industrials,Industrial Machinery,4377030000.00,10.97,10.96,,,,3852011,5000000,random,,0.82,17.9,0.27,53
+ZZ478,XNYS,Sample Holdings 478 (synthetic),equity,Consumer Discretionary,Specialty Retail,31043440000.00,131.54,131.66,,,,1202096,900000,downtrend,,0.83,46.1,6.81,87
+ZZ479,XNYS,Sample Holdings 479 (synthetic),equity,Consumer Staples,Packaged Foods,27645270000.00,129.79,128.36,,,,696155,900000,random,,0.98,35.8,4.50,61
+ZZ480,XNAS,Sample Holdings 480 (synthetic),equity,Energy,Oil & Gas Equipment,16218020000.00,60.97,60.17,,,,6836393,5000000,random,,1.52,11.6,1.73,88
+ZZ481,XNYS,Sample Holdings 481 (synthetic),equity,Materials,Specialty Chemicals,86154320000.00,267.56,264.89,,,,953751,1500000,random,,1.57,9.9,12.24,38
+ZZ482,XNYS,Sample Holdings 482 (synthetic),equity,Utilities,Multi-Utilities,36664650000.00,222.21,224.88,,,,1375573,1500000,random,,0.65,46.9,7.22,47
+ZZ483,XNAS,Sample Holdings 483 (synthetic),equity,Real Estate,Office REITs,69351230000.00,205.79,203.80,,,,2625744,2800000,random,,1.28,15.0,8.59,46
+ZZ484,XNYS,Sample Holdings 484 (synthetic),equity,Communication Services,Advertising,5970230000.00,34.51,34.81,,,,3041986,2800000,trend,,1.40,44.6,1.06,81
+ZZ485,XNYS,Sample Holdings 485 (synthetic),equity,Information Technology,Application Software,5621280000.00,28.68,28.60,,,,3085356,2800000,random,,1.46,24.4,1.39,31
+ZZ486,XNAS,Sample Holdings 486 (synthetic),equity,Health Care,Biotechnology,4010520000.00,17.59,17.65,,,,4350796,5000000,random,,1.03,31.3,2.09,38
+ZZ487,XNYS,Sample Holdings 487 (synthetic),equity,Financials,Regional Banks,2974750000.00,18.25,18.06,,,,619181,900000,random,,1.64,12.9,0.59,55
+ZZ488,XNYS,Sample Holdings 488 (synthetic),equity,Industrials,Industrial Machinery,17400600000.00,124.29,124.97,,,,1157012,900000,random,,0.84,26.7,3.74,7
+ZZ489,XNAS,Sample Holdings 489 (synthetic),equity,Consumer Discretionary,Specialty Retail,5145000000.00,26.25,26.13,,,,2062705,1500000,random,,0.98,25.5,0.68,80
+ZZ490,XNYS,Sample Holdings 490 (synthetic),equity,Consumer Staples,Packaged Foods,2322210000.00,6.81,6.93,,,,812189,900000,random,,1.47,35.1,0.16,39
+ZZ491,XNYS,Sample Holdings 491 (synthetic),equity,Energy,Oil & Gas Equipment,62693540000.00,242.06,243.63,,,,284102,400000,random,,1.32,47.0,22.90,82
+ZZ492,XNAS,Sample Holdings 492 (synthetic),equity,Materials,Specialty Chemicals,10644620000.00,38.29,38.47,,,,5524830,5000000,random,,1.14,40.0,3.52,45
+ZZ493,XNYS,Sample Holdings 493 (synthetic),equity,Utilities,Multi-Utilities,24229220000.00,62.77,62.11,,,,2084181,2800000,trend,,0.87,44.6,1.37,78
+ZZ494,XNYS,Sample Holdings 494 (synthetic),equity,Real Estate,Office REITs,90595980000.00,247.53,250.99,,,,6181762,5000000,random,,1.75,10.3,6.75,74
+ZZ495,XNAS,Sample Holdings 495 (synthetic),equity,Communication Services,Advertising,6868120000.00,25.82,25.63,,,,1506364,1500000,random,,1.13,25.5,3.21,25
+ZZ496,XNYS,Sample Holdings 496 (synthetic),equity,Information Technology,Application Software,7479000000.00,55.40,55.51,,,,3333787,2800000,random,,0.62,39.5,1.40,9
+ZZ497,XNYS,Sample Holdings 497 (synthetic),equity,Health Care,Biotechnology,6021400000.00,15.64,15.56,,,,1439093,1500000,random,,1.50,44.6,0.78,75
+ZZ498,XNAS,Sample Holdings 498 (synthetic),equity,Financials,Regional Banks,46230600000.00,177.81,177.75,,,,3485818,2800000,random,,0.91,9.2,11.08,62
+ZZ499,XNYS,Sample Holdings 499 (synthetic),equity,Industrials,Industrial Machinery,1506450000.00,9.13,9.09,,,,1945389,1500000,trend,,1.27,8.2,0.87,39
+ZZ500,XNYS,Sample Holdings 500 (synthetic),equity,Consumer Discretionary,Specialty Retail,4193850000.00,10.95,11.16,,,,2734913,2800000,random,,1.68,42.6,0.38,64
+ZZ501,XNAS,Sample Holdings 501 (synthetic),equity,Consumer Staples,Packaged Foods,31586000000.00,157.93,156.51,,,,1038574,900000,random,,1.25,26.6,4.41,56
+ZZ502,XNYS,Sample Holdings 502 (synthetic),equity,Energy,Oil & Gas Equipment,4763760000.00,207.12,206.42,,,,1995108,1500000,trend,,0.82,20.2,12.98,39
+ZZ503,XNYS,Sample Holdings 503 (synthetic),equity,Materials,Specialty Chemicals,3096700000.00,8.65,8.55,,,,3751434,2800000,random,,1.22,40.7,0.40,70
+ZZ504,XNAS,Sample Holdings 504 (synthetic),equity,Utilities,Multi-Utilities,15851560000.00,114.04,112.90,,,,610716,900000,random,,0.94,12.7,2.45,50
+ZZ505,XNYS,Sample Holdings 505 (synthetic),equity,Real Estate,Office REITs,11099560000.00,45.49,45.78,,,,1182325,900000,random,,1.75,16.0,1.42,20
+ZZ506,XNYS,Sample Holdings 506 (synthetic),equity,Communication Services,Advertising,1490030000.00,13.67,13.62,,,,792695,900000,random,,1.05,47.7,0.89,43
+ZZ507,XNAS,Sample Holdings 507 (synthetic),equity,Information Technology,Application Software,8949000000.00,94.20,93.71,,,,1073689,1500000,random,,1.46,28.6,4.57,6
+ZZ508,XNYS,Sample Holdings 508 (synthetic),equity,Health Care,Biotechnology,6189900000.00,26.34,26.64,,,,3530789,5000000,random,,1.78,15.4,0.83,82
+ZZ509,XNYS,Sample Holdings 509 (synthetic),equity,Financials,Regional Banks,27438480000.00,127.03,127.40,,,,5823330,5000000,random,,0.71,38.0,3.53,34
+ZZ510,XNAS,Sample Holdings 510 (synthetic),equity,Industrials,Industrial Machinery,15947250000.00,96.65,97.53,,,,1690149,1500000,random,,0.96,36.1,3.70,76
+ZZ511,XNYS,Sample Holdings 511 (synthetic),equity,Consumer Discretionary,Specialty Retail,2598060000.00,30.21,30.61,,,,1762222,1500000,trend,,0.79,19.2,1.76,30
+ZZ512,XNYS,Sample Holdings 512 (synthetic),equity,Consumer Staples,Packaged Foods,5800390000.00,27.49,27.39,,,,6323394,5000000,random,,1.20,10.6,0.65,34
+ZZ513,XNAS,Sample Holdings 513 (synthetic),equity,Energy,Oil & Gas Equipment,12684000000.00,42.28,41.75,,,,594770,900000,flat,,1.74,47.6,1.64,17
+ZZ514,XNYS,Sample Holdings 514 (synthetic),equity,Materials,Specialty Chemicals,14805750000.00,155.85,154.70,,,,1394739,1500000,random,,1.73,44.9,4.08,48
+ZZ515,XNYS,Sample Holdings 515 (synthetic),equity,Utilities,Multi-Utilities,47812950000.00,148.95,149.61,,,,1198142,900000,random,,0.61,42.8,3.88,18
+ZZ516,XNAS,Sample Holdings 516 (synthetic),equity,Real Estate,Office REITs,16568760000.00,212.42,208.78,,,,1889718,1500000,random,,1.27,28.6,9.27,25
+ZZ517,XNYS,Sample Holdings 517 (synthetic),equity,Communication Services,Advertising,8757500000.00,56.50,57.12,,,,3347237,2800000,trend,,1.79,17.2,2.67,35
+ZZ518,XNYS,Sample Holdings 518 (synthetic),equity,Information Technology,Application Software,43467820000.00,207.98,208.89,,,,507665,400000,random,,0.62,22.2,5.13,83
+ZZ519,XNAS,Sample Holdings 519 (synthetic),equity,Health Care,Biotechnology,33243520000.00,130.88,130.46,,,,544431,400000,random,,1.05,9.6,3.38,44
+ZZ520,XNYS,Sample Holdings 520 (synthetic),equity,Financials,Regional Banks,47266320000.00,127.06,125.88,,,,4826313,5000000,downtrend,,1.58,42.0,4.47,54
+ZZ521,XNYS,Sample Holdings 521 (synthetic),equity,Industrials,Industrial Machinery,11648520000.00,49.78,48.97,,,,366258,400000,random,,0.75,12.3,1.55,42
+ZZ522,XNAS,Sample Holdings 522 (synthetic),equity,Consumer Discretionary,Specialty Retail,2641900000.00,18.22,18.50,,,,1477188,1500000,random,,1.23,30.9,0.45,88
+ZZ523,XNYS,Sample Holdings 523 (synthetic),equity,Consumer Staples,Packaged Foods,9583950000.00,27.15,27.25,,,,610844,900000,random,,1.45,8.7,1.09,50
+ZZ524,XNYS,Sample Holdings 524 (synthetic),equity,Energy,Oil & Gas Equipment,18676200000.00,54.93,54.17,,,,501977,400000,random,,1.26,33.8,2.06,63
+ZZ525,XNAS,Sample Holdings 525 (synthetic),equity,Materials,Specialty Chemicals,32482440000.00,156.92,155.11,,,,1767186,1500000,random,,0.92,27.8,5.11,82
+ZZ526,XNYS,Sample Holdings 526 (synthetic),equity,Utilities,Multi-Utilities,34916200000.00,118.36,116.72,,,,3037149,5000000,random,,1.11,18.4,6.83,61
+ZZ527,XNYS,Sample Holdings 527 (synthetic),equity,Real Estate,Office REITs,11042690000.00,38.21,38.04,,,,718654,900000,downtrend,,1.36,24.7,0.99,33
+ZZ528,XNAS,Sample Holdings 528 (synthetic),equity,Communication Services,Advertising,28391760000.00,151.02,153.70,,,,6617447,5000000,random,,1.71,33.2,3.56,20
+ZZ529,XNYS,Sample Holdings 529 (synthetic),equity,Information Technology,Application Software,3382750000.00,19.33,19.26,,,,514931,400000,random,,1.05,47.6,1.02,48
+ZZ530,XNYS,Sample Holdings 530 (synthetic),equity,Health Care,Biotechnology,2631440000.00,8.89,8.93,,,,367267,400000,random,,1.70,9.2,0.57,79
+ZZ531,XNAS,Sample Holdings 531 (synthetic),equity,Financials,Regional Banks,6972250000.00,41.75,41.13,,,,856934,900000,random,,0.83,25.9,0.96,47
+ZZ532,XNYS,Sample Holdings 532 (synthetic),equity,Industrials,Industrial Machinery,70934250000.00,203.25,206.41,,,,1930062,1500000,trend,,1.23,24.9,8.18,72
+ZZ533,XNYS,Sample Holdings 533 (synthetic),equity,Consumer Discretionary,Specialty Retail,16454000000.00,43.30,42.89,,,,2152206,2800000,random,,1.73,19.3,2.32,57
+ZZ534,XNAS,Sample Holdings 534 (synthetic),equity,Consumer Staples,Packaged Foods,25218960000.00,71.24,70.99,,,,3315327,5000000,random,,0.88,38.1,1.68,82
+ZZ535,XNYS,Sample Holdings 535 (synthetic),equity,Energy,Oil & Gas Equipment,3277410000.00,30.63,30.58,,,,6249182,5000000,random,,1.16,44.1,0.86,87
+ZZ536,XNYS,Sample Holdings 536 (synthetic),equity,Materials,Specialty Chemicals,369460000.00,7.54,7.43,,,,410040,400000,random,,0.89,39.4,0.39,83
+ZZ537,XNAS,Sample Holdings 537 (synthetic),equity,Utilities,Multi-Utilities,8351400000.00,67.35,68.16,,,,1781683,1500000,random,,1.32,47.7,1.48,73
+ZZ538,XNYS,Sample Holdings 538 (synthetic),equity,Real Estate,Office REITs,3777770000.00,11.21,11.34,,,,1351317,1500000,trend,,1.74,12.3,0.23,75
+ZZ539,XNYS,Sample Holdings 539 (synthetic),equity,Communication Services,Advertising,59821300000.00,159.95,158.54,,,,1090839,900000,flat,,0.66,24.9,3.68,39
+ZZ540,XNAS,Sample Holdings 540 (synthetic),equity,Information Technology,Application Software,27265080000.00,77.02,77.36,,,,3858824,5000000,random,,1.59,30.3,1.78,31
+ZZ541,XNYS,Sample Holdings 541 (synthetic),equity,Health Care,Biotechnology,4374480000.00,49.71,49.34,,,,1249798,900000,downtrend,,1.63,26.2,5.27,8
+ZZ542,XNYS,Sample Holdings 542 (synthetic),equity,Financials,Regional Banks,27216210000.00,94.83,93.34,,,,405019,400000,flat,,1.28,23.0,8.76,11
+ZZ543,XNAS,Sample Holdings 543 (synthetic),equity,Industrials,Industrial Machinery,1227450000.00,8.35,8.39,,,,1788719,2800000,flat,,0.82,18.8,0.37,55
+ZZ544,XNYS,Sample Holdings 544 (synthetic),equity,Consumer Discretionary,Specialty Retail,40458380000.00,143.98,144.67,,,,550013,400000,random,,1.32,11.0,7.59,20
+ZZ545,XNYS,Sample Holdings 545 (synthetic),equity,Consumer Staples,Packaged Foods,26756080000.00,79.16,78.37,,,,1023402,1500000,trend,,1.42,8.4,1.88,39
+ZZ546,XNAS,Sample Holdings 546 (synthetic),equity,Energy,Oil & Gas Equipment,37473160000.00,165.08,167.60,,,,2300732,2800000,random,,1.20,33.3,4.36,21
+ZZ547,XNYS,Sample Holdings 547 (synthetic),equity,Materials,Specialty Chemicals,28867190000.00,154.37,153.96,,,,3826311,2800000,random,,1.37,34.0,6.96,15
+ZZ548,XNYS,Sample Holdings 548 (synthetic),equity,Utilities,Multi-Utilities,40377480000.00,141.18,142.79,,,,449217,400000,random,,0.66,42.3,13.05,63
+ZZ549,XNAS,Sample Holdings 549 (synthetic),equity,Real Estate,Office REITs,38508000000.00,96.27,95.92,,,,1535647,1500000,random,,0.61,45.1,11.76,17
+ZZ550,XNYS,Sample Holdings 550 (synthetic),equity,Communication Services,Advertising,45379460000.00,281.86,287.39,,,,2486988,2800000,random,,1.27,30.0,10.61,81
+ZZ551,XNYS,Sample Holdings 551 (synthetic),equity,Information Technology,Application Software,329940000.00,12.69,12.53,,,,4035605,5000000,random,,0.90,17.8,0.40,14
+ZZ552,XNAS,Sample Holdings 552 (synthetic),equity,Health Care,Biotechnology,55950950000.00,221.15,217.59,,,,1869377,1500000,random,,0.86,25.6,11.15,42
+ZZ553,XNYS,Sample Holdings 553 (synthetic),equity,Financials,Regional Banks,33243840000.00,162.96,160.62,,,,1963477,1500000,downtrend,,0.90,41.9,12.89,63
+ZZ554,XNYS,Sample Holdings 554 (synthetic),equity,Industrials,Industrial Machinery,18490080000.00,165.09,163.64,,,,528318,400000,trend,,1.58,23.5,7.00,29
+ZZ555,XNAS,Sample Holdings 555 (synthetic),equity,Consumer Discretionary,Specialty Retail,7822820000.00,43.22,44.05,,,,1224814,900000,random,,1.00,34.5,3.36,59
+ZZ556,XNYS,Sample Holdings 556 (synthetic),equity,Consumer Staples,Packaged Foods,7374500000.00,75.25,76.28,,,,5219648,5000000,random,,1.52,35.4,2.18,59
+ZZ557,XNYS,Sample Holdings 557 (synthetic),equity,Energy,Oil & Gas Equipment,764260000.00,7.21,7.26,,,,2223253,2800000,trend,,1.70,39.5,0.45,14
+ZZ558,XNAS,Sample Holdings 558 (synthetic),equity,Materials,Specialty Chemicals,8690400000.00,30.60,31.05,,,,822113,900000,random,,1.52,8.6,0.86,50
+ZZ559,XNYS,Sample Holdings 559 (synthetic),equity,Utilities,Multi-Utilities,61164700000.00,165.31,166.87,,,,609768,900000,random,,1.77,36.8,5.01,86
+ZZ560,XNYS,Sample Holdings 560 (synthetic),equity,Real Estate,Office REITs,43222350000.00,223.95,227.14,,,,3596685,2800000,random,,0.76,9.6,5.50,52
+ZZ561,XNAS,Sample Holdings 561 (synthetic),equity,Communication Services,Advertising,5610560000.00,15.76,15.72,,,,1058335,900000,random,,1.69,14.7,0.33,19
+ZZ562,XNYS,Sample Holdings 562 (synthetic),equity,Information Technology,Application Software,1871370000.00,64.53,64.57,,,,2045352,2800000,random,,0.86,41.8,4.84,79
+ZZ563,XNYS,Sample Holdings 563 (synthetic),equity,Health Care,Biotechnology,6161900000.00,28.66,28.13,,,,552921,400000,random,,1.26,15.2,1.71,40
+ZZ564,XNAS,Sample Holdings 564 (synthetic),equity,Financials,Regional Banks,5878200000.00,20.20,20.06,,,,5561298,5000000,random,,0.79,24.6,1.25,16
+ZZ565,XNYS,Sample Holdings 565 (synthetic),equity,Industrials,Industrial Machinery,10650700000.00,29.18,29.31,,,,1289379,1500000,random,,0.99,10.8,0.94,65
+ZZ566,XNYS,Sample Holdings 566 (synthetic),equity,Consumer Discretionary,Specialty Retail,20867480000.00,89.56,90.54,,,,3963359,5000000,random,,0.77,31.9,3.17,65
+ZZ567,XNAS,Sample Holdings 567 (synthetic),equity,Consumer Staples,Packaged Foods,1703520000.00,7.28,7.18,,,,461936,400000,random,,0.99,33.9,0.19,60
+ZZ568,XNYS,Sample Holdings 568 (synthetic),equity,Energy,Oil & Gas Equipment,16557100000.00,106.82,107.55,,,,1038312,1500000,random,,1.55,20.3,2.49,28
+ZZ569,XNYS,Sample Holdings 569 (synthetic),equity,Materials,Specialty Chemicals,1279700000.00,19.10,19.42,,,,3845229,2800000,flat,,0.68,40.5,0.75,18
+ZZ570,XNAS,Sample Holdings 570 (synthetic),equity,Utilities,Multi-Utilities,6631200000.00,49.12,49.22,,,,370399,400000,downtrend,,0.80,28.5,2.01,42
+ZZ571,XNYS,Sample Holdings 571 (synthetic),equity,Real Estate,Office REITs,2690800000.00,12.40,12.48,,,,467455,400000,random,,0.80,41.5,0.86,39
+ZZ572,XNYS,Sample Holdings 572 (synthetic),equity,Communication Services,Advertising,50225520000.00,212.82,209.54,,,,313333,400000,random,,1.41,28.9,10.25,70
+ZZ573,XNAS,Sample Holdings 573 (synthetic),equity,Information Technology,Application Software,26684180000.00,69.13,68.51,,,,3431041,2800000,random,,1.38,31.4,4.26,17
+ZZ574,XNYS,Sample Holdings 574 (synthetic),equity,Health Care,Biotechnology,7253670000.00,56.23,56.59,,,,921168,900000,random,,0.61,46.9,1.37,79
+ZZ575,XNYS,Sample Holdings 575 (synthetic),equity,Financials,Regional Banks,23580800000.00,147.38,146.91,,,,1150352,900000,trend,,1.30,34.3,6.19,77
+ZZ576,XNAS,Sample Holdings 576 (synthetic),equity,Industrials,Industrial Machinery,15115960000.00,130.31,127.85,,,,490220,400000,trend,,1.65,13.7,2.74,38
+ZZ577,XNYS,Sample Holdings 577 (synthetic),equity,Consumer Discretionary,Specialty Retail,7393200000.00,40.40,40.20,,,,2259819,2800000,random,,1.61,43.9,1.12,7
+ZZ578,XNYS,Sample Holdings 578 (synthetic),equity,Consumer Staples,Packaged Foods,37012140000.00,108.54,110.28,,,,1390661,1500000,downtrend,,1.18,44.5,4.92,43
+ZZ579,XNAS,Sample Holdings 579 (synthetic),equity,Energy,Oil & Gas Equipment,4646120000.00,28.33,28.21,,,,1161065,900000,random,,1.23,40.4,1.68,57
+ZZ580,XNYS,Sample Holdings 580 (synthetic),equity,Materials,Specialty Chemicals,1996800000.00,8.32,8.28,,,,3046573,2800000,trend,,1.54,25.4,0.71,34
+ZZ581,XNYS,Sample Holdings 581 (synthetic),equity,Utilities,Multi-Utilities,251790000.00,7.63,7.55,,,,716396,900000,random,,1.48,18.3,0.19,80
+ZZ582,XNAS,Sample Holdings 582 (synthetic),equity,Real Estate,Office REITs,14149840000.00,42.62,41.84,,,,499253,400000,trend,,0.86,17.3,2.94,21
+ZZ583,XNYS,Sample Holdings 583 (synthetic),equity,Communication Services,Advertising,18182430000.00,123.69,121.51,,,,3424970,2800000,random,,0.78,28.4,10.14,57
+ZZ584,XNYS,Sample Holdings 584 (synthetic),equity,Information Technology,Application Software,15247000000.00,48.25,48.45,,,,559756,400000,random,,1.79,44.6,1.91,83
+ZZ585,XNAS,Sample Holdings 585 (synthetic),equity,Health Care,Biotechnology,13720940000.00,52.37,52.83,,,,1110317,1500000,random,,0.88,24.8,4.41,66
+ZZ586,XNYS,Sample Holdings 586 (synthetic),equity,Financials,Regional Banks,30166940000.00,96.38,97.74,,,,834069,900000,random,,0.71,14.9,2.08,20
+ZZ587,XNYS,Sample Holdings 587 (synthetic),equity,Industrials,Industrial Machinery,4844360000.00,29.72,29.29,,,,545396,400000,random,,1.75,13.5,1.41,5
+ZZ588,XNAS,Sample Holdings 588 (synthetic),equity,Consumer Discretionary,Specialty Retail,6341210000.00,147.47,147.09,,,,3119374,2800000,random,,1.03,12.4,4.72,25
+ZZ589,XNYS,Sample Holdings 589 (synthetic),equity,Consumer Staples,Packaged Foods,17141900000.00,149.06,147.18,,,,3344453,5000000,random,,1.04,45.4,8.83,25
+ZZ590,XNYS,Sample Holdings 590 (synthetic),equity,Energy,Oil & Gas Equipment,3297740000.00,15.41,15.31,,,,3579402,5000000,random,,1.74,12.4,0.79,36
+ZZ591,XNAS,Sample Holdings 591 (synthetic),equity,Materials,Specialty Chemicals,5437680000.00,19.56,19.74,,,,3023310,5000000,random,,1.01,10.9,0.69,16
+ZZ592,XNYS,Sample Holdings 592 (synthetic),equity,Utilities,Multi-Utilities,23086900000.00,243.02,241.07,,,,1387219,1500000,flat,,0.73,45.9,6.01,35
+ZZ593,XNYS,Sample Holdings 593 (synthetic),equity,Real Estate,Office REITs,10668780000.00,51.54,51.97,,,,418015,400000,random,,1.21,46.4,1.73,25
+ZZ594,XNAS,Sample Holdings 594 (synthetic),equity,Communication Services,Advertising,13561380000.00,107.63,109.69,,,,2863959,2800000,random,,1.67,35.7,3.91,38
+ZZ595,XNYS,Sample Holdings 595 (synthetic),equity,Information Technology,Application Software,4865500000.00,13.15,13.30,,,,3388989,2800000,downtrend,,0.89,21.1,0.60,74
+ZZ596,XNYS,Sample Holdings 596 (synthetic),equity,Health Care,Biotechnology,770390000.00,18.79,19.06,,,,3483381,5000000,random,,0.65,13.4,0.59,90
+ZZ597,XNAS,Sample Holdings 597 (synthetic),equity,Financials,Regional Banks,1281840000.00,8.72,8.57,,,,1777522,2800000,flat,,1.59,11.4,0.20,59
+ZZ598,XNYS,Sample Holdings 598 (synthetic),equity,Industrials,Industrial Machinery,53212620000.00,242.98,240.73,,,,276264,400000,random,,0.89,25.3,6.61,44
+ZZ599,XNYS,Sample Holdings 599 (synthetic),equity,Consumer Discretionary,Specialty Retail,5754000000.00,19.18,19.07,,,,632072,900000,random,,0.77,29.1,0.51,90
+ZZ600,XNAS,Sample Holdings 600 (synthetic),equity,Consumer Staples,Packaged Foods,27160560000.00,266.28,271.55,,,,2432513,2800000,random,,1.24,9.5,8.95,6
+ZZ601,XNYS,Sample Holdings 601 (synthetic),equity,Energy,Oil & Gas Equipment,43282980000.00,272.22,271.94,,,,6366900,5000000,random,,0.85,42.3,25.89,11
+ZZ602,XNYS,Sample Holdings 602 (synthetic),equity,Materials,Specialty Chemicals,2994040000.00,80.92,79.42,,,,1893910,1500000,random,,1.57,46.1,2.13,30
+ZZ603,XNAS,Sample Holdings 603 (synthetic),equity,Utilities,Multi-Utilities,4695270000.00,29.53,29.10,,,,3319047,2800000,downtrend,,0.96,8.5,0.96,66
+ZZ604,XNYS,Sample Holdings 604 (synthetic),equity,Real Estate,Office REITs,18653940000.00,66.86,66.57,,,,3727727,2800000,random,,1.20,27.9,1.53,81
+ZZ605,XNYS,Sample Holdings 605 (synthetic),equity,Communication Services,Advertising,38549940000.00,134.79,136.78,,,,1732963,1500000,flat,,1.80,22.6,3.01,32
+ZZ606,XNAS,Sample Holdings 606 (synthetic),equity,Information Technology,Application Software,38313800000.00,273.67,271.88,,,,545306,400000,trend,,1.69,37.3,6.15,56
+ZZ607,XNYS,Sample Holdings 607 (synthetic),equity,Health Care,Biotechnology,7932310000.00,95.57,95.20,,,,733980,900000,random,,1.19,31.8,6.95,82
+ZZ608,XNYS,Sample Holdings 608 (synthetic),equity,Financials,Regional Banks,2883920000.00,12.22,12.06,,,,1402553,1500000,random,,1.54,23.4,0.38,43
+ZZ609,XNAS,Sample Holdings 609 (synthetic),equity,Industrials,Industrial Machinery,21010210000.00,55.73,55.37,,,,836083,900000,random,,1.24,17.2,3.84,6
+ZZ610,XNYS,Sample Holdings 610 (synthetic),equity,Consumer Discretionary,Specialty Retail,3697320000.00,28.01,27.79,,,,2181152,2800000,random,,1.30,17.4,0.80,81
+ZZ611,XNYS,Sample Holdings 611 (synthetic),equity,Consumer Staples,Packaged Foods,60048750000.00,251.25,247.02,,,,463015,400000,random,,0.80,32.8,7.06,11
+ZZ612,XNAS,Sample Holdings 612 (synthetic),equity,Energy,Oil & Gas Equipment,614790000.00,8.91,9.06,,,,706666,900000,flat,,1.79,18.0,0.68,36
+ZZ613,XNYS,Sample Holdings 613 (synthetic),equity,Materials,Specialty Chemicals,435400000.00,15.55,15.83,,,,1081694,900000,random,,1.35,27.1,1.06,82
+ZZ614,XNYS,Sample Holdings 614 (synthetic),equity,Utilities,Multi-Utilities,1247520000.00,9.04,9.19,,,,1199280,900000,flat,,0.68,37.3,0.20,43
+ZZ615,XNAS,Sample Holdings 615 (synthetic),equity,Real Estate,Office REITs,681840000.00,18.94,18.67,,,,2972132,2800000,trend,,1.28,41.4,1.15,77
+ZZ616,XNYS,Sample Holdings 616 (synthetic),equity,Communication Services,Advertising,15180240000.00,66.58,67.50,,,,817114,900000,random,,0.80,20.8,1.68,54
+ZZ617,XNYS,Sample Holdings 617 (synthetic),equity,Information Technology,Application Software,2536050000.00,7.95,7.89,,,,2107394,2800000,trend,,1.21,26.3,0.26,70
+ZZ618,XNAS,Sample Holdings 618 (synthetic),equity,Health Care,Biotechnology,51661680000.00,160.44,161.09,,,,6692427,5000000,random,,0.90,17.6,7.47,34
+ZZ619,XNYS,Sample Holdings 619 (synthetic),equity,Financials,Regional Banks,21147960000.00,59.74,59.90,,,,4805091,5000000,random,,1.69,47.4,1.76,67
+ZZ620,XNYS,Sample Holdings 620 (synthetic),equity,Industrials,Industrial Machinery,894660000.00,22.94,23.00,,,,1177779,900000,random,,1.16,39.5,2.30,13
+ZZ621,XNAS,Sample Holdings 621 (synthetic),equity,Consumer Discretionary,Specialty Retail,5351940000.00,33.66,33.87,,,,442303,400000,random,,1.45,29.5,0.85,80
+ZZ622,XNYS,Sample Holdings 622 (synthetic),equity,Consumer Staples,Packaged Foods,2887020000.00,7.46,7.33,,,,1458605,1500000,random,,1.56,46.9,0.18,65
+ZZ623,XNYS,Sample Holdings 623 (synthetic),equity,Energy,Oil & Gas Equipment,7687700000.00,26.06,25.60,,,,2343364,2800000,random,,1.64,43.2,0.93,63
+ZZ624,XNAS,Sample Holdings 624 (synthetic),equity,Materials,Specialty Chemicals,723340000.00,12.26,12.23,,,,5143738,5000000,random,,1.29,32.8,0.47,49
+ZZ625,XNYS,Sample Holdings 625 (synthetic),equity,Utilities,Multi-Utilities,1664740000.00,10.81,10.93,,,,320951,400000,random,,0.96,28.9,0.45,81
+ZZ626,XNYS,Sample Holdings 626 (synthetic),equity,Real Estate,Office REITs,2691510000.00,12.29,12.30,,,,2702958,2800000,random,,1.10,23.5,0.30,76
+ZZ627,XNAS,Sample Holdings 627 (synthetic),equity,Communication Services,Advertising,90081970000.00,264.17,268.32,,,,3190511,2800000,downtrend,,0.86,18.2,8.47,25
+ZZ628,XNYS,Sample Holdings 628 (synthetic),equity,Information Technology,Application Software,7286640000.00,25.04,25.53,,,,501630,400000,random,,1.72,24.3,0.56,62
+ZZ629,XNYS,Sample Holdings 629 (synthetic),equity,Health Care,Biotechnology,26037840000.00,292.56,292.34,,,,251532,400000,random,,1.31,38.9,11.33,72
+ZZ630,XNAS,Sample Holdings 630 (synthetic),equity,Financials,Regional Banks,46566570000.00,118.49,117.37,,,,945524,1500000,random,,0.90,33.4,5.82,29
+ZZ631,XNYS,Sample Holdings 631 (synthetic),equity,Industrials,Industrial Machinery,8137920000.00,48.44,48.49,,,,414213,400000,random,,1.61,12.6,1.82,42
+ZZ632,XNYS,Sample Holdings 632 (synthetic),equity,Consumer Discretionary,Specialty Retail,15401320000.00,48.28,47.48,,,,1906139,1500000,downtrend,,0.62,38.0,1.13,48
+ZZ633,XNAS,Sample Holdings 633 (synthetic),equity,Consumer Staples,Packaged Foods,2575400000.00,7.90,7.85,,,,943407,900000,random,,1.53,19.2,0.18,90
+ZZ634,XNYS,Sample Holdings 634 (synthetic),equity,Energy,Oil & Gas Equipment,41021250000.00,109.39,109.91,,,,894160,900000,random,,1.03,16.6,2.41,89
+ZZ635,XNYS,Sample Holdings 635 (synthetic),equity,Materials,Specialty Chemicals,8298400000.00,188.60,189.33,,,,965048,900000,random,,1.40,43.7,9.50,42
+ZZ636,XNAS,Sample Holdings 636 (synthetic),equity,Utilities,Multi-Utilities,1029600000.00,15.84,16.02,,,,528721,400000,random,,0.75,34.1,0.39,79
+ZZ637,XNYS,Sample Holdings 637 (synthetic),equity,Real Estate,Office REITs,14545440000.00,38.48,38.10,,,,3590103,2800000,random,,1.51,21.8,1.66,52
+ZZ638,XNYS,Sample Holdings 638 (synthetic),equity,Communication Services,Advertising,55051920000.00,254.87,253.21,,,,1748471,1500000,random,,1.36,28.7,7.37,34
+ZZ639,XNAS,Sample Holdings 639 (synthetic),equity,Information Technology,Application Software,25559500000.00,131.75,133.27,,,,4553576,5000000,trend,,0.83,39.3,3.96,33
+ZZ640,XNYS,Sample Holdings 640 (synthetic),equity,Health Care,Biotechnology,24748500000.00,235.70,231.15,,,,1511869,1500000,random,,1.13,36.9,5.14,47
+ZZ641,XNYS,Sample Holdings 641 (synthetic),equity,Financials,Regional Banks,5920400000.00,18.05,18.13,,,,1421193,1500000,trend,,1.08,22.5,0.53,86
+ZZ642,XNAS,Sample Holdings 642 (synthetic),equity,Industrials,Industrial Machinery,21280700000.00,86.86,85.64,,,,3604298,5000000,downtrend,,1.26,8.5,1.86,66
+ZZ643,XNYS,Sample Holdings 643 (synthetic),equity,Consumer Discretionary,Specialty Retail,2614400000.00,12.16,12.25,,,,4071619,5000000,downtrend,,0.81,23.6,0.40,61
+ZZ644,XNYS,Sample Holdings 644 (synthetic),equity,Consumer Staples,Packaged Foods,1737000000.00,38.60,37.93,,,,4326989,5000000,random,,1.61,33.2,1.26,53
+ZZ645,XNAS,Sample Holdings 645 (synthetic),equity,Energy,Oil & Gas Equipment,28891680000.00,104.68,103.42,,,,2776005,2800000,random,,1.39,14.3,9.70,66
+ZZ646,XNYS,Sample Holdings 646 (synthetic),equity,Materials,Specialty Chemicals,2730280000.00,13.72,13.97,,,,277991,400000,random,,0.97,27.7,0.55,25
+ZZ647,XNYS,Sample Holdings 647 (synthetic),equity,Utilities,Multi-Utilities,7018160000.00,94.84,95.19,,,,552370,400000,downtrend,,1.74,45.6,10.47,11
+ZZ648,XNAS,Sample Holdings 648 (synthetic),equity,Real Estate,Office REITs,63931920000.00,204.91,208.67,,,,1238243,900000,flat,,1.53,8.6,6.35,81
+ZZ649,XNYS,Sample Holdings 649 (synthetic),equity,Communication Services,Advertising,24135230000.00,139.51,142.26,,,,978322,900000,random,,1.11,41.0,3.13,41
+ZZ650,XNYS,Sample Holdings 650 (synthetic),equity,Information Technology,Application Software,67843100000.00,226.90,223.62,,,,3862776,2800000,random,,1.61,21.9,13.00,20
+ZZ651,XNAS,Sample Holdings 651 (synthetic),equity,Health Care,Biotechnology,35265040000.00,106.22,108.24,,,,770386,900000,random,,1.30,43.4,4.12,10
+ZZ652,XNYS,Sample Holdings 652 (synthetic),equity,Financials,Regional Banks,4750260000.00,19.31,18.94,,,,3050104,2800000,random,,1.52,38.5,1.82,77
+ZZ653,XNYS,Sample Holdings 653 (synthetic),equity,Industrials,Industrial Machinery,14824080000.00,68.63,70.01,,,,1157923,1500000,random,,0.63,24.5,3.78,65
+ZZ654,XNAS,Sample Holdings 654 (synthetic),equity,Consumer Discretionary,Specialty Retail,16783200000.00,69.93,70.22,,,,6201034,5000000,random,,1.28,39.8,1.98,30
+ZZ655,XNYS,Sample Holdings 655 (synthetic),equity,Consumer Staples,Packaged Foods,8383650000.00,50.81,50.99,,,,6023632,5000000,random,,0.80,46.8,1.54,50
+ZZ656,XNYS,Sample Holdings 656 (synthetic),equity,Energy,Oil & Gas Equipment,6788240000.00,32.02,32.43,,,,558963,400000,random,,0.86,10.7,0.67,77
+ZZ657,XNAS,Sample Holdings 657 (synthetic),equity,Materials,Specialty Chemicals,4474370000.00,17.41,17.44,,,,996837,1500000,random,,1.46,10.7,1.29,8
+ZZ658,XNYS,Sample Holdings 658 (synthetic),equity,Utilities,Multi-Utilities,4104100000.00,53.30,52.41,,,,6379258,5000000,trend,,1.33,9.6,1.90,26
+ZZ659,XNYS,Sample Holdings 659 (synthetic),equity,Real Estate,Office REITs,4163250000.00,45.75,46.41,,,,1385486,1500000,random,,1.29,47.9,1.16,89
+ZZ660,XNAS,Sample Holdings 660 (synthetic),equity,Communication Services,Advertising,87231060000.00,265.14,264.71,,,,945996,900000,flat,,0.74,25.0,9.00,44
+ZZ661,XNYS,Sample Holdings 661 (synthetic),equity,Information Technology,Application Software,7602640000.00,67.28,67.59,,,,269469,400000,random,,1.79,16.9,2.23,42
+ZZ662,XNYS,Sample Holdings 662 (synthetic),equity,Health Care,Biotechnology,4459190000.00,40.91,40.30,,,,4131393,5000000,random,,1.01,37.2,1.46,38
+ZZ663,XNAS,Sample Holdings 663 (synthetic),equity,Financials,Regional Banks,23630440000.00,70.12,69.52,,,,6948123,5000000,random,,0.86,11.9,1.63,30
+ZZ664,XNYS,Sample Holdings 664 (synthetic),equity,Industrials,Industrial Machinery,2039650000.00,18.05,17.75,,,,4178114,5000000,random,,1.55,21.6,1.21,9
+ZZ665,XNYS,Sample Holdings 665 (synthetic),equity,Consumer Discretionary,Specialty Retail,14019560000.00,36.04,35.37,,,,1721373,2800000,random,,1.43,35.6,4.18,64
+ZZ666,XNAS,Sample Holdings 666 (synthetic),equity,Consumer Staples,Packaged Foods,3152370000.00,17.81,17.66,,,,306863,400000,random,,0.95,14.6,0.43,49
+ZZ667,XNYS,Sample Holdings 667 (synthetic),equity,Energy,Oil & Gas Equipment,12103080000.00,114.18,115.76,,,,6740098,5000000,random,,1.30,28.0,11.73,24
+ZZ668,XNYS,Sample Holdings 668 (synthetic),equity,Materials,Specialty Chemicals,2905320000.00,46.86,46.85,,,,551413,400000,random,,1.36,44.7,1.13,39
+ZZ669,XNAS,Sample Holdings 669 (synthetic),equity,Utilities,Multi-Utilities,20909360000.00,111.22,111.03,,,,1332793,1500000,random,,1.06,13.6,5.38,44
+ZZ670,XNYS,Sample Holdings 670 (synthetic),equity,Real Estate,Office REITs,5149440000.00,17.28,17.46,,,,540329,400000,random,,1.64,20.0,0.89,65
+ZZ671,XNYS,Sample Holdings 671 (synthetic),equity,Communication Services,Advertising,4364820000.00,36.99,37.18,,,,3244037,2800000,random,,1.42,43.5,4.12,62
+ZZ672,XNAS,Sample Holdings 672 (synthetic),equity,Information Technology,Application Software,59920380000.00,229.58,229.14,,,,5513289,5000000,random,,0.61,31.0,24.32,34
+ZZ673,XNYS,Sample Holdings 673 (synthetic),equity,Health Care,Biotechnology,15565240000.00,189.82,190.54,,,,1123461,900000,random,,0.67,21.2,4.25,15
+ZZ674,XNYS,Sample Holdings 674 (synthetic),equity,Financials,Regional Banks,33506350000.00,216.17,213.85,,,,1594489,1500000,trend,,1.15,36.3,6.53,53
+ZZ675,XNAS,Sample Holdings 675 (synthetic),equity,Industrials,Industrial Machinery,6267690000.00,53.57,53.61,,,,6783536,5000000,random,,0.63,34.7,2.04,55
+ZZ676,XNYS,Sample Holdings 676 (synthetic),equity,Consumer Discretionary,Specialty Retail,26367630000.00,95.19,93.44,,,,1005141,900000,random,,0.90,43.1,2.16,69
+ZZ677,XNYS,Sample Holdings 677 (synthetic),equity,Consumer Staples,Packaged Foods,24961500000.00,166.41,168.90,,,,2193466,2800000,random,,1.44,16.4,6.30,77
+ZZ678,XNAS,Sample Holdings 678 (synthetic),equity,Energy,Oil & Gas Equipment,51439850000.00,133.61,132.82,,,,1692010,1500000,flat,,1.79,19.6,3.37,26
+ZZ679,XNYS,Sample Holdings 679 (synthetic),equity,Materials,Specialty Chemicals,6013350000.00,52.29,51.60,,,,939274,1500000,random,,1.11,11.3,1.98,47
+ZZ680,XNYS,Sample Holdings 680 (synthetic),equity,Utilities,Multi-Utilities,8235480000.00,161.48,163.75,,,,652622,900000,random,,1.04,18.4,6.34,80
+ZZ681,XNAS,Sample Holdings 681 (synthetic),equity,Real Estate,Office REITs,7586880000.00,237.09,241.53,,,,243678,400000,random,,1.68,28.2,10.60,19
+ZZ682,XNYS,Sample Holdings 682 (synthetic),equity,Communication Services,Advertising,15649560000.00,44.97,44.70,,,,3390240,2800000,downtrend,,1.22,46.8,1.07,55
+ZZ683,XNYS,Sample Holdings 683 (synthetic),equity,Information Technology,Application Software,57253280000.00,230.86,235.40,,,,547936,900000,random,,1.29,34.9,25.88,64
+ZZ684,XNAS,Sample Holdings 684 (synthetic),equity,Health Care,Biotechnology,5053810000.00,12.73,12.75,,,,3383033,5000000,random,,1.01,41.8,0.50,54
+ZZ685,XNYS,Sample Holdings 685 (synthetic),equity,Financials,Regional Banks,30229970000.00,143.27,144.87,,,,300119,400000,random,,1.09,10.0,15.73,29
+ZZ686,XNYS,Sample Holdings 686 (synthetic),equity,Industrials,Industrial Machinery,2073780000.00,8.43,8.51,,,,3861071,2800000,downtrend,,1.13,13.3,0.24,73
+ZZ687,XNAS,Sample Holdings 687 (synthetic),equity,Consumer Discretionary,Specialty Retail,4066100000.00,55.70,55.74,,,,1519292,1500000,random,,0.89,29.0,1.54,83
+ZZ688,XNYS,Sample Holdings 688 (synthetic),equity,Consumer Staples,Packaged Foods,2374560000.00,34.92,34.58,,,,686553,900000,random,,1.79,40.4,0.74,42
+ZZ689,XNYS,Sample Holdings 689 (synthetic),equity,Energy,Oil & Gas Equipment,32173460000.00,153.94,151.99,,,,1777041,1500000,random,,0.82,35.0,7.32,29
+ZZ690,XNAS,Sample Holdings 690 (synthetic),equity,Materials,Specialty Chemicals,110812460000.00,296.29,290.63,,,,2420574,2800000,flat,,1.01,32.6,14.57,70
+ZZ691,XNYS,Sample Holdings 691 (synthetic),equity,Utilities,Multi-Utilities,21707100000.00,121.95,122.00,,,,591450,900000,random,,1.76,9.8,6.82,25
+ZZ692,XNYS,Sample Holdings 692 (synthetic),equity,Real Estate,Office REITs,13640640000.00,87.44,89.00,,,,546351,400000,random,,1.49,13.6,2.87,35
+ZZ693,XNAS,Sample Holdings 693 (synthetic),equity,Communication Services,Advertising,75364940000.00,203.14,205.47,,,,799581,900000,trend,,1.61,23.5,17.17,6
+ZZ694,XNYS,Sample Holdings 694 (synthetic),equity,Information Technology,Application Software,69745830000.00,251.79,249.28,,,,2593376,2800000,random,,0.98,44.3,6.08,53
+ZZ695,XNYS,Sample Holdings 695 (synthetic),equity,Health Care,Biotechnology,2322380000.00,7.69,7.70,,,,2341257,2800000,random,,0.73,46.3,0.17,36
+ZZ696,XNAS,Sample Holdings 696 (synthetic),equity,Financials,Regional Banks,22005620000.00,102.83,103.61,,,,322944,400000,random,,1.05,9.8,3.72,46
+ZZ697,XNYS,Sample Holdings 697 (synthetic),equity,Industrials,Industrial Machinery,49938440000.00,265.63,263.67,,,,1109336,900000,random,,0.90,43.1,31.78,61
+ZZ698,XNYS,Sample Holdings 698 (synthetic),equity,Consumer Discretionary,Specialty Retail,36638840000.00,94.43,93.35,,,,352697,400000,downtrend,,1.40,13.1,2.68,82
+ZZ699,XNAS,Sample Holdings 699 (synthetic),equity,Consumer Staples,Packaged Foods,29649770000.00,79.49,80.56,,,,1200023,1500000,downtrend,,0.92,31.8,2.41,88
+ZZ700,XNYS,Sample Holdings 700 (synthetic),equity,Energy,Oil & Gas Equipment,32444750000.00,96.85,96.47,,,,6478604,5000000,random,,0.65,33.8,6.29,12
+ZZ701,XNYS,Sample Holdings 701 (synthetic),equity,Materials,Specialty Chemicals,1065900000.00,31.35,30.82,,,,2082236,1500000,trend,,1.61,31.0,3.53,63
+ZZ702,XNAS,Sample Holdings 702 (synthetic),equity,Utilities,Multi-Utilities,89743440000.00,250.68,250.18,,,,5073609,5000000,random,,1.25,24.0,12.34,53
+ZZ703,XNYS,Sample Holdings 703 (synthetic),equity,Real Estate,Office REITs,15086250000.00,40.23,39.45,,,,1172136,900000,flat,,0.85,46.9,0.96,17
+ZZ704,XNYS,Sample Holdings 704 (synthetic),equity,Communication Services,Advertising,12335400000.00,124.60,126.91,,,,3099694,2800000,trend,,1.39,12.6,12.72,67
+ZZ705,XNAS,Sample Holdings 705 (synthetic),equity,Information Technology,Application Software,15470250000.00,206.27,205.00,,,,3825298,5000000,random,,1.54,9.5,8.21,82
+ZZ706,XNYS,Sample Holdings 706 (synthetic),equity,Health Care,Biotechnology,22387550000.00,75.89,77.13,,,,1983316,1500000,random,,0.92,27.3,3.07,51
+ZZ707,XNYS,Sample Holdings 707 (synthetic),equity,Financials,Regional Banks,15917400000.00,107.55,108.53,,,,4600474,5000000,random,,1.35,34.8,5.45,64
+ZZ708,XNAS,Sample Holdings 708 (synthetic),equity,Industrials,Industrial Machinery,7719720000.00,167.82,166.14,,,,3719020,5000000,random,,1.41,29.9,4.60,88
+ZZ709,XNYS,Sample Holdings 709 (synthetic),equity,Consumer Discretionary,Specialty Retail,1333310000.00,7.13,7.10,,,,448814,400000,random,,1.70,20.5,0.23,73
+ZZ710,XNYS,Sample Holdings 710 (synthetic),equity,Consumer Staples,Packaged Foods,884640000.00,11.64,11.53,,,,6741239,5000000,random,,1.03,43.7,0.50,80
+ZZ711,XNAS,Sample Holdings 711 (synthetic),equity,Energy,Oil & Gas Equipment,3411450000.00,8.55,8.60,,,,5484375,5000000,random,,0.68,18.3,0.28,72
+ZZ712,XNYS,Sample Holdings 712 (synthetic),equity,Materials,Specialty Chemicals,43034040000.00,170.77,169.93,,,,2919264,2800000,random,,1.78,28.3,4.51,74
+ZZ713,XNYS,Sample Holdings 713 (synthetic),equity,Utilities,Multi-Utilities,15808900000.00,53.05,53.12,,,,2079465,1500000,trend,,1.43,24.5,4.31,72
+ZZ714,XNAS,Sample Holdings 714 (synthetic),equity,Real Estate,Office REITs,26792520000.00,76.99,78.20,,,,2490653,2800000,random,,0.68,46.6,3.91,67
+ZZ715,XNYS,Sample Holdings 715 (synthetic),equity,Communication Services,Advertising,3141600000.00,8.16,8.12,,,,288216,400000,flat,,0.84,41.6,0.81,40
+ZZ716,XNYS,Sample Holdings 716 (synthetic),equity,Information Technology,Application Software,1513400000.00,10.81,10.66,,,,3650740,2800000,random,,0.70,42.1,0.29,62
+ZZ717,XNAS,Sample Holdings 717 (synthetic),equity,Health Care,Biotechnology,2886150000.00,13.55,13.65,,,,2722586,2800000,random,,1.19,34.4,0.53,72
+ZZ718,XNYS,Sample Holdings 718 (synthetic),equity,Financials,Regional Banks,5631340000.00,31.46,31.12,,,,5140571,5000000,random,,0.80,31.8,1.13,11
+ZZ719,XNYS,Sample Holdings 719 (synthetic),equity,Industrials,Industrial Machinery,2250990000.00,35.73,35.15,,,,1139276,1500000,random,,0.99,17.8,0.79,12
+ZZ720,XNAS,Sample Holdings 720 (synthetic),equity,Consumer Discretionary,Specialty Retail,37386780000.00,144.91,146.96,,,,540038,400000,random,,1.33,32.0,3.86,19
+ZZ721,XNYS,Sample Holdings 721 (synthetic),equity,Consumer Staples,Packaged Foods,2166000000.00,7.60,7.57,,,,352903,400000,random,,1.25,8.3,0.21,13
+ZZ722,XNYS,Sample Holdings 722 (synthetic),equity,Energy,Oil & Gas Equipment,5506200000.00,30.59,30.64,,,,4000802,5000000,random,,0.75,34.1,1.67,53
+ZZ723,XNAS,Sample Holdings 723 (synthetic),equity,Materials,Specialty Chemicals,8112180000.00,76.53,75.62,,,,310709,400000,random,,1.79,41.5,2.31,11
+ZZ724,XNYS,Sample Holdings 724 (synthetic),equity,Utilities,Multi-Utilities,451800000.00,7.53,7.62,,,,465409,400000,random,,1.09,10.0,0.16,71
+ZZ725,XNYS,Sample Holdings 725 (synthetic),equity,Real Estate,Office REITs,99194640000.00,277.08,279.59,,,,6409000,5000000,random,,1.20,34.4,14.66,55
+ZZ726,XNAS,Sample Holdings 726 (synthetic),equity,Communication Services,Advertising,16948780000.00,64.69,65.30,,,,670077,900000,downtrend,,1.15,37.7,2.74,77
+ZZ727,XNYS,Sample Holdings 727 (synthetic),equity,Information Technology,Application Software,4898520000.00,49.48,49.67,,,,2957512,2800000,trend,,1.67,40.5,2.03,58
+ZZ728,XNYS,Sample Holdings 728 (synthetic),equity,Health Care,Biotechnology,2380380000.00,8.18,8.23,,,,980571,1500000,random,,0.65,22.8,0.35,55
+ZZ729,XNAS,Sample Holdings 729 (synthetic),equity,Financials,Regional Banks,29290660000.00,123.07,124.34,,,,1078733,1500000,downtrend,,1.74,38.9,8.30,51
+ZZ730,XNYS,Sample Holdings 730 (synthetic),equity,Industrials,Industrial Machinery,2375240000.00,19.96,20.30,,,,1009728,900000,random,,1.66,40.9,0.64,52
+ZZ731,XNYS,Sample Holdings 731 (synthetic),equity,Consumer Discretionary,Specialty Retail,24051140000.00,120.86,119.08,,,,1963444,2800000,random,,0.76,25.2,2.53,65
+ZZ732,XNAS,Sample Holdings 732 (synthetic),equity,Consumer Staples,Packaged Foods,10282860000.00,163.22,164.27,,,,1402230,1500000,random,,0.60,9.7,3.78,41
+ZZ733,XNYS,Sample Holdings 733 (synthetic),equity,Energy,Oil & Gas Equipment,1876600000.00,8.53,8.50,,,,4382224,5000000,downtrend,,0.97,9.7,0.31,55
+ZZ734,XNYS,Sample Holdings 734 (synthetic),equity,Materials,Specialty Chemicals,603140000.00,11.38,11.35,,,,1161477,900000,trend,,0.87,27.1,1.00,87
+ZZ735,XNAS,Sample Holdings 735 (synthetic),equity,Utilities,Multi-Utilities,3891390000.00,68.27,69.45,,,,851562,900000,random,,0.75,43.3,5.19,79
+ZZ736,XNYS,Sample Holdings 736 (synthetic),equity,Real Estate,Office REITs,10159470000.00,64.71,65.01,,,,927519,900000,random,,1.57,40.5,2.80,84
+ZZ737,XNYS,Sample Holdings 737 (synthetic),equity,Communication Services,Advertising,50157590000.00,280.21,277.86,,,,3622186,2800000,random,,0.76,42.0,20.49,20
+ZZ738,XNAS,Sample Holdings 738 (synthetic),equity,Information Technology,Application Software,10052800000.00,82.40,81.36,,,,3939106,5000000,trend,,0.78,23.3,1.73,18
+ZZ739,XNYS,Sample Holdings 739 (synthetic),equity,Health Care,Biotechnology,4224150000.00,13.41,13.41,,,,346357,400000,random,,1.57,36.4,1.10,37
+ZZ740,XNYS,Sample Holdings 740 (synthetic),equity,Financials,Regional Banks,17923500000.00,85.35,83.78,,,,2085716,2800000,random,,1.27,37.8,1.91,63
+ZZ741,XNAS,Sample Holdings 741 (synthetic),equity,Industrials,Industrial Machinery,3022200000.00,32.85,33.51,,,,420539,400000,random,,1.05,10.1,0.93,9
+ZZ742,XNYS,Sample Holdings 742 (synthetic),equity,Consumer Discretionary,Specialty Retail,23571710000.00,67.93,68.30,,,,474242,400000,downtrend,,1.55,38.8,2.84,55
+ZZ743,XNYS,Sample Holdings 743 (synthetic),equity,Consumer Staples,Packaged Foods,20916600000.00,98.20,97.20,,,,4815011,5000000,flat,,1.66,42.6,3.22,86
+ZZ744,XNAS,Sample Holdings 744 (synthetic),equity,Energy,Oil & Gas Equipment,5887500000.00,47.10,46.59,,,,2557493,2800000,downtrend,,0.68,8.8,1.15,29
+ZZ745,XNYS,Sample Holdings 745 (synthetic),equity,Materials,Specialty Chemicals,285660000.00,12.42,12.39,,,,587386,900000,random,,1.54,41.9,0.27,21
+ZZ746,XNYS,Sample Holdings 746 (synthetic),equity,Utilities,Multi-Utilities,58897440000.00,175.29,174.52,,,,4380645,5000000,random,,1.22,33.2,13.19,43
+ZZ747,XNAS,Sample Holdings 747 (synthetic),equity,Real Estate,Office REITs,66057190000.00,215.17,214.22,,,,1058955,900000,random,,1.30,26.3,10.45,71
+ZZ748,XNYS,Sample Holdings 748 (synthetic),equity,Communication Services,Advertising,5303340000.00,25.62,25.50,,,,2863700,2800000,random,,1.17,40.4,0.72,86
+ZZ749,XNYS,Sample Holdings 749 (synthetic),equity,Information Technology,Application Software,2494760000.00,53.08,52.92,,,,960534,900000,random,,0.94,10.1,1.90,46
+ZZ750,XNAS,Sample Holdings 750 (synthetic),equity,Health Care,Biotechnology,19210350000.00,231.45,232.43,,,,4865007,5000000,random,,1.79,33.3,4.83,31
+ZZ751,XNYS,Sample Holdings 751 (synthetic),equity,Financials,Regional Banks,24576240000.00,236.31,235.37,,,,897723,900000,downtrend,,1.18,38.3,7.95,49
+ZZ752,XNYS,Sample Holdings 752 (synthetic),equity,Industrials,Industrial Machinery,1076240000.00,24.46,24.21,,,,550066,400000,random,,0.60,8.1,0.68,26
+ZZ753,XNAS,Sample Holdings 753 (synthetic),equity,Consumer Discretionary,Specialty Retail,17791820000.00,240.43,244.90,,,,6796431,5000000,random,,1.27,25.4,28.18,62
+ZZ754,XNYS,Sample Holdings 754 (synthetic),equity,Consumer Staples,Packaged Foods,8596800000.00,59.70,60.26,,,,1175162,1500000,downtrend,,0.66,22.5,1.68,60
+ZZ755,XNYS,Sample Holdings 755 (synthetic),equity,Energy,Oil & Gas Equipment,4270630000.00,32.11,32.21,,,,1234356,900000,random,,1.26,13.8,2.63,35
+ZZ756,XNAS,Sample Holdings 756 (synthetic),equity,Materials,Specialty Chemicals,21618900000.00,70.65,71.43,,,,6608626,5000000,flat,,0.79,22.4,3.64,13
+ZZ757,XNYS,Sample Holdings 757 (synthetic),equity,Utilities,Multi-Utilities,4158880000.00,22.24,22.17,,,,1784340,2800000,random,,1.18,17.8,0.97,18
+ZZ758,XNYS,Sample Holdings 758 (synthetic),equity,Real Estate,Office REITs,43502830000.00,165.41,167.22,,,,1700825,2800000,random,,0.85,28.7,4.99,51
+ZZ759,XNAS,Sample Holdings 759 (synthetic),equity,Communication Services,Advertising,20012190000.00,134.31,134.12,,,,554568,400000,random,,1.57,30.5,13.52,64
+ZZ760,XNYS,Sample Holdings 760 (synthetic),equity,Information Technology,Application Software,2588390000.00,7.21,7.35,,,,2797891,2800000,random,,1.37,18.0,0.37,55
+ZZ761,XNYS,Sample Holdings 761 (synthetic),equity,Health Care,Biotechnology,717340000.00,11.57,11.49,,,,259268,400000,flat,,1.12,16.7,0.40,82
+ZZ762,XNAS,Sample Holdings 762 (synthetic),equity,Financials,Regional Banks,2050880000.00,30.16,30.22,,,,1238882,900000,trend,,1.24,40.1,3.00,77
+ZZ763,XNYS,Sample Holdings 763 (synthetic),equity,Industrials,Industrial Machinery,70137200000.00,189.56,189.51,,,,2293797,2800000,random,,0.63,42.7,5.64,18
+ZZ764,XNYS,Sample Holdings 764 (synthetic),equity,Consumer Discretionary,Specialty Retail,33054560000.00,107.32,108.42,,,,1424776,1500000,downtrend,,1.50,29.1,8.01,44
+ZZ765,XNAS,Sample Holdings 765 (synthetic),equity,Consumer Staples,Packaged Foods,2312870000.00,17.39,17.37,,,,944615,1500000,random,,1.45,11.2,0.47,8
+ZZ766,XNYS,Sample Holdings 766 (synthetic),equity,Energy,Oil & Gas Equipment,4904830000.00,17.09,16.77,,,,2482159,2800000,random,,1.79,27.9,2.08,77
+ZZ767,XNYS,Sample Holdings 767 (synthetic),equity,Materials,Specialty Chemicals,407000000.00,8.14,8.05,,,,3806126,2800000,random,,0.62,8.5,0.37,6
+ZZ768,XNAS,Sample Holdings 768 (synthetic),equity,Utilities,Multi-Utilities,62314260000.00,179.58,181.03,,,,3663822,2800000,random,,0.98,46.0,20.78,39
+ZZ769,XNYS,Sample Holdings 769 (synthetic),equity,Real Estate,Office REITs,56684000000.00,148.00,147.83,,,,6101177,5000000,flat,,1.15,25.8,3.71,48
+ZZ770,XNYS,Sample Holdings 770 (synthetic),equity,Communication Services,Advertising,16223100000.00,95.43,95.48,,,,910691,900000,random,,1.17,27.7,2.05,60
+ZZ771,XNAS,Sample Holdings 771 (synthetic),equity,Information Technology,Application Software,2920500000.00,12.98,12.91,,,,4085242,5000000,flat,,0.65,46.9,1.07,26
+ZZ772,XNYS,Sample Holdings 772 (synthetic),equity,Health Care,Biotechnology,72188650000.00,272.41,267.13,,,,6598919,5000000,random,,1.24,31.3,5.81,50
+ZZ773,XNYS,Sample Holdings 773 (synthetic),equity,Financials,Regional Banks,19265050000.00,144.85,143.91,,,,296062,400000,random,,1.11,22.3,3.40,49
+ZZ774,XNAS,Sample Holdings 774 (synthetic),equity,Industrials,Industrial Machinery,59517150000.00,154.59,156.24,,,,543038,400000,random,,0.80,46.7,3.91,62
+ZZ775,XNYS,Sample Holdings 775 (synthetic),equity,Consumer Discretionary,Specialty Retail,328410000.00,8.01,8.03,,,,1883749,1500000,random,,0.92,31.8,0.23,63
+ZZ776,XNYS,Sample Holdings 776 (synthetic),equity,Consumer Staples,Packaged Foods,47914650000.00,166.95,166.83,,,,1854066,2800000,random,,1.48,42.0,5.17,35
+ZZ777,XNAS,Sample Holdings 777 (synthetic),equity,Energy,Oil & Gas Equipment,3653550000.00,10.35,10.42,,,,1460615,1500000,random,,1.64,20.6,0.32,39
+ZZ778,XNYS,Sample Holdings 778 (synthetic),equity,Materials,Specialty Chemicals,4713800000.00,31.85,31.38,,,,1039693,1500000,flat,,1.64,12.3,1.47,23
+ZZ779,XNYS,Sample Holdings 779 (synthetic),equity,Utilities,Multi-Utilities,12165600000.00,32.88,32.48,,,,6958871,5000000,random,,1.20,40.0,0.77,69
+ZZ780,XNAS,Sample Holdings 780 (synthetic),equity,Real Estate,Office REITs,19977300000.00,66.15,67.17,,,,1987889,1500000,random,,0.91,14.3,5.25,12
+ZZ781,XNYS,Sample Holdings 781 (synthetic),equity,Communication Services,Advertising,16536320000.00,129.19,130.09,,,,1743003,1500000,random,,1.02,45.8,3.17,45
+ZZ782,XNYS,Sample Holdings 782 (synthetic),equity,Information Technology,Application Software,9628000000.00,66.40,66.91,,,,481340,400000,random,,1.10,41.0,5.50,73
+ZZ783,XNAS,Sample Holdings 783 (synthetic),equity,Health Care,Biotechnology,4978120000.00,30.92,31.44,,,,713551,900000,random,,1.66,22.8,1.14,37
+ZZ784,XNYS,Sample Holdings 784 (synthetic),equity,Financials,Regional Banks,3492960000.00,72.77,72.28,,,,2261551,2800000,random,,1.57,32.8,2.20,62
+ZZ785,XNYS,Sample Holdings 785 (synthetic),equity,Industrials,Industrial Machinery,2560000000.00,51.20,52.20,,,,3288229,2800000,flat,,0.89,14.2,2.41,86
+ZZ786,XNAS,Sample Holdings 786 (synthetic),equity,Consumer Discretionary,Specialty Retail,12173920000.00,69.17,68.45,,,,1236307,900000,random,,1.51,38.7,2.53,64
+ZZ787,XNYS,Sample Holdings 787 (synthetic),equity,Consumer Staples,Packaged Foods,17289940000.00,48.98,48.79,,,,476322,400000,random,,0.70,19.4,1.15,73
+ZZ788,XNYS,Sample Holdings 788 (synthetic),equity,Energy,Oil & Gas Equipment,57097040000.00,263.12,259.14,,,,1465323,1500000,random,,0.64,32.1,7.47,82
+ZZ789,XNAS,Sample Holdings 789 (synthetic),equity,Materials,Specialty Chemicals,11333310000.00,33.63,33.21,,,,2381080,2800000,random,,1.67,44.2,2.32,55
+ZZ790,XNYS,Sample Holdings 790 (synthetic),equity,Utilities,Multi-Utilities,28039500000.00,90.45,88.79,,,,927128,1500000,random,,1.64,25.5,3.30,45
+ZZ791,XNYS,Sample Holdings 791 (synthetic),equity,Real Estate,Office REITs,3519360000.00,22.56,22.60,,,,1726797,2800000,random,,1.24,15.4,0.66,21
+ZZ792,XNAS,Sample Holdings 792 (synthetic),equity,Communication Services,Advertising,734720000.00,8.96,9.12,,,,3344531,2800000,downtrend,,1.13,43.8,0.33,54
+ZZ793,XNYS,Sample Holdings 793 (synthetic),equity,Information Technology,Application Software,17873320000.00,61.21,62.15,,,,781822,900000,trend,,1.15,24.5,1.45,72
+ZZ794,XNYS,Sample Holdings 794 (synthetic),equity,Health Care,Biotechnology,9767490000.00,94.83,93.70,,,,275820,400000,random,,0.89,19.4,4.41,38
+ZZ795,XNAS,Sample Holdings 795 (synthetic),equity,Financials,Regional Banks,50609080000.00,250.54,253.59,,,,1870744,2800000,random,,1.30,40.5,10.33,58
+ZZ796,XNYS,Sample Holdings 796 (synthetic),equity,Industrials,Industrial Machinery,20493900000.00,97.59,97.58,,,,557919,900000,random,,1.57,17.8,5.83,16
+ZZ797,XNYS,Sample Holdings 797 (synthetic),equity,Consumer Discretionary,Specialty Retail,8136450000.00,25.83,26.00,,,,1991383,2800000,flat,,1.72,32.2,1.93,87
+ZZ798,XNAS,Sample Holdings 798 (synthetic),equity,Consumer Staples,Packaged Foods,73089060000.00,297.11,295.89,,,,1511103,1500000,trend,,1.60,31.5,6.52,87
+ZZ799,XNYS,Sample Holdings 799 (synthetic),equity,Energy,Oil & Gas Equipment,2606100000.00,7.30,7.20,,,,963894,900000,downtrend,,0.79,26.3,0.15,26
+ZZ800,XNYS,Sample Holdings 800 (synthetic),equity,Materials,Specialty Chemicals,63477480000.00,278.41,277.96,,,,456484,400000,random,,1.74,27.3,23.29,15
+ZZ801,XNAS,Sample Holdings 801 (synthetic),equity,Utilities,Multi-Utilities,2777320000.00,12.74,12.53,,,,1404687,1500000,downtrend,,1.78,20.5,0.41,24
+ZZ802,XNYS,Sample Holdings 802 (synthetic),equity,Real Estate,Office REITs,12151280000.00,31.48,31.52,,,,2366720,2800000,random,,1.29,46.0,3.04,87
+ZZ803,XNYS,Sample Holdings 803 (synthetic),equity,Communication Services,Advertising,13408430000.00,51.77,51.34,,,,3815213,5000000,random,,1.68,16.8,2.64,22
+ZZ804,XNAS,Sample Holdings 804 (synthetic),equity,Information Technology,Application Software,80633200000.00,214.45,218.55,,,,3865780,5000000,random,,0.61,34.6,6.45,48
+ZZ805,XNYS,Sample Holdings 805 (synthetic),equity,Health Care,Biotechnology,72952390000.00,203.21,203.62,,,,5985757,5000000,random,,1.75,37.1,7.49,14
+ZZ806,XNYS,Sample Holdings 806 (synthetic),equity,Financials,Regional Banks,18492480000.00,64.21,65.02,,,,467137,400000,downtrend,,1.28,32.0,2.98,23
+ZZ807,XNAS,Sample Holdings 807 (synthetic),equity,Industrials,Industrial Machinery,46445000000.00,185.78,183.31,,,,934279,900000,random,,0.86,39.9,4.12,53
+ZZ808,XNYS,Sample Holdings 808 (synthetic),equity,Consumer Discretionary,Specialty Retail,41841080000.00,282.71,279.14,,,,431481,400000,trend,,1.24,19.0,16.83,41
+ZZ809,XNYS,Sample Holdings 809 (synthetic),equity,Consumer Staples,Packaged Foods,8536320000.00,118.56,116.69,,,,2053355,1500000,random,,1.39,11.5,2.79,66
+ZZ810,XNAS,Sample Holdings 810 (synthetic),equity,Energy,Oil & Gas Equipment,6981160000.00,188.68,187.13,,,,463956,400000,random,,1.69,46.8,8.13,62
+ZZ811,XNYS,Sample Holdings 811 (synthetic),equity,Materials,Specialty Chemicals,5544000000.00,31.68,31.46,,,,657815,900000,random,,1.44,42.1,0.69,42
+ZZ812,XNYS,Sample Holdings 812 (synthetic),equity,Utilities,Multi-Utilities,19834520000.00,57.16,57.95,,,,378493,400000,random,,1.08,39.0,1.55,22
+ZZ813,XNAS,Sample Holdings 813 (synthetic),equity,Real Estate,Office REITs,4553460000.00,12.34,12.48,,,,6851209,5000000,random,,1.08,12.3,0.72,90
+ZZ814,XNYS,Sample Holdings 814 (synthetic),equity,Communication Services,Advertising,24757200000.00,89.70,90.93,,,,1119761,1500000,random,,1.30,22.0,4.74,72
+ZZ815,XNYS,Sample Holdings 815 (synthetic),equity,Information Technology,Application Software,35128800000.00,97.58,98.35,,,,965009,1500000,random,,0.81,19.4,2.83,85
+ZZ816,XNAS,Sample Holdings 816 (synthetic),equity,Health Care,Biotechnology,19267180000.00,48.41,47.92,,,,6456473,5000000,random,,1.21,20.3,3.14,37
+ZZ817,XNYS,Sample Holdings 817 (synthetic),equity,Financials,Regional Banks,14662500000.00,42.50,42.08,,,,530332,400000,random,,0.61,12.6,1.72,69
+ZZ818,XNYS,Sample Holdings 818 (synthetic),equity,Industrials,Industrial Machinery,3294480000.00,11.13,11.10,,,,452947,400000,random,,1.55,39.5,0.36,87
+ZZ819,XNAS,Sample Holdings 819 (synthetic),equity,Consumer Discretionary,Specialty Retail,14545200000.00,58.65,58.65,,,,2609805,2800000,random,,1.73,14.9,2.96,12
+ZZ820,XNYS,Sample Holdings 820 (synthetic),equity,Consumer Staples,Packaged Foods,74787300000.00,197.85,201.32,,,,1959593,1500000,random,,1.10,29.2,4.59,72
+ZZ821,XNYS,Sample Holdings 821 (synthetic),equity,Energy,Oil & Gas Equipment,12913920000.00,72.96,74.35,,,,5961054,5000000,random,,0.73,28.5,4.92,76
+ZZ822,XNAS,Sample Holdings 822 (synthetic),equity,Materials,Specialty Chemicals,10614240000.00,32.76,33.38,,,,4040091,5000000,random,,1.45,42.1,1.24,9
+ZZ823,XNYS,Sample Holdings 823 (synthetic),equity,Utilities,Multi-Utilities,49705600000.00,155.33,157.09,,,,369495,400000,random,,1.58,16.6,4.55,62
+ZZ824,XNYS,Sample Holdings 824 (synthetic),equity,Real Estate,Office REITs,3878340000.00,104.82,105.41,,,,478974,400000,random,,0.88,45.5,3.23,71
+ZZ825,XNAS,Sample Holdings 825 (synthetic),equity,Communication Services,Advertising,369360000.00,6.84,6.98,,,,1724686,1500000,random,,1.66,36.0,0.77,58
+ZZ826,XNYS,Sample Holdings 826 (synthetic),equity,Information Technology,Application Software,32233750000.00,257.87,261.73,,,,531796,400000,random,,0.80,44.4,6.98,75
+ZZ827,XNYS,Sample Holdings 827 (synthetic),equity,Health Care,Biotechnology,7869470000.00,66.13,66.33,,,,1610730,1500000,random,,1.45,12.6,1.69,47
+ZZ828,XNAS,Sample Holdings 828 (synthetic),equity,Financials,Regional Banks,6801300000.00,22.90,22.80,,,,1354125,1500000,random,,0.94,39.5,0.75,39
+ZZ829,XNYS,Sample Holdings 829 (synthetic),equity,Industrials,Industrial Machinery,5387040000.00,24.94,24.62,,,,1898147,2800000,random,,0.87,10.6,0.76,61
+ZZ830,XNYS,Sample Holdings 830 (synthetic),equity,Consumer Discretionary,Specialty Retail,1432440000.00,6.92,7.03,,,,1963009,1500000,random,,1.29,13.7,0.18,19
+ZZ831,XNAS,Sample Holdings 831 (synthetic),equity,Consumer Staples,Packaged Foods,12269880000.00,32.46,32.65,,,,406331,400000,random,,1.49,34.7,1.05,78
+ZZ832,XNYS,Sample Holdings 832 (synthetic),equity,Energy,Oil & Gas Equipment,1728000000.00,13.50,13.40,,,,253891,400000,downtrend,,0.76,29.9,0.28,69
+ZZ833,XNYS,Sample Holdings 833 (synthetic),equity,Materials,Specialty Chemicals,46360000000.00,152.00,154.44,,,,1317698,1500000,random,,1.54,14.2,3.26,58
+ZZ834,XNAS,Sample Holdings 834 (synthetic),equity,Utilities,Multi-Utilities,3175740000.00,58.81,57.68,,,,365956,400000,trend,,1.57,23.2,4.96,10
+ZZ835,XNYS,Sample Holdings 835 (synthetic),equity,Real Estate,Office REITs,27497050000.00,109.55,111.10,,,,912973,1500000,random,,1.05,33.7,3.29,56
+ZZ836,XNYS,Sample Holdings 836 (synthetic),equity,Communication Services,Advertising,61863600000.00,199.56,202.49,,,,3084198,5000000,random,,0.66,22.6,12.21,14
+ZZ837,XNAS,Sample Holdings 837 (synthetic),equity,Information Technology,Application Software,11449430000.00,82.37,82.05,,,,3742763,2800000,random,,0.93,36.0,3.50,71
+ZZ838,XNYS,Sample Holdings 838 (synthetic),equity,Health Care,Biotechnology,16196600000.00,140.84,139.03,,,,484994,400000,flat,,0.86,45.2,6.00,72
+ZZ839,XNYS,Sample Holdings 839 (synthetic),equity,Financials,Regional Banks,4423900000.00,53.95,54.72,,,,3141716,5000000,random,,1.79,35.2,4.73,74
+ZZ840,XNAS,Sample Holdings 840 (synthetic),equity,Industrials,Industrial Machinery,2667600000.00,7.80,7.82,,,,2989824,2800000,trend,,1.15,36.8,0.49,84
+ZZ841,XNYS,Sample Holdings 841 (synthetic),equity,Consumer Discretionary,Specialty Retail,520290000.00,19.27,19.50,,,,651903,900000,random,,1.26,47.1,1.15,21
+ZZ842,XNYS,Sample Holdings 842 (synthetic),equity,Consumer Staples,Packaged Foods,3385600000.00,52.90,53.85,,,,3939144,5000000,random,,0.87,24.7,2.33,87
+ZZ843,XNAS,Sample Holdings 843 (synthetic),equity,Energy,Oil & Gas Equipment,5635700000.00,80.51,81.39,,,,3825517,2800000,random,,0.95,13.5,4.28,44
+ZZ844,XNYS,Sample Holdings 844 (synthetic),equity,Materials,Specialty Chemicals,2625480000.00,25.74,25.69,,,,2693686,2800000,trend,,1.61,46.9,1.16,67
+ZZ845,XNYS,Sample Holdings 845 (synthetic),equity,Utilities,Multi-Utilities,1951680000.00,25.68,25.94,,,,3719865,2800000,random,,1.40,13.4,1.31,47
+ZZ846,XNAS,Sample Holdings 846 (synthetic),equity,Real Estate,Office REITs,1869600000.00,12.30,12.18,,,,786817,900000,random,,1.25,39.4,0.41,83
+ZZ847,XNYS,Sample Holdings 847 (synthetic),equity,Communication Services,Advertising,10457600000.00,32.68,33.23,,,,326974,400000,random,,1.49,23.2,1.07,89
+ZZ848,XNYS,Sample Holdings 848 (synthetic),equity,Information Technology,Application Software,3754000000.00,37.54,37.68,,,,2139369,2800000,trend,,0.72,11.0,1.77,50
+ZZ849,XNAS,Sample Holdings 849 (synthetic),equity,Health Care,Biotechnology,28499310000.00,79.83,79.10,,,,3157606,2800000,random,,1.64,32.3,3.72,59
+ZZ850,XNYS,Sample Holdings 850 (synthetic),equity,Financials,Regional Banks,3242540000.00,12.19,12.16,,,,5678189,5000000,trend,,0.84,27.1,1.00,34
+ZZ851,XNYS,Sample Holdings 851 (synthetic),equity,Industrials,Industrial Machinery,16899080000.00,84.92,86.39,,,,2140238,2800000,random,,1.30,16.9,4.07,79
+ZZ852,XNAS,Sample Holdings 852 (synthetic),equity,Consumer Discretionary,Specialty Retail,17988760000.00,195.53,198.87,,,,2738643,2800000,flat,,0.78,20.6,6.90,10
+ZZ853,XNYS,Sample Holdings 853 (synthetic),equity,Consumer Staples,Packaged Foods,27144240000.00,133.06,131.84,,,,801480,900000,random,,0.67,47.5,2.94,54
+ZZ854,XNYS,Sample Holdings 854 (synthetic),equity,Energy,Oil & Gas Equipment,32049450000.00,95.67,94.50,,,,1675935,1500000,random,,1.48,9.8,7.74,66
+ZZ855,XNAS,Sample Holdings 855 (synthetic),equity,Materials,Specialty Chemicals,13360230000.00,54.09,53.52,,,,3758293,5000000,random,,1.75,40.6,2.15,67
+ZZ856,XNYS,Sample Holdings 856 (synthetic),equity,Utilities,Multi-Utilities,21307920000.00,226.68,227.57,,,,2344613,2800000,flat,,1.45,29.2,5.55,15
+ZZ857,XNYS,Sample Holdings 857 (synthetic),equity,Real Estate,Office REITs,599970000.00,28.57,28.44,,,,4264076,5000000,random,,0.65,29.8,0.62,40
+ZZ858,XNAS,Sample Holdings 858 (synthetic),equity,Communication Services,Advertising,32744250000.00,133.65,135.87,,,,510218,400000,random,,0.75,40.3,9.22,40
+ZZ859,XNYS,Sample Holdings 859 (synthetic),equity,Information Technology,Application Software,41087030000.00,124.13,124.04,,,,470768,400000,downtrend,,1.45,44.9,2.67,60
+ZZ860,XNYS,Sample Holdings 860 (synthetic),equity,Health Care,Biotechnology,7001690000.00,162.83,164.47,,,,1655328,1500000,flat,,1.20,24.4,18.56,29
+ZZ861,XNAS,Sample Holdings 861 (synthetic),equity,Financials,Regional Banks,2398660000.00,109.03,110.87,,,,956826,900000,random,,1.44,46.6,2.62,37
+ZZ862,XNYS,Sample Holdings 862 (synthetic),equity,Industrials,Industrial Machinery,8657220000.00,30.27,30.44,,,,933675,900000,random,,1.28,21.3,1.21,53
+ZZ863,XNYS,Sample Holdings 863 (synthetic),equity,Consumer Discretionary,Specialty Retail,2088400000.00,11.35,11.41,,,,441552,400000,random,,1.11,42.3,0.58,48
+ZZ864,XNAS,Sample Holdings 864 (synthetic),equity,Consumer Staples,Packaged Foods,14279040000.00,71.04,72.23,,,,5259244,5000000,random,,1.69,20.0,2.60,66
+ZZ865,XNYS,Sample Holdings 865 (synthetic),equity,Energy,Oil & Gas Equipment,1700160000.00,38.64,38.12,,,,3512011,2800000,random,,1.22,32.7,4.33,82
+ZZ866,XNYS,Sample Holdings 866 (synthetic),equity,Materials,Specialty Chemicals,30438800000.00,108.71,108.14,,,,3777184,2800000,downtrend,,0.89,47.1,12.42,84
+ZZ867,XNAS,Sample Holdings 867 (synthetic),equity,Utilities,Multi-Utilities,11426000000.00,57.13,56.34,,,,1082875,1500000,random,,1.09,18.5,1.47,14
+ZZ868,XNYS,Sample Holdings 868 (synthetic),equity,Real Estate,Office REITs,13130040000.00,75.46,75.56,,,,968005,900000,random,,1.69,41.4,2.26,90
+ZZ869,XNYS,Sample Holdings 869 (synthetic),equity,Communication Services,Advertising,12512500000.00,96.25,96.79,,,,1731671,2800000,random,,0.86,24.6,5.83,15
+ZZ870,XNAS,Sample Holdings 870 (synthetic),equity,Information Technology,Application Software,7426750000.00,24.35,23.99,,,,1691691,2800000,random,,0.67,16.4,0.57,80
+ZZ871,XNYS,Sample Holdings 871 (synthetic),equity,Health Care,Biotechnology,3725200000.00,13.40,13.55,,,,986883,900000,downtrend,,1.08,30.2,0.30,76
+ZZ872,XNYS,Sample Holdings 872 (synthetic),equity,Financials,Regional Banks,1896620000.00,8.14,8.01,,,,5831357,5000000,random,,0.71,24.5,0.59,5
+ZZ873,XNAS,Sample Holdings 873 (synthetic),equity,Industrials,Industrial Machinery,1147200000.00,35.85,35.73,,,,478884,400000,random,,1.49,22.3,3.71,48
+ZZ874,XNYS,Sample Holdings 874 (synthetic),equity,Consumer Discretionary,Specialty Retail,24011460000.00,132.66,133.55,,,,5584078,5000000,random,,1.31,44.7,5.27,56
+ZZ875,XNYS,Sample Holdings 875 (synthetic),equity,Consumer Staples,Packaged Foods,27195200000.00,73.90,72.81,,,,1405137,1500000,trend,,1.54,29.5,1.54,18
+ZZ876,XNAS,Sample Holdings 876 (synthetic),equity,Energy,Oil & Gas Equipment,3825280000.00,13.76,13.82,,,,3940481,5000000,random,,0.79,39.3,1.25,42
+ZZ877,XNYS,Sample Holdings 877 (synthetic),equity,Materials,Specialty Chemicals,92003100000.00,238.35,235.98,,,,1053627,1500000,random,,1.02,13.9,13.22,83
+ZZ878,XNYS,Sample Holdings 878 (synthetic),equity,Utilities,Multi-Utilities,29924420000.00,96.22,98.07,,,,671425,900000,random,,0.96,26.8,8.02,75
+ZZ879,XNAS,Sample Holdings 879 (synthetic),equity,Real Estate,Office REITs,37484200000.00,110.90,110.97,,,,6353237,5000000,random,,0.84,36.2,5.19,69
+ZZ880,XNYS,Sample Holdings 880 (synthetic),equity,Communication Services,Advertising,43193250000.00,177.75,175.75,,,,705408,900000,flat,,1.25,32.0,18.12,37
+ZZ881,XNYS,Sample Holdings 881 (synthetic),equity,Information Technology,Application Software,34868080000.00,103.16,102.33,,,,334827,400000,random,,1.47,23.9,3.91,9
+ZZ882,XNAS,Sample Holdings 882 (synthetic),equity,Health Care,Biotechnology,39662550000.00,249.45,244.64,,,,731507,900000,random,,1.24,26.6,7.36,40
+ZZ883,XNYS,Sample Holdings 883 (synthetic),equity,Financials,Regional Banks,8100330000.00,22.69,22.82,,,,4154388,5000000,random,,0.69,42.2,2.39,46
+ZZ884,XNYS,Sample Holdings 884 (synthetic),equity,Industrials,Industrial Machinery,14137520000.00,53.96,53.06,,,,3179104,2800000,random,,1.17,30.2,1.18,22
+ZZ885,XNAS,Sample Holdings 885 (synthetic),equity,Consumer Discretionary,Specialty Retail,6199560000.00,30.39,30.07,,,,6034865,5000000,flat,,1.47,36.9,0.94,50
+ZZ886,XNYS,Sample Holdings 886 (synthetic),equity,Consumer Staples,Packaged Foods,13268500000.00,37.91,37.51,,,,1789408,1500000,trend,,1.11,24.2,0.97,46
+ZZ887,XNYS,Sample Holdings 887 (synthetic),equity,Energy,Oil & Gas Equipment,59631240000.00,292.31,297.39,,,,4884332,5000000,random,,1.34,24.6,26.80,6
+ZZ888,XNAS,Sample Holdings 888 (synthetic),equity,Materials,Specialty Chemicals,27476960000.00,245.33,249.42,,,,352142,400000,random,,0.98,45.8,9.26,30
+ZZ889,XNYS,Sample Holdings 889 (synthetic),equity,Utilities,Multi-Utilities,4892500000.00,19.57,19.34,,,,3761105,2800000,random,,0.74,17.8,1.02,40
+ZZ890,XNYS,Sample Holdings 890 (synthetic),equity,Real Estate,Office REITs,7298200000.00,40.10,40.56,,,,741810,900000,random,,1.73,23.9,1.67,34
+ZZ891,XNAS,Sample Holdings 891 (synthetic),equity,Communication Services,Advertising,16956300000.00,58.47,58.30,,,,1037342,900000,trend,,1.46,29.8,1.88,82
+ZZ892,XNYS,Sample Holdings 892 (synthetic),equity,Information Technology,Application Software,6151860000.00,52.58,52.44,,,,5289372,5000000,trend,,1.63,46.8,1.60,48
+ZZ893,XNYS,Sample Holdings 893 (synthetic),equity,Health Care,Biotechnology,17871210000.00,104.51,106.06,,,,2620302,2800000,trend,,1.10,42.4,7.27,12
+ZZ894,XNAS,Sample Holdings 894 (synthetic),equity,Financials,Regional Banks,5918880000.00,16.72,16.52,,,,1945521,1500000,trend,,1.56,39.7,0.68,21
+ZZ895,XNYS,Sample Holdings 895 (synthetic),equity,Industrials,Industrial Machinery,2398410000.00,12.69,12.48,,,,5883535,5000000,trend,,1.42,31.3,0.48,62
+ZZ896,XNYS,Sample Holdings 896 (synthetic),equity,Consumer Discretionary,Specialty Retail,14658930000.00,66.33,67.34,,,,3161599,2800000,random,,0.92,19.3,2.45,10
+ZZ897,XNAS,Sample Holdings 897 (synthetic),equity,Consumer Staples,Packaged Foods,25266960000.00,166.23,166.60,,,,2362265,2800000,random,,1.44,32.7,3.79,5
+ZZ898,XNYS,Sample Holdings 898 (synthetic),equity,Energy,Oil & Gas Equipment,1777140000.00,10.97,10.93,,,,6703598,5000000,downtrend,,1.49,19.9,0.30,63
+ZZ899,XNYS,Sample Holdings 899 (synthetic),equity,Materials,Specialty Chemicals,57908970000.00,162.21,161.30,,,,530315,400000,random,,1.18,45.6,4.76,56
+ZZ900,XNAS,Sample Holdings 900 (synthetic),equity,Utilities,Multi-Utilities,7907210000.00,32.81,32.60,,,,270107,400000,random,,0.95,41.2,1.21,46
+ZZ901,XNYS,Sample Holdings 901 (synthetic),equity,Real Estate,Office REITs,13354370000.00,34.33,34.25,,,,4845234,5000000,trend,,1.32,8.4,1.07,53
+ZZ902,XNYS,Sample Holdings 902 (synthetic),equity,Communication Services,Advertising,50373120000.00,262.36,267.70,,,,755160,900000,random,,1.36,29.8,21.33,76
+ZZ903,XNAS,Sample Holdings 903 (synthetic),equity,Information Technology,Application Software,9617540000.00,24.41,24.00,,,,2198857,2800000,random,,1.62,41.1,0.85,51
+ZZ904,XNYS,Sample Holdings 904 (synthetic),equity,Health Care,Biotechnology,11737440000.00,37.62,38.10,,,,5130331,5000000,random,,0.79,15.4,1.99,10
+ZZ905,XNYS,Sample Holdings 905 (synthetic),equity,Financials,Regional Banks,9897500000.00,79.18,80.13,,,,4805109,5000000,trend,,0.72,29.7,2.60,28
+ZZ906,XNAS,Sample Holdings 906 (synthetic),equity,Industrials,Industrial Machinery,29159550000.00,92.57,94.00,,,,3636871,5000000,random,,1.48,26.7,9.17,17
+ZZ907,XNYS,Sample Holdings 907 (synthetic),equity,Consumer Discretionary,Specialty Retail,34601240000.00,201.17,202.94,,,,548555,400000,random,,1.19,46.0,4.60,8
+ZZ908,XNYS,Sample Holdings 908 (synthetic),equity,Consumer Staples,Packaged Foods,32823360000.00,125.28,124.97,,,,371903,400000,downtrend,,1.72,39.2,5.14,35
+ZZ909,XNAS,Sample Holdings 909 (synthetic),equity,Energy,Oil & Gas Equipment,1962250000.00,41.75,41.95,,,,579787,900000,random,,1.33,11.5,0.89,55
+ZZ910,XNYS,Sample Holdings 910 (synthetic),equity,Materials,Specialty Chemicals,12726770000.00,259.73,258.26,,,,3675374,5000000,random,,0.99,35.6,8.46,70
+ZZ911,XNYS,Sample Holdings 911 (synthetic),equity,Utilities,Multi-Utilities,1621970000.00,13.63,13.58,,,,1760431,2800000,random,,0.81,28.9,0.47,69
+ZZ912,XNAS,Sample Holdings 912 (synthetic),equity,Real Estate,Office REITs,503520000.00,10.49,10.66,,,,838654,900000,flat,,0.90,13.8,0.27,37
+ZZ913,XNYS,Sample Holdings 913 (synthetic),equity,Communication Services,Advertising,16036920000.00,57.48,58.39,,,,5482961,5000000,random,,1.67,8.4,1.64,75
+ZZ914,XNYS,Sample Holdings 914 (synthetic),equity,Information Technology,Application Software,36295610000.00,182.39,179.20,,,,244632,400000,random,,1.78,30.0,7.43,66
+ZZ915,XNAS,Sample Holdings 915 (synthetic),equity,Health Care,Biotechnology,10864200000.00,95.30,93.95,,,,2337629,2800000,downtrend,,0.68,44.0,6.20,40
+ZZ916,XNYS,Sample Holdings 916 (synthetic),equity,Financials,Regional Banks,6817620000.00,27.38,27.27,,,,3516484,2800000,random,,0.64,39.7,1.07,87
+ZZ917,XNYS,Sample Holdings 917 (synthetic),equity,Industrials,Industrial Machinery,6386280000.00,28.01,27.76,,,,305674,400000,random,,1.19,34.4,1.17,62
+ZZ918,XNAS,Sample Holdings 918 (synthetic),equity,Consumer Discretionary,Specialty Retail,55933500000.00,266.35,267.47,,,,428546,400000,random,,1.00,29.7,12.89,20
+ZZ919,XNYS,Sample Holdings 919 (synthetic),equity,Consumer Staples,Packaged Foods,3402600000.00,15.90,16.03,,,,547507,400000,random,,0.91,47.8,1.22,44
+ZZ920,XNYS,Sample Holdings 920 (synthetic),equity,Energy,Oil & Gas Equipment,2208180000.00,7.41,7.45,,,,1090915,900000,downtrend,,1.41,30.6,0.52,56
+ZZ921,XNAS,Sample Holdings 921 (synthetic),equity,Materials,Specialty Chemicals,4648800000.00,44.70,44.27,,,,3118141,2800000,random,,1.23,33.8,1.45,46
+ZZ922,XNYS,Sample Holdings 922 (synthetic),equity,Utilities,Multi-Utilities,23977880000.00,75.64,74.76,,,,352415,400000,downtrend,,1.36,16.5,2.97,74
+ZZ923,XNYS,Sample Holdings 923 (synthetic),equity,Real Estate,Office REITs,7036400000.00,50.26,51.26,,,,5469484,5000000,downtrend,,1.35,13.4,1.42,20
+ZZ924,XNAS,Sample Holdings 924 (synthetic),equity,Communication Services,Advertising,7961200000.00,76.55,77.72,,,,4225853,5000000,random,,1.48,14.9,3.54,6
+ZZ925,XNYS,Sample Holdings 925 (synthetic),equity,Information Technology,Application Software,10987100000.00,64.63,64.08,,,,919368,900000,random,,1.53,34.4,2.69,44
+ZZ926,XNYS,Sample Holdings 926 (synthetic),equity,Health Care,Biotechnology,1899120000.00,23.16,23.45,,,,395901,400000,random,,1.01,34.0,0.53,83
+ZZ927,XNAS,Sample Holdings 927 (synthetic),equity,Financials,Regional Banks,2842800000.00,24.72,24.40,,,,2834067,2800000,random,,1.56,44.4,0.73,33
+ZZ928,XNYS,Sample Holdings 928 (synthetic),equity,Industrials,Industrial Machinery,48975860000.00,186.22,183.94,,,,2994121,2800000,random,,1.12,15.4,8.13,72
+ZZ929,XNYS,Sample Holdings 929 (synthetic),equity,Consumer Discretionary,Specialty Retail,58000800000.00,171.60,173.92,,,,624405,900000,random,,1.51,43.2,3.59,32
+ZZ930,XNAS,Sample Holdings 930 (synthetic),equity,Consumer Staples,Packaged Foods,28317640000.00,199.42,197.82,,,,554444,900000,flat,,1.19,12.6,5.12,12
+ZZ931,XNYS,Sample Holdings 931 (synthetic),equity,Energy,Oil & Gas Equipment,5365980000.00,31.38,30.90,,,,1471704,1500000,random,,1.63,15.5,2.21,21
+ZZ932,XNYS,Sample Holdings 932 (synthetic),equity,Materials,Specialty Chemicals,30083130000.00,159.17,161.64,,,,3478075,5000000,random,,1.52,15.3,4.81,65
+ZZ933,XNAS,Sample Holdings 933 (synthetic),equity,Utilities,Multi-Utilities,15584400000.00,43.29,44.06,,,,270667,400000,flat,,1.17,20.5,2.96,25
+ZZ934,XNYS,Sample Holdings 934 (synthetic),equity,Real Estate,Office REITs,5147100000.00,30.10,29.63,,,,2312893,2800000,random,,1.56,29.2,1.33,65
+ZZ935,XNYS,Sample Holdings 935 (synthetic),equity,Communication Services,Advertising,10508010000.00,66.93,67.47,,,,533094,400000,trend,,1.57,40.2,2.63,47
+ZZ936,XNAS,Sample Holdings 936 (synthetic),equity,Information Technology,Application Software,1003200000.00,7.60,7.68,,,,2630716,2800000,flat,,1.14,39.2,0.22,84
+ZZ937,XNYS,Sample Holdings 937 (synthetic),equity,Health Care,Biotechnology,7030250000.00,23.05,22.62,,,,3792699,2800000,downtrend,,1.58,28.2,0.82,30
+ZZ938,XNYS,Sample Holdings 938 (synthetic),equity,Financials,Regional Banks,3989400000.00,65.40,65.02,,,,3397108,2800000,random,,1.33,32.8,4.02,84
+ZZ939,XNAS,Sample Holdings 939 (synthetic),equity,Industrials,Industrial Machinery,617120000.00,11.02,10.96,,,,2272329,2800000,random,,1.13,17.1,0.23,29
+ZZ940,XNYS,Sample Holdings 940 (synthetic),equity,Consumer Discretionary,Specialty Retail,7373700000.00,27.31,27.28,,,,5025122,5000000,trend,,1.53,42.7,1.82,6
+ZZ941,XNYS,Sample Holdings 941 (synthetic),equity,Consumer Staples,Packaged Foods,71956000000.00,179.89,181.41,,,,1043513,900000,random,,1.37,19.7,9.83,89
+ZZ942,XNAS,Sample Holdings 942 (synthetic),equity,Energy,Oil & Gas Equipment,18964720000.00,63.64,63.27,,,,1237102,1500000,trend,,1.13,12.7,1.40,61
+ZZ943,XNYS,Sample Holdings 943 (synthetic),equity,Materials,Specialty Chemicals,8837300000.00,131.90,131.15,,,,3210499,2800000,random,,1.35,46.8,3.51,18
+ZZ944,XNYS,Sample Holdings 944 (synthetic),equity,Utilities,Multi-Utilities,24146600000.00,76.90,75.43,,,,442318,400000,random,,0.67,23.6,1.62,17
+ZZ945,XNAS,Sample Holdings 945 (synthetic),equity,Real Estate,Office REITs,13055040000.00,135.99,134.90,,,,503804,400000,random,,0.85,13.6,4.11,65
+ZZ946,XNYS,Sample Holdings 946 (synthetic),equity,Communication Services,Advertising,31928820000.00,207.33,203.30,,,,521439,400000,downtrend,,1.00,20.3,12.38,44
+ZZ947,XNYS,Sample Holdings 947 (synthetic),equity,Information Technology,Application Software,957440000.00,7.04,7.07,,,,384771,400000,random,,1.02,19.7,0.26,45
+ZZ948,XNAS,Sample Holdings 948 (synthetic),equity,Health Care,Biotechnology,1351420000.00,27.58,27.68,,,,538368,400000,random,,0.67,31.6,2.07,14
+ZZ949,XNYS,Sample Holdings 949 (synthetic),equity,Financials,Regional Banks,12939160000.00,43.42,43.54,,,,586769,900000,random,,0.90,36.5,1.32,31
+ZZ950,XNYS,Sample Holdings 950 (synthetic),equity,Industrials,Industrial Machinery,2365200000.00,8.10,8.07,,,,1949294,1500000,random,,1.14,13.4,0.74,7

@@ -3072,6 +3072,13 @@ Implementations:
 - `EToroMarketDataProvider` (v0.3 candidate, `NOT IMPLEMENTED`): eToro's API offers instrument search, market rates (bid/ask, multiple instruments per call), candle history, historical closes and WebSocket rate/candle streams (§17.3). Its limit of 60 req/min per user key fits nightly EOD candles for about 1,000 symbols (about 17 min) and batched quotes for positions and watchlist, but not a full-universe 60 s quote sweep. Whether eToro data may be stored and displayed in this app is part of Q-03.
 - `<Vendor>MarketDataProvider`: `NOT IMPLEMENTED`. Q-03 decides between eToro data and a dedicated vendor.
 
+**Implemented (T-041).** Fixtures live in `tests/fixtures/market/` and are embedded in the MarketData assembly, which is why the Docker build copies `tests/fixtures/`:
+- `universe.csv` has 1,034 symbols. About 85 are real large caps carrying the design's values (NVDA 186.40 / prev 180.24 / O 180.60 H 186.77 L 180.05 / V 412.8M; AMD, CRM, PLTR, UBER, COST, TSLA, JPM, AAPL, MSFT, LLY, AMZN). The rest are synthetic `ZZnnn` "Sample Holdings" fillers.
+- `calendar.csv` holds the NYSE 2025–2027 holidays and half days.
+- `corporate_actions.csv` and `news.json` cover the other datasets. Two prompt-injection headlines are included for the AI tests.
+
+The current session comes from the fixture. History (400 sessions by default) is generated backwards from the previous close, with decimal arithmetic only. Each row's `pattern` shapes it: `breakout`, `momentum`, `pullback`, `unusual_volume`, `earnings`, `trend`, `downtrend`, `flat` or `random`, so M3 can tune the scanner. Intraday bars are a seeded Brownian bridge that touches the day's high and low. Sessions use NodaTime's bundled tzdb. `MarketData:Fake:IntradayWalk` (default off, so the design values show) adds a seeded per-minute walk. Faults are `ok`, `down`, `stale` (frozen at the toggle) and `bad_tick` (the first symbol of a request at 10× its previous close). They are toggled through `/dev/faults`, which is mapped only in Development with `Features:DevFaultInjection`. The same seed and the same clock give identical output.
+
 ### 16.2 Provider selection: an explicit decision (`OPEN QUESTION Q-03`)
 
 This document **does not pick a vendor.** Provider terms change often, and none are verified here. Every candidate must be evaluated against this matrix, and the result recorded as an ADR:

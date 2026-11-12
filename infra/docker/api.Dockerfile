@@ -5,6 +5,8 @@ WORKDIR /repo
 COPY global.json Directory.Build.props Directory.Packages.props Astryx.slnx ./
 COPY apps/api/ apps/api/
 COPY src/ src/
+# FakeMarketDataProvider embeds these fixtures (src/Modules/MarketData).
+COPY tests/fixtures/ tests/fixtures/
 RUN dotnet restore apps/api/Astryx.Api.csproj --locked-mode
 RUN dotnet publish apps/api/Astryx.Api.csproj -c Release -o /out --no-restore
 

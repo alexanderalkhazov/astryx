@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Astryx.Api.Dev;
 using Astryx.Infrastructure;
 using Astryx.Infrastructure.Health;
 using Astryx.Modules.Ai;
@@ -129,6 +130,11 @@ app.MapGet("/api/v1/system/status", async (HealthCheckService health, IConfigura
 
 app.MapIdentityEndpoints();
 app.MapProfileEndpoints();
+
+if (DevEndpoints.IsEnabled(app.Environment, app.Configuration))
+{
+    app.MapDevEndpoints();
+}
 
 if (app.Environment.IsEnvironment("Testing"))
 {

@@ -8,4 +8,6 @@ apps/mobile/
 packages/
 docs/
 tests/
+# …except the market fixtures the fake provider embeds (T-041).
+!tests/fixtures/
 *.md

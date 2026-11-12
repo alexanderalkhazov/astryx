@@ -8,6 +8,12 @@
         "resolved": "10.1.0",
         "contentHash": "SlYCIHnBYxINSUpR75SiM5JEmnx11pqT+Ac/C/fUqTTA0dLPl9eYzmFXKKuxmQhL3ZdTQl4PBD3YdAxAauaKLQ=="
       },
+      "Microsoft.Extensions.TimeProvider.Testing": {
+        "type": "Direct",
+        "requested": "[10.11.0, )",
+        "resolved": "10.11.0",
+        "contentHash": "DTivKZ2Du0dJideTTa6vPj/eXKNRu+RxtjBX7NOOUXHBtHx1ehbE+lM+j3/5M3wU6BqzcZqEEyR4+FnPKs2rTA=="
+      },
       "Microsoft.NET.Test.Sdk": {
         "type": "Direct",
         "requested": "[18.11.0, )",
@@ -243,6 +249,15 @@
           "Npgsql.EntityFrameworkCore.PostgreSQL": "[10.0.3, )"
         }
       },
+      "astryx.modules.marketdata": {
+        "type": "Project",
+        "dependencies": {
+          "Astryx.Contracts": "[1.0.0, )",
+          "Astryx.Infrastructure": "[1.0.0, )",
+          "Astryx.SharedKernel": "[1.0.0, )",
+          "NodaTime": "[3.3.7, )"
+        }
+      },
       "astryx.sharedkernel": {
         "type": "Project"
       },
@@ -284,6 +299,12 @@
           "Microsoft.Extensions.Caching.Memory": "10.0.14",
           "Microsoft.Extensions.Logging": "10.0.14"
         }
+      },
+      "NodaTime": {
+        "type": "CentralTransitive",
+        "requested": "[3.3.7, )",
+        "resolved": "3.3.7",
+        "contentHash": "4Rc3zup1sZqtlcgkWZOsjoVbhm+RkDvxrFDJfIxi7nr32ZgzVW+zCTBr827+KG/4r5owpchUjqx8tO4K2ZtpOw=="
       },
       "Npgsql": {
         "type": "CentralTransitive",
