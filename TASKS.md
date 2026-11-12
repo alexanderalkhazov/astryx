@@ -295,7 +295,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [x] **T-063** Strategies catalog and versioning (ba77a72)
   - **Acceptance:** `strategy.*` migrations. The five design strategies are seeded (Base Breakout v3, Trend Momentum, Trend Pullback, RSI(2) Mean Reversion, Earnings Drift) with immutable published versions and parameter schemas. ST1, ST3 and ST5 return seeded data.
   - **Refs:** §7.8, §10.4 (strategy) · **Depends:** T-012 · **P0**
-- [ ] **T-064** Base Breakout rule (first `IStrategyRule`)
+- [x] **T-064** Base Breakout rule (first `IStrategyRule`) (5a85dfd)
   - **Scope:** a deterministic rule from the §8.4.9 parameters (base length 6 wk, volume multiple 2.2×, min RS 80, stop 1.5× ATR) producing entry, stop, target, a reason string and component scores. The rule definition is documented in `SYSTEM_DESIGN.md` (partly answers Q-09).
   - **Acceptance:** NVDA fixture produces buy_stop 186.50 / stop 178.20 / target 204.00 / score 87 and the reason "Cleared a 6-week base at $185.90 on 2.4× average volume."
   - **Refs:** §13.4, Q-09 · **Depends:** T-060, T-063 · **P0**
