@@ -2128,6 +2128,19 @@ IX `(portfolio_id, occurred_at desc)`. The DB role has no UPDATE or DELETE grant
 
 **`portfolio.snapshots`** — PK `(portfolio_id, kind, snapshot_at)`, `kind` CK (`eod`,`hourly`), `equity`, `cash`, `invested`, `unrealized_pnl`, `realized_pnl_cum` numeric(20,4), `benchmark_close` numeric(18,6) NULL, `positions_count` int, `stale` boolean.
 
+**Implemented (T-080).**
+
+- `positions` and `snapshots` follow the tables above. Order, proposal and strategy ids carry no cross-schema foreign keys, and the partial unique index `ux_positions_one_open` allows one open position per instrument. Positions and snapshots inherit ownership from their portfolio through query filters, as ledger rows do.
+- `transactions` gains `seq`, an identity column that records posting order, because ids and timestamps can tie within one posting.
+- The table is append-only through `BEFORE UPDATE OR DELETE` and `BEFORE TRUNCATE` triggers. A REVOKE can't bind the owning role, so the triggers are what enforce it. There is also `REVOKE … FROM PUBLIC`.
+- `IPortfolioLedger` (Contracts, implemented by `PortfolioLedger`) posts a batch atomically and joins the caller's transaction if there is one. It:
+  - locks the portfolio row `FOR UPDATE`;
+  - treats a repost of all of a batch's references as a replay that changes nothing, and refuses a partial one (`conflict`);
+  - requires cent-rounded, non-zero amounts of the postable types;
+  - refuses a posting that would take cash below `reserved_cash` (`insufficient_funds`);
+  - inserts entries in posting order with a running `balance_after`, then updates `cash_balance` and `version`.
+- `LedgerInvariants.CheckAsync` verifies the §20.8 invariants, and integration tests assert it after their postings.
+
 #### Schema `notify`
 
 **`notify.notifications`** (the Activity feed)

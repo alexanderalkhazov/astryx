@@ -78,6 +78,13 @@ namespace Astryx.Modules.Portfolio.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("position_id");
 
+                    b.Property<long>("Seq")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("seq");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<long>("Seq"));
+
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -94,6 +101,9 @@ namespace Astryx.Modules.Portfolio.Infrastructure.Persistence.Migrations
                     b.HasIndex("PortfolioId", "OccurredAt")
                         .IsDescending(false, true)
                         .HasDatabaseName("ix_transactions_portfolio_id_occurred_at");
+
+                    b.HasIndex("PortfolioId", "Seq")
+                        .HasDatabaseName("ix_transactions_portfolio_id_seq");
 
                     b.ToTable("transactions", "portfolio", t =>
                         {
@@ -190,6 +200,202 @@ namespace Astryx.Modules.Portfolio.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Astryx.Modules.Portfolio.Domain.PortfolioSnapshot", b =>
+                {
+                    b.Property<Guid>("PortfolioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("portfolio_id");
+
+                    b.Property<string>("Kind")
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)")
+                        .HasColumnName("kind");
+
+                    b.Property<DateTimeOffset>("SnapshotAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("snapshot_at");
+
+                    b.Property<decimal?>("BenchmarkClose")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("numeric(18,6)")
+                        .HasColumnName("benchmark_close");
+
+                    b.Property<decimal>("Cash")
+                        .HasPrecision(20, 4)
+                        .HasColumnType("numeric(20,4)")
+                        .HasColumnName("cash");
+
+                    b.Property<decimal>("Equity")
+                        .HasPrecision(20, 4)
+                        .HasColumnType("numeric(20,4)")
+                        .HasColumnName("equity");
+
+                    b.Property<decimal>("Invested")
+                        .HasPrecision(20, 4)
+                        .HasColumnType("numeric(20,4)")
+                        .HasColumnName("invested");
+
+                    b.Property<int>("PositionsCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("positions_count");
+
+                    b.Property<decimal>("RealizedPnlCum")
+                        .HasPrecision(20, 4)
+                        .HasColumnType("numeric(20,4)")
+                        .HasColumnName("realized_pnl_cum");
+
+                    b.Property<bool>("Stale")
+                        .HasColumnType("boolean")
+                        .HasColumnName("stale");
+
+                    b.Property<decimal>("UnrealizedPnl")
+                        .HasPrecision(20, 4)
+                        .HasColumnType("numeric(20,4)")
+                        .HasColumnName("unrealized_pnl");
+
+                    b.HasKey("PortfolioId", "Kind", "SnapshotAt")
+                        .HasName("pk_snapshots");
+
+                    b.ToTable("snapshots", "portfolio", t =>
+                        {
+                            t.HasCheckConstraint("ck_snapshots_kind", "kind IN ('eod', 'hourly')");
+                        });
+                });
+
+            modelBuilder.Entity("Astryx.Modules.Portfolio.Domain.Position", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("AvgEntryPrice")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("numeric(18,6)")
+                        .HasColumnName("avg_entry_price");
+
+                    b.Property<string>("BrokerPositionId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("broker_position_id");
+
+                    b.Property<DateTimeOffset?>("ClosedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("closed_at");
+
+                    b.Property<decimal>("CostBasis")
+                        .HasPrecision(20, 4)
+                        .HasColumnType("numeric(20,4)")
+                        .HasColumnName("cost_basis");
+
+                    b.Property<Guid?>("EntryOrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("entry_order_id");
+
+                    b.Property<decimal?>("ExitPrice")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("numeric(18,6)")
+                        .HasColumnName("exit_price");
+
+                    b.Property<string>("ExitReason")
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)")
+                        .HasColumnName("exit_reason");
+
+                    b.Property<decimal>("FeesPaid")
+                        .HasPrecision(20, 4)
+                        .HasColumnType("numeric(20,4)")
+                        .HasColumnName("fees_paid");
+
+                    b.Property<Guid>("InstrumentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("instrument_id");
+
+                    b.Property<DateTimeOffset>("OpenedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("opened_at");
+
+                    b.Property<Guid>("PortfolioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("portfolio_id");
+
+                    b.Property<Guid?>("ProposalId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("proposal_id");
+
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("numeric(18,6)")
+                        .HasColumnName("quantity");
+
+                    b.Property<decimal?>("RealizedPnl")
+                        .HasPrecision(20, 4)
+                        .HasColumnType("numeric(20,4)")
+                        .HasColumnName("realized_pnl");
+
+                    b.Property<DateTimeOffset?>("SeenAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("seen_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)")
+                        .HasColumnName("status");
+
+                    b.Property<decimal?>("StopPrice")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("numeric(18,6)")
+                        .HasColumnName("stop_price");
+
+                    b.Property<Guid?>("StrategyVersionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("strategy_version_id");
+
+                    b.Property<string>("Symbol")
+                        .IsRequired()
+                        .HasMaxLength(12)
+                        .HasColumnType("character varying(12)")
+                        .HasColumnName("symbol");
+
+                    b.Property<decimal?>("TargetPrice")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("numeric(18,6)")
+                        .HasColumnName("target_price");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint")
+                        .HasColumnName("version");
+
+                    b.HasKey("Id")
+                        .HasName("pk_positions");
+
+                    b.HasIndex("PortfolioId", "ClosedAt")
+                        .IsDescending(false, true)
+                        .HasDatabaseName("ix_positions_closed")
+                        .HasFilter("status = 'closed'");
+
+                    b.HasIndex("PortfolioId", "InstrumentId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_positions_one_open")
+                        .HasFilter("status = 'open'");
+
+                    b.HasIndex("PortfolioId", "Status")
+                        .HasDatabaseName("ix_positions_portfolio_id_status");
+
+                    b.ToTable("positions", "portfolio", t =>
+                        {
+                            t.HasCheckConstraint("ck_positions_closed", "(status = 'open' AND closed_at IS NULL) OR (status = 'closed' AND closed_at IS NOT NULL AND exit_reason IS NOT NULL)");
+
+                            t.HasCheckConstraint("ck_positions_exit_reason", "exit_reason IS NULL OR exit_reason IN ('stop', 'target', 'manual', 'reset')");
+
+                            t.HasCheckConstraint("ck_positions_quantity", "quantity >= 0");
+
+                            t.HasCheckConstraint("ck_positions_status", "status IN ('open', 'closed')");
+                        });
+                });
+
             modelBuilder.Entity("Astryx.Modules.Portfolio.Domain.LedgerTransaction", b =>
                 {
                     b.HasOne("Astryx.Modules.Portfolio.Domain.Portfolio", null)
@@ -198,6 +404,26 @@ namespace Astryx.Modules.Portfolio.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_transactions_portfolios_portfolio_id");
+                });
+
+            modelBuilder.Entity("Astryx.Modules.Portfolio.Domain.PortfolioSnapshot", b =>
+                {
+                    b.HasOne("Astryx.Modules.Portfolio.Domain.Portfolio", null)
+                        .WithMany()
+                        .HasForeignKey("PortfolioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_snapshots_portfolios_portfolio_id");
+                });
+
+            modelBuilder.Entity("Astryx.Modules.Portfolio.Domain.Position", b =>
+                {
+                    b.HasOne("Astryx.Modules.Portfolio.Domain.Portfolio", null)
+                        .WithMany()
+                        .HasForeignKey("PortfolioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_positions_portfolios_portfolio_id");
                 });
 #pragma warning restore 612, 618
         }

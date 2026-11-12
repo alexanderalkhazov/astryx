@@ -61,6 +61,9 @@ public sealed class LedgerTransaction
 
     public Guid PortfolioId { get; set; }
 
+    /// <summary>Database identity: the order entries were posted in (ids and timestamps can tie within one posting).</summary>
+    public long Seq { get; set; }
+
     public required string Type { get; set; }
 
     public decimal Amount { get; set; }
@@ -80,4 +83,104 @@ public sealed class LedgerTransaction
     public DateTimeOffset OccurredAt { get; set; }
 
     public string? Description { get; set; }
+}
+
+public static class PositionStatus
+{
+    public const string Open = "open";
+    public const string Closed = "closed";
+}
+
+public static class ExitReason
+{
+    public const string Stop = "stop";
+    public const string Target = "target";
+    public const string Manual = "manual";
+    public const string Reset = "reset";
+}
+
+/// <summary>
+/// Row in <c>portfolio.positions</c> (§10.4): at most one open position per instrument. Order, proposal and strategy
+/// ids point into other schemas, so they carry no foreign keys (as in <c>discovery</c>).
+/// </summary>
+public sealed class Position
+{
+    public Guid Id { get; set; }
+
+    public Guid PortfolioId { get; set; }
+
+    public Guid InstrumentId { get; set; }
+
+    public required string Symbol { get; set; }
+
+    public string Status { get; set; } = PositionStatus.Open;
+
+    public decimal Quantity { get; set; }
+
+    /// <summary>Average fill price, slippage included, fees excluded.</summary>
+    public decimal AvgEntryPrice { get; set; }
+
+    public decimal CostBasis { get; set; }
+
+    public decimal? StopPrice { get; set; }
+
+    public decimal? TargetPrice { get; set; }
+
+    public Guid? EntryOrderId { get; set; }
+
+    public Guid? ProposalId { get; set; }
+
+    public Guid? StrategyVersionId { get; set; }
+
+    public string? BrokerPositionId { get; set; }
+
+    public DateTimeOffset OpenedAt { get; set; }
+
+    public DateTimeOffset? ClosedAt { get; set; }
+
+    public decimal? ExitPrice { get; set; }
+
+    public string? ExitReason { get; set; }
+
+    /// <summary>Set on close, net of fees.</summary>
+    public decimal? RealizedPnl { get; set; }
+
+    public decimal FeesPaid { get; set; }
+
+    /// <summary>Drives the NEW badge until the user opens the position.</summary>
+    public DateTimeOffset? SeenAt { get; set; }
+
+    public long Version { get; set; }
+}
+
+public static class SnapshotKind
+{
+    public const string Eod = "eod";
+    public const string Hourly = "hourly";
+}
+
+/// <summary>Row in <c>portfolio.snapshots</c> (§10.4): equity over time for the portfolio chart (T-090).</summary>
+public sealed class PortfolioSnapshot
+{
+    public Guid PortfolioId { get; set; }
+
+    public required string Kind { get; set; }
+
+    public DateTimeOffset SnapshotAt { get; set; }
+
+    public decimal Equity { get; set; }
+
+    public decimal Cash { get; set; }
+
+    public decimal Invested { get; set; }
+
+    public decimal UnrealizedPnl { get; set; }
+
+    public decimal RealizedPnlCum { get; set; }
+
+    public decimal? BenchmarkClose { get; set; }
+
+    public int PositionsCount { get; set; }
+
+    public bool Stale { get; set; }
 }
