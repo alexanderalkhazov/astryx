@@ -20,6 +20,7 @@ export {
   Quote,
   type BarsRequest,
 } from './market';
+export { SearchItem, SearchResults, searchApi } from './search';
 export type { components as ApiSchemas } from './generated/schema';
 
 /** Money, prices, quantities and percents travel as decimal strings — never JS numbers. */

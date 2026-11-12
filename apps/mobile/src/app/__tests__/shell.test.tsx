@@ -83,16 +83,13 @@ describe('app shell', () => {
     expect(screen.getByRole('button', { name: 'Alerts, unread' })).toBeOnTheScreen();
   });
 
-  it.each([
-    ['Search', '/search', 'Search'],
-    ['Settings', '/settings', 'Settings'],
-  ])('opens %s from the Home header', async (button, pathname, title) => {
+  it('opens Settings from the Home header', async () => {
     await renderRouter(routes, { initialUrl: '/' });
 
-    await fireEvent.press(screen.getByRole('button', { name: button }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Settings' }));
 
-    await waitFor(() => expect(screen).toHavePathname(pathname));
-    expect(screen.getByRole('header', { name: title })).toBeOnTheScreen();
+    await waitFor(() => expect(screen).toHavePathname('/settings'));
+    expect(screen.getByRole('header', { name: 'Settings' })).toBeOnTheScreen();
   });
 
   it('opens Activity filtered to alerts from the bell', async () => {
@@ -143,12 +140,13 @@ describe('app shell', () => {
     }
   });
 
-  it('closes Search with its close button', async () => {
+  it('opens Search from the Home header and closes it with Cancel', async () => {
     await renderRouter(routes, { initialUrl: '/' });
     await fireEvent.press(screen.getByRole('button', { name: 'Search' }));
     await waitFor(() => expect(screen).toHavePathname('/search'));
+    expect(screen.getByTestId('search-input')).toBeOnTheScreen();
 
-    await fireEvent.press(screen.getByRole('button', { name: 'Close' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Cancel' }));
 
     await waitFor(() => expect(screen).toHavePathname('/'));
   });

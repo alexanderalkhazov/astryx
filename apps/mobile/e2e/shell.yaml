@@ -50,9 +50,20 @@ env:
 - runFlow: close-dev-menu.yaml
 - tapOn:
     id: header-search
-- assertVisible: "(?i)not implemented · 19"
+- tapOn:
+    id: search-input
+- inputText: am
+- extendedWaitUntil:
+    visible:
+      id: search-result-AMZN
+    timeout: 10000
+- assertVisible:
+    id: search-result-AMD
 - takeScreenshot: search
-- tapOn: Close
+- tapOn:
+    id: search-result-AMD
+- assertVisible: "(?i)not implemented · 04, 05, 16" # Stock screen arrives with T-049
+- tapOn: Back
 - assertVisible: Overview
 - tapOn:
     id: header-alerts

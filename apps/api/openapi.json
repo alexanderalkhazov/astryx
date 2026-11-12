@@ -929,10 +929,120 @@
           }
         }
       }
+    },
+    "/api/v1/search": {
+      "get": {
+        "tags": [
+          "Search"
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": [
+                "null",
+                "integer"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchItemsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/search/recent": {
+      "get": {
+        "tags": [
+          "Search"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchItemsResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Search"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddRecentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "AddRecentRequest": {
+        "required": [
+          "symbol"
+        ],
+        "type": "object",
+        "properties": {
+          "symbol": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
       "BarDto": {
         "required": [
           "t",
@@ -1383,6 +1493,58 @@
           },
           "isActive": {
             "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "InstrumentSearchItem": {
+        "required": [
+          "symbol",
+          "name",
+          "sector",
+          "last",
+          "changePct",
+          "held",
+          "signalType"
+        ],
+        "type": "object",
+        "properties": {
+          "symbol": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "sector": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "last": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "decimal"
+          },
+          "changePct": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "decimal"
+          },
+          "held": {
+            "type": "boolean"
+          },
+          "signalType": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         },
         "additionalProperties": false
@@ -1873,6 +2035,21 @@
         },
         "additionalProperties": false
       },
+      "SearchItemsResponse": {
+        "required": [
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InstrumentSearchItem"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
       "TokenResponse": {
         "required": [
           "accessToken",
@@ -2050,6 +2227,9 @@
     },
     {
       "name": "Market"
+    },
+    {
+      "name": "Search"
     }
   ]
 }

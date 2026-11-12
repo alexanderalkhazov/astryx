@@ -6,6 +6,7 @@ using Astryx.Infrastructure.Health;
 using Astryx.Modules.Ai;
 using Astryx.Modules.Audit;
 using Astryx.Modules.Discovery;
+using Astryx.Modules.Discovery.Api;
 using Astryx.Modules.Identity;
 using Astryx.Modules.Identity.Api;
 using Astryx.Modules.MarketData;
@@ -142,6 +143,7 @@ app.MapGet("/api/v1/system/status", async (HealthCheckService health, FreshnessP
 app.MapIdentityEndpoints();
 app.MapProfileEndpoints();
 app.MapMarketEndpoints();
+app.MapSearchEndpoints();
 
 if (DevEndpoints.IsEnabled(app.Environment, app.Configuration))
 {

@@ -1,4 +1,4 @@
-import { authApi, createApiClient } from '@astryx/api-client';
+import { authApi, createApiClient, marketApi, searchApi } from '@astryx/api-client';
 import { randomUUID } from 'expo-crypto';
 import { router } from 'expo-router';
 
@@ -42,5 +42,7 @@ export const api = createApiClient({
 });
 
 export const auth = authApi(api);
+export const market = marketApi(api);
+export const search = searchApi(api);
 
 export { refreshSession };

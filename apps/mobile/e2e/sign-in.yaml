@@ -13,21 +13,26 @@ env:
     text: Open
     optional: true
 - extendedWaitUntil:
-    visible:
-      id: sign-in-submit
+    visible: "Sign in|Overview|Back" # whole-label match
     timeout: 30000
-- tapOn:
-    id: sign-in-email
-- inputText: ${EMAIL}
-- tapOn:
-    id: sign-in-password
-- inputText: ${PASSWORD}
-- tapOn:
-    id: sign-in-submit
-- tapOn:
-    text: Not Now # iOS "Save Password?" prompt
-    optional: true
-- extendedWaitUntil:
-    notVisible:
-      id: sign-in-submit
-    timeout: 15000
+# Already signed in: the auth gate has left the sign-in screen, so there is nothing to do.
+- runFlow:
+    when:
+      visible:
+        id: sign-in-submit
+    commands:
+      - tapOn:
+          id: sign-in-email
+      - inputText: ${EMAIL}
+      - tapOn:
+          id: sign-in-password
+      - inputText: ${PASSWORD}
+      - tapOn:
+          id: sign-in-submit
+      - tapOn:
+          text: Not Now # iOS "Save Password?" prompt
+          optional: true
+      - extendedWaitUntil:
+          notVisible:
+            id: sign-in-submit
+          timeout: 15000

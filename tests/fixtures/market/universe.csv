@@ -11,7 +11,7 @@ JPM,XNYS,JPMorgan Chase & Co.,equity,Financials,Diversified Banks,620000000000.0
 AAPL,XNAS,Apple Inc.,equity,Information Technology,Technology Hardware,3420000000000.00,226.15,224.90,,,,48000000,52000000,trend,,1.19,34.6,6.54,78
 MSFT,XNAS,Microsoft Corp.,equity,Information Technology,Systems Software,3190000000000.00,428.70,426.85,,,,19000000,21000000,trend,,0.98,35.2,12.18,76
 LLY,XNYS,Eli Lilly and Co.,equity,Health Care,Pharmaceuticals,770000000000.00,812.40,808.10,,,,3100000,3300000,trend,,0.52,62.8,12.94,86
-AMZN,XNAS,Amazon.com Inc.,equity,Consumer Discretionary,Broadline Retail,2380000000000.00,226.85,225.70,,,,38000000,41000000,trend,,1.24,41.7,5.44,80
+AMZN,XNAS,Amazon.com Inc.,equity,Consumer Discretionary,Broadline Retail,2010000000000.00,191.35,189.04,,,,38000000,41000000,trend,,1.24,41.7,5.44,80
 GOOGL,XNAS,Alphabet Inc. Class A,equity,Communication Services,Interactive Media,2310000000000.00,188.40,187.15,,,,26000000,28000000,trend,,1.04,23.9,7.88,79
 META,XNAS,Meta Platforms Inc.,equity,Communication Services,Interactive Media,1580000000000.00,628.30,624.70,,,,11000000,12500000,trend,,1.27,27.6,22.76,79
 NFLX,XNAS,Netflix Inc.,equity,Communication Services,Movies & Entertainment,410000000000.00,958.20,962.40,,,,3200000,3500000,flat,,1.31,48.1,19.92,64

@@ -1150,6 +1150,13 @@ Shared for every screen:
 | Empty | "No matches for 'xyz'" |
 | Error | Inline error + Retry |
 
+**Implemented (T-046).**
+- **Ranking:** search uses `IInstrumentDirectory` (Contracts, implemented by MarketData). The exact ticker comes first, then ticker prefixes by market cap, then company names matching at a word start or by trigram similarity ≥ 0.4. "am" → AMZN, AMD, AMAT, AMT, BAC, and never the "Sample …" fillers. LIKE wildcards in the query are escaped.
+- **Recents:** stored in `discovery.recent_searches` (`IUserOwned`); the newest 10 are kept, pruned on insert.
+- **Tags:** `held` and `signalType` are always false/null until Portfolio (M5) and the scanner (M3) fill them.
+- **Mobile:** the query is debounced by 200 ms and stale results stay visible while typing. Picking a result records the recent (fire-and-forget) and replaces the modal with the stock screen.
+- **Keyboard:** `Screen` scroll views use `keyboardShouldPersistTaps="handled"`. On the device the first tap on a result had only dismissed the keyboard.
+
 #### 8.4.13 Global overlays
 
 - **Toast (26):** slides in from the top with e1 elevation and auto-dismisses after 3.8 s. Tap to dismiss. Used for fills, syncs, rejections and backtests. Driven by SignalR events and mutation results. Queue max 3.

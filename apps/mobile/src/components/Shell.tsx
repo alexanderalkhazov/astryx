@@ -27,7 +27,10 @@ export function Screen({ children, scroll = true, edges = ['top'], header }: Scr
     <SafeAreaView style={styles.safe} edges={edges}>
       {header ? <View style={styles.column}>{header}</View> : null}
       {scroll ? (
-        <ScrollView contentContainerStyle={[styles.column, styles.content]}>{children}</ScrollView>
+        // "handled": a tap on a row or button acts on the first try instead of only dismissing the keyboard.
+        <ScrollView contentContainerStyle={[styles.column, styles.content]} keyboardShouldPersistTaps="handled">
+          {children}
+        </ScrollView>
       ) : (
         <View style={[styles.column, styles.content, styles.fill]}>{children}</View>
       )}
