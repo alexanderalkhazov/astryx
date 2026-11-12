@@ -49,10 +49,10 @@ export function splitMoney(value: DecimalString): { main: string; cents: string 
 }
 
 /** Per-share price: 2 dp at or above $1, 4 dp below (price tick, §20.1). "186.5" → "186.50". */
-export function formatPrice(value: DecimalString): string {
+export function formatPrice(value: DecimalString, { signed = false }: { signed?: boolean } = {}): string {
   const decimal = toDecimal(value);
   const dp = decimal.abs().greaterThanOrEqualTo(1) ? 2 : 4;
-  const { sign, whole, fraction } = fixed(value, dp, false);
+  const { sign, whole, fraction } = fixed(value, dp, signed);
   return `${sign}${whole}.${fraction}`;
 }
 
@@ -108,4 +108,25 @@ export type Direction = 'up' | 'down' | 'unchanged';
 export function changeDirection(change: DecimalString): Direction {
   const value = toDecimal(change);
   return value.isZero() ? 'unchanged' : value.isNegative() ? 'down' : 'up';
+}
+
+/** Wall-clock time in New York, where the market keeps time: "2026-11-09T19:32:00Z" → "14:32 ET". */
+export function formatEtTime(instant: string): string {
+  const time = new Date(instant).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone: 'America/New_York' });
+  return `${time} ET`;
+}
+
+/** A session date as the design writes it: "2026-11-09" → "Nov 9". */
+export function formatSessionDate(isoDate: string): string {
+  return new Date(`${isoDate}T12:00:00Z`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+}
+
+/** Large amounts in short form, from the decimal string: "4580000000000" → "$4.58T"; below a thousand, plain money. */
+export function formatCompactMoney(value: DecimalString): string {
+  const amount = toDecimal(value);
+  const units: [string, string][] = [['1e12', 'T'], ['1e9', 'B'], ['1e6', 'M'], ['1e3', 'K']];
+  for (const [size, suffix] of units) {
+    if (amount.abs().gte(size)) return `${amount.isNegative() ? MINUS : ''}$${amount.abs().div(size).toDecimalPlaces(2).toFixed(2)}${suffix}`;
+  }
+  return formatMoney(value);
 }

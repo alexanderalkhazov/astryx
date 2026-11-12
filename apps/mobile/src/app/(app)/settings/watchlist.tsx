@@ -2,7 +2,7 @@ import type { Watchlist, WatchlistItem } from '@astryx/api-client';
 import { color, space } from '@astryx/design-tokens';
 import { router } from 'expo-router';
 import { ArrowDown, ArrowUp, Trash2 } from 'lucide-react-native';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { type AccessibilityActionEvent, Pressable, StyleSheet, View } from 'react-native';
 
 import { Button, IconButton } from '@/components/Button';
@@ -18,12 +18,18 @@ import { changeDirection, formatPct, formatPrice } from '@/lib/format';
 export default function WatchlistScreen() {
   const list = useDefaultWatchlist();
   const editor = useWatchlistEditor();
-  const [editing, setEditing] = useState(false);
+  const [editingRequested, setEditing] = useState(false);
   const items = list.data?.items ?? [];
+  // Removing the last stock ends editing, so the next stock added doesn't open in edit mode.
+  const editing = editingRequested && items.length > 0;
+  useEffect(() => {
+    if (items.length === 0) setEditing(false);
+  }, [items.length]);
 
   const header = (
     <StackHeader
       title="Watchlist"
+      sideWidth={64}
       right={items.length > 0 ? <Button variant="link" label={editing ? 'Done' : 'Edit'} onPress={() => setEditing((e) => !e)} /> : undefined}
     />
   );

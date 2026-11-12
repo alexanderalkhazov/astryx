@@ -1056,6 +1056,15 @@ Shared for every screen:
 | Empty | **No signal**: "No active signal · Evaluated 14:32 ET" ; button → Add to watchlist |
 | Error | Bars unavailable → chart area EmptyState "Price history unavailable" + Retry; quote stale → banner + bottom button disabled |
 
+Implementation (T-049):
+- **Header:** ticker and company name, the watchlist star (amber when on) and Search. `StackHeader` gained `sideWidth` so two right-hand icons keep the title centred.
+- **Price block:** `price-xl` last, signed change, then industry (falling back to sector) and "HH:MM ET · illustrative" while the source is the fake provider. Its accessibility label carries all of these.
+- **Readout:** the OHLCV row is one line that shrinks to fit. It shows the last visible bar, or the bar under the finger.
+- **Chart:** `CandleChart` with 1D·5D·1M·3M·1Y. Daily timeframes request `interval=1d` with about four extra months, and the bars before the latest session minus N months are warm-up for MA20/MA50. Overlay toggles cover MA 20, MA 50 and Volume, plus Trade levels when the bars carry levels (1M and 3M only; none until M3).
+- **Tabs:** Signal and Technicals show placeholders until M3. Fundamentals shows "—" with "Not provided by data source"; the sector comparison waits for the scanner. News headlines open in the browser.
+- **States:** price and chart skeletons; "Price history unavailable" with Retry; "No bars yet today" before the open on 1D; a stale-quote banner; unknown symbol leads to Search.
+- **Bottom bar:** "Add to watchlist" / "On watchlist" until signals exist. It isn't disabled on stale quotes, because only order-related actions are.
+
 #### 8.4.4 Trade proposal (`proposal/[id]`) — design 06
 
 | Aspect | Spec |

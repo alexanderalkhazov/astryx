@@ -44,7 +44,10 @@ env:
 - tapOn:
     id: tab-index
 - tapOn: Stock · NVDA
-- assertVisible: "(?i)not implemented · 04, 05, 16"
+- extendedWaitUntil:
+    visible:
+      id: stock-price
+    timeout: 15000
 - tapOn: Back
 - assertVisible: Overview
 - runFlow: close-dev-menu.yaml
@@ -62,7 +65,10 @@ env:
 - takeScreenshot: search
 - tapOn:
     id: search-result-AMD
-- assertVisible: "(?i)not implemented · 04, 05, 16" # Stock screen arrives with T-049
+- extendedWaitUntil:
+    visible:
+      id: stock-price
+    timeout: 15000 # Stock screen arrives with T-049
 - tapOn: Back
 - assertVisible: Overview
 - tapOn:

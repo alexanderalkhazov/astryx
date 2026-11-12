@@ -75,10 +75,12 @@ export interface StackHeaderProps {
   /** Defaults to router.back(). */
   onBack?: () => void;
   right?: ReactNode;
+  /** Both sides share this width so the title stays centred; widen it for two right-hand icons. */
+  sideWidth?: number;
 }
 
 /** Back header with a centred title (design 03 · StackHeader). */
-export function StackHeader({ title, subtitle, onBack, right }: StackHeaderProps) {
+export function StackHeader({ title, subtitle, onBack, right, sideWidth = size.touch }: StackHeaderProps) {
   const router = useRouter();
   return (
     <View style={styles.header}>
@@ -87,7 +89,7 @@ export function StackHeader({ title, subtitle, onBack, right }: StackHeaderProps
         accessibilityLabel="Back"
         onPress={onBack ?? (() => router.back())}
         hitSlop={8}
-        style={({ pressed }) => [styles.side, { opacity: pressed ? 0.6 : 1 }]}
+        style={({ pressed }) => [styles.side, { width: sideWidth, alignItems: sideWidth > size.touch ? 'flex-start' : 'center', opacity: pressed ? 0.6 : 1 }]}
       >
         <ChevronLeft size={24} strokeWidth={1.7} color={color.text} />
       </Pressable>
@@ -101,7 +103,7 @@ export function StackHeader({ title, subtitle, onBack, right }: StackHeaderProps
           </Text>
         ) : null}
       </View>
-      <View style={[styles.side, styles.right]}>{right}</View>
+      <View style={[styles.side, styles.right, { width: sideWidth }]}>{right}</View>
     </View>
   );
 }
@@ -133,7 +135,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: space[2],
   },
   side: { width: size.touch, height: size.touch, alignItems: 'center', justifyContent: 'center' },
-  right: { alignItems: 'flex-end' },
+  right: { alignItems: 'center', justifyContent: 'flex-end', flexDirection: 'row' },
   center: { flex: 1, alignItems: 'center' },
   title: { ...(typeScale.section as TextStyle), color: color.text },
   subtitle: { ...(typeScale.caption as TextStyle), color: color.text2 },

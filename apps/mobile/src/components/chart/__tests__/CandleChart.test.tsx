@@ -2,19 +2,6 @@ import { render, screen } from '@testing-library/react-native';
 
 import { CandleChart, summarize } from '../CandleChart';
 
-// Skia, worklets and the gesture detector need native code; drawing is checked on the simulator (dev gallery).
-jest.mock('@shopify/react-native-skia', () => {
-  const builder = () => {
-    const b = { moveTo: () => b, lineTo: () => b, addRect: () => b, build: () => ({}) };
-    return b;
-  };
-  const Stub = () => null;
-  return { Canvas: Stub, Path: Stub, Line: Stub, Group: Stub, DashPathEffect: Stub, Skia: { PathBuilder: { Make: builder }, XYWHRect: () => ({}) }, vec: (x: number, y: number) => ({ x, y }) };
-});
-jest.mock('react-native-worklets', () => ({ scheduleOnRN: (fn: (...args: unknown[]) => void, ...args: unknown[]) => fn(...args) }));
-jest.mock('react-native-gesture-handler', () => ({ GestureDetector: ({ children }: { children: React.ReactNode }) => children, usePanGesture: () => ({}) }));
-jest.mock('expo-haptics', () => ({ selectionAsync: jest.fn() }));
-
 const bars = Array.from({ length: 12 }, (_, i) => {
   const day = String(i + 1).padStart(2, '0');
   return { t: `2026-10-${day}T13:30:00Z`, d: `2026-10-${day}`, o: '100.00', h: `${110 + i}.00`, l: `${90 - i}.00`, c: `${100 + i}.50`, v: 1_000_000 };

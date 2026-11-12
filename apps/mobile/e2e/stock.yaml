@@ -1,0 +1,41 @@
+# Stock analysis (T-049): price, OHLCV readout, chart, timeframes, Fundamentals and News tabs. Signed in (run sign-in.yaml first).
+appId: ${APP_ID}
+env:
+  APP_ID: app.astryx.mobile
+  LINK: astryx://
+---
+- openLink: ${LINK}stock/NVDA
+- tapOn:
+    text: Open
+    optional: true
+- runFlow: close-dev-menu.yaml
+- extendedWaitUntil:
+    visible: 3M
+    timeout: 30000
+- tapOn: 3M # the screen may still be mounted from an earlier run on another timeframe
+- extendedWaitUntil:
+    visible:
+      id: candle-chart
+    timeout: 30000
+- assertVisible: "186\\.40, up 3\\.42% today, Semiconductors, as of .*" # the price block's accessibility label (a regex)
+- waitForAnimationToEnd
+- takeScreenshot: stock-3m
+- tapOn: 1Y
+- extendedWaitUntil:
+    visible: "Price chart, 2[45]\\d bars.*"
+    timeout: 10000
+- tapOn: 1D
+- extendedWaitUntil: # before the open there are no intraday bars yet
+    visible: "No bars yet today|Price chart, .*"
+    timeout: 10000
+- tapOn: 3M
+- tapOn: Fundamentals
+- extendedWaitUntil:
+    visible: "Market cap, .*"
+    timeout: 10000
+- takeScreenshot: stock-fundamentals
+- tapOn: News
+- extendedWaitUntil:
+    visible:
+      id: news-tab
+    timeout: 10000

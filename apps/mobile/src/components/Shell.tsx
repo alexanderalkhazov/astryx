@@ -19,10 +19,12 @@ export interface ScreenProps {
   edges?: Edge[];
   /** Fixed above the scrolling content, full column width (e.g. a StackHeader). */
   header?: ReactNode;
+  /** Sticky bar below the content (e.g. the Stock screen's action bar); it takes the bottom safe area. */
+  footer?: ReactNode;
 }
 
 /** Screen frame: background, top safe area, 16 pt gutter, centred column. */
-export function Screen({ children, scroll = true, edges = ['top'], header }: ScreenProps) {
+export function Screen({ children, scroll = true, edges = ['top'], header, footer }: ScreenProps) {
   return (
     <SafeAreaView style={styles.safe} edges={edges}>
       {header ? <View style={styles.column}>{header}</View> : null}
@@ -34,6 +36,11 @@ export function Screen({ children, scroll = true, edges = ['top'], header }: Scr
       ) : (
         <View style={[styles.column, styles.content, styles.fill]}>{children}</View>
       )}
+      {footer ? (
+        <SafeAreaView edges={['bottom']} style={styles.footer}>
+          <View style={styles.column}>{footer}</View>
+        </SafeAreaView>
+      ) : null}
     </SafeAreaView>
   );
 }
@@ -121,6 +128,7 @@ export function HomeHeader({ unreadAlerts = false }: { unreadAlerts?: boolean })
 }
 
 const styles = StyleSheet.create({
+  footer: { borderTopWidth: 1, borderTopColor: color.line, backgroundColor: color.bg },
   safe: { flex: 1, backgroundColor: color.bg },
   column: { width: '100%', maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center' },
   content: { paddingHorizontal: space[4], paddingBottom: space[6], gap: space[3] },

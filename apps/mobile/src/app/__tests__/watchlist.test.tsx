@@ -35,8 +35,10 @@ function deferred<T = void>() {
   return { promise, resolve, reject };
 }
 
+let queryClient: QueryClient;
+
 function renderAt(initialUrl: string) {
-  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+  queryClient = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return renderRouter(
     {
       _layout: () => (
@@ -160,6 +162,22 @@ describe('Settings › Watchlist', () => {
 
     expect(await screen.findByTestId('watchlist-row-AMD')).toBeOnTheScreen();
     expect(useToasts.getState().toasts[0]).toMatchObject({ title: "Couldn't remove from watchlist", body: 'Your watchlist changed elsewhere. It has been reloaded.' });
+  });
+
+  it('leaves edit mode when the last stock is removed', async () => {
+    mockApi.list.mockResolvedValue({ data: { items: [list([AMD])] } });
+    mockApi.removeItem.mockResolvedValue({ data: undefined });
+    await renderAt('/settings/watchlist');
+    await fireEvent.press(await screen.findByRole('button', { name: 'Edit' }));
+
+    mockApi.list.mockResolvedValue({ data: { items: [list([], 4)] } });
+    await fireEvent.press(screen.getByLabelText('Remove AMD'));
+    expect(await screen.findByText('No stocks yet')).toBeOnTheScreen();
+
+    mockApi.list.mockResolvedValue({ data: { items: [list([NVDA], 5)] } });
+    await act(() => queryClient.invalidateQueries()); // the star on a stock screen added one
+    expect(await screen.findByRole('button', { name: 'Edit' })).toBeOnTheScreen();
+    expect(screen.queryByLabelText('Remove NVDA')).not.toBeOnTheScreen();
   });
 
   it('offers search when the list is empty', async () => {
