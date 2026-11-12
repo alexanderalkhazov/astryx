@@ -40,6 +40,7 @@ public static class AiModule
         services.AddScoped<AnalysisGenerator>();
         services.AddOptions<AnalysisJobOptions>().Bind(configuration.GetSection(AnalysisJobOptions.SectionName));
         services.AddScoped<AnalysisJobService>();
+        services.AddScoped<Astryx.Contracts.Ai.IAnalysisLookup, AnalysisLookup>();
         services.AddValidatorsFromAssemblyContaining<CreateAnalysisRequestValidator>(includeInternalTypes: true);
         services.AddSingleton<AnalysisJobProcessor>();
         services.AddIntegrationEventHandler<AnalysisUpdated, AnalysisUpdatedHandler>();

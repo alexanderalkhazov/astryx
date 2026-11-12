@@ -815,6 +815,18 @@ flowchart TD
 | Dependencies | Discovery, Ai, MarketData, Risk (same module) |
 | Endpoints | `/api/v1/proposals/*` |
 
+**Implemented (T-081).**
+
+- `trading.proposals` follows §10.4, plus a few extra columns: `symbol`, `strategy_id`, `strategy_name`, `source_at` (signal or analysis time) and `reject_note` (the user's ≤ 200-character reason). Cross-schema ids carry no foreign keys.
+- `ProposalService` reads from other modules only through Contracts: `ISignalLookup` (Discovery), `IAnalysisLookup` (Ai), `IStockResearchSource` and `IMarketSessionClock` (MarketData), `IPortfolioDirectory` (Portfolio).
+- **From a signal:** the signal must be `active` (409 `signal_not_active`). It provides the deterministic levels, the order type, the score and the strategy lineage, plus template copy in the mobile Signal tab's wording (`copy_source=template`).
+- **From an analysis:** the analysis must be the user's own (404 otherwise), not stale (409 `analysis_stale`), and its levels accepted by LevelValidator (422 `ai_levels_rejected`).
+  - `DECIDED`: entry is the top of the entry zone, the same worst fill LevelValidator assumed. The order is a `buy_stop` above the last price, otherwise a `limit`. The copy is the model's validated text (`copy_source=ai`).
+- **Every creation** also needs a fresh quote (409 `quote_stale`) and the regular session open until 30 minutes before the close (409 `market_closed`). `expires_at` is the close − 30 min.
+- An existing pending proposal for the instrument is returned with 200. The partial unique index settles races.
+- T5 rejects only pending, unexpired proposals, and leaves the signal untouched for hit-rate audits. `ProposalExpiryJob` runs every minute.
+- `assessment` stays null until the risk engine (T-082/T-083).
+
 ### 7.10 Trading — Risk management
 
 | Aspect | Detail |

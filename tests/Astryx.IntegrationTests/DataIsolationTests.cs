@@ -6,6 +6,8 @@ using Astryx.Infrastructure.Security;
 using Astryx.Modules.Ai.Domain;
 using Astryx.Modules.Ai.Infrastructure.Persistence;
 using Astryx.Modules.Identity.Infrastructure.Persistence;
+using Astryx.Modules.Trading.Domain;
+using Astryx.Modules.Trading.Infrastructure.Persistence;
 using Astryx.Modules.Portfolio.Infrastructure.Persistence;
 using Astryx.Modules.Profiles.Infrastructure.Persistence;
 using Astryx.Modules.Watchlists.Infrastructure.Persistence;
@@ -53,6 +55,8 @@ public partial class DataIsolationTests(ApiFactory factory) : IClassFixture<ApiF
         ["GET /api/v1/analyses/jobs/{jobId:guid}"] = t => t.AssertForeignAnalysisIs404Async(HttpMethod.Get, a => $"/api/v1/analyses/jobs/{a.JobId}"),
         ["DELETE /api/v1/analyses/jobs/{jobId:guid}"] = t => t.AssertForeignAnalysisIs404Async(HttpMethod.Delete, a => $"/api/v1/analyses/jobs/{a.JobId}"),
         ["GET /api/v1/analyses/{id:guid}"] = t => t.AssertForeignAnalysisIs404Async(HttpMethod.Get, a => $"/api/v1/analyses/{a.ResultId}"),
+        ["GET /api/v1/proposals/{id:guid}"] = t => t.AssertForeignProposalIs404Async(HttpMethod.Get, ""),
+        ["POST /api/v1/proposals/{id:guid}/reject"] = t => t.AssertForeignProposalIs404Async(HttpMethod.Post, "/reject"),
     };
 
     /// <summary>
@@ -130,6 +134,35 @@ public partial class DataIsolationTests(ApiFactory factory) : IClassFixture<ApiF
         (await bob.SendAsync(new HttpRequestMessage(method, path(ids)))).StatusCode.ShouldBe(HttpStatusCode.NotFound);
 
         (await alice.GetFromJsonAsync<JsonElement>($"/api/v1/analyses/jobs/{ids.JobId}")).GetProperty("status").GetString().ShouldBe("pending");
+    }
+
+    /// <summary>Bob addresses Alice's trade proposal: 404, and it stays pending.</summary>
+    private async Task AssertForeignProposalIs404Async(HttpMethod method, string suffix)
+    {
+        var alice = await TestUsers.SignedInClientAsync(factory);
+        var bob = await TestUsers.SignedInClientAsync(factory);
+        var aliceId = (await alice.GetFromJsonAsync<JsonElement>("/api/v1/me")).GetProperty("id").GetGuid();
+        var id = Guid.NewGuid();
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<TradingDbContext>();
+            db.Proposals.Add(new Proposal
+            {
+                Id = id, UserId = aliceId, PortfolioId = Guid.NewGuid(), InstrumentId = Guid.NewGuid(), Symbol = "NVDA", Source = "signal", SignalId = Guid.NewGuid(),
+                OrderType = "buy_stop", EntryPrice = 186.5m, StopPrice = 178.2m, TargetPrice = 204m, Headline = "h", Summary = "s", CopySource = "template",
+                Evidence = "[]", Invalidation = "[]", CreatedAt = DateTimeOffset.UtcNow, ExpiresAt = DateTimeOffset.UtcNow.AddHours(1),
+            });
+            await db.SaveChangesAsync();
+        }
+
+        var request = new HttpRequestMessage(method, $"/api/v1/proposals/{id}{suffix}");
+        if (method == HttpMethod.Post)
+        {
+            request.Content = JsonContent.Create(new { });
+        }
+
+        (await bob.SendAsync(request)).StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        (await alice.GetFromJsonAsync<JsonElement>($"/api/v1/proposals/{id}")).GetProperty("status").GetString().ShouldBe("pending");
     }
 
     [GeneratedRegex(@"userId=(?<user>[0-9a-f-]{36})&token=(?<token>[A-Za-z0-9_-]{43})")]

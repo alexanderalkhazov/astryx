@@ -42,3 +42,22 @@ public sealed class SignalPrioritySymbols(DiscoveryDbContext db) : IPrioritySymb
     public async Task<IReadOnlyList<string>> GetSymbolsAsync(CancellationToken cancellationToken) =>
         await db.Signals.AsNoTracking().Where(s => s.Status == SignalStatus.Active).Select(s => s.Symbol).Distinct().OrderBy(s => s).ToListAsync(cancellationToken);
 }
+
+/// <summary>A signal by id for trade proposals (§7.9), whatever its status: the caller decides what it accepts.</summary>
+public sealed class SignalLookup(DiscoveryDbContext db) : ISignalLookup
+{
+    public async Task<SignalDetail?> GetAsync(Guid signalId, CancellationToken cancellationToken)
+    {
+        if (await db.Signals.AsNoTracking().SingleOrDefaultAsync(s => s.Id == signalId, cancellationToken) is not { } s)
+        {
+            return null;
+        }
+
+        var metrics = System.Text.Json.JsonDocument.Parse(s.Metrics).RootElement;
+        string? Metric(string name) => metrics.TryGetProperty(name, out var value) && value.ValueKind == System.Text.Json.JsonValueKind.String ? value.GetString() : null;
+        return new SignalDetail(
+            s.Id, s.InstrumentId, s.Symbol, s.Status, s.SignalType, s.OrderType, s.EntryPrice, s.StopPrice, s.TargetPrice, s.Score, s.Reason,
+            s.StrategyId, s.StrategyVersionId, s.StrategyName, s.EvaluatedAt, s.ExpiresAt,
+            Metric("relVolume"), Metric("relStrength"), Metric("rewardRisk"), Metric("rsi14"));
+    }
+}

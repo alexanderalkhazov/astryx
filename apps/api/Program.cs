@@ -22,6 +22,7 @@ using Astryx.Modules.Profiles.Api;
 using Astryx.Modules.Quant;
 using Astryx.Modules.Strategies;
 using Astryx.Modules.Trading;
+using Astryx.Modules.Trading.Api;
 using Astryx.Modules.Watchlists;
 using Astryx.Modules.Watchlists.Api;
 using Astryx.Modules.Quant.Api;
@@ -156,6 +157,7 @@ app.MapIndicatorEndpoints();
 app.MapStrategyEndpoints();
 app.MapScannerEndpoints();
 app.MapAnalysisEndpoints();
+app.MapProposalEndpoints();
 app.MapRealtime();
 
 if (DevEndpoints.IsEnabled(app.Environment, app.Configuration))

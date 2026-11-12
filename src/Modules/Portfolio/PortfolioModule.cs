@@ -16,6 +16,7 @@ public static class PortfolioModule
         services.AddModuleDbContext<PortfolioDbContext>(PortfolioDbContext.SchemaName, historyKey: "portfolio");
         services.AddIntegrationEventHandler<UserRegistered, CreatePaperPortfolioHandler>();
         services.AddScoped<Astryx.Contracts.Portfolio.IPortfolioLedger, PortfolioLedger>();
+        services.AddScoped<Astryx.Contracts.Portfolio.IPortfolioDirectory, PortfolioDirectory>();
         return services;
     }
 }
