@@ -268,7 +268,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Scope:** price pane 210, volume 40, MA20 and MA50 overlays, entry, stop and target level lines with gutter tags, scrub that snaps to a bar (OHLCV readout, haptic throttled to 30 ms, release returns to the last bar), and an accessibility summary plus a last-10-bars list. `LineChart` with a benchmark dashed overlay and scrub readout.
   - **Acceptance:** 60 fps scrub on the simulator with 250 bars. Visually matches design 04.
   - **Refs:** §8.4.3, §8.6 · **Depends:** T-036 · **P0**
-- [ ] **T-049** Stock analysis screen: price, chart, tabs shell
+- [x] **T-049** Stock analysis screen: price, chart, tabs shell (a3a3ac4)
   - **Story:** As a user, I want to open a stock and see its price action with moving averages and volume.
   - **Acceptance:** header (back, ticker, star, search), price-xl, signal ribbon (placeholder until M3), OHLCV readout, timeframes 1D/5D/1M/3M/1Y, overlay toggles, Fundamentals and News tabs (design 16), loading, empty and stale states. The bottom button adapts (Add to watchlist for now).
   - **Refs:** §8.4.3 · **Depends:** T-048, T-047 · **P0**
