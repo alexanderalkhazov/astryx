@@ -81,6 +81,11 @@ export function useFundamentals(symbol: string, enabled: boolean) {
   return useQuery({ queryKey: ['stock', symbol, 'fundamentals'], queryFn: async () => (await market.fundamentals(symbol)).data, staleTime: DAY_MS, enabled });
 }
 
+/** M7 snapshot (server-computed indicator values); refreshed every minute while the screen is open. */
+export function useIndicators(symbol: string, enabled: boolean) {
+  return useQuery({ queryKey: ['stock', symbol, 'indicators'], queryFn: async () => (await market.indicators(symbol)).data, staleTime: 60_000, enabled });
+}
+
 export function useNews(symbol: string, enabled: boolean) {
   return useQuery({ queryKey: ['stock', symbol, 'news'], queryFn: async () => (await market.news(symbol, 10)).data.items, enabled });
 }

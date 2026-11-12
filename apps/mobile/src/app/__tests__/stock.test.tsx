@@ -9,11 +9,11 @@ import StockScreen from '../(app)/stock/[ticker]';
 jest.mock('expo-crypto', () => ({ randomUUID: () => '00000000-0000-4000-8000-000000000001' }));
 jest.mock('expo-secure-store', () => ({ WHEN_UNLOCKED_THIS_DEVICE_ONLY: 'x', getItemAsync: jest.fn(), setItemAsync: jest.fn(), deleteItemAsync: jest.fn() }));
 jest.mock('@/lib/api', () => ({
-  market: { instrument: jest.fn(), quote: jest.fn(), bars: jest.fn(), fundamentals: jest.fn(), news: jest.fn() },
+  market: { instrument: jest.fn(), quote: jest.fn(), bars: jest.fn(), fundamentals: jest.fn(), news: jest.fn(), indicators: jest.fn() },
   watchlists: { list: jest.fn(), star: jest.fn(), unstar: jest.fn() },
 }));
 const api = jest.requireMock('@/lib/api') as {
-  market: Record<'instrument' | 'quote' | 'bars' | 'fundamentals' | 'news', jest.Mock>;
+  market: Record<'instrument' | 'quote' | 'bars' | 'fundamentals' | 'news' | 'indicators', jest.Mock>;
   watchlists: Record<'list' | 'star' | 'unstar', jest.Mock>;
 };
 
@@ -30,6 +30,14 @@ const dailyBars = Array.from({ length: 160 }, (_, i) => {
   return { t: `${d}T13:30:00Z`, d, o: '180.60', h: '186.77', l: '180.05', c: '186.40', v: 412883000 };
 });
 const barsResponse = (bars = dailyBars) => ({ data: { symbol: 'NVDA', interval: '1d', adjusted: false, asOf: null, stale: false, bars, levels: null } });
+
+const SNAPSHOT = {
+  symbol: 'NVDA', interval: '1d', asOfBar: '2026-11-11', barCount: 300, dataQuality: 'ok', insufficient: [],
+  values: {
+    sma20: '182.4545', sma50: '172.0114', ema20: '180.8699', rsi14: '64.2', macd: '1.8760', macdSignal: '2.7341', macdHist: '-0.8581',
+    atr14: '3.4226', relVolume20: '2.34', momentum20Pct: '0.0292', changePct1d: '0.0342', volatility20Ann: '0.1968', relStrength: '99', trend: 'uptrend',
+  },
+};
 
 function renderStock(symbol = 'NVDA') {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
@@ -56,6 +64,7 @@ beforeEach(() => {
     data: { symbol: 'NVDA', asOf: null, beta: '1.72', peRatio: '48.60', epsTtm: null, nextEarningsDate: '2026-11-25', marketCap: '4550000000000', sector: 'Information Technology', industry: 'Semiconductors' },
   });
   api.market.news.mockResolvedValue({ data: { items: [{ id: 'n1', headline: 'NVIDIA shares climb', source: 'Sample Wire', url: 'https://example.com/n1', publishedAt: '2026-11-12T12:05:00Z', summary: null }] } });
+  api.market.indicators.mockResolvedValue({ data: SNAPSHOT });
   api.watchlists.list.mockResolvedValue({ data: { items: [{ id: 'list-1', name: 'Watchlist', isDefault: true, sortOrder: 0, version: 1, items: [] }] } });
   api.watchlists.star.mockResolvedValue({ data: undefined });
 });
@@ -134,5 +143,44 @@ describe('Stock screen', () => {
 
     expect(api.watchlists.star).toHaveBeenCalledWith('NVDA');
     expect(await screen.findByText('On watchlist')).toBeOnTheScreen();
+  });
+
+  it('reads the RSI and MACD panes from the server snapshot and hides them on intraday ranges', async () => {
+    await renderStock();
+
+    expect(await screen.findByTestId('rsi-readout')).toHaveTextContent('64.2');
+    expect(screen.getByTestId('macd-readout')).toHaveTextContent('1.88 · 2.73');
+    expect(screen.getByTestId('pane-rsi')).toBeOnTheScreen();
+
+    await fireEvent.press(screen.getByRole('radio', { name: '1D' }));
+    await waitFor(() => expect(screen.queryByTestId('pane-rsi')).not.toBeOnTheScreen());
+  });
+
+  it('turns panes off from the Indicators sheet', async () => {
+    await renderStock();
+    await screen.findByTestId('pane-macd');
+
+    await fireEvent.press(screen.getByTestId('indicators-button'));
+    await fireEvent.press(await screen.findByLabelText('MACD pane'));
+
+    await waitFor(() => expect(screen.queryByTestId('pane-macd')).not.toBeOnTheScreen());
+    expect(screen.getByTestId('pane-rsi')).toBeOnTheScreen();
+  });
+
+  it('shows the Technicals table with its as-of bar and dashes for short history', async () => {
+    api.market.indicators.mockResolvedValue({
+      data: { ...SNAPSHOT, dataQuality: 'insufficient', insufficient: ['relStrength'], values: { ...SNAPSHOT.values, relStrength: null } },
+    });
+    await renderStock();
+    await screen.findByTestId('stock-price');
+
+    await fireEvent.press(screen.getByRole('tab', { name: 'Technicals' }));
+
+    expect(await screen.findByText('As of Nov 11 close · 300 daily bars')).toBeOnTheScreen();
+    expect(screen.getByLabelText('RSI (14), 64.2')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Relative volume (20), 2.34×')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Momentum (20 days), +2.92%')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Relative strength, not enough history')).toBeOnTheScreen();
+    expect(screen.getByText('Short history')).toBeOnTheScreen();
   });
 });

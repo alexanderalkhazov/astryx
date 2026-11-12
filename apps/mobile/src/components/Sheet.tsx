@@ -36,14 +36,29 @@ export function Sheet({ open, onClose, children, dismissible = true, accessibili
   const reduceMotion = useReducedMotion();
   const behaviour = sheetBehaviour(dismissible);
 
+  // Whether the modal is up. Dismissing a modal that was never presented leaves bottom-sheet unable to present it
+  // later, so a sheet that mounts closed must not call dismiss().
+  const presented = useRef(false);
+
   useEffect(() => {
+    if (!open && !presented.current) return undefined;
     // Defer one frame: presenting in the same commit that mounts the modal is ignored.
     const frame = requestAnimationFrame(() => {
-      if (open) ref.current?.present();
-      else ref.current?.dismiss();
+      if (open) {
+        presented.current = true;
+        ref.current?.present();
+      } else {
+        presented.current = false;
+        ref.current?.dismiss();
+      }
     });
     return () => cancelAnimationFrame(frame);
   }, [open]);
+
+  const handleDismiss = useCallback(() => {
+    presented.current = false;
+    onClose();
+  }, [onClose]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -64,7 +79,7 @@ export function Sheet({ open, onClose, children, dismissible = true, accessibili
       enableDynamicSizing
       maxDynamicContentSize={Math.round(height * 0.88)}
       enablePanDownToClose={behaviour.enablePanDownToClose}
-      onDismiss={onClose}
+      onDismiss={handleDismiss}
       backdropComponent={renderBackdrop}
       backgroundStyle={styles.background}
       handleIndicatorStyle={styles.handle}

@@ -17,6 +17,7 @@ env:
       id: watchlist-star
       enabled: true
     timeout: 15000
+- runFlow: close-dev-menu.yaml # it can open again after the link lands
 - assertVisible:
     id: watchlist-star
     checked: false

@@ -1,4 +1,4 @@
-# Stock analysis (T-049): price, OHLCV readout, chart, timeframes, Fundamentals and News tabs. Signed in (run sign-in.yaml first).
+# Stock analysis (T-049, T-062): price, OHLCV readout, chart, timeframes, RSI/MACD panes, Technicals, Fundamentals and News. Signed in (run sign-in.yaml first).
 appId: ${APP_ID}
 env:
   APP_ID: app.astryx.mobile
@@ -29,6 +29,17 @@ env:
     visible: "No bars yet today|Price chart, .*"
     timeout: 10000
 - tapOn: 3M
+- assertVisible:
+    id: rsi-readout
+- scrollUntilVisible:
+    element: Technicals
+    direction: DOWN
+    centerElement: true
+- tapOn: Technicals
+- extendedWaitUntil:
+    visible: "As of .* close · \\d+ daily bars"
+    timeout: 10000
+- takeScreenshot: stock-technicals
 - tapOn: Fundamentals
 - extendedWaitUntil:
     visible: "Market cap, .*"

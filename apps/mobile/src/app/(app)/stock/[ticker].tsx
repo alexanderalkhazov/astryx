@@ -2,27 +2,32 @@ import type { Bar, Quote } from '@astryx/api-client';
 import { isApiError } from '@astryx/api-client';
 import { chart as chartSize, color, space } from '@astryx/design-tokens';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Search } from 'lucide-react-native';
+import { ChartLine, Search } from 'lucide-react-native';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Badge } from '@/components/Badge';
 import { Button, IconButton } from '@/components/Button';
 import { CandleChart, type CandleOverlays } from '@/components/chart/CandleChart';
+import { IndicatorPane, MACD_COLOR, SIGNAL_COLOR } from '@/components/chart/IndicatorPane';
 import { EmptyState, Skeleton } from '@/components/Feedback';
 import { StackHeader } from '@/components/Navigation';
 import { Segmented } from '@/components/Segmented';
 import { Screen } from '@/components/Shell';
+import { Sheet } from '@/components/Sheet';
 import { StatusBanner } from '@/components/StatusBanner';
+import { Switch } from '@/components/Switch';
 import { Tabs } from '@/components/Tabs';
 import { Text } from '@/components/Text';
 import { FundamentalsTab } from '@/features/stock/FundamentalsTab';
 import { NewsTab } from '@/features/stock/NewsTab';
-import { TIMEFRAMES, type Timeframe, useStock } from '@/features/stock/useStock';
+import { TechnicalsTab } from '@/features/stock/TechnicalsTab';
+import { TIMEFRAMES, type Timeframe, useIndicators, useStock } from '@/features/stock/useStock';
 import { StarButton } from '@/features/watchlist/StarButton';
 import { useWatchlistStar } from '@/features/watchlist/useWatchlist';
 import { previewSubtract } from '@/lib/decimal';
-import { changeDirection, formatEtTime, formatPct, formatPrice, formatSessionDate, formatVolume } from '@/lib/format';
+import { changeDirection, formatEtTime, formatPct, formatPrice, formatRatio, formatSessionDate, formatVolume } from '@/lib/format';
+import { useSheet } from '@/state/sheets';
 
 type Tab = 'signal' | 'technicals' | 'fundamentals' | 'news';
 const TABS: readonly { value: Tab; label: string }[] = [
@@ -51,7 +56,10 @@ export default function StockScreen() {
   const [tab, setTab] = useState<Tab>('signal');
   const [overlays, setOverlays] = useState<Required<CandleOverlays>>({ ma20: true, ma50: true, volume: true, levels: true });
   const [scrubbed, setScrubbed] = useState<Bar | null>(null);
+  const [panes, setPanes] = useState({ rsi: true, macd: true });
+  const indicatorsSheet = useSheet('indicators');
   const { instrument, quote, chart } = useStock(symbol, timeframe);
+  const indicators = useIndicators(symbol, instrument.isSuccess);
   const star = useWatchlistStar(symbol);
 
   const header = (
@@ -106,74 +114,121 @@ export default function StockScreen() {
   );
 
   return (
-    <Screen header={header} footer={footer}>
-      <PriceBlock quote={quote.data} sector={instrument.data?.industry ?? instrument.data?.sector ?? null} pending={quote.isPending} />
-      {quote.data?.stale ? (
-        <StatusBanner tone="error" title="Prices may be out of date" body={`Last update ${formatEtTime(quote.data.asOf)}. Values refresh when the data feed recovers.`} />
-      ) : null}
+    <>
+      <Screen header={header} footer={footer}>
+        <PriceBlock quote={quote.data} sector={instrument.data?.industry ?? instrument.data?.sector ?? null} pending={quote.isPending} />
+        {quote.data?.stale ? (
+          <StatusBanner tone="error" title="Prices may be out of date" body={`Last update ${formatEtTime(quote.data.asOf)}. Values refresh when the data feed recovers.`} />
+        ) : null}
 
-      <View style={styles.ribbon}>
-        <Badge label="No active signal" />
-        <Text.Caption tone="tertiary">Signals arrive with the scanner</Text.Caption>
-      </View>
+        <View style={styles.ribbon}>
+          <Badge label="No active signal" />
+          <Text.Caption tone="tertiary">Signals arrive with the scanner</Text.Caption>
+        </View>
 
-      <Readout bar={readoutBar} intraday={intraday} />
+        <Readout bar={readoutBar} intraday={intraday} />
 
-      {chart.isError && !chart.data ? (
-        <View style={styles.chartBox}>
-          <EmptyState title="Price history unavailable" body="The data source didn't answer. Try again shortly." action={{ label: 'Retry', onPress: () => void chart.refetch() }} />
-        </View>
-      ) : !chart.data ? (
-        <View testID="chart-loading">
-          <Skeleton height={chartSize.pricePane + chartSize.volumePane + space[2]} />
-        </View>
-      ) : visible.length === 0 ? (
-        <View style={styles.chartBox}>
-          {timeframe === '1D' ? (
-            <EmptyState title="No bars yet today" body="Intraday bars appear once the session opens at 9:30 ET." />
-          ) : (
-            <EmptyState title="No price history yet" body="Bars appear after the first market data sync." />
-          )}
-        </View>
-      ) : (
-        <View style={{ opacity: chart.isPlaceholderData ? 0.5 : 1 }}>
-          <CandleChart
-            bars={bars}
-            warmup={chart.data.warmup}
-            intraday={intraday}
-            levels={levelsAllowed ? levels : null}
-            overlays={overlays}
-            onScrub={(bar) => setScrubbed(bar as Bar | null)}
+        {chart.isError && !chart.data ? (
+          <View style={styles.chartBox}>
+            <EmptyState title="Price history unavailable" body="The data source didn't answer. Try again shortly." action={{ label: 'Retry', onPress: () => void chart.refetch() }} />
+          </View>
+        ) : !chart.data ? (
+          <View testID="chart-loading">
+            <Skeleton height={chartSize.pricePane + chartSize.volumePane + space[2]} />
+          </View>
+        ) : visible.length === 0 ? (
+          <View style={styles.chartBox}>
+            {timeframe === '1D' ? (
+              <EmptyState title="No bars yet today" body="Intraday bars appear once the session opens at 9:30 ET." />
+            ) : (
+              <EmptyState title="No price history yet" body="Bars appear after the first market data sync." />
+            )}
+          </View>
+        ) : (
+          <View style={{ opacity: chart.isPlaceholderData ? 0.5 : 1 }}>
+            <CandleChart
+              bars={bars}
+              warmup={chart.data.warmup}
+              intraday={intraday}
+              levels={levelsAllowed ? levels : null}
+              overlays={overlays}
+              onScrub={(bar) => setScrubbed(bar as Bar | null)}
+            />
+          </View>
+        )}
+
+        <View style={styles.controls}>
+          <Segmented
+            options={TIMEFRAMES}
+            value={timeframe}
+            onChange={(value) => {
+              setScrubbed(null);
+              setTimeframe(value);
+            }}
+            accessibilityLabel="Chart timeframe"
           />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Indicators"
+            accessibilityHint="Choose which indicator panes to show"
+            onPress={indicatorsSheet.open}
+            style={({ pressed }) => [styles.indicatorsButton, { opacity: pressed ? 0.7 : 1 }]}
+            testID="indicators-button"
+          >
+            <ChartLine size={18} strokeWidth={1.7} color={color.text} />
+            <Text.Body>Indicators</Text.Body>
+          </Pressable>
         </View>
-      )}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.toggles}>
+          {OVERLAYS.filter((o) => o.key !== 'levels' || (levels && levelsAllowed)).map((o) => (
+            <OverlayToggle key={o.key} label={o.label} swatch={o.swatch} on={overlays[o.key]} onPress={() => setOverlays((v) => ({ ...v, [o.key]: !v[o.key] }))} />
+          ))}
+        </ScrollView>
 
-      <Segmented
-        options={TIMEFRAMES}
-        value={timeframe}
-        onChange={(value) => {
-          setScrubbed(null);
-          setTimeframe(value);
-        }}
-        accessibilityLabel="Chart timeframe"
-      />
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.toggles}>
-        {OVERLAYS.filter((o) => o.key !== 'levels' || (levels && levelsAllowed)).map((o) => (
-          <OverlayToggle key={o.key} label={o.label} swatch={o.swatch} on={overlays[o.key]} onPress={() => setOverlays((v) => ({ ...v, [o.key]: !v[o.key] }))} />
-        ))}
-      </ScrollView>
+        {/* The panes use daily bars, like the M7 values they read out. */}
+        {!intraday && visible.length > 0 && panes.rsi ? (
+          <IndicatorPane
+            kind="rsi"
+            bars={bars}
+            warmup={chart.data?.warmup ?? 0}
+            readout={<Text.Data testID="rsi-readout">{indicators.data?.values.rsi14 ?? '—'}</Text.Data>}
+            accessibilityLabel={`RSI 14, ${indicators.data?.values.rsi14 ?? 'not available'}`}
+          />
+        ) : null}
+        {!intraday && visible.length > 0 && panes.macd ? (
+          <IndicatorPane
+            kind="macd"
+            bars={bars}
+            warmup={chart.data?.warmup ?? 0}
+            readout={<MacdReadout macd={indicators.data?.values.macd ?? null} signal={indicators.data?.values.macdSignal ?? null} />}
+            accessibilityLabel={`MACD ${indicators.data?.values.macd ?? 'not available'}, signal ${indicators.data?.values.macdSignal ?? 'not available'}`}
+          />
+        ) : null}
 
-      <Tabs tabs={TABS} value={tab} onChange={setTab} />
-      {tab === 'signal' ? (
-        <EmptyState title="No active signal" body="Signals and AI reasoning arrive with the scanner. Star the stock to keep an eye on it." />
-      ) : tab === 'technicals' ? (
-        <EmptyState title="Technicals coming soon" body="RSI, MACD, ATR and the other indicators arrive with the quant engine." />
-      ) : tab === 'fundamentals' ? (
-        <FundamentalsTab symbol={symbol} />
-      ) : (
-        <NewsTab symbol={symbol} />
-      )}
-    </Screen>
+        <Tabs tabs={TABS} value={tab} onChange={setTab} />
+        {tab === 'signal' ? (
+          <EmptyState title="No active signal" body="Signals and AI reasoning arrive with the scanner. Star the stock to keep an eye on it." />
+        ) : tab === 'technicals' ? (
+          <TechnicalsTab snapshot={indicators.data} pending={indicators.isPending} failed={indicators.isError} onRetry={() => void indicators.refetch()} />
+        ) : tab === 'fundamentals' ? (
+          <FundamentalsTab symbol={symbol} />
+        ) : (
+          <NewsTab symbol={symbol} />
+        )}
+      </Screen>
+      <Sheet open={indicatorsSheet.isOpen} onClose={indicatorsSheet.close} accessibilityLabel="Indicators">
+        <View style={styles.sheet}>
+          <Text.Headline>Indicators</Text.Headline>
+          <Text.Caption tone="tertiary">Panes under the chart, from daily bars.</Text.Caption>
+          {(['rsi', 'macd'] as const).map((key) => (
+            <View key={key} style={styles.sheetRow}>
+              <Text.Body>{key === 'rsi' ? 'RSI (14)' : 'MACD (12, 26, 9)'}</Text.Body>
+              <Switch value={panes[key]} onValueChange={(on) => setPanes((p) => ({ ...p, [key]: on }))} accessibilityLabel={key === 'rsi' ? 'RSI pane' : 'MACD pane'} />
+            </View>
+          ))}
+        </View>
+      </Sheet>
+    </>
   );
 }
 
@@ -234,6 +289,16 @@ function Readout({ bar, intraday }: { bar: Bar | null; intraday: boolean }) {
   );
 }
 
+function MacdReadout({ macd, signal }: { macd: string | null; signal: string | null }) {
+  return (
+    <Text.Data testID="macd-readout">
+      <Text.Data style={{ color: MACD_COLOR }}>{macd === null ? '—' : formatRatio(macd, 2)}</Text.Data>
+      <Text.Data tone="tertiary">{' · '}</Text.Data>
+      <Text.Data style={{ color: SIGNAL_COLOR }}>{signal === null ? '—' : formatRatio(signal, 2)}</Text.Data>
+    </Text.Data>
+  );
+}
+
 function OverlayToggle({ label, swatch, on, onPress }: { label: string; swatch: string; on: boolean; onPress: () => void }) {
   return (
     <Pressable
@@ -256,6 +321,19 @@ const styles = StyleSheet.create({
   readout: { minHeight: 18 },
   chartBox: { height: chartSize.pricePane + chartSize.volumePane + space[2], justifyContent: 'center' },
   toggles: { gap: space[2] },
+  controls: { flexDirection: 'row', alignItems: 'center', gap: space[2], flexWrap: 'wrap' },
+  indicatorsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space[2],
+    minHeight: 44,
+    paddingHorizontal: space[3],
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: color.lineStrong,
+  },
+  sheet: { gap: space[3], paddingBottom: space[5] },
+  sheetRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 44 },
   toggle: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -1283,6 +1283,14 @@ Implementation (T-048):
 - **LineChart:** series in the palette order, a grey dashed benchmark, and the same scrub.
 - **Dev gallery:** `/dev/gallery?only=charts` renders NVDA 3M and 1Y (251 bars) from the local API.
 
+Implementation (T-062):
+- **Panes:** `IndicatorPane` (Skia, 64 pt, the same 44 pt gutter as `CandleChart`). RSI has dashed 70/30 guides over a band. MACD has a histogram (teal `series[2]` above zero, amber `series[1]` below) and MACD/signal lines in the same colours.
+- **What's drawn vs what's read:** the lines come from the chart's own bars (`paneMath.ts`, the §13.3 formulas in JS numbers, for drawing only). The figures shown, "64.2" and "1.88 · 2.73", come from M7. The panes appear only on daily timeframes.
+- **Indicators sheet:** switches each pane on and off.
+- **Technicals tab:** the M7 table with "As of <session> close · N daily bars", a quality badge, and "—" for values with too little history.
+- **Sheet fix:** calling `dismiss()` on a `BottomSheetModal` that was never presented made every later `present()` a no-op. `Sheet` now dismisses only a sheet it has presented. It used to work only when opened on mount, as in the gallery's `?demo=sheet`. A regression test covers it. A modal sheet is also rendered outside the screen's ScrollView.
+- **E2E tip:** relaunching the dev client with Maestro's `launchApp` drops its launch flags, and the dev menu then keeps opening. Relaunch with `xcrun simctl openurl <udid> "exp+astryx://?__expo_url=http%3A%2F%2F127.0.0.1%3A8081&__expo_disable_fab=1&__expo_disable_auto_launch=1&__expo_disable_onboarding=1"`.
+
 > Type-level safety rule: research components (`ProposalCard`, `StatusBanner tone="pending"`) cannot receive `orderId`/`fillPrice` props. Enforced with discriminated unions + an ESLint `no-restricted-syntax` rule for `color.gain` outside executed/P&L components.
 
 ### 8.7 State management
