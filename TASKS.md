@@ -325,7 +325,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [x] **T-072** Output validator and LevelValidator
   - **Acceptance:** all 8 validation steps from §12.7 (parse with fence strip and one repair retry, schema `analysis.v1`, identity, temporal, numeric grounding, levels via ATR/band/R:R, content policy, forbidden fields). The backend computes `rewardRisk`. Fixture tests cover every rejection path.
   - **Refs:** §12.6–12.7 · **Depends:** T-071 · **P0**
-- [ ] **T-073** Analysis jobs, worker and endpoints
+- [x] **T-073** Analysis jobs, worker and endpoints
   - **Acceptance:** `ai.*` migrations. AI1–AI5 (202 plus `Location`, dedupe by `request_hash`, quota 30/day, one active job per user/symbol/kind). `AiAnalysisWorker` with leases, 3 attempts with backoff, cancellation checkpoints, and `ai_requests` logging (no prompt text in logs). Failure tests from §21.8 pass for "Ollama stopped" and "worker killed mid-job".
   - **Refs:** §12.8–12.9, §19.4 · **Depends:** T-072, T-015 · **P0**
 - [ ] **T-074** Real-time job updates (SignalR hub)
