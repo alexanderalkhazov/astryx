@@ -76,10 +76,41 @@ public class FakeMarketDataProviderTests
         var bars = await provider.GetBarsAsync("NVDA", BarInterval.OneDay, DesignSession.AddMonths(-3), DesignSession, default);
         var basePeriod = bars.SkipLast(1).TakeLast(30).ToList();
 
-        basePeriod.Max(b => b.High).ShouldBeLessThanOrEqualTo(185.90m);
-        basePeriod.Min(b => b.Low).ShouldBeGreaterThan(165m);
-        bars[^1].Close.ShouldBeGreaterThan(185.90m);
+        basePeriod.Max(b => b.High).ShouldBe(185.90m); // touched, never passed
+        basePeriod.Min(b => b.Low).ShouldBe(176.85m);
+        basePeriod.SkipLast(1).ShouldAllBe(b => b.Close >= (185.90m + 176.85m) / 2); // closes in the upper half
+        bars[^1].High.ShouldBeGreaterThan(185.90m);
     }
+
+    [Fact]
+    public async Task NVDA_has_the_design_ATR_and_relative_volume()
+    {
+        var (provider, _, _) = Create();
+
+        var bars = await provider.GetBarsAsync("NVDA", BarInterval.OneDay, DesignSession.AddYears(-2), DesignSession, default);
+
+        // Wilder ATR(14) at today's bar: design 04's stop 178.20 = entry 186.50 − 1.5 × 5.5333.
+        var atr = 0m;
+        for (var i = 1; i <= 14; i++)
+        {
+            atr += TrueRange(bars, i);
+        }
+
+        atr /= 14;
+        for (var i = 15; i < bars.Count; i++)
+        {
+            atr = (atr * 13 + TrueRange(bars, i)) / 14;
+        }
+
+        atr.ShouldBe(5.5333m, 0.001m); // cent prices limit how finely the wicks can tune it
+        Math.Round(186.50m - 1.5m * atr, 2).ShouldBe(178.20m);
+        var average = bars.SkipLast(1).TakeLast(20).Average(b => (decimal)b.Volume);
+        average.ShouldBe(172_000_000m);
+        (bars[^1].Volume / average).ShouldBe(2.4m); // "on 2.4× average volume"
+    }
+
+    private static decimal TrueRange(IReadOnlyList<ProviderBar> bars, int i) =>
+        Math.Max(bars[i].High - bars[i].Low, Math.Max(Math.Abs(bars[i].High - bars[i - 1].Close), Math.Abs(bars[i].Low - bars[i - 1].Close)));
 
     [Fact]
     public async Task Every_bar_in_the_universe_is_internally_consistent()

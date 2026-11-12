@@ -2840,6 +2840,27 @@ The score is 0–100, computed **by strategy-specific weights**, and is never AI
 
 `score = Σ weight·component`, rounded to an integer for display. The breakdown is stored in `signals.score_breakdown` and rendered as `ScoreBreakdownBar`.
 
+### 13.4.1 Base Breakout rule (`base_breakout@1`, T-064; partly answers Q-09)
+
+Parameters come from the published version: `baseWeeks` 6, `volumeMultiple` 1.8, `minRelStrength` 80 and `stopAtr` 1.50. Inputs come from `IQuantFacts` (Contracts, implemented by Quant): the daily history including the forming session, ATR(14), relative volume (20), the RS rank and the trend.
+
+| Step | Definition |
+|---|---|
+| Base | The `baseWeeks × 5` sessions before today. `high_b` = highest high, `low_b` = lowest low, `depth = (high_b − low_b) / high_b` |
+| Conditions (all must hold) | `depth ≤ 20%` · today's high `> high_b` · `RV20 ≥ volumeMultiple` · `RS rank ≥ minRelStrength` · trend is not `downtrend`. A failure returns a stable code: `base_too_deep`, `no_breakout`, `volume_too_low`, `weak_relative_strength`, `downtrend` or `insufficient_history` |
+| Entry (buy stop) | `ceil_to_0.10(high_b × 1.003)` |
+| Stop | `round_cent(entry − stopAtr × ATR14)` |
+| Target | `round_cent(high_b + 2 × (high_b − low_b))` |
+| Setup quality | `(tightness + closeStrength) / 2`, where `tightness = 1 − depth / 0.20` and `closeStrength` = the share of base closes at or above the base midpoint |
+| Score | §13.4 weights: `30·setup + 20·rank/99 + 20·min(RV/3, 1) + 15·trend(1 / 0.4) + 15·min(RR/3, 1)`, rounded half-even to an integer. The breakdown is stored in points |
+| Reason | "Cleared a {baseWeeks}-week base at ${high_b} on {RV:0.0}× average volume." |
+
+**NVDA fixture (design 04).**
+- **Fixture columns:** the optional `base_low` (176.85) and `atr14` (5.5333) shape the fake provider's last 30 sessions. Highs touch 185.90 exactly once, lows touch 176.85 exactly once, closes stay in the upper half apart from the anchored 180.24, and the lower wicks are bisected until ATR(14) at today's bar is within a cent-limited 0.001 of 5.5333. The 20 sessions before today average exactly `avg_volume`, 172 M.
+- **Result:** buy stop 186.50, stop 178.20, target 204.00, R:R 2.11 and score 87.
+  - The score is 25.85 setup + 20 RS (rank 99) + 16 volume (2.4×) + 15 trend + 10.54 R:R = 87.39.
+  - The reason reads "Cleared a 6-week base at $185.90 on 2.4× average volume."
+
 ### 13.5 Missing, stale and insufficient data
 
 | Situation | Detection | Handling |
@@ -4103,7 +4124,7 @@ Sentry SDKs: `@sentry/react-native` (with source maps through EAS) and `Sentry.A
 | Q-06 | Final risk limits and bounds. Should 1.00% be selectable when the max is 0.75%? Min R:R? | Risk engine | Phase 5 | Design defaults; choices above the max disabled; min R:R 1.5 |
 | Q-07 | Which AI model replaces `qwen3.5:0.8b`? Local or hosted? Hardware budget? | Quality, cost, privacy, prod infra | Phase 4/7 | PoC model, labelled experimental |
 | Q-08 | Source of beta for beta-weighted exposure? | Portfolio › Allocation | Phase 6 | Show "—" when missing |
-| Q-09 | Exact rule definitions for the five strategies (Base Breakout v3, Trend Momentum, Trend Pullback, RSI(2) Mean Reversion, Earnings Drift) and the drawdown guard (design: "30-day drawdown −5.4% · pauses at −6.0%") | Scanner signals, backtests | Phase 3 | Implement Base Breakout from §8.4.9 params; guard −6% over 30 days |
+| Q-09 | **Partly answered (T-064): Base Breakout is defined in §13.4.1.** Exact rule definitions for the other four strategies (Base Breakout v3, Trend Momentum, Trend Pullback, RSI(2) Mean Reversion, Earnings Drift) and the drawdown guard (design: "30-day drawdown −5.4% · pauses at −6.0%") | Scanner signals, backtests | Phase 3 | Implement Base Breakout from §8.4.9 params; guard −6% over 30 days |
 | Q-10 | Backtest engine scope: in-house vs a library; point-in-time universe; per-user strategies? | Strategy lab Configure/re-run | Phase 6 | Seeded read-only runs |
 | Q-11 | Fractional shares? | Quantity precision, sizing | Phase 5 | Whole shares |
 | Q-12 | Paper execution assumptions: slippage model, commission, spread, liquidity cap, limit-touch fills | Realism of paper results | Phase 5 | §15.7 defaults |

@@ -20,5 +20,6 @@
     <ProjectReference Include="../../src/BuildingBlocks/Astryx.SharedKernel/Astryx.SharedKernel.csproj" />
     <ProjectReference Include="../../src/Modules/MarketData/Astryx.Modules.MarketData.csproj" />
     <ProjectReference Include="../../src/Modules/Quant/Astryx.Modules.Quant.csproj" />
+    <ProjectReference Include="../../src/Modules/Strategies/Astryx.Modules.Strategies.csproj" />
   </ItemGroup>
 </Project>

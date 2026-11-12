@@ -20,6 +20,7 @@ public static class QuantModule
         services.TryAddSingleton(TimeProvider.System);
         services.AddScoped<RelativeStrengthRanks>();
         services.AddScoped<IndicatorSnapshotService>();
+        services.AddScoped<Astryx.Contracts.Quant.IQuantFacts, QuantFactsService>();
         return services;
     }
 }

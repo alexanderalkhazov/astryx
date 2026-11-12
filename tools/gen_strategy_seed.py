@@ -112,10 +112,10 @@ STRATEGIES = [
         "name": "Base Breakout v3",
         "description": "Buys clean breakouts from 4–10 week bases on heavy volume.",
         "rules": [
-            "A base of 4–10 weeks whose range stays within 15% and closes near its high.",
+            "A base of 4–10 weeks (default 6) no deeper than 20% that closes mostly in its upper half.",
             "Today clears the base high on volume of at least the volume multiple × the 20-day average.",
             "Relative strength rank at or above the minimum.",
-            "Buy stop just above the base high; stop 1.5× ATR(14) below entry; target at 2× the base depth.",
+            "Buy stop 0.3% above the base high; stop 1.5× ATR(14) below entry; target at the base high plus twice the base depth.",
         ],
         "status": "active",
         "liveSince": "2025-03-03",

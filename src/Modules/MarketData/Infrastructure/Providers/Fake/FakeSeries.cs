@@ -63,8 +63,124 @@ internal static class FakeSeries
             bars.Add(Normalize(history[i], open, high, low, close, (long)(instrument.AverageVolume * volumeFactor)));
         }
 
-        bars.Add(CurrentBar(instrument, current));
+        var today = CurrentBar(instrument, current);
+        if (instrument is { Pattern: "breakout", Level: { } top, BaseLow: { } bottom, Atr14: { } atr })
+        {
+            ShapeBase(bars, today, top, bottom, atr, instrument.AverageVolume, random);
+        }
+
+        bars.Add(today);
         return bars;
+    }
+
+    /// <summary>Sessions in a shaped base (six weeks, the Base Breakout default).</summary>
+    public const int BaseSessions = 30;
+
+    /// <summary>
+    /// Shapes the last <see cref="BaseSessions"/> history bars into an exact base (fixtures with <c>base_low</c> and
+    /// <c>atr14</c>, e.g. NVDA for design 04): highs reach the level exactly once and never pass it, lows reach
+    /// <paramref name="bottom"/> exactly once, closes stay in the upper half (except the anchored previous close),
+    /// and the lower wicks are sized so that Wilder ATR(14) at today's bar equals <paramref name="atr"/>. The 20
+    /// sessions before today average exactly the fixture's volume, so relative volume is today's volume / average.
+    /// </summary>
+    private static void ShapeBase(List<DailyBar> bars, DailyBar today, decimal top, decimal bottom, decimal atr, long averageVolume, SeededRandom random)
+    {
+        var start = bars.Count - BaseSessions;
+        if (start < 15)
+        {
+            return;
+        }
+
+        var mid = (top + bottom) / 2;
+        var closes = new decimal[BaseSessions];
+        var upWicks = new decimal[BaseSessions];
+        var downWicks = new decimal[BaseSessions];
+        for (var k = 0; k < BaseSessions; k++)
+        {
+            var last = k == BaseSessions - 1;
+            closes[k] = last ? bars[start + k].Close : Round(Math.Clamp(bars[start + k].Close, mid + 0.10m, top - 0.20m));
+            upWicks[k] = Math.Abs(random.NextGaussian());
+            downWicks[k] = 0.5m + Math.Abs(random.NextGaussian());
+        }
+
+        List<DailyBar> Build(decimal scale)
+        {
+            var shaped = new List<DailyBar>(BaseSessions);
+            for (var k = 0; k < BaseSessions; k++)
+            {
+                var previousClose = k == 0 ? bars[start - 1].Close : closes[k - 1];
+                var open = Math.Clamp(previousClose, mid, top);
+                var close = closes[k];
+                var high = Math.Min(top, Round(Math.Max(open, close) + upWicks[k] * scale * 0.25m));
+                var low = Math.Max(bottom, Round(Math.Min(open, close) - downWicks[k] * scale));
+                shaped.Add(bars[start + k] with { Open = open, High = high, Low = low, Close = close });
+            }
+
+            // Exactly one touch of each edge of the base.
+            var peak = shaped.Select((b, i) => (b.High, i)).MaxBy(x => x.High).i;
+            shaped[peak] = shaped[peak] with { High = top };
+            var trough = shaped.Select((b, i) => (b.Low, i)).MinBy(x => x.Low).i;
+            shaped[trough] = shaped[trough] with { Low = bottom };
+            return shaped;
+        }
+
+        decimal AtrWith(List<DailyBar> shaped)
+        {
+            var series = bars.Take(start).Concat(shaped).Append(today).ToList();
+            return WilderAtr(series, 14);
+        }
+
+        // ATR rises with the wick scale; bisect until it matches the fixture to a hundredth of a cent.
+        decimal lo = 0m, hi = 20m;
+        for (var i = 0; i < 80 && hi - lo > 0.000001m; i++)
+        {
+            var scale = (lo + hi) / 2;
+            if (AtrWith(Build(scale)) < atr)
+            {
+                lo = scale;
+            }
+            else
+            {
+                hi = scale;
+            }
+        }
+
+        var result = Build((lo + hi) / 2);
+        for (var k = 0; k < BaseSessions; k++)
+        {
+            bars[start + k] = result[k];
+        }
+
+        // The 20 sessions before today average exactly the fixture volume.
+        var window = bars.Count - 20;
+        var total = bars.Skip(window).Sum(b => b.Volume);
+        var target = averageVolume * 20;
+        var assigned = 0L;
+        for (var i = window; i < bars.Count; i++)
+        {
+            var volume = i == bars.Count - 1 ? target - assigned : bars[i].Volume * target / Math.Max(total, 1);
+            bars[i] = bars[i] with { Volume = volume };
+            assigned += volume;
+        }
+    }
+
+    /// <summary>Wilder ATR at the last bar (SYSTEM_DESIGN.md §13.3), for shaping fixtures; Quant owns the real one.</summary>
+    private static decimal WilderAtr(IReadOnlyList<DailyBar> bars, int period)
+    {
+        decimal TrueRange(int i) => Math.Max(bars[i].High - bars[i].Low, Math.Max(Math.Abs(bars[i].High - bars[i - 1].Close), Math.Abs(bars[i].Low - bars[i - 1].Close)));
+        var value = 0m;
+        for (var i = 1; i <= period; i++)
+        {
+            value += TrueRange(i);
+        }
+
+        value /= period;
+        for (var i = period + 1; i < bars.Count; i++)
+        {
+            value = (value * (period - 1) + TrueRange(i)) / period;
+        }
+
+        return value;
     }
 
     /// <summary>The current session's bar from the fixture; missing open/high/low are derived from last and prev close.</summary>

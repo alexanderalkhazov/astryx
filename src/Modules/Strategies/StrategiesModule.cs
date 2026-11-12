@@ -1,5 +1,6 @@
 using Astryx.Infrastructure.Persistence;
 using Astryx.Modules.Strategies.Application;
+using Astryx.Modules.Strategies.Application.Rules;
 using Astryx.Modules.Strategies.Infrastructure.Persistence;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,6 +14,8 @@ public static class StrategiesModule
     {
         services.AddModuleDbContext<StrategiesDbContext>(StrategiesDbContext.SchemaName, historyKey: "strategies");
         services.AddScoped<StrategyCatalog>();
+        services.AddScoped<StrategyEvaluator>();
+        services.AddSingleton<IStrategyRule, BaseBreakoutRule>();
         return services;
     }
 }

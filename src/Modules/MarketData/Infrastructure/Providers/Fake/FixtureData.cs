@@ -38,7 +38,8 @@ internal sealed class FixtureData
             OptionalDecimal(r["market_cap"]), decimal.Parse(r["last"], CultureInfo.InvariantCulture), decimal.Parse(r["prev_close"], CultureInfo.InvariantCulture),
             OptionalDecimal(r["open"]), OptionalDecimal(r["high"]), OptionalDecimal(r["low"]), long.Parse(r["volume"], CultureInfo.InvariantCulture),
             long.Parse(r["avg_volume"], CultureInfo.InvariantCulture), r["pattern"], OptionalDecimal(r["level"]), OptionalDecimal(r["beta"]),
-            OptionalDecimal(r["pe_ratio"]), OptionalDecimal(r["eps_ttm"]), string.IsNullOrEmpty(r["earnings_in_days"]) ? null : int.Parse(r["earnings_in_days"], CultureInfo.InvariantCulture))).ToList();
+            OptionalDecimal(r["pe_ratio"]), OptionalDecimal(r["eps_ttm"]), string.IsNullOrEmpty(r["earnings_in_days"]) ? null : int.Parse(r["earnings_in_days"], CultureInfo.InvariantCulture),
+            OptionalDecimal(r["base_low"]), OptionalDecimal(r["atr14"]))).ToList();
 
         var calendar = ReadCsv("calendar.csv").Select(r => new FixtureCalendarDay(DateOnly.ParseExact(r["date"], "yyyy-MM-dd", CultureInfo.InvariantCulture), r["kind"] == "half_day")).ToList();
 
@@ -143,7 +144,10 @@ internal sealed record FixtureInstrument(
     decimal? Beta,
     decimal? PeRatio,
     decimal? EpsTtm,
-    int? EarningsInDays);
+    int? EarningsInDays,
+    // A breakout base shaped to exact values (design 04: stop 178.20 = entry − 1.5 × ATR(14), target 204.00 = high + 2 × depth).
+    decimal? BaseLow = null,
+    decimal? Atr14 = null);
 
 internal sealed record FixtureCalendarDay(DateOnly Date, bool IsHalfDay);
 
