@@ -220,7 +220,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Acceptance:** sign-in, sign-up, verify-email (deep link), forgot and reset password are built with RHF and Zod, with server 422 errors mapped to fields. `(app)` redirects to `(auth)` without a session. Deep links are stashed and replayed after sign-in. **Manual check:** a full register → Mailpit link → sign-in on the simulator.
   - **Refs:** §8.3, §8.10 · **Depends:** T-032, T-033 · **P0**
   - **Manual check (2026-11-11):** a user was registered through the API, its Mailpit link was opened in Expo Go on the iPhone 17 simulator (screen: "Email verified"), and the API then accepted a login for that user. A signed-out deep link (`stock/NVDA`) landed on Sign in. The sign-in form was not typed through at first, because no simulator UI automation was installed. On 2026-11-12 `e2e/sign-in.yaml` (Maestro) signed in through the form on the device, and the stashed `stock/NVDA` link was replayed. A cold relaunch then restored the session.
-- [ ] **T-035** App shell to design fidelity
+- [x] **T-035** App shell to design fidelity — `54715df`, `585490a`
   - **Scope:** root providers, safe areas, iOS push and Android fade-through transitions, edge-swipe back, Android back closes sheets first, Home header (search, alerts, settings icons), PAPER chip component, the "Illustrative sample data" caption component, and Reduce Motion handling.
   - **Acceptance:** navigating every placeholder route works, and the tab bar matches the PNG design.
   - **Refs:** §8.3, §8.12 · **Depends:** T-032 · **P0**
