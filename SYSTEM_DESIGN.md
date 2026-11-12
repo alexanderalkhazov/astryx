@@ -2361,6 +2361,17 @@ Error envelope (every problem response also carries `correlationId`; unknown rou
 }
 ```
 
+**Implemented (T-066).** D1–D4 are in `Discovery/Api/ScannerEndpoints.cs`.
+- **D1 status:**
+  - `unavailable` when there is no finished run (`SCN-404`), the last run failed (its code), or the scanner fell behind (`SCN-504`).
+  - Falling behind means market data moved on since the run *and* the run is older than two intervals. A run with no newer data, overnight for example, stays current, so Discover keeps the close's signals instead of going blank every night.
+  - `degraded` means the last run completed with warnings.
+- **D2 list:** active signals filtered in memory (there are few). `sector` matches the sector or the industry; `marketCap` is large ≥ $10B, mid $2–10B or small < $2B; `symbol` is case-insensitive. Sorts are descending, with ties broken by score, then symbol. `rank` is the position in the sorted, filtered list. Chip `counts` apply every filter except `type`.
+- **Pagination:** an opaque base64 offset cursor, with `limit` 1–50 (default 20). Invalid filters are 400 `bad_request`, and D2/D3 return 503 `scanner_unavailable` whenever D1 is unavailable.
+- **D4 detail:** any signal by id, including history, with `scoreBreakdown`. `proposalId` stays null until M4.
+- **Version:** signals now store `strategy_version` for `strategy.version`.
+- **Client:** `@astryx/api-client` `scannerApi` with Zod schemas, tested against payloads captured from the local stack.
+
 ### 11.5 Watchlists
 
 | # | Method & route | Request | Response | Validation | Errors |

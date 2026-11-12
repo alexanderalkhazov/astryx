@@ -215,6 +215,10 @@ namespace Astryx.Modules.Discovery.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(80)")
                         .HasColumnName("strategy_name");
 
+                    b.Property<int>("StrategyVersion")
+                        .HasColumnType("integer")
+                        .HasColumnName("strategy_version");
+
                     b.Property<Guid>("StrategyVersionId")
                         .HasColumnType("uuid")
                         .HasColumnName("strategy_version_id");

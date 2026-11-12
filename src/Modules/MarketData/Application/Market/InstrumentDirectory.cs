@@ -20,7 +20,7 @@ public sealed class InstrumentDirectory(MarketDataDbContext db) : IInstrumentDir
         var rows = await db.Database
             .SqlQuery<Row>(
                 $"""
-                SELECT i.id, i.symbol, i.name, i.sector, q.last, q.prev_close, q.as_of
+                SELECT i.id, i.symbol, i.name, i.sector, q.last, q.prev_close, q.as_of, i.market_cap, i.industry
                 FROM market.instruments i
                 LEFT JOIN market.quotes q ON q.instrument_id = i.id
                 WHERE i.is_active
@@ -41,7 +41,7 @@ public sealed class InstrumentDirectory(MarketDataDbContext db) : IInstrumentDir
         var rows = await db.Database
             .SqlQuery<Row>(
                 $"""
-                SELECT i.id, i.symbol, i.name, i.sector, q.last, q.prev_close, q.as_of
+                SELECT i.id, i.symbol, i.name, i.sector, q.last, q.prev_close, q.as_of, i.market_cap, i.industry
                 FROM market.instruments i
                 LEFT JOIN market.quotes q ON q.instrument_id = i.id
                 WHERE i.is_active AND i.asset_type = 'equity'
@@ -57,7 +57,7 @@ public sealed class InstrumentDirectory(MarketDataDbContext db) : IInstrumentDir
         var rows = await db.Database
             .SqlQuery<Row>(
                 $"""
-                SELECT i.id, i.symbol, i.name, i.sector, q.last, q.prev_close, q.as_of
+                SELECT i.id, i.symbol, i.name, i.sector, q.last, q.prev_close, q.as_of, i.market_cap, i.industry
                 FROM market.instruments i LEFT JOIN market.quotes q ON q.instrument_id = i.id
                 WHERE i.symbol = {normalized}
                 ORDER BY i.is_active DESC
@@ -78,7 +78,7 @@ public sealed class InstrumentDirectory(MarketDataDbContext db) : IInstrumentDir
         var rows = await db.Database
             .SqlQuery<Row>(
                 $"""
-                SELECT i.id, i.symbol, i.name, i.sector, q.last, q.prev_close, q.as_of
+                SELECT i.id, i.symbol, i.name, i.sector, q.last, q.prev_close, q.as_of, i.market_cap, i.industry
                 FROM market.instruments i LEFT JOIN market.quotes q ON q.instrument_id = i.id
                 WHERE i.id = ANY({array})
                 """)
@@ -93,7 +93,9 @@ public sealed class InstrumentDirectory(MarketDataDbContext db) : IInstrumentDir
         row.Sector,
         row.Last is { } last ? Math.Round(last, Math.Abs(last) >= 1 ? 2 : 4, MidpointRounding.AwayFromZero) : null,
         row.Last is { } l && row.PrevClose is { } prev && prev != 0 ? Math.Round((l / prev) - 1, 4, MidpointRounding.AwayFromZero) : null,
-        row.AsOf);
+        row.AsOf,
+        row.MarketCap,
+        row.Industry);
 
-    private sealed record Row(Guid Id, string Symbol, string Name, string? Sector, decimal? Last, decimal? PrevClose, DateTimeOffset? AsOf);
+    private sealed record Row(Guid Id, string Symbol, string Name, string? Sector, decimal? Last, decimal? PrevClose, DateTimeOffset? AsOf, decimal? MarketCap, string? Industry);
 }

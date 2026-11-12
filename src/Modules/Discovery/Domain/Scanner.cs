@@ -78,6 +78,9 @@ public sealed class Signal
 
     public required string StrategyName { get; set; }
 
+    /// <summary>Version number of <see cref="StrategyVersionId"/> (shown as "v3").</summary>
+    public int StrategyVersion { get; set; }
+
     public required string SignalType { get; set; }
 
     public required string Horizon { get; set; }

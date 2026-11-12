@@ -3,7 +3,8 @@ namespace Astryx.Contracts.MarketData;
 /// <summary>An instrument with its latest price, for lists such as search results, recents and watchlists.</summary>
 /// <param name="Last">Latest stored quote; null before the first quote sync.</param>
 /// <param name="ChangePct">Fraction from the previous close (0.0342 = 3.42 %).</param>
-public sealed record InstrumentSummary(Guid Id, string Symbol, string Name, string? Sector, decimal? Last, decimal? ChangePct, DateTimeOffset? AsOf);
+/// <param name="MarketCap">USD; null when the provider has none.</param>
+public sealed record InstrumentSummary(Guid Id, string Symbol, string Name, string? Sector, decimal? Last, decimal? ChangePct, DateTimeOffset? AsOf, decimal? MarketCap = null, string? Industry = null);
 
 /// <summary>Instrument lookup owned by MarketData and used by other modules (search, watchlists) through Contracts.</summary>
 public interface IInstrumentDirectory

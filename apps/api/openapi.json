@@ -117,6 +117,26 @@
         }
       }
     },
+    "/api/v1/scanner/status": {
+      "get": {
+        "tags": [
+          "Scanner"
+        ],
+        "operationId": "ScannerStatus",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScannerStatusDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/auth/register": {
       "post": {
         "tags": [
@@ -1684,6 +1704,273 @@
           }
         }
       }
+    },
+    "/api/v1/signals": {
+      "get": {
+        "tags": [
+          "Scanner"
+        ],
+        "operationId": "ListSignals",
+        "parameters": [
+          {
+            "name": "Type",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Sector",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "MarketCap",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Horizon",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "MinScore",
+            "in": "query",
+            "schema": {
+              "type": [
+                "null",
+                "integer"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Sort",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Symbol",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Limit",
+            "in": "query",
+            "schema": {
+              "type": [
+                "null",
+                "integer"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignalPageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/signals/count": {
+      "get": {
+        "tags": [
+          "Scanner"
+        ],
+        "operationId": "CountSignals",
+        "parameters": [
+          {
+            "name": "Type",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Sector",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "MarketCap",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Horizon",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "MinScore",
+            "in": "query",
+            "schema": {
+              "type": [
+                "null",
+                "integer"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Sort",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Symbol",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Limit",
+            "in": "query",
+            "schema": {
+              "type": [
+                "null",
+                "integer"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignalCountResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/signals/{id}": {
+      "get": {
+        "tags": [
+          "Scanner"
+        ],
+        "operationId": "GetSignal",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignalDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -3024,6 +3311,70 @@
         },
         "additionalProperties": false
       },
+      "ScannerRefDto": {
+        "required": [
+          "lastRunAt",
+          "dataAsOf"
+        ],
+        "type": "object",
+        "properties": {
+          "lastRunAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "dataAsOf": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ScannerStatusDto": {
+        "required": [
+          "status",
+          "symbolsTotal",
+          "lastRunAt",
+          "dataAsOf",
+          "errorCode"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "symbolsTotal": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "lastRunAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "dataAsOf": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "errorCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
       "SearchItemsResponse": {
         "required": [
           "items"
@@ -3035,6 +3386,287 @@
             "items": {
               "$ref": "#/components/schemas/InstrumentSearchItem"
             }
+          }
+        },
+        "additionalProperties": false
+      },
+      "SignalCountResponse": {
+        "required": [
+          "count"
+        ],
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SignalCountsDto": {
+        "required": [
+          "all",
+          "momentum",
+          "breakout",
+          "pullback",
+          "unusualVolume",
+          "earnings"
+        ],
+        "type": "object",
+        "properties": {
+          "all": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "momentum": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "breakout": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pullback": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "unusualVolume": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "earnings": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SignalDto": {
+        "required": [
+          "id",
+          "rank",
+          "symbol",
+          "name",
+          "sector",
+          "type",
+          "horizon",
+          "price",
+          "changePct",
+          "score",
+          "metrics",
+          "reason",
+          "levels",
+          "strategy",
+          "evaluatedAt",
+          "dataAsOf",
+          "status",
+          "scoreBreakdown",
+          "proposalId"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "rank": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "symbol": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "sector": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "type": {
+            "type": "string"
+          },
+          "horizon": {
+            "type": "string"
+          },
+          "price": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "decimal"
+          },
+          "changePct": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "decimal"
+          },
+          "score": {
+            "type": "string"
+          },
+          "metrics": {
+            "$ref": "#/components/schemas/SignalMetricsDto"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "levels": {
+            "$ref": "#/components/schemas/SignalLevelsDto"
+          },
+          "strategy": {
+            "$ref": "#/components/schemas/SignalStrategyDto"
+          },
+          "evaluatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dataAsOf": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string"
+          },
+          "scoreBreakdown": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/JsonNode"
+              }
+            ]
+          },
+          "proposalId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SignalLevelsDto": {
+        "required": [
+          "orderType",
+          "entry",
+          "stop",
+          "target"
+        ],
+        "type": "object",
+        "properties": {
+          "orderType": {
+            "type": "string"
+          },
+          "entry": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "stop": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "target": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SignalMetricsDto": {
+        "required": [
+          "relVolume",
+          "relStrength",
+          "rewardRisk",
+          "rsi14"
+        ],
+        "type": "object",
+        "properties": {
+          "relVolume": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "relStrength": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "rewardRisk": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "rsi14": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "SignalPageDto": {
+        "required": [
+          "items",
+          "nextCursor",
+          "counts",
+          "scanner"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SignalDto"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "counts": {
+            "$ref": "#/components/schemas/SignalCountsDto"
+          },
+          "scanner": {
+            "$ref": "#/components/schemas/ScannerRefDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SignalStrategyDto": {
+        "required": [
+          "id",
+          "name",
+          "version"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -3605,6 +4237,9 @@
     },
     {
       "name": "Market"
+    },
+    {
+      "name": "Scanner"
     },
     {
       "name": "Authentication"

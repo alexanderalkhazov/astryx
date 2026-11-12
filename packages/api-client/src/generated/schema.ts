@@ -69,6 +69,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/scanner/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ScannerStatus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/register": {
         parameters: {
             query?: never;
@@ -911,6 +927,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/signals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListSignals"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/signals/count": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["CountSignals"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/signals/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetSignal"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1262,8 +1326,98 @@ export interface components {
             finishedAt: null | string;
             metrics: components["schemas"]["JsonNode"];
         };
+        ScannerRefDto: {
+            /** Format: date-time */
+            lastRunAt: null | string;
+            /** Format: date-time */
+            dataAsOf: null | string;
+        };
+        ScannerStatusDto: {
+            status: string;
+            /** Format: int32 */
+            symbolsTotal: number;
+            /** Format: date-time */
+            lastRunAt: null | string;
+            /** Format: date-time */
+            dataAsOf: null | string;
+            errorCode: null | string;
+        };
         SearchItemsResponse: {
             items: components["schemas"]["InstrumentSearchItem"][];
+        };
+        SignalCountResponse: {
+            /** Format: int32 */
+            count: number;
+        };
+        SignalCountsDto: {
+            /** Format: int32 */
+            all: number;
+            /** Format: int32 */
+            momentum: number;
+            /** Format: int32 */
+            breakout: number;
+            /** Format: int32 */
+            pullback: number;
+            /** Format: int32 */
+            unusualVolume: number;
+            /** Format: int32 */
+            earnings: number;
+        };
+        SignalDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: int32 */
+            rank: number;
+            symbol: string;
+            name: string;
+            sector: null | string;
+            type: string;
+            horizon: string;
+            /** Format: decimal */
+            price: null | string;
+            /** Format: decimal */
+            changePct: null | string;
+            score: string;
+            metrics: components["schemas"]["SignalMetricsDto"];
+            reason: string;
+            levels: components["schemas"]["SignalLevelsDto"];
+            strategy: components["schemas"]["SignalStrategyDto"];
+            /** Format: date-time */
+            evaluatedAt: string;
+            /** Format: date-time */
+            dataAsOf: string;
+            status: string;
+            scoreBreakdown: null | components["schemas"]["JsonNode"];
+            /** Format: uuid */
+            proposalId: null | string;
+        };
+        SignalLevelsDto: {
+            orderType: string;
+            /** Format: decimal */
+            entry: string;
+            /** Format: decimal */
+            stop: string;
+            /** Format: decimal */
+            target: string;
+        };
+        SignalMetricsDto: {
+            relVolume: null | string;
+            relStrength: null | string;
+            rewardRisk: null | string;
+            rsi14: null | string;
+        };
+        SignalPageDto: {
+            items: components["schemas"]["SignalDto"][];
+            nextCursor: null | string;
+            counts: components["schemas"]["SignalCountsDto"];
+            scanner: components["schemas"]["ScannerRefDto"];
+        };
+        SignalStrategyDto: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** Format: int32 */
+            version: number;
         };
         StrategiesResponse: {
             items: components["schemas"]["StrategySummaryDto"][];
@@ -1489,6 +1643,26 @@ export interface operations {
                 };
                 content: {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    ScannerStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScannerStatusDto"];
                 };
             };
         };
@@ -2432,6 +2606,133 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BacktestRunDto"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    ListSignals: {
+        parameters: {
+            query?: {
+                Type?: string;
+                Sector?: string;
+                MarketCap?: string;
+                Horizon?: string;
+                MinScore?: null | number;
+                Sort?: string;
+                Symbol?: string;
+                Limit?: null | number;
+                Cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignalPageDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    CountSignals: {
+        parameters: {
+            query?: {
+                Type?: string;
+                Sector?: string;
+                MarketCap?: string;
+                Horizon?: string;
+                MinScore?: null | number;
+                Sort?: string;
+                Symbol?: string;
+                Limit?: null | number;
+                Cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignalCountResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    GetSignal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignalDto"];
                 };
             };
             /** @description Not Found */

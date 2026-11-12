@@ -22,6 +22,7 @@ export {
   Quote,
   type BarsRequest,
 } from './market';
+export { ScannerStatus, ScoreComponent, Signal, SignalCount, SignalPage, SignalType, scannerApi, type SignalFilters } from './scanner';
 export { SearchItem, SearchResults, searchApi } from './search';
 export { Watchlist, WatchlistItem, Watchlists, watchlistETag, watchlistsApi } from './watchlists';
 export type { components as ApiSchemas } from './generated/schema';

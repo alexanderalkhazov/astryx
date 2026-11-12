@@ -151,6 +151,7 @@ app.MapSearchEndpoints();
 app.MapWatchlistEndpoints();
 app.MapIndicatorEndpoints();
 app.MapStrategyEndpoints();
+app.MapScannerEndpoints();
 
 if (DevEndpoints.IsEnabled(app.Environment, app.Configuration))
 {

@@ -194,6 +194,7 @@ public sealed class ScannerService(
             StrategyVersionId = evaluation.StrategyVersionId,
             StrategyId = evaluation.StrategyId,
             StrategyName = evaluation.StrategyName,
+            StrategyVersion = evaluation.Version,
             SignalType = signal.SignalType,
             Horizon = "swing",
             Score = signal.Score,
