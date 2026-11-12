@@ -328,7 +328,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [x] **T-073** Analysis jobs, worker and endpoints
   - **Acceptance:** `ai.*` migrations. AI1–AI5 (202 plus `Location`, dedupe by `request_hash`, quota 30/day, one active job per user/symbol/kind). `AiAnalysisWorker` with leases, 3 attempts with backoff, cancellation checkpoints, and `ai_requests` logging (no prompt text in logs). Failure tests from §21.8 pass for "Ollama stopped" and "worker killed mid-job".
   - **Refs:** §12.8–12.9, §19.4 · **Depends:** T-072, T-015 · **P0**
-- [ ] **T-074** Real-time job updates (SignalR hub)
+- [x] **T-074** Real-time job updates (SignalR hub)
   - **Acceptance:** hub `/hubs/workstation` with JWT auth and per-user groups. `analysis.updated` is published via the outbox. The mobile SignalR client lifecycle (connect on session, reconnect, fall back to polling).
   - **Refs:** §9.6 · **Depends:** T-073, T-033 · **P0**
 - [ ] **T-075** "Analyze with AI" in the Signal tab
