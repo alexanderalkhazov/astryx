@@ -72,6 +72,25 @@ public class MarketSessionTests(ApiFactory factory) : IClassFixture<ApiFactory>
     }
 
     [Fact]
+    public async Task Freshness_still_works_while_the_provider_is_down_and_no_calendar_is_stored()
+    {
+        var faults = factory.Services.GetRequiredService<Astryx.Modules.MarketData.Infrastructure.Providers.Fake.MarketDataFaults>();
+        faults.Set(Astryx.Modules.MarketData.Infrastructure.Providers.Fake.MarketDataFaultMode.Down);
+        try
+        {
+            await using var scope = Scope(DateTimeOffset.Parse("2026-11-09T19:32:00Z"), out var services);
+
+            var fresh = await services.GetRequiredService<FreshnessPolicy>().QuoteAsync(DateTimeOffset.Parse("2026-11-09T19:31:00Z"), default);
+
+            fresh.Stale.ShouldBeFalse(); // weekday fallback: Monday 14:32 ET is in session
+        }
+        finally
+        {
+            faults.Set(Astryx.Modules.MarketData.Infrastructure.Providers.Fake.MarketDataFaultMode.Ok);
+        }
+    }
+
+    [Fact]
     public async Task A_missing_quote_is_stale()
     {
         await using var scope = Scope(DateTimeOffset.Parse("2026-11-09T19:32:00Z"), out var services);

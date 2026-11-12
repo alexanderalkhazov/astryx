@@ -43,6 +43,19 @@ public partial class DataIsolationTests(ApiFactory factory) : IClassFixture<ApiF
         // e.g. ["GET /api/v1/watchlists/{id}"] = t => t.AssertForeignWatchlistIs404Async(),
     };
 
+    /// <summary>
+    /// Parameterised routes over shared reference data (market data keyed by symbol): no user owns the resource, so
+    /// there is nothing to isolate. Each entry is a deliberate exemption; user-owned routes never belong here.
+    /// </summary>
+    private static readonly HashSet<string> SharedDataRoutes = new(StringComparer.Ordinal)
+    {
+        "GET /api/v1/instruments/{symbol}",
+        "GET /api/v1/instruments/{symbol}/fundamentals",
+        "GET /api/v1/instruments/{symbol}/news",
+        "GET /api/v1/market/{symbol}/quote",
+        "GET /api/v1/market/{symbol}/bars",
+    };
+
     [GeneratedRegex(@"userId=(?<user>[0-9a-f-]{36})&token=(?<token>[A-Za-z0-9_-]{43})")]
     private static partial Regex LinkPattern();
 
@@ -74,6 +87,8 @@ public partial class DataIsolationTests(ApiFactory factory) : IClassFixture<ApiF
             .Select(e => e.Key)
             .ToHashSet(StringComparer.Ordinal);
 
+        SharedDataRoutes.Except(parameterised).ShouldBeEmpty(); // no stale exemptions
+        parameterised.ExceptWith(SharedDataRoutes);
         parameterised.Except(IsolationFixtures.Keys).ShouldBeEmpty();
         IsolationFixtures.Keys.Except(parameterised).ShouldBeEmpty();
     }

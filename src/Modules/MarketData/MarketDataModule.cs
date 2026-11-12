@@ -50,6 +50,7 @@ public static class MarketDataModule
         services.AddOptions<FreshnessOptions>().Bind(configuration.GetSection(FreshnessOptions.SectionName));
         services.AddScoped<MarketSessionService>();
         services.AddScoped<FreshnessPolicy>();
+        services.AddScoped<MarketQueries>();
 
         services.AddJobHandler<InstrumentSyncJob, InstrumentSyncHandler>();
         services.AddJobHandler<CalendarSyncJob, CalendarSyncHandler>();

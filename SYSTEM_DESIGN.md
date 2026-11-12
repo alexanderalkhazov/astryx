@@ -2252,6 +2252,16 @@ Error envelope (every problem response also carries `correlationId`; unknown rou
 }
 ```
 
+**Implemented (T-045).** M4–M6 and M8–M11 are in `MarketData/Api/MarketEndpoints.cs`. M7 lands with the Quant engine (T-06x).
+- **Data source:** answers come from stored data, with `asOf`/`stale` from `FreshnessPolicy`. The provider is called only for data that is not stored: intraday bars, a missing quote, or news with nothing ingested in the last 15 minutes. A provider outage there is 503 `market_data_unavailable`, while stored data keeps answering.
+- **Daily bars:** stored final bars plus the current session's bar from the latest quote, with `"final": false`, until the EOD sync stores it. `adjusted` is `false` until T-044.
+- **Display ranges:** `1D` → 5m, `5D` → 15m, `1M`–`ALL` → 1d. The default is `3M`, and `limit` keeps the most recent bars (≤ 1000).
+- **Formatting:** prices are rounded to cents (4 dp under **Scanner and signals (Discovery)**
+), fractions to 4 dp, and fundamentals have trailing zeros trimmed.
+- **Levels:** come from `IChartLevelsSource` (Contracts), which Discovery implements in M3.
+- **Breadth:** advancers and decliners from stored quotes. `pctAbove50dma` uses the last 50 final closes. `risk_on` when both shares are ≥ 0.6, `risk_off` when both are ≤ 0.4.
+- **Errors:** invalid parameters return 422 `validation_failed`.
+
 **Scanner and signals (Discovery)**
 
 | # | Method & route | Request | Response | Errors |

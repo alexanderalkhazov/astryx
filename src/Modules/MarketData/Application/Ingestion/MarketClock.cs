@@ -39,7 +39,17 @@ public sealed class MarketClock(MarketDataDbContext db, IMarketDataProvider prov
             return new ProviderSession(stored.ExchangeMic, stored.SessionDate, stored.OpenAt, stored.CloseAt, stored.IsHalfDay, stored.IsHoliday);
         }
 
-        return (await provider.GetCalendarAsync(PrimaryMic, date, date, cancellationToken)).SingleOrDefault();
+        try
+        {
+            return (await provider.GetCalendarAsync(PrimaryMic, date, date, cancellationToken)).SingleOrDefault();
+        }
+        catch (MarketDataUnavailableException)
+        {
+            // Best effort without the provider: weekdays 09:30–16:00 ET, holidays unknown. Stored data must keep answering.
+            return date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday
+                ? null
+                : new ProviderSession(PrimaryMic, date, At(date, 9, 30), At(date, 16, 0), IsHalfDay: false, IsHoliday: false);
+        }
     }
 
     /// <summary>The most recent trading session that has opened (today's if it is under way or done).</summary>
