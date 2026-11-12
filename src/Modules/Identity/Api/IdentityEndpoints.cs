@@ -64,7 +64,7 @@ public sealed class LoginRequestValidator : AbstractValidator<LoginRequest>
     {
         RuleFor(r => r.Email).NotEmpty().MaximumLength(254);
         RuleFor(r => r.Password).NotEmpty().MaximumLength(128);
-        RuleFor(r => r.DeviceId).Matches(DeviceIdPattern).WithMessage("deviceId must be 8–64 letters, digits or '-'.");
+        RuleFor(r => r.DeviceId).Cascade(CascadeMode.Stop).NotEmpty().WithMessage("deviceId must be 8–64 letters, digits or '-'.").Matches(DeviceIdPattern).WithMessage("deviceId must be 8–64 letters, digits or '-'.");
     }
 
     internal const string DeviceIdPattern = "^[A-Za-z0-9-]{8,64}$";
@@ -75,7 +75,7 @@ public sealed class RefreshRequestValidator : AbstractValidator<RefreshRequest>
     public RefreshRequestValidator()
     {
         RuleFor(r => r.RefreshToken).NotEmpty().Matches("^[A-Za-z0-9_-]{43}$").WithMessage("Malformed refresh token.");
-        RuleFor(r => r.DeviceId).Matches(LoginRequestValidator.DeviceIdPattern).WithMessage("deviceId must be 8–64 letters, digits or '-'.");
+        RuleFor(r => r.DeviceId).Cascade(CascadeMode.Stop).NotEmpty().WithMessage("deviceId must be 8–64 letters, digits or '-'.").Matches(LoginRequestValidator.DeviceIdPattern).WithMessage("deviceId must be 8–64 letters, digits or '-'.");
     }
 }
 

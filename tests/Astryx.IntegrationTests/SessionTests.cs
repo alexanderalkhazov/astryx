@@ -87,6 +87,18 @@ public partial class SessionTests(ApiFactory factory) : IClassFixture<ApiFactory
     }
 
     [Fact]
+    public async Task A_missing_device_id_is_a_validation_error_not_a_server_error()
+    {
+        var (email, _) = await CreateUserAsync();
+
+        var login = await _client.PostAsJsonAsync("/api/v1/auth/login", new { email, password = Password });
+        var refresh = await _client.PostAsJsonAsync("/api/v1/auth/refresh", new { refreshToken = "x" });
+
+        login.StatusCode.ShouldBe(HttpStatusCode.UnprocessableEntity);
+        refresh.StatusCode.ShouldBe(HttpStatusCode.UnprocessableEntity);
+    }
+
+    [Fact]
     public async Task Full_session_lifecycle_login_use_refresh_logout()
     {
         var (email, userId) = await CreateUserAsync();
