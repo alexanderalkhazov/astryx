@@ -272,7 +272,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Story:** As a user, I want to open a stock and see its price action with moving averages and volume.
   - **Acceptance:** header (back, ticker, star, search), price-xl, signal ribbon (placeholder until M3), OHLCV readout, timeframes 1D/5D/1M/3M/1Y, overlay toggles, Fundamentals and News tabs (design 16), loading, empty and stale states. The bottom button adapts (Add to watchlist for now).
   - **Refs:** §8.4.3 · **Depends:** T-048, T-047 · **P0**
-- [ ] **T-050** Connection-lost and stale banners
+- [x] **T-050** Connection-lost and stale banners (db774e9)
   - **Story:** As a user, I must never mistake stale numbers for live ones.
   - **Acceptance:** NetInfo plus `system.status` polling drives the Home red banner (design 22: "Values are from the last sync at HH:MM ET… Approvals are disabled · Retry"). Fake-provider fault injection toggles it within 90 s.
   - **Refs:** §8.11, §20.5 · **Depends:** T-043, T-035 · **P0**
