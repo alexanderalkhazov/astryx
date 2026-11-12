@@ -302,7 +302,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [x] **T-065** Scanner runs and signals (eceafd0)
   - **Acceptance:** `discovery.*` migrations. `ScannerRunJob` after EOD and every 15 min in session. Universe filters from Settings (min price $10, avg $ volume $20M). Signals with score breakdown. Superseding of old signals. `SignalDetected` event. `CompletedWithWarnings` and `failed` states with `SCN-xxx` codes.
   - **Refs:** §7.4, §19.2 · **Depends:** T-064, T-042 · **P0**
-- [ ] **T-066** Scanner and signal endpoints
+- [x] **T-066** Scanner and signal endpoints (e677bde)
   - **Acceptance:** D1–D4 with filters, sorts, counts per chip and cursor pagination. 503 `scanner_unavailable` when the latest run failed or is older than two intervals.
   - **Refs:** §11.4 (scanner) · **Depends:** T-065 · **P0**
 - [ ] **T-067** Discover screen with filters and states
