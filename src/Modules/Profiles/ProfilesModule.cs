@@ -18,6 +18,7 @@ public static class ProfilesModule
         services.AddModuleDbContext<ProfilesDbContext>(ProfilesDbContext.SchemaName, historyKey: "profiles");
         services.AddScoped<ProfileProvisioner>();
         services.AddScoped<ProfileService>();
+        services.AddScoped<Astryx.Contracts.Profiles.IRiskSettingsSource, RiskSettingsSource>();
         services.AddValidatorsFromAssemblyContaining<UpdateRiskSettingsRequestValidator>(includeInternalTypes: true);
         services.AddIntegrationEventHandler<UserRegistered, ProvisionProfileHandler>();
         return services;

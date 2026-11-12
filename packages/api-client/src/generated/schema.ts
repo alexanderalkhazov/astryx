@@ -975,6 +975,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/analyses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListAnalyses"];
+        put?: never;
+        post: operations["CreateAnalysis"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/analyses/jobs/{jobId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetAnalysisJob"];
+        put?: never;
+        post?: never;
+        delete: operations["CancelAnalysisJob"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/analyses/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetAnalysis"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -985,6 +1033,84 @@ export interface components {
         AddWatchlistItemRequest: {
             symbol: string;
             note: null | string;
+        };
+        AnalysisDataQualityDto: {
+            status: string;
+            notes: null | string[];
+        };
+        AnalysisJobDto: {
+            /** Format: uuid */
+            id: string;
+            symbol: string;
+            kind: string;
+            status: string;
+            /** Format: int32 */
+            attempt: number;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            startedAt: null | string;
+            /** Format: date-time */
+            completedAt: null | string;
+            /** Format: uuid */
+            resultId: null | string;
+            errorCode: null | string;
+            errorDetail: null | string;
+            /** Format: int32 */
+            pollAfterMs: null | number;
+        };
+        AnalysisPageDto: {
+            items: components["schemas"]["AnalysisSummaryDto"][];
+            nextCursor: null | string;
+        };
+        AnalysisResultDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            jobId: string;
+            schemaVersion: string;
+            symbol: string;
+            /** Format: date-time */
+            analysisTimestamp: string;
+            /** Format: date-time */
+            dataTimestamp: string;
+            dataQuality: components["schemas"]["AnalysisDataQualityDto"];
+            overallSentiment: string;
+            scenarios: components["schemas"]["ScenariosDto"];
+            supportingEvidence: string[];
+            contradictingEvidence: string[];
+            keyRisks: string[];
+            relevantIndicators: components["schemas"]["IndicatorNoteDto"][];
+            catalysts: components["schemas"]["CatalystDto"][];
+            confidence: components["schemas"]["ConfidenceDto"];
+            suggestedLevels: components["schemas"]["SuggestedLevelsDto"];
+            explanation: string;
+            insufficientData: boolean;
+            rewardRisk: null | string;
+            levelValidation: components["schemas"]["LevelValidationDto"];
+            stale: boolean;
+            model: string;
+            promptVersion: string;
+            disclaimer: string;
+            validationStatus: string;
+        };
+        AnalysisSummaryDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            jobId: string;
+            symbol: string;
+            overallSentiment: null | string;
+            /** Format: decimal */
+            confidence: null | string;
+            /** Format: date-time */
+            analysisAt: string;
+            /** Format: date-time */
+            dataAsOf: string;
+            stale: boolean;
+            levelsAccepted: boolean;
+            /** Format: decimal */
+            rewardRisk: null | string;
         };
         BacktestRunDto: {
             /** Format: uuid */
@@ -1064,9 +1190,26 @@ export interface components {
             asOf: string;
             stale: boolean;
         };
+        CatalystDto: {
+            type: string;
+            date: null | string;
+            note: string;
+        };
         ChangePasswordRequest: {
             currentPassword: string;
             newPassword: string;
+        };
+        ConfidenceDto: {
+            /** Format: decimal */
+            value: string;
+            explanation: string;
+        };
+        CreateAnalysisRequest: {
+            symbol: string;
+            kind: null | string;
+            /** Format: uuid */
+            signalId: null | string;
+            timeframe: null | string;
         };
         CreateWatchlistRequest: {
             name: string;
@@ -1119,6 +1262,11 @@ export interface components {
                 [key: string]: string[];
             };
         };
+        IndicatorNoteDto: {
+            name: string;
+            value: string;
+            interpretation: string;
+        };
         IndicatorSnapshot: {
             symbol: string;
             interval: string;
@@ -1159,6 +1307,10 @@ export interface components {
             items: components["schemas"]["NewsItemDto"][];
         };
         JsonNode: unknown;
+        LevelValidationDto: {
+            accepted: boolean;
+            reasons: string[];
+        };
         LevelsDto: {
             /** Format: decimal */
             entry: string;
@@ -1222,6 +1374,10 @@ export interface components {
             max: null | components["schemas"]["JsonNode"];
             step: null | components["schemas"]["JsonNode"];
             value: null | components["schemas"]["JsonNode"];
+        };
+        PriceZoneDto: {
+            low: null | string;
+            high: null | string;
         };
         ProblemDetails: {
             type?: null | string;
@@ -1341,6 +1497,15 @@ export interface components {
             /** Format: date-time */
             dataAsOf: null | string;
             errorCode: null | string;
+        };
+        ScenarioDto: {
+            summary: string;
+            conditions: string[];
+        };
+        ScenariosDto: {
+            bullish: components["schemas"]["ScenarioDto"];
+            bearish: components["schemas"]["ScenarioDto"];
+            neutral: components["schemas"]["ScenarioDto"];
         };
         SearchItemsResponse: {
             items: components["schemas"]["InstrumentSearchItem"][];
@@ -1474,6 +1639,14 @@ export interface components {
             backtestStart: null | string;
             /** Format: date */
             backtestEnd: null | string;
+        };
+        SuggestedLevelsDto: {
+            justified: boolean;
+            entryZone: null | components["schemas"]["PriceZoneDto"];
+            stopLoss: null | string;
+            takeProfit: null | string;
+            rationale: null | string;
+            accepted: boolean;
         };
         TokenResponse: {
             accessToken: string;
@@ -2738,6 +2911,210 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SignalDto"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    ListAnalyses: {
+        parameters: {
+            query?: {
+                symbol?: string;
+                limit?: null | number;
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnalysisPageDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    CreateAnalysis: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateAnalysisRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnalysisJobDto"];
+                };
+            };
+            /** @description Accepted */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnalysisJobDto"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    GetAnalysisJob: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                jobId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnalysisJobDto"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    CancelAnalysisJob: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                jobId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Accepted */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnalysisJobDto"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    GetAnalysis: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnalysisResultDto"];
                 };
             };
             /** @description Not Found */

@@ -13,6 +13,7 @@ public class AnalysisContextTests(SyncedMarketApiFactory factory) : IClassFixtur
     public async Task InitializeAsync()
     {
         await factory.EnsureSyncedAsync();
+        await factory.RefreshQuotesAsync(); // the context builder refuses stale quotes
         await using var scope = factory.Services.CreateAsyncScope();
         await scope.ServiceProvider.GetRequiredService<ScannerRunHandler>().HandleAsync(new ScannerRunJob("manual"), new JobContext(Guid.NewGuid(), 1, 1, null), default);
         var client = await TestUsers.SignedInClientAsync(factory);

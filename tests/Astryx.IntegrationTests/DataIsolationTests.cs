@@ -3,6 +3,8 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Astryx.Infrastructure.Security;
+using Astryx.Modules.Ai.Domain;
+using Astryx.Modules.Ai.Infrastructure.Persistence;
 using Astryx.Modules.Identity.Infrastructure.Persistence;
 using Astryx.Modules.Portfolio.Infrastructure.Persistence;
 using Astryx.Modules.Profiles.Infrastructure.Persistence;
@@ -48,6 +50,9 @@ public partial class DataIsolationTests(ApiFactory factory) : IClassFixture<ApiF
         ["DELETE /api/v1/watchlists/{id}/items/{symbol}"] = t => t.AssertForeignWatchlistIs404Async(HttpMethod.Delete, "/items/NVDA", null),
         ["PUT /api/v1/watchlists/{id}/order"] = t => t.AssertForeignWatchlistIs404Async(HttpMethod.Put, "/order", new { symbols = Array.Empty<string>() }),
         ["PUT /api/v1/watchlists/default/items/{symbol}"] = t => t.AssertStarOnlyTouchesOwnDefaultAsync(),
+        ["GET /api/v1/analyses/jobs/{jobId:guid}"] = t => t.AssertForeignAnalysisIs404Async(HttpMethod.Get, a => $"/api/v1/analyses/jobs/{a.JobId}"),
+        ["DELETE /api/v1/analyses/jobs/{jobId:guid}"] = t => t.AssertForeignAnalysisIs404Async(HttpMethod.Delete, a => $"/api/v1/analyses/jobs/{a.JobId}"),
+        ["GET /api/v1/analyses/{id:guid}"] = t => t.AssertForeignAnalysisIs404Async(HttpMethod.Get, a => $"/api/v1/analyses/{a.ResultId}"),
     };
 
     /// <summary>
@@ -99,6 +104,32 @@ public partial class DataIsolationTests(ApiFactory factory) : IClassFixture<ApiF
         await bob.PutAsync("/api/v1/watchlists/default/items/NVDA", null);
 
         (await alice.GetFromJsonAsync<JsonElement>("/api/v1/watchlists")).GetProperty("items")[0].GetProperty("version").GetInt32().ShouldBe(before);
+    }
+
+    /// <summary>Bob addresses Alice's analysis job or result by id: 404, and Alice's job is untouched (not cancelled).</summary>
+    private async Task AssertForeignAnalysisIs404Async(HttpMethod method, Func<(Guid JobId, Guid ResultId), string> path)
+    {
+        var alice = await TestUsers.SignedInClientAsync(factory);
+        var bob = await TestUsers.SignedInClientAsync(factory);
+        var aliceId = (await alice.GetFromJsonAsync<JsonElement>("/api/v1/me")).GetProperty("id").GetGuid();
+        var ids = (JobId: Guid.NewGuid(), ResultId: Guid.NewGuid());
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AiDbContext>();
+            var now = DateTimeOffset.UtcNow;
+            db.Jobs.Add(new AnalysisJob { Id = ids.JobId, UserId = aliceId, InstrumentId = Guid.NewGuid(), Symbol = "NVDA", IdempotencyKey = "isolation", RequestHash = "isolation", CreatedAt = now, RunAfter = now.AddDays(1) });
+            db.Results.Add(new AnalysisResult
+            {
+                Id = ids.ResultId, JobId = ids.JobId, UserId = aliceId, InstrumentId = Guid.NewGuid(), Symbol = "NVDA", Provider = "fake", Model = "m", PromptId = "stock_analysis",
+                PromptVersion = "v", OutputSchemaVersion = "analysis.v1", Context = "{}", RawOutput = "{}", Parsed = "{}", ValidationStatus = "valid", ValidationIssues = "[]",
+                DataAsOf = now, AnalysisAt = now,
+            });
+            await db.SaveChangesAsync();
+        }
+
+        (await bob.SendAsync(new HttpRequestMessage(method, path(ids)))).StatusCode.ShouldBe(HttpStatusCode.NotFound);
+
+        (await alice.GetFromJsonAsync<JsonElement>($"/api/v1/analyses/jobs/{ids.JobId}")).GetProperty("status").GetString().ShouldBe("pending");
     }
 
     [GeneratedRegex(@"userId=(?<user>[0-9a-f-]{36})&token=(?<token>[A-Za-z0-9_-]{43})")]

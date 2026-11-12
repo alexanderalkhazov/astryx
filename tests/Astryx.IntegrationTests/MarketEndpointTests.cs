@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Astryx.IntegrationTests;
 
 /// <summary>A host whose market tables are synced once from the fake provider on the real clock.</summary>
-public sealed class SyncedMarketApiFactory : ApiFactory
+public class SyncedMarketApiFactory : ApiFactory
 {
     private bool _synced;
     private readonly SemaphoreSlim _gate = new(1, 1);
@@ -39,6 +39,9 @@ public sealed class SyncedMarketApiFactory : ApiFactory
             _gate.Release();
         }
     }
+
+    /// <summary>Re-syncs quotes so they are inside the freshness budget again (long suites outlive it in session).</summary>
+    public Task RefreshQuotesAsync() => RunAsync<QuoteSyncJob, QuoteSyncHandler>(new QuoteSyncJob());
 
     private async Task RunAsync<TJob, THandler>(TJob job)
         where TJob : IJob

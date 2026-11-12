@@ -1,5 +1,8 @@
 using System.Collections.Concurrent;
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using Astryx.Modules.Ai.Application.Providers;
 
 namespace Astryx.Modules.Ai.Infrastructure.Fake;
@@ -73,9 +76,30 @@ public sealed class FakeAiProvider : IAiProvider
                 throw new AiProviderUnavailableException("timeout");
             case FakeAiScenario.ServerError:
                 throw new AiProviderUnavailableException("http_500: internal error");
+            case FakeAiScenario.Valid or FakeAiScenario.HallucinatedNumbers:
+                return new AiCompletion(Answering(request, Fixture(scenario)), 812, 640, TimeSpan.FromMilliseconds(1400), ModelName, Digest, "stop");
             default:
                 return new AiCompletion(Fixture(scenario), 812, 640, TimeSpan.FromMilliseconds(1400), ModelName, Digest, "stop");
         }
+    }
+
+    /// <summary>
+    /// Echoes the symbol and data time the prompt asks for (as a real model would), so the fixture stays valid
+    /// whatever the clock says. Everything else is the fixture verbatim.
+    /// </summary>
+    private static string Answering(AiCompletionRequest request, string fixture)
+    {
+        var prompt = request.Messages.LastOrDefault(m => m.Role == "user")?.Content ?? string.Empty;
+        var asked = Regex.Match(prompt, "symbol \"(?<symbol>[^\"]+)\" and dataTimestamp \"(?<at>[^\"]+)\"");
+        if (!asked.Success)
+        {
+            return fixture;
+        }
+
+        var json = JsonNode.Parse(fixture)!.AsObject();
+        json["symbol"] = asked.Groups["symbol"].Value;
+        json["dataTimestamp"] = asked.Groups["at"].Value;
+        return json.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
     }
 
     /// <summary>The raw model output for a scenario (embedded <c>Scenarios/*.txt</c>).</summary>

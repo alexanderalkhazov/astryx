@@ -1971,6 +1971,272 @@
           }
         }
       }
+    },
+    "/api/v1/analyses": {
+      "post": {
+        "tags": [
+          "Analyses"
+        ],
+        "operationId": "CreateAnalysis",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAnalysisRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisJobDto"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisJobDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Analyses"
+        ],
+        "operationId": "ListAnalyses",
+        "parameters": [
+          {
+            "name": "symbol",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": [
+                "null",
+                "integer"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisPageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analyses/jobs/{jobId}": {
+      "get": {
+        "tags": [
+          "Analyses"
+        ],
+        "operationId": "GetAnalysisJob",
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisJobDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Analyses"
+        ],
+        "operationId": "CancelAnalysisJob",
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisJobDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analyses/{id}": {
+      "get": {
+        "tags": [
+          "Analyses"
+        ],
+        "operationId": "GetAnalysis",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisResultDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2002,6 +2268,326 @@
               "null",
               "string"
             ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "AnalysisDataQualityDto": {
+        "required": [
+          "status",
+          "notes"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "notes": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "AnalysisJobDto": {
+        "required": [
+          "id",
+          "symbol",
+          "kind",
+          "status",
+          "attempt",
+          "createdAt",
+          "startedAt",
+          "completedAt",
+          "resultId",
+          "errorCode",
+          "errorDetail",
+          "pollAfterMs"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "symbol": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "attempt": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "startedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "completedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "resultId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "errorCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "errorDetail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "pollAfterMs": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AnalysisPageDto": {
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AnalysisSummaryDto"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "AnalysisResultDto": {
+        "required": [
+          "id",
+          "jobId",
+          "schemaVersion",
+          "symbol",
+          "analysisTimestamp",
+          "dataTimestamp",
+          "dataQuality",
+          "overallSentiment",
+          "scenarios",
+          "supportingEvidence",
+          "contradictingEvidence",
+          "keyRisks",
+          "relevantIndicators",
+          "catalysts",
+          "confidence",
+          "suggestedLevels",
+          "explanation",
+          "insufficientData",
+          "rewardRisk",
+          "levelValidation",
+          "stale",
+          "model",
+          "promptVersion",
+          "disclaimer",
+          "validationStatus"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "jobId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "schemaVersion": {
+            "type": "string"
+          },
+          "symbol": {
+            "type": "string"
+          },
+          "analysisTimestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dataTimestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dataQuality": {
+            "$ref": "#/components/schemas/AnalysisDataQualityDto"
+          },
+          "overallSentiment": {
+            "type": "string"
+          },
+          "scenarios": {
+            "$ref": "#/components/schemas/ScenariosDto"
+          },
+          "supportingEvidence": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "contradictingEvidence": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "keyRisks": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "relevantIndicators": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IndicatorNoteDto"
+            }
+          },
+          "catalysts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CatalystDto"
+            }
+          },
+          "confidence": {
+            "$ref": "#/components/schemas/ConfidenceDto"
+          },
+          "suggestedLevels": {
+            "$ref": "#/components/schemas/SuggestedLevelsDto"
+          },
+          "explanation": {
+            "type": "string"
+          },
+          "insufficientData": {
+            "type": "boolean"
+          },
+          "rewardRisk": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "levelValidation": {
+            "$ref": "#/components/schemas/LevelValidationDto"
+          },
+          "stale": {
+            "type": "boolean"
+          },
+          "model": {
+            "type": "string"
+          },
+          "promptVersion": {
+            "type": "string"
+          },
+          "disclaimer": {
+            "type": "string"
+          },
+          "validationStatus": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AnalysisSummaryDto": {
+        "required": [
+          "id",
+          "jobId",
+          "symbol",
+          "overallSentiment",
+          "confidence",
+          "analysisAt",
+          "dataAsOf",
+          "stale",
+          "levelsAccepted",
+          "rewardRisk"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "jobId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "symbol": {
+            "type": "string"
+          },
+          "overallSentiment": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "confidence": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "decimal"
+          },
+          "analysisAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dataAsOf": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "stale": {
+            "type": "boolean"
+          },
+          "levelsAccepted": {
+            "type": "boolean"
+          },
+          "rewardRisk": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "decimal"
           }
         },
         "additionalProperties": false
@@ -2273,6 +2859,29 @@
         },
         "additionalProperties": false
       },
+      "CatalystDto": {
+        "required": [
+          "type",
+          "date",
+          "note"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "date": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
       "ChangePasswordRequest": {
         "required": [
           "currentPassword",
@@ -2285,6 +2894,58 @@
           },
           "newPassword": {
             "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ConfidenceDto": {
+        "required": [
+          "value",
+          "explanation"
+        ],
+        "type": "object",
+        "properties": {
+          "value": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "explanation": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateAnalysisRequest": {
+        "required": [
+          "symbol",
+          "kind",
+          "signalId",
+          "timeframe"
+        ],
+        "type": "object",
+        "properties": {
+          "symbol": {
+            "type": "string"
+          },
+          "kind": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "signalId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "timeframe": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         },
         "additionalProperties": false
@@ -2505,6 +3166,26 @@
         },
         "additionalProperties": false
       },
+      "IndicatorNoteDto": {
+        "required": [
+          "name",
+          "value",
+          "interpretation"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "interpretation": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
       "IndicatorSnapshot": {
         "required": [
           "symbol",
@@ -2672,6 +3353,25 @@
         "additionalProperties": false
       },
       "JsonNode": {},
+      "LevelValidationDto": {
+        "required": [
+          "accepted",
+          "reasons"
+        ],
+        "type": "object",
+        "properties": {
+          "accepted": {
+            "type": "boolean"
+          },
+          "reasons": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
       "LevelsDto": {
         "required": [
           "entry",
@@ -2937,6 +3637,28 @@
               {
                 "$ref": "#/components/schemas/JsonNode"
               }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "PriceZoneDto": {
+        "required": [
+          "low",
+          "high"
+        ],
+        "type": "object",
+        "properties": {
+          "low": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "high": {
+            "type": [
+              "null",
+              "string"
             ]
           }
         },
@@ -3371,6 +4093,45 @@
               "null",
               "string"
             ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "ScenarioDto": {
+        "required": [
+          "summary",
+          "conditions"
+        ],
+        "type": "object",
+        "properties": {
+          "summary": {
+            "type": "string"
+          },
+          "conditions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "ScenariosDto": {
+        "required": [
+          "bullish",
+          "bearish",
+          "neutral"
+        ],
+        "type": "object",
+        "properties": {
+          "bullish": {
+            "$ref": "#/components/schemas/ScenarioDto"
+          },
+          "bearish": {
+            "$ref": "#/components/schemas/ScenarioDto"
+          },
+          "neutral": {
+            "$ref": "#/components/schemas/ScenarioDto"
           }
         },
         "additionalProperties": false
@@ -3910,6 +4671,54 @@
         },
         "additionalProperties": false
       },
+      "SuggestedLevelsDto": {
+        "required": [
+          "justified",
+          "entryZone",
+          "stopLoss",
+          "takeProfit",
+          "rationale",
+          "accepted"
+        ],
+        "type": "object",
+        "properties": {
+          "justified": {
+            "type": "boolean"
+          },
+          "entryZone": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/PriceZoneDto"
+              }
+            ]
+          },
+          "stopLoss": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "takeProfit": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "rationale": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "accepted": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
       "TokenResponse": {
         "required": [
           "accessToken",
@@ -4269,6 +5078,9 @@
     },
     {
       "name": "Strategies"
+    },
+    {
+      "name": "Analyses"
     }
   ]
 }

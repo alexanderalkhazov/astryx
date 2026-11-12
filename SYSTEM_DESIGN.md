@@ -2820,6 +2820,19 @@ Fields added **by the backend** after validation (never accepted from the model)
 | Fallback | `DECIDED` **There is no fallback to another LLM in the MVP.** Without AI, the user still gets deterministic indicators, the score breakdown and **template-generated** headline, evidence and invalidation copy (`copy_source = template`). Proposals from scanner signals do **not** depend on AI at all |
 | Quota | 30 analyses/user/day, 1 active job per (user, symbol, kind) |
 
+**Implemented (T-073).**
+
+- `ai.analysis_jobs` gains three columns beyond §10.4: `symbol`, `run_after` (the retry backoff) and `cancel_requested_at` (AI3 on a processing job).
+- AI1 checks in this order: a replayed `Idempotency-Key` returns that job, then the 30-per-24-h quota, then an equivalent `request_hash` that is active or completed in the last 15 minutes (200 with that job), then another active job for the symbol (409 `duplicate` with `jobId`). Otherwise it inserts and answers 202. The request hash buckets the latest quote time to 15 minutes. The `analysis` rate-limit policy (10/h) also applies.
+- Only `kind=stock_analysis` is accepted until a `signal_explanation` prompt exists.
+- `AnalysisJobProcessor` claims with `FOR UPDATE SKIP LOCKED`. Due pending jobs and processing jobs whose lease expired with attempts left are both claimable, and either claim adds one to `attempt`. The lease is (call timeout × 2 calls) + 30 s. A processing job whose lease expires on its last attempt fails with `lease_expired`. Cancellation is checked before the model call and before saving.
+- Settling saves the job and result in one transaction, and only while the worker still holds the lease. A worker that lost its lease changes nothing, and the unique `job_id` guarantees one result row.
+- Invalid outputs are stored with `parsed` null and are never linked from their job or served by AI4/AI5.
+- One `ai_requests` row is written per model call; the repair retry shares its job attempt's number.
+- `AiAnalysisWorker` runs `Ai:MaxConcurrency` loops when `Workers:Enabled` and `Ai:Jobs:WorkerEnabled` are set. Tests switch it off and call the processor directly.
+- `NOT IMPLEMENTED` yet: the "Analysis failed" notification and the SignalR `analysis.updated` event (T-074). Clients poll AI2.
+- Observed on 2026-11-12 with the real `qwen3.5:0.8b` and no `format` support: each call takes about 37 s for roughly 1,500 output tokens. The output began correctly, then nested `conditions` recursively until it hit the token cap. Both calls failed to parse, and the job ended `ai_output_invalid` as designed. Prompt tuning for small models is measured in T-076.
+
 ### 12.9 Logging and tracking
 
 - `ai.ai_requests` row per attempt: model, prompt version, latency, tokens (from Ollama `prompt_eval_count` / `eval_count`), outcome.

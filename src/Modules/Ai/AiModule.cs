@@ -1,6 +1,9 @@
 using Astryx.Infrastructure.Persistence;
+using Astryx.Modules.Ai.Api;
+using FluentValidation;
 using Astryx.Modules.Ai.Application.Analysis;
 using Astryx.Modules.Ai.Application.Context;
+using Astryx.Modules.Ai.Application.Jobs;
 using Astryx.Modules.Ai.Application.Prompts;
 using Astryx.Modules.Ai.Application.Providers;
 using Astryx.Modules.Ai.Application.Validation;
@@ -33,6 +36,15 @@ public static class AiModule
         services.AddSingleton<AiOutputValidator>();
         services.AddOptions<AiGenerationOptions>().Bind(configuration.GetSection(AiGenerationOptions.SectionName));
         services.AddScoped<AnalysisGenerator>();
+        services.AddOptions<AnalysisJobOptions>().Bind(configuration.GetSection(AnalysisJobOptions.SectionName));
+        services.AddScoped<AnalysisJobService>();
+        services.AddValidatorsFromAssemblyContaining<CreateAnalysisRequestValidator>(includeInternalTypes: true);
+        services.AddSingleton<AnalysisJobProcessor>();
+        services.AddSingleton(new AiConcurrency(configuration.GetValue("Ai:MaxConcurrency", 1)));
+        if (configuration.GetValue("Workers:Enabled", true) && configuration.GetValue($"{AnalysisJobOptions.SectionName}:WorkerEnabled", true))
+        {
+            services.AddHostedService<AiAnalysisWorker>();
+        }
 
         // `Ai:Provider`: Ollama (default) or Fake (tests, offline development).
         if (string.Equals(configuration["Ai:Provider"], "Fake", StringComparison.OrdinalIgnoreCase))

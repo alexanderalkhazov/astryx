@@ -4,6 +4,7 @@ using Astryx.Api.OpenApi;
 using Astryx.Infrastructure;
 using Astryx.Infrastructure.Health;
 using Astryx.Modules.Ai;
+using Astryx.Modules.Ai.Api;
 using Astryx.Modules.Audit;
 using Astryx.Modules.Discovery;
 using Astryx.Modules.Discovery.Api;
@@ -152,6 +153,7 @@ app.MapWatchlistEndpoints();
 app.MapIndicatorEndpoints();
 app.MapStrategyEndpoints();
 app.MapScannerEndpoints();
+app.MapAnalysisEndpoints();
 
 if (DevEndpoints.IsEnabled(app.Environment, app.Configuration))
 {
