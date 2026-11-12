@@ -60,3 +60,4 @@ Ports: the API uses **5080** on the host (`API_PORT` in `.env`) because 8080 is 
 - SDK 58 apps can't be opened in Expo Go on a physical device. Use the simulator, or build a dev client with `npx expo run:ios`.
 - `qwen3.5:0.8b` does not support Ollama structured output (`format`). The AI layer prompts for JSON and validates it (SYSTEM_DESIGN.md §12).
 - Add Expo packages with `npx expo install <pkg>` from `apps/mobile`, never with `pnpm add`. That keeps versions SDK-compatible.
+- Simulator E2E flows live in `apps/mobile/e2e` (Maestro: `brew install openjdk mobile-dev-inc/tap/maestro`). Run them with `JAVA_HOME=/opt/homebrew/opt/openjdk DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer maestro --device <udid> test -e EMAIL=… -e PASSWORD=… e2e/sign-in.yaml`, then `e2e/shell.yaml`. They target Expo Go until the dev build (T-036). Expo Go's floating dev-menu button covers the top-right header icons there.

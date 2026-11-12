@@ -78,22 +78,24 @@ export interface IconButtonProps extends Omit<PressableProps, 'children' | 'styl
   /** Required: icon-only controls must be named for screen readers. */
   accessibilityLabel: string;
   tone?: 'default' | 'signal';
+  /** Filled tile (default, design 03) or a bare glyph for screen headers (design 01 · Home). */
+  variant?: 'filled' | 'plain';
   badge?: ReactNode;
   style?: ViewStyle;
 }
 
 /** 44 pt square icon control (design: "44 pt icon button"). */
-export function IconButton({ icon: Icon, accessibilityLabel, tone = 'default', disabled, badge, style, ...rest }: IconButtonProps) {
+export function IconButton({ icon: Icon, accessibilityLabel, tone = 'default', variant = 'filled', disabled, badge, style, ...rest }: IconButtonProps) {
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       accessibilityState={{ disabled: !!disabled }}
       disabled={disabled}
-      style={({ pressed }) => [styles.icon, { opacity: disabled ? 0.4 : pressed ? 0.6 : 1 }, style]}
+      style={({ pressed }) => [styles.icon, variant === 'plain' ? styles.iconPlain : null, { opacity: disabled ? 0.4 : pressed ? 0.6 : 1 }, style]}
       {...rest}
     >
-      <Icon size={20} strokeWidth={1.7} color={tone === 'signal' ? color.signal : color.text} />
+      <Icon size={variant === 'plain' ? 22 : 20} strokeWidth={1.7} color={tone === 'signal' ? color.signal : color.text} />
       {badge}
     </Pressable>
   );
@@ -119,4 +121,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  iconPlain: { backgroundColor: 'transparent' },
 });

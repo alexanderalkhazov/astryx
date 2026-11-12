@@ -63,6 +63,7 @@ export default function SignInScreen() {
         control={control}
         name="email"
         label="Email"
+        testID="sign-in-email"
         autoCapitalize="none"
         autoComplete="email"
         keyboardType="email-address"
@@ -74,13 +75,14 @@ export default function SignInScreen() {
         control={control}
         name="password"
         label="Password"
+        testID="sign-in-password"
         secureTextEntry
         autoComplete="current-password"
         textContentType="password"
         returnKeyType="go"
         onSubmitEditing={() => void submit()}
       />
-      <Button label="Sign in" loading={formState.isSubmitting} onPress={() => void submit()} />
+      <Button label="Sign in" testID="sign-in-submit" loading={formState.isSubmitting} onPress={() => void submit()} />
     </AuthScaffold>
   );
 }

@@ -1,0 +1,24 @@
+# Signs in through the real form in Expo Go (Metro on :8081). Lands on Home, or on a deep link stashed before sign-in.
+#   maestro --device <udid> test -e EMAIL=… -e PASSWORD=… e2e/sign-in.yaml
+appId: host.exp.Exponent
+---
+- openLink: exp://127.0.0.1:8081/--/sign-in
+- extendedWaitUntil:
+    visible:
+      id: sign-in-submit
+    timeout: 30000
+- tapOn:
+    id: sign-in-email
+- inputText: ${EMAIL}
+- tapOn:
+    id: sign-in-password
+- inputText: ${PASSWORD}
+- tapOn:
+    id: sign-in-submit
+- tapOn:
+    text: Not Now # iOS "Save Password?" prompt
+    optional: true
+- extendedWaitUntil:
+    notVisible:
+      id: sign-in-submit
+    timeout: 15000

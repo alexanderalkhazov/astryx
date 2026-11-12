@@ -1,0 +1,46 @@
+# Walks the app shell while signed in (run sign-in.yaml first): Home header, every tab, a pushed screen, Search.
+# Header alerts and settings sit under Expo Go's floating dev-menu button, so Jest covers them until the dev build.
+appId: host.exp.Exponent
+---
+- openLink: exp://127.0.0.1:8081/--/
+- runFlow: close-dev-menu.yaml
+- tapOn:
+    text: Back # a deep link replayed after sign-in may be on top of Home
+    optional: true
+- extendedWaitUntil:
+    visible: Overview
+    timeout: 30000
+- assertVisible:
+    id: paper-chip
+- takeScreenshot: home
+- runFlow: close-dev-menu.yaml
+- tapOn:
+    id: tab-discover
+- assertVisible: "(?i)not implemented · 02, 03, 20, 21, 23"
+- runFlow: close-dev-menu.yaml
+- tapOn:
+    id: tab-portfolio
+- assertVisible: "(?i)not implemented · 09, 15"
+- assertVisible:
+    id: paper-chip
+- takeScreenshot: portfolio
+- runFlow: close-dev-menu.yaml
+- tapOn:
+    id: tab-strategies
+- assertVisible: "(?i)not implemented · 13, 14"
+- runFlow: close-dev-menu.yaml
+- tapOn:
+    id: tab-activity
+- assertVisible: "(?i)not implemented · 17"
+- runFlow: close-dev-menu.yaml
+- tapOn:
+    id: tab-index
+- tapOn: Stock · NVDA
+- assertVisible: "(?i)not implemented · 04, 05, 16"
+- tapOn: Back
+- assertVisible: Overview
+- runFlow: close-dev-menu.yaml
+- tapOn:
+    id: header-search
+- assertVisible: "(?i)not implemented · 19"
+- takeScreenshot: search # its Close button is under Expo Go's floating button too

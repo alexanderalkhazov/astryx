@@ -84,7 +84,11 @@ export function SampleDataNotice({ updatedAt }: { updatedAt?: string }) {
           Illustrative sample data — not live prices
         </Text.Caption>
       </View>
-      {updatedAt ? <Text.DataSm tone="tertiary">Updated {updatedAt}</Text.DataSm> : null}
+      {updatedAt ? (
+        <Text.DataSm tone="tertiary" style={styles.updated}>
+          Updated {updatedAt}
+        </Text.DataSm>
+      ) : null}
     </View>
   );
 }
@@ -97,14 +101,16 @@ export function HomeHeader({ unreadAlerts = false }: { unreadAlerts?: boolean })
       chip={<PaperChip />}
       actions={
         <>
-          <IconButton icon={Search} accessibilityLabel="Search" onPress={() => router.push('/search')} />
+          <IconButton icon={Search} variant="plain" accessibilityLabel="Search" testID="header-search" onPress={() => router.push('/search')} />
           <IconButton
             icon={Bell}
+            variant="plain"
+            testID="header-alerts"
             accessibilityLabel={unreadAlerts ? 'Alerts, unread' : 'Alerts'}
             onPress={() => router.navigate({ pathname: '/activity', params: { filter: 'alerts' } })}
             badge={unreadAlerts ? <View style={styles.alertDot} testID="alerts-unread" /> : undefined}
           />
-          <IconButton icon={SlidersHorizontal} accessibilityLabel="Settings" onPress={() => router.push('/settings')} />
+          <IconButton icon={SlidersHorizontal} variant="plain" accessibilityLabel="Settings" testID="header-settings" onPress={() => router.push('/settings')} />
         </>
       }
     />
@@ -134,5 +140,7 @@ const styles = StyleSheet.create({
   paperDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: color.pending },
   notice: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space[3] },
   noticeLabel: { flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1 },
+  // Caption size, so the notice and the time share one line at 390 pt (design 01).
+  updated: { fontSize: 12 },
   alertDot: { position: 'absolute', top: 9, right: 9, width: 8, height: 8, borderRadius: 2, backgroundColor: color.loss },
 });

@@ -1,0 +1,10 @@
+# Expo Go sometimes opens its developer menu on its own; close it so taps reach the app. Not needed in a dev build.
+appId: host.exp.Exponent
+---
+- runFlow:
+    when:
+      visible:
+        id: xmark
+    commands:
+      - tapOn:
+          id: xmark

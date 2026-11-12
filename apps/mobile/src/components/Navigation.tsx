@@ -1,15 +1,25 @@
 import { color, size, space, type as typeScale } from '@astryx/design-tokens';
 import { type Tabs, useRouter } from 'expo-router';
-import { Activity, ChartPie, ChevronLeft, FlaskConical, House, type LucideIcon, ScanSearch } from 'lucide-react-native';
+import { Activity, ChartPie, ChevronLeft, FlaskConical, House, type LucideIcon, type LucideProps, Scan } from 'lucide-react-native';
 import type { ComponentProps, ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, type TextStyle, View } from 'react-native';
 
 /** Props Expo Router 58 passes to a custom tab bar (its vendored BottomTabBarProps: state, descriptors, emitter, navigateToTab, insets). */
 export type TabBarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>['tabBar']>>[0];
 
-const TAB_ICONS: Record<string, LucideIcon> = {
+/** Discover (design 01): scan corners around a price line. Lucide has no such glyph, so two are layered. */
+function ScannerIcon({ size = 24, color: tint, strokeWidth }: LucideProps) {
+  return (
+    <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
+      <Scan size={size} color={tint} strokeWidth={strokeWidth} style={StyleSheet.absoluteFill} />
+      <Activity size={Number(size) * 0.5} color={tint} strokeWidth={strokeWidth} />
+    </View>
+  );
+}
+
+const TAB_ICONS: Record<string, LucideIcon | typeof ScannerIcon> = {
   index: House,
-  discover: ScanSearch,
+  discover: ScannerIcon,
   portfolio: ChartPie,
   strategies: FlaskConical,
   activity: Activity,
@@ -21,7 +31,7 @@ const TAB_ICONS: Record<string, LucideIcon> = {
  */
 export function TabBar({ state, descriptors, emitter, navigateToTab, insets }: TabBarProps) {
   return (
-    <View style={[styles.tabBar, { paddingBottom: Math.max(insets.bottom, space[2]) }]} accessibilityRole="tablist">
+    <View style={[styles.tabBar, { paddingBottom: insets.bottom > 0 ? insets.bottom : space[2] }]} accessibilityRole="tablist">
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key]!;
         const focused = state.index === index;
@@ -98,7 +108,8 @@ export function StackHeader({ title, subtitle, onBack, right }: StackHeaderProps
 
 const styles = StyleSheet.create({
   tabBar: { flexDirection: 'row', backgroundColor: color.bar, borderTopWidth: 1, borderTopColor: color.line, paddingTop: space[2] },
-  tab: { flex: 1, alignItems: 'center', gap: 4, minHeight: size.tabBar - space[2] },
+  // Content height (icon, gap, label) plus padding gives the design's 49 pt bar above the home indicator.
+  tab: { flex: 1, alignItems: 'center', gap: 4, paddingBottom: space[1] },
   tabLabel: { ...(typeScale.caption as TextStyle), fontSize: 11, fontFamily: 'Geist_500Medium' },
   badge: {
     position: 'absolute',
