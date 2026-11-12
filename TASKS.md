@@ -357,7 +357,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [x] **T-084** Paper execution engine and order endpoint
   - **Acceptance:** `trading.orders` and `trading.fills` migrations. `MockBrokerAdapter`/`PaperFillSimulator` (market, buy-stop, limit; slippage max($0.01, 1 bp) rounded up to the cent; commission $0.00). T6 is implemented exactly as the §15.3 transaction: idempotency, portfolio `FOR UPDATE`, risk re-run on a fresh quote, order, fill, position, OCO exits, ledger, outbox, audit. The `SIM-XXXXXX` ID format. **PAPER-01, PAPER-02 and IDEM-01…05 pass.** The design trade fills at 186.52 with cash 21,840.55 → 7,665.03.
   - **Refs:** §15, §20.9 · **Depends:** T-083, T-016 · **P0**
-- [ ] **T-085** Position monitor and session jobs
+- [x] **T-085** Position monitor and session jobs
   - **Acceptance:** `PositionMonitor` consumes `QuoteUpdated` and triggers working entries and OCO exits under a per-portfolio lock. A gap-aware evaluation, where the stop wins when both levels trigger in one bar. Stop-proximity alert (≤ 1.5%, once per session). `SessionCloseJob` expires day orders and releases reserved cash. `StartOfDayJob` and the daily loss halt. **PAPER-03…06 pass.**
   - **Refs:** §15.4, §7.13 · **Depends:** T-084, T-042 · **P0**
 - [ ] **T-086** Close position and cancel order
