@@ -16,7 +16,7 @@ public sealed class StockResearchSource(MarketDataDbContext db, MarketQueries qu
         }
 
         var stale = (await freshness.QuoteAsync(quote.AsOf, cancellationToken)).Stale;
-        return new ResearchQuote(quote.Last, quote.PrevClose, quote.Volume, quote.AsOf, quote.Quality, stale);
+        return new ResearchQuote(quote.Last, quote.PrevClose, quote.Volume, quote.AsOf, quote.Quality, stale, quote.QuoteSeq);
     }
 
     public async Task<ResearchFundamentals?> GetFundamentalsAsync(string symbol, CancellationToken cancellationToken)

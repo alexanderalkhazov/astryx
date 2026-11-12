@@ -9,14 +9,11 @@ public sealed record ProposalSourceDto(string Type, Guid? SignalId, Guid? Analys
 
 public sealed record ProposalAnalysisDto(string Headline, string Summary, IReadOnlyList<string> Evidence, IReadOnlyList<string> Invalidation, string? Score, string CopySource);
 
-/// <summary>
-/// T2 (SYSTEM_DESIGN.md §11.7). Always labelled as research; never an order. <c>assessment</c> arrives with the
-/// risk engine (T-083) and is null until then.
-/// </summary>
+/// <summary>T2 (SYSTEM_DESIGN.md §11.7). Always labelled as research; never an order. Embeds the latest risk assessment.</summary>
 public sealed record ProposalDto(
     Guid Id, string Status, string Label, string Symbol, string Name, string Side, string Direction, string OrderType, string TimeInForce,
     decimal Entry, decimal Stop, decimal Target, decimal StopPct, decimal TargetPct, ProposalSourceDto Source, ProposalAnalysisDto Analysis,
-    DateTimeOffset CreatedAt, DateTimeOffset ExpiresAt, DateTimeOffset? DecidedAt, string? RejectReason, object? Assessment);
+    DateTimeOffset CreatedAt, DateTimeOffset ExpiresAt, DateTimeOffset? DecidedAt, string? RejectReason, RiskAssessmentDto? Assessment);
 
 public sealed record ProposalPageDto(IReadOnlyList<ProposalDto> Items, string? NextCursor);
 

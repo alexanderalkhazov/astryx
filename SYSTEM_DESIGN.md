@@ -3174,6 +3174,22 @@ valid ⇔ approvable ∧ now < expires_at (60 s) ∧ inputs_hash recomputed at e
 - `data_fresh` fails for a quote older than 90 s, stale bars, or an inactive signal.
 - Tests cover RISK-01…04, 08 and 09 and examples R1–R10 exactly, plus an FsCheck property for RISK-10 (500 cases). RISK-05 (stop ≥ entry is refused with 422 before the table's check constraint) is in the proposal service. RISK-06 and RISK-07 belong to the endpoints (T-083, T-084).
 
+**Implemented (T-083).**
+
+- `AssessmentService` gathers the inputs through Contracts:
+  - quote, last price and `quote_seq` from `IStockResearchSource`;
+  - cash, `reserved_cash`, version, start-of-day equity and open positions from `IPortfolioStateSource`;
+  - limits and their version from `IRiskSettingsSource`;
+  - ATR(14) and bar staleness from `IQuantFacts`;
+  - the session from `IMarketSessionClock`;
+  - source validity: an active signal, or an analysis that isn't stale.
+- **Valuation:** equity is cash plus each open quantity × its latest quote, and sector value comes from the instrument directory's sectors.
+- It runs `RiskEngine` and stores an immutable `trading.risk_assessments` row. Beyond §10.4 the row also records `proposal_version`, `max_loss_incl_costs` and `requested_quantity`.
+- **Default assessment:** proposal creation stores one at the design's 0.75%, or the largest allowed choice below the user's max. T1 always answers 201 for a new proposal, even when its checks fail.
+- **T4** accepts `riskPerTradePct` only from {0.0050, 0.0075, 0.0100} and ≤ the user's max, and the quantity only as a whole number of at least 1 written as a string. Anything else is 422 `validation_failed`. It answers 201 even when checks fail, and is limited to 60/min.
+- **Staleness:** an embedded assessment carries a live `stale` flag. The flag is true once 60 s have passed or the recomputed `inputs_hash` (proposal version, Q, r, `quote_seq`, portfolio version, risk-settings version) no longer matches. Changing risk settings therefore makes existing assessments stale without touching them.
+- `NOT IMPLEMENTED` until T-084: working entry orders count toward `max_open_positions` and `no_duplicate`.
+
 ### 14.6 Worked examples
 
 Context for all examples (the design's Home values): E = $118,181.30, Cash = $21,840.55, NVDA last 186.40, entry 186.50, stop 178.20, target 204.00, ATR14 5.53, slip 0.02, fee 0.00, Semiconductors exposure before = 12.1%, 5 open positions, day P&L −0.12%.

@@ -6,6 +6,7 @@ using Astryx.Infrastructure.Jobs;
 using Astryx.Modules.Ai.Infrastructure.Fake;
 using Astryx.Modules.Discovery.Application.Scanner;
 using Astryx.Modules.Discovery.Infrastructure.Persistence;
+using Astryx.Modules.MarketData.Infrastructure.Persistence;
 using Astryx.Modules.Trading.Application;
 using Astryx.Modules.Trading.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
@@ -41,6 +42,16 @@ public class TradingApiFactory : SyncedMarketApiFactory
     {
         base.ConfigureWebHost(builder);
         builder.ConfigureTestServices(services => services.AddSingleton<IMarketSessionClock>(Session));
+    }
+
+    /// <summary>Stamps the symbol's stored quote as just received, as during a live session (the fake feed stamps closes after hours).</summary>
+    public async Task MakeQuoteLiveAsync(string symbol)
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<MarketDataDbContext>();
+        var now = DateTimeOffset.UtcNow;
+        await db.Quotes.Where(q => db.Instruments.Any(i => i.Id == q.InstrumentId && i.Symbol == symbol))
+            .ExecuteUpdateAsync(s => s.SetProperty(q => q.AsOf, now).SetProperty(q => q.QuoteSeq, q => q.QuoteSeq + 1));
     }
 
     public async Task PrepareAsync()
@@ -106,7 +117,7 @@ public class ProposalTests(TradingApiFactory factory) : IClassFixture<TradingApi
         analysis.GetProperty("invalidation")[0].GetString().ShouldBe("A close below the stop at 178.20.");
         var expected = DateTimeOffset.UtcNow + factory.Session.CloseIn!.Value - TimeSpan.FromMinutes(30); // the close − 30 min
         p.GetProperty("expiresAt").GetDateTimeOffset().ShouldBe(expected, TimeSpan.FromSeconds(30));
-        p.GetProperty("assessment").ValueKind.ShouldBe(JsonValueKind.Null); // arrives with the risk engine (T-083)
+        p.GetProperty("assessment").GetProperty("sizedBy").GetString().ShouldBe("weight_cap"); // the initial default-sized assessment (T-083)
     }
 
     [Fact]
@@ -237,5 +248,117 @@ public class ProposalExpiryTests(TradingApiFactory factory) : IClassFixture<Trad
         factory.Session.CloseIn = null; // weekend or holiday
         (await client.PostAsJsonAsync("/api/v1/proposals", new { source = "signal", signalId })).StatusCode.ShouldBe(HttpStatusCode.Conflict);
         factory.Session.CloseIn = TimeSpan.FromHours(3);
+    }
+}
+
+/// <summary>T4 risk assessments (SYSTEM_DESIGN.md §11.7, §14.5, TASKS.md T-083). A new user has $100,000.00 cash and no positions.</summary>
+public class AssessmentTests(TradingApiFactory factory) : IClassFixture<TradingApiFactory>, IAsyncLifetime
+{
+    public async Task InitializeAsync()
+    {
+        await factory.PrepareAsync();
+        await factory.ScanAsync();
+    }
+
+    public Task DisposeAsync() => Task.CompletedTask;
+
+    private async Task<(HttpClient Client, JsonElement Proposal)> ProposeAsync()
+    {
+        var client = await TestUsers.SignedInClientAsync(factory);
+        await factory.MakeQuoteLiveAsync("NVDA"); // data_fresh needs a quote under 90 s old
+        var response = await client.PostAsJsonAsync("/api/v1/proposals", new { source = "signal", signalId = await factory.ActiveSignalIdAsync("NVDA") });
+        response.StatusCode.ShouldBe(HttpStatusCode.Created);
+        return (client, await response.Content.ReadFromJsonAsync<JsonElement>());
+    }
+
+    private static Task<HttpResponseMessage> AssessAsync(HttpClient client, Guid proposalId, object body) =>
+        client.PostAsJsonAsync($"/api/v1/proposals/{proposalId}/assessments", body);
+
+    private static JsonElement Check(JsonElement assessment, string code) => assessment.GetProperty("checks").EnumerateArray().Single(c => c.GetProperty("code").GetString() == code);
+
+    [Fact]
+    public async Task A_new_proposal_carries_a_default_sized_assessment()
+    {
+        var (_, proposal) = await ProposeAsync();
+
+        var a = proposal.GetProperty("assessment");
+        (a.GetProperty("quantity").GetString(), a.GetProperty("sizedBy").GetString(), a.GetProperty("riskPerTradePct").GetString()).ShouldBe(("64", "weight_cap", "0.0075"));
+        var limits = a.GetProperty("limits");
+        (limits.GetProperty("byRisk").GetString(), limits.GetProperty("byWeightCap").GetString(), limits.GetProperty("byCash").GetString()).ShouldBe(("90", "64", "536"));
+        (a.GetProperty("equity").GetString(), a.GetProperty("cashAvailable").GetString()).ShouldBe(("100000.00", "100000.00"));
+        (a.GetProperty("capitalRequired").GetString(), a.GetProperty("maxLoss").GetString(), a.GetProperty("potentialProfit").GetString(), a.GetProperty("rewardRisk").GetString())
+            .ShouldBe(("11936.00", "531.20", "1120.00", "2.11"));
+        a.GetProperty("checks").EnumerateArray().Take(6).Select(c => c.GetProperty("code").GetString()).ShouldBe(["risk_per_trade", "position_weight", "sector_exposure", "cash_available", "daily_loss_halt", "session_open"]);
+        a.GetProperty("checks").GetArrayLength().ShouldBe(12);
+        Check(a, "position_weight").GetProperty("status").GetString().ShouldBe("warn"); // 11.94%, inside 10.8–12%
+        a.GetProperty("checks").EnumerateArray().Where(c => c.GetProperty("status").GetString() == "fail").Select(c => c.GetProperty("message").GetString()).ShouldBeEmpty();
+        (a.GetProperty("approvable").GetBoolean(), a.GetProperty("stale").GetBoolean()).ShouldBe((true, false));
+        (a.GetProperty("expiresAt").GetDateTimeOffset() - a.GetProperty("createdAt").GetDateTimeOffset()).ShouldBe(TimeSpan.FromSeconds(60));
+        a.GetProperty("inputsHash").GetString()!.Length.ShouldBe(64);
+    }
+
+    [Fact]
+    public async Task Overriding_the_quantity_is_assessed_and_stored_even_when_it_fails()
+    {
+        var (client, proposal) = await ProposeAsync();
+        var id = proposal.GetProperty("id").GetGuid();
+
+        var response = await AssessAsync(client, id, new { quantity = "70", riskPerTradePct = "0.0075" });
+
+        response.StatusCode.ShouldBe(HttpStatusCode.Created);
+        var a = await response.Content.ReadFromJsonAsync<JsonElement>();
+        (a.GetProperty("quantity").GetString(), a.GetProperty("sizedBy").GetString(), a.GetProperty("approvable").GetBoolean()).ShouldBe(("70", "user", false));
+        Check(a, "position_weight").GetProperty("message").GetString().ShouldBe("Position weight 13.06% exceeds 12% cap. Max 64 shares.");
+        (await client.GetFromJsonAsync<JsonElement>($"/api/v1/proposals/{id}")).GetProperty("assessment").GetProperty("id").GetGuid().ShouldBe(a.GetProperty("id").GetGuid());
+        await using var scope = factory.Services.CreateAsyncScope();
+        (await scope.ServiceProvider.GetRequiredService<TradingDbContext>().RiskAssessments.IgnoreQueryFilters().CountAsync(r => r.ProposalId == id)).ShouldBe(2);
+    }
+
+    [Theory]
+    [InlineData("76", "0.0100")] // RISK-06: above the user's 0.75% max
+    [InlineData("76", "0.0060")] // not one of the choices
+    [InlineData("1.5", "0.0075")]
+    [InlineData("0", "0.0075")]
+    public async Task Choices_outside_the_allowed_set_or_the_users_max_are_422(string quantity, string risk)
+    {
+        var (client, proposal) = await ProposeAsync();
+
+        var response = await AssessAsync(client, proposal.GetProperty("id").GetGuid(), new { quantity, riskPerTradePct = risk });
+
+        response.StatusCode.ShouldBe(HttpStatusCode.UnprocessableEntity);
+        (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("code").GetString().ShouldBe("validation_failed");
+    }
+
+    [Fact]
+    public async Task Changing_risk_settings_makes_the_existing_assessment_stale()
+    {
+        var (client, proposal) = await ProposeAsync();
+        var id = proposal.GetProperty("id").GetGuid();
+        var request = new HttpRequestMessage(HttpMethod.Put, "/api/v1/me/settings/risk")
+        {
+            Content = JsonContent.Create(new { maxRiskPerTradePct = "0.005", maxPositionWeightPct = "0.12", maxSectorExposurePct = "0.35", sectorWarningPct = "0.30", dailyLossHaltPct = "0.02", maxOpenPositions = 12, minRewardRisk = "1.5" }),
+        };
+        request.Headers.TryAddWithoutValidation("If-Match", "\"v1\"");
+        (await client.SendAsync(request)).StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var after = await client.GetFromJsonAsync<JsonElement>($"/api/v1/proposals/{id}");
+
+        after.GetProperty("assessment").GetProperty("stale").GetBoolean().ShouldBeTrue();
+        (await AssessAsync(client, id, new { riskPerTradePct = "0.0075" })).StatusCode.ShouldBe(HttpStatusCode.UnprocessableEntity); // now above the new max
+        var fresh = await (await AssessAsync(client, id, new { riskPerTradePct = "0.005" })).Content.ReadFromJsonAsync<JsonElement>();
+        (fresh.GetProperty("stale").GetBoolean(), fresh.GetProperty("limits").GetProperty("byRisk").GetString()).ShouldBe((false, "60"));
+    }
+
+    [Fact]
+    public async Task Decided_proposals_cannot_be_assessed()
+    {
+        var (client, proposal) = await ProposeAsync();
+        var id = proposal.GetProperty("id").GetGuid();
+        await client.PostAsJsonAsync($"/api/v1/proposals/{id}/reject", new { });
+
+        var response = await AssessAsync(client, id, new { riskPerTradePct = "0.0075" });
+
+        response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
+        (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("code").GetString().ShouldBe("proposal_not_pending");
     }
 }

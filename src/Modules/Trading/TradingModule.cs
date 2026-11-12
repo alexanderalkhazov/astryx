@@ -16,6 +16,7 @@ public static class TradingModule
     {
         services.AddModuleDbContext<TradingDbContext>(TradingDbContext.SchemaName, historyKey: "trading");
         services.AddScoped<ProposalService>();
+        services.AddScoped<AssessmentService>();
         services.AddValidatorsFromAssemblyContaining<CreateProposalRequestValidator>(includeInternalTypes: true);
         services.AddJobHandler<ProposalExpiryJob, ProposalExpiryHandler>();
         services.AddRecurringJob("proposal-expiry", TimeSpan.FromMinutes(1), _ => new ProposalExpiryJob());

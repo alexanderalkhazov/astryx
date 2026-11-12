@@ -1023,6 +1023,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/proposals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListProposals"];
+        put?: never;
+        post: operations["CreateProposal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/proposals/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetProposal"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/proposals/{id}/assessments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AssessProposal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/proposals/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["RejectProposal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1111,6 +1175,36 @@ export interface components {
             levelsAccepted: boolean;
             /** Format: decimal */
             rewardRisk: null | string;
+        };
+        AssessProposalRequest: {
+            quantity: null | string;
+            /** Format: decimal */
+            riskPerTradePct: string;
+        };
+        AssessmentImpactDto: {
+            /** Format: decimal */
+            newWeightPct: string;
+            sector: null | string;
+            /** Format: decimal */
+            sectorExposureAfterPct: string;
+            /** Format: decimal */
+            cashAfter: string;
+            /** Format: int32 */
+            openPositionsAfter: number;
+        };
+        AssessmentLimitsDto: {
+            /** Format: decimal */
+            byRisk: string;
+            /** Format: decimal */
+            byWeightCap: string;
+            /** Format: decimal */
+            byCash: string;
+        };
+        AssessmentQuoteDto: {
+            /** Format: decimal */
+            last: string;
+            /** Format: date-time */
+            asOf: string;
         };
         BacktestRunDto: {
             /** Format: uuid */
@@ -1210,6 +1304,13 @@ export interface components {
             /** Format: uuid */
             signalId: null | string;
             timeframe: null | string;
+        };
+        CreateProposalRequest: {
+            source: string;
+            /** Format: uuid */
+            signalId: null | string;
+            /** Format: uuid */
+            analysisId: null | string;
         };
         CreateWatchlistRequest: {
             name: string;
@@ -1387,6 +1488,62 @@ export interface components {
             detail?: null | string;
             instance?: null | string;
         };
+        ProposalAnalysisDto: {
+            headline: string;
+            summary: string;
+            evidence: string[];
+            invalidation: string[];
+            score: null | string;
+            copySource: string;
+        };
+        ProposalDto: {
+            /** Format: uuid */
+            id: string;
+            status: string;
+            label: string;
+            symbol: string;
+            name: string;
+            side: string;
+            direction: string;
+            orderType: string;
+            timeInForce: string;
+            /** Format: decimal */
+            entry: string;
+            /** Format: decimal */
+            stop: string;
+            /** Format: decimal */
+            target: string;
+            /** Format: decimal */
+            stopPct: string;
+            /** Format: decimal */
+            targetPct: string;
+            source: components["schemas"]["ProposalSourceDto"];
+            analysis: components["schemas"]["ProposalAnalysisDto"];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            expiresAt: string;
+            /** Format: date-time */
+            decidedAt: null | string;
+            rejectReason: null | string;
+            assessment: null | components["schemas"]["RiskAssessmentDto"];
+        };
+        ProposalPageDto: {
+            items: components["schemas"]["ProposalDto"][];
+            nextCursor: null | string;
+        };
+        ProposalSourceDto: {
+            type: string;
+            /** Format: uuid */
+            signalId: null | string;
+            /** Format: uuid */
+            analysisId: null | string;
+            /** Format: uuid */
+            strategyId: null | string;
+            strategyName: null | string;
+            /** Format: date-time */
+            signalAt: null | string;
+        };
         QuoteDto: {
             symbol: string;
             /** Format: decimal */
@@ -1427,6 +1584,9 @@ export interface components {
         RegisterResponse: {
             emailVerificationRequired: boolean;
         };
+        RejectProposalRequest: {
+            reason: null | string;
+        };
         ReorderWatchlistItemsRequest: {
             symbols: string[];
         };
@@ -1439,6 +1599,46 @@ export interface components {
             token: string;
             newPassword: string;
         };
+        RiskAssessmentDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            proposalId: string;
+            inputsHash: string;
+            /** Format: decimal */
+            quantity: string;
+            sizedBy: string;
+            limits: components["schemas"]["AssessmentLimitsDto"];
+            /** Format: decimal */
+            riskPerTradePct: string;
+            quote: components["schemas"]["AssessmentQuoteDto"];
+            /** Format: decimal */
+            equity: string;
+            /** Format: decimal */
+            cashAvailable: string;
+            /** Format: decimal */
+            capitalRequired: string;
+            /** Format: decimal */
+            maxLoss: string;
+            /** Format: decimal */
+            maxLossInclCosts: string;
+            /** Format: decimal */
+            potentialProfit: string;
+            /** Format: decimal */
+            rewardRisk: string;
+            /** Format: decimal */
+            estFees: string;
+            /** Format: decimal */
+            estSlippage: string;
+            impact: components["schemas"]["AssessmentImpactDto"];
+            checks: components["schemas"]["RiskCheckDto"][];
+            approvable: boolean;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            expiresAt: string;
+            stale: boolean;
+        };
         RiskBoundsDto: {
             maxRiskPerTradePct: components["schemas"]["BoundsDtoOfdecimal"];
             maxPositionWeightPct: components["schemas"]["BoundsDtoOfdecimal"];
@@ -1446,6 +1646,15 @@ export interface components {
             dailyLossHaltPct: components["schemas"]["BoundsDtoOfdecimal"];
             maxOpenPositions: components["schemas"]["BoundsDtoOfint"];
             minRewardRisk: components["schemas"]["BoundsDtoOfdecimal"];
+        };
+        RiskCheckDto: {
+            code: string;
+            status: string;
+            message: string;
+            /** Format: decimal */
+            actual: null | string;
+            /** Format: decimal */
+            limit: null | string;
         };
         RiskSettingsDto: {
             /** Format: decimal */
@@ -3119,6 +3328,227 @@ export interface operations {
             };
             /** @description Not Found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    ListProposals: {
+        parameters: {
+            query?: {
+                status?: string;
+                limit?: null | number;
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProposalPageDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    CreateProposal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateProposalRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProposalDto"];
+                };
+            };
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProposalDto"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    GetProposal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProposalDto"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    AssessProposal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssessProposalRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RiskAssessmentDto"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    RejectProposal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": null | components["schemas"]["RejectProposalRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProposalDto"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

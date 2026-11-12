@@ -13,6 +13,8 @@ public sealed class TradingDbContext(DbContextOptions<TradingDbContext> options)
 
     public DbSet<Proposal> Proposals => Set<Proposal>();
 
+    public DbSet<RiskAssessment> RiskAssessments => Set<RiskAssessment>();
+
     protected override void ConfigureModel(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Proposal>(entity =>
@@ -51,6 +53,25 @@ public sealed class TradingDbContext(DbContextOptions<TradingDbContext> options)
             entity.HasIndex(p => new { p.UserId, p.InstrumentId }).IsUnique().HasFilter("status = 'pending'").HasDatabaseName("ux_proposals_one_pending");
             entity.HasIndex(p => new { p.UserId, p.Status, p.CreatedAt }).IsDescending(false, false, true);
             entity.HasIndex(p => p.ExpiresAt).HasFilter("status = 'pending'").HasDatabaseName("ix_proposals_expiry");
+        });
+
+        modelBuilder.Entity<RiskAssessment>(entity =>
+        {
+            entity.ToTable("risk_assessments", t => t.HasCheckConstraint("ck_risk_assessments_sized_by", "sized_by IN ('risk', 'weight_cap', 'cash', 'user')"));
+            entity.HasKey(a => a.Id);
+            entity.HasOne<Proposal>().WithMany().HasForeignKey(a => a.ProposalId).OnDelete(DeleteBehavior.Cascade);
+            entity.Property(a => a.InputsHash).HasMaxLength(64);
+            entity.Property(a => a.SizedBy).HasMaxLength(12);
+            foreach (var quantity in new[] { nameof(RiskAssessment.RequestedQuantity), nameof(RiskAssessment.Quantity), nameof(RiskAssessment.MaxQtyByRisk), nameof(RiskAssessment.MaxQtyByWeight), nameof(RiskAssessment.MaxQtyByCash), nameof(RiskAssessment.QuoteLast) })
+            {
+                entity.Property(quantity).HasPrecision(18, 6);
+            }
+
+            entity.Property(a => a.RiskPerTradePct).HasPrecision(9, 6);
+            entity.Property(a => a.RewardRisk).HasPrecision(8, 4);
+            entity.Property(a => a.Impact).HasColumnType("jsonb");
+            entity.Property(a => a.Checks).HasColumnType("jsonb");
+            entity.HasIndex(a => new { a.ProposalId, a.CreatedAt }).IsDescending(false, true);
         });
     }
 }

@@ -2,7 +2,8 @@ namespace Astryx.Contracts.MarketData;
 
 /// <summary>The stored latest quote. <paramref name="Quality"/> is <c>realtime</c>, <c>delayed</c>, <c>eod</c> or <c>synthetic</c>.</summary>
 /// <param name="Stale">Past its freshness budget (§20.5).</param>
-public sealed record ResearchQuote(decimal Last, decimal PrevClose, long Volume, DateTimeOffset AsOf, string Quality, bool Stale);
+/// <param name="QuoteSeq">Monotonic per instrument; part of the risk assessment inputs hash (§14.5).</param>
+public sealed record ResearchQuote(decimal Last, decimal PrevClose, long Volume, DateTimeOffset AsOf, string Quality, bool Stale, long QuoteSeq = 0);
 
 public sealed record ResearchFundamentals(DateOnly? NextEarningsDate, decimal? PeRatio, decimal? Beta);
 

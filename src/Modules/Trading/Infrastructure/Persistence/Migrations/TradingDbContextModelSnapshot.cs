@@ -213,6 +213,178 @@ namespace Astryx.Modules.Trading.Infrastructure.Persistence.Migrations
                             t.HasCheckConstraint("ck_proposals_tif", "time_in_force = 'day'");
                         });
                 });
+
+            modelBuilder.Entity("Astryx.Modules.Trading.Domain.RiskAssessment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("Approvable")
+                        .HasColumnType("boolean")
+                        .HasColumnName("approvable");
+
+                    b.Property<decimal>("CapitalRequired")
+                        .HasPrecision(20, 4)
+                        .HasColumnType("numeric(20,4)")
+                        .HasColumnName("capital_required");
+
+                    b.Property<decimal>("CashAvailable")
+                        .HasPrecision(20, 4)
+                        .HasColumnType("numeric(20,4)")
+                        .HasColumnName("cash_available");
+
+                    b.Property<string>("Checks")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("checks");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<decimal>("Equity")
+                        .HasPrecision(20, 4)
+                        .HasColumnType("numeric(20,4)")
+                        .HasColumnName("equity");
+
+                    b.Property<decimal>("EstFees")
+                        .HasPrecision(20, 4)
+                        .HasColumnType("numeric(20,4)")
+                        .HasColumnName("est_fees");
+
+                    b.Property<decimal>("EstSlippage")
+                        .HasPrecision(20, 4)
+                        .HasColumnType("numeric(20,4)")
+                        .HasColumnName("est_slippage");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<string>("Impact")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("impact");
+
+                    b.Property<string>("InputsHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("inputs_hash");
+
+                    b.Property<decimal>("MaxLoss")
+                        .HasPrecision(20, 4)
+                        .HasColumnType("numeric(20,4)")
+                        .HasColumnName("max_loss");
+
+                    b.Property<decimal>("MaxLossInclCosts")
+                        .HasPrecision(20, 4)
+                        .HasColumnType("numeric(20,4)")
+                        .HasColumnName("max_loss_incl_costs");
+
+                    b.Property<decimal>("MaxQtyByCash")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("numeric(18,6)")
+                        .HasColumnName("max_qty_by_cash");
+
+                    b.Property<decimal>("MaxQtyByRisk")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("numeric(18,6)")
+                        .HasColumnName("max_qty_by_risk");
+
+                    b.Property<decimal>("MaxQtyByWeight")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("numeric(18,6)")
+                        .HasColumnName("max_qty_by_weight");
+
+                    b.Property<long>("PortfolioVersion")
+                        .HasColumnType("bigint")
+                        .HasColumnName("portfolio_version");
+
+                    b.Property<decimal>("PotentialProfit")
+                        .HasPrecision(20, 4)
+                        .HasColumnType("numeric(20,4)")
+                        .HasColumnName("potential_profit");
+
+                    b.Property<Guid>("ProposalId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("proposal_id");
+
+                    b.Property<int>("ProposalVersion")
+                        .HasColumnType("integer")
+                        .HasColumnName("proposal_version");
+
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("numeric(18,6)")
+                        .HasColumnName("quantity");
+
+                    b.Property<DateTimeOffset>("QuoteAsOf")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("quote_as_of");
+
+                    b.Property<decimal>("QuoteLast")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("numeric(18,6)")
+                        .HasColumnName("quote_last");
+
+                    b.Property<long>("QuoteSeq")
+                        .HasColumnType("bigint")
+                        .HasColumnName("quote_seq");
+
+                    b.Property<decimal?>("RequestedQuantity")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("numeric(18,6)")
+                        .HasColumnName("requested_quantity");
+
+                    b.Property<decimal>("RewardRisk")
+                        .HasPrecision(8, 4)
+                        .HasColumnType("numeric(8,4)")
+                        .HasColumnName("reward_risk");
+
+                    b.Property<decimal>("RiskPerTradePct")
+                        .HasPrecision(9, 6)
+                        .HasColumnType("numeric(9,6)")
+                        .HasColumnName("risk_per_trade_pct");
+
+                    b.Property<int>("RiskSettingsVersion")
+                        .HasColumnType("integer")
+                        .HasColumnName("risk_settings_version");
+
+                    b.Property<string>("SizedBy")
+                        .IsRequired()
+                        .HasMaxLength(12)
+                        .HasColumnType("character varying(12)")
+                        .HasColumnName("sized_by");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_risk_assessments");
+
+                    b.HasIndex("ProposalId", "CreatedAt")
+                        .IsDescending(false, true)
+                        .HasDatabaseName("ix_risk_assessments_proposal_id_created_at");
+
+                    b.ToTable("risk_assessments", "trading", t =>
+                        {
+                            t.HasCheckConstraint("ck_risk_assessments_sized_by", "sized_by IN ('risk', 'weight_cap', 'cash', 'user')");
+                        });
+                });
+
+            modelBuilder.Entity("Astryx.Modules.Trading.Domain.RiskAssessment", b =>
+                {
+                    b.HasOne("Astryx.Modules.Trading.Domain.Proposal", null)
+                        .WithMany()
+                        .HasForeignKey("ProposalId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_risk_assessments_proposals_proposal_id");
+                });
 #pragma warning restore 612, 618
         }
     }

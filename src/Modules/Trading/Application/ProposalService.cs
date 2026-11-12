@@ -28,7 +28,8 @@ public sealed class ProposalService(
     IInstrumentDirectory instruments,
     IStockResearchSource research,
     IPortfolioDirectory portfolios,
-    IMarketSessionClock sessions)
+    IMarketSessionClock sessions,
+    AssessmentService assessments)
 {
     public const string Label = "RESEARCH PROPOSAL · NOT EXECUTED";
     public const int MaxLimit = 50;
@@ -49,6 +50,7 @@ public sealed class ProposalService(
     public static readonly Error BadSource = new("validation_failed", "Use {source:\"signal\", signalId} or {source:\"analysis\", analysisId}.");
     public static readonly Error BadStatus = new("bad_request", "status must be pending, approved, rejected or expired.");
     public static readonly Error BadCursor = new("bad_request", "cursor is not valid.");
+    public static readonly Error LevelsInvalid = new("validation_failed", "Levels must satisfy stop < entry < target for a long.");
 
     private static readonly string[] Statuses = [ProposalStatus.Pending, ProposalStatus.Approved, ProposalStatus.Rejected, ProposalStatus.Expired];
 
@@ -112,6 +114,11 @@ public sealed class ProposalService(
                 return BadSource;
         }
 
+        if (!(draft.StopPrice < draft.EntryPrice && draft.EntryPrice < draft.TargetPrice))
+        {
+            return LevelsInvalid; // RISK-05: never reaches the table's check constraint
+        }
+
         if (await db.Proposals.AsNoTracking().FirstOrDefaultAsync(p => p.InstrumentId == draft.InstrumentId && p.Status == ProposalStatus.Pending, cancellationToken) is { } existing)
         {
             return new CreateProposalOutcome(await ToDtoAsync(existing, cancellationToken), Created: false);
@@ -150,6 +157,8 @@ public sealed class ProposalService(
             return new CreateProposalOutcome(await ToDtoAsync(raced, cancellationToken), Created: false);
         }
 
+        // The initial default-sized assessment (§14.1 step 1). A pending proposal answers 201 even if it fails checks.
+        await assessments.CreateAsync(draft, quantity: null, riskPerTradePct: null, cancellationToken);
         return new CreateProposalOutcome(await ToDtoAsync(draft, cancellationToken), Created: true);
     }
 
@@ -239,7 +248,8 @@ public sealed class ProposalService(
         };
 
     private async Task<ProposalDto> ToDtoAsync(Proposal p, CancellationToken cancellationToken) =>
-        ToDto(p, (await NamesAsync([p.InstrumentId], cancellationToken)).GetValueOrDefault(p.InstrumentId, p.Symbol));
+        ToDto(p, (await NamesAsync([p.InstrumentId], cancellationToken)).GetValueOrDefault(p.InstrumentId, p.Symbol))
+            with { Assessment = await assessments.LatestAsync(p, cancellationToken) };
 
     private async Task<Dictionary<Guid, string>> NamesAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken) =>
         (await instruments.GetAsync(ids.Distinct().ToList(), cancellationToken)).ToDictionary(i => i.Id, i => i.Name);

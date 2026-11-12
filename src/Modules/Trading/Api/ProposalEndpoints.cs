@@ -13,12 +13,17 @@ public sealed class CreateProposalRequestValidator : AbstractValidator<CreatePro
         RuleFor(r => r.Source).Must(s => s is "signal" or "analysis").WithMessage("source must be signal or analysis.");
 }
 
+public sealed class AssessProposalRequestValidator : AbstractValidator<AssessProposalRequest>
+{
+    public AssessProposalRequestValidator() => RuleFor(r => r.Quantity).MaximumLength(9);
+}
+
 public sealed class RejectProposalRequestValidator : AbstractValidator<RejectProposalRequest>
 {
     public RejectProposalRequestValidator() => RuleFor(r => r.Reason).MaximumLength(200);
 }
 
-/// <summary>T1–T3 and T5 (SYSTEM_DESIGN.md §11.7). T4 (assessments) arrives with the risk engine.</summary>
+/// <summary>T1–T5 (SYSTEM_DESIGN.md §11.7).</summary>
 public static class ProposalEndpoints
 {
     public static IEndpointRouteBuilder MapProposalEndpoints(this IEndpointRouteBuilder app)
@@ -48,6 +53,17 @@ public static class ProposalEndpoints
             .WithName("ListProposals")
             .Produces<ProposalPageDto>()
             .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        proposals.MapPost("/{id:guid}/assessments", async (Guid id, AssessProposalRequest request, AssessmentService service, CancellationToken cancellationToken) =>
+                (await service.AssessAsync(id, request, cancellationToken)).Match(
+                    a => Results.Created($"/api/v1/proposals/{id}/assessments/{a.Id}", a), error => error.ToProblem()))
+            .WithName("AssessProposal")
+            .WithValidation<AssessProposalRequest>()
+            .RequireRateLimiting(RateLimitPolicies.Assessment)
+            .Produces<RiskAssessmentDto>(StatusCodes.Status201Created)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 
         proposals.MapPost("/{id:guid}/reject", async (Guid id, RejectProposalRequest? request, ProposalService service, CancellationToken cancellationToken) =>
                 (await service.RejectAsync(id, request?.Reason, cancellationToken)).Match(Results.Ok, error => error.ToProblem()))

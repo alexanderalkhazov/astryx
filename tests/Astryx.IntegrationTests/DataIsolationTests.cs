@@ -57,6 +57,7 @@ public partial class DataIsolationTests(ApiFactory factory) : IClassFixture<ApiF
         ["GET /api/v1/analyses/{id:guid}"] = t => t.AssertForeignAnalysisIs404Async(HttpMethod.Get, a => $"/api/v1/analyses/{a.ResultId}"),
         ["GET /api/v1/proposals/{id:guid}"] = t => t.AssertForeignProposalIs404Async(HttpMethod.Get, ""),
         ["POST /api/v1/proposals/{id:guid}/reject"] = t => t.AssertForeignProposalIs404Async(HttpMethod.Post, "/reject"),
+        ["POST /api/v1/proposals/{id:guid}/assessments"] = t => t.AssertForeignProposalIs404Async(HttpMethod.Post, "/assessments", new { riskPerTradePct = "0.0075" }),
     };
 
     /// <summary>
@@ -137,7 +138,7 @@ public partial class DataIsolationTests(ApiFactory factory) : IClassFixture<ApiF
     }
 
     /// <summary>Bob addresses Alice's trade proposal: 404, and it stays pending.</summary>
-    private async Task AssertForeignProposalIs404Async(HttpMethod method, string suffix)
+    private async Task AssertForeignProposalIs404Async(HttpMethod method, string suffix, object? body = null)
     {
         var alice = await TestUsers.SignedInClientAsync(factory);
         var bob = await TestUsers.SignedInClientAsync(factory);
@@ -158,7 +159,7 @@ public partial class DataIsolationTests(ApiFactory factory) : IClassFixture<ApiF
         var request = new HttpRequestMessage(method, $"/api/v1/proposals/{id}{suffix}");
         if (method == HttpMethod.Post)
         {
-            request.Content = JsonContent.Create(new { });
+            request.Content = JsonContent.Create(body ?? new { });
         }
 
         (await bob.SendAsync(request)).StatusCode.ShouldBe(HttpStatusCode.NotFound);

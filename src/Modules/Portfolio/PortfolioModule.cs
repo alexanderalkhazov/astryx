@@ -17,6 +17,7 @@ public static class PortfolioModule
         services.AddIntegrationEventHandler<UserRegistered, CreatePaperPortfolioHandler>();
         services.AddScoped<Astryx.Contracts.Portfolio.IPortfolioLedger, PortfolioLedger>();
         services.AddScoped<Astryx.Contracts.Portfolio.IPortfolioDirectory, PortfolioDirectory>();
+        services.AddScoped<Astryx.Contracts.Portfolio.IPortfolioStateSource, PortfolioStateSource>();
         return services;
     }
 }
