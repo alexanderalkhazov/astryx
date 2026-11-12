@@ -36,6 +36,21 @@ public sealed class InstrumentDirectory(MarketDataDbContext db) : IInstrumentDir
         return rows.Select(ToSummary).ToList();
     }
 
+    public async Task<IReadOnlyList<InstrumentSummary>> ListActiveEquitiesAsync(CancellationToken cancellationToken)
+    {
+        var rows = await db.Database
+            .SqlQuery<Row>(
+                $"""
+                SELECT i.id, i.symbol, i.name, i.sector, q.last, q.prev_close, q.as_of
+                FROM market.instruments i
+                LEFT JOIN market.quotes q ON q.instrument_id = i.id
+                WHERE i.is_active AND i.asset_type = 'equity'
+                ORDER BY i.symbol
+                """)
+            .ToListAsync(cancellationToken);
+        return rows.Select(ToSummary).ToList();
+    }
+
     public async Task<InstrumentSummary?> FindAsync(string symbol, CancellationToken cancellationToken)
     {
         var normalized = symbol.Trim().ToUpperInvariant();

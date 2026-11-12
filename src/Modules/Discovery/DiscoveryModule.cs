@@ -1,5 +1,7 @@
 using Astryx.Infrastructure.Persistence;
+using Astryx.Infrastructure.Jobs;
 using Astryx.Modules.Discovery.Application;
+using Astryx.Modules.Discovery.Application.Scanner;
 using Astryx.Modules.Discovery.Infrastructure.Persistence;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +17,18 @@ public static class DiscoveryModule
         services.AddModuleDbContext<DiscoveryDbContext>(DiscoveryDbContext.SchemaName, historyKey: "discovery");
         services.TryAddSingleton(TimeProvider.System);
         services.AddScoped<SearchService>();
+
+        services.AddOptions<ScannerOptions>().Bind(configuration.GetSection(ScannerOptions.SectionName));
+        services.AddScoped<ScannerService>();
+        services.AddScoped<Astryx.Contracts.MarketData.IChartLevelsSource, SignalChartLevels>();
+        services.AddScoped<Astryx.Contracts.MarketData.IPrioritySymbolSource, SignalPrioritySymbols>();
+        services.AddJobHandler<ScannerRunJob, ScannerRunHandler>();
+        var scanner = configuration.GetSection(ScannerOptions.SectionName).Get<ScannerOptions>() ?? new ScannerOptions();
+        if (scanner.Enabled)
+        {
+            services.AddRecurringJob("discovery.scanner_run", TimeSpan.FromMinutes(scanner.IntervalMinutes), _ => new ScannerRunJob());
+        }
+
         return services;
     }
 }

@@ -15,4 +15,7 @@ public interface IInstrumentDirectory
 
     /// <summary>Summaries for the given ids; unknown ids are skipped. Order is not guaranteed.</summary>
     Task<IReadOnlyList<InstrumentSummary>> GetAsync(IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken);
+
+    /// <summary>Every active equity, by symbol (the scanner universe before filters).</summary>
+    Task<IReadOnlyList<InstrumentSummary>> ListActiveEquitiesAsync(CancellationToken cancellationToken);
 }

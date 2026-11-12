@@ -15,6 +15,7 @@ public static class StrategiesModule
         services.AddModuleDbContext<StrategiesDbContext>(StrategiesDbContext.SchemaName, historyKey: "strategies");
         services.AddScoped<StrategyCatalog>();
         services.AddScoped<StrategyEvaluator>();
+        services.AddScoped<Astryx.Contracts.Strategies.IStrategySignals, StrategySignals>();
         services.AddSingleton<IStrategyRule, BaseBreakoutRule>();
         return services;
     }

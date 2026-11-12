@@ -725,6 +725,16 @@ flowchart TD
 | Failure scenarios | Partial run (some symbols lack data) → run `CompletedWithWarnings`, symbols excluded and counted. Total failure → `Failed`, error code surfaced (design shows an error code). |
 | Endpoints | `/api/v1/search`, `/api/v1/scanner/*`, `/api/v1/signals/*` |
 
+**Implemented (T-065).**
+- **Contracts:** Discovery uses only Contracts, namely `IInstrumentDirectory.ListActiveEquitiesAsync`, `IQuantFacts` (now with RSI(14)), `IStrategySignals` (implemented by Strategies) and `IMarketDataFreshness` (implemented by MarketData).
+- **When it runs:** `ScannerRunJob` ticks every 15 min (`Discovery:Scanner:IntervalMinutes`) and runs only when the newest quote or the last final daily session moved on since the previous run. In practice that is every tick in session, once after the close, and once after the end-of-day sync, which is recorded as `eod`. A `manual` trigger always runs.
+- **Universe:** every active equity (ETFs are excluded). The design's Settings filters, $10 minimum price and $20M 20-session average dollar volume, set what is evaluated; filtered symbols are neither evaluated nor warnings.
+- **Warnings and failures:** symbols with stale or too-short history, or a read error, are skipped and make the run `completed_with_warnings`. No usable data at all fails the run with `SCN-503`; an unexpected error fails it with `SCN-500`. A failed run leaves the previous signals untouched.
+- **Signals:** stored with levels, `[{component, weight, value, contribution}]`, and metrics as fixed-place strings (`relVolume` "2.40", `rsi14`, `rewardRisk`, `atr14`). `horizon` is `swing`, and signals expire 24 h after evaluation (`ASSUMPTION`).
+- **Retiring and announcing:** in one transaction, a previous active signal becomes `superseded` when the same instrument and strategy signal again, and `expired` otherwise. `SignalDetected` is published only for an instrument and strategy that had no active signal, so re-confirmation is silent.
+- **Wiring:** `scanner_runs` also stores `quotes_as_of` and `bars_through`, the markers for the due check. Active signals feed `IChartLevelsSource` (M6 `levels`, so the Stock screen draws trade levels) and quote priority 3. Membership is tracked in `universe_members`.
+- **Performance:** about 3 queries per symbol, roughly 15–25 s per run over 1,031 symbols on a laptop. Batching history reads is a later optimisation.
+
 ### 7.5 Watchlists
 
 | Aspect | Detail |
@@ -4124,7 +4134,7 @@ Sentry SDKs: `@sentry/react-native` (with source maps through EAS) and `Sentry.A
 | Q-06 | Final risk limits and bounds. Should 1.00% be selectable when the max is 0.75%? Min R:R? | Risk engine | Phase 5 | Design defaults; choices above the max disabled; min R:R 1.5 |
 | Q-07 | Which AI model replaces `qwen3.5:0.8b`? Local or hosted? Hardware budget? | Quality, cost, privacy, prod infra | Phase 4/7 | PoC model, labelled experimental |
 | Q-08 | Source of beta for beta-weighted exposure? | Portfolio › Allocation | Phase 6 | Show "—" when missing |
-| Q-09 | **Partly answered (T-064): Base Breakout is defined in §13.4.1.** Exact rule definitions for the other four strategies (Base Breakout v3, Trend Momentum, Trend Pullback, RSI(2) Mean Reversion, Earnings Drift) and the drawdown guard (design: "30-day drawdown −5.4% · pauses at −6.0%") | Scanner signals, backtests | Phase 3 | Implement Base Breakout from §8.4.9 params; guard −6% over 30 days |
+| Q-09 | **Partly answered (T-064): Base Breakout is defined in §13.4.1.** Exact rule definitions for the other four strategies (Trend Momentum, Trend Pullback, RSI(2) Mean Reversion, Earnings Drift) and the drawdown guard (design: "30-day drawdown −5.4% · pauses at −6.0%") | Scanner signals, backtests | Phase 3 | Implement Base Breakout from §8.4.9 params; guard −6% over 30 days |
 | Q-10 | Backtest engine scope: in-house vs a library; point-in-time universe; per-user strategies? | Strategy lab Configure/re-run | Phase 6 | Seeded read-only runs |
 | Q-11 | Fractional shares? | Quantity precision, sizing | Phase 5 | Whole shares |
 | Q-12 | Paper execution assumptions: slippage model, commission, spread, liquidity cap, limit-touch fills | Realism of paper results | Phase 5 | §15.7 defaults |

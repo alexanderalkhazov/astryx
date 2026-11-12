@@ -7,7 +7,7 @@ namespace Astryx.Contracts.Quant;
 /// Quant engine computed from it. Null indicators mean too little history (never partial values).
 /// </summary>
 /// <param name="Trend"><c>uptrend</c>, <c>downtrend</c>, <c>sideways</c>, or null when insufficient.</param>
-public sealed record QuantFacts(DailyHistory History, decimal? Atr14, decimal? RelVolume20, int? RelStrengthRank, string? Trend);
+public sealed record QuantFacts(DailyHistory History, decimal? Atr14, decimal? RelVolume20, int? RelStrengthRank, string? Trend, decimal? Rsi14 = null);
 
 /// <summary>Owned by Quant, used by Strategies through Contracts.</summary>
 public interface IQuantFacts

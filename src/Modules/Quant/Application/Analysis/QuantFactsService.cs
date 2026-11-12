@@ -22,6 +22,7 @@ public sealed class QuantFactsService(IPriceHistoryProvider history, IIndicatorC
             calculator.Atr(bars).Last,
             calculator.RelativeVolume(bars).Last,
             await ranks.RankAsync(daily.Symbol, cancellationToken),
-            trend.State == TrendState.Insufficient ? null : trend.State.ToString().ToLowerInvariant());
+            trend.State == TrendState.Insufficient ? null : trend.State.ToString().ToLowerInvariant(),
+            calculator.Rsi(bars.Select(b => b.Close).ToList()).Last);
     }
 }
