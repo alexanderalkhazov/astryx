@@ -256,7 +256,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Acceptance:** M4–M11 with the example payloads from §11.4, decimal strings, `levels` included on bars when a signal exists, and 503 `market_data_unavailable` on provider outage.
   - **Refs:** §11.4 · **Depends:** T-043 · **P0**
   - **Note:** M7 (indicators) ships with the Quant engine task, which owns it.
-- [ ] **T-046** Search with recents and tags
+- [x] **T-046** Search with recents and tags — `a0745ce`
   - **Story:** As a user, I want to search tickers and companies from any header, with recent searches and "Held" or signal tags.
   - **Acceptance:** M1–M3 (ticker prefix ranks above trigram name match). The Search full-screen modal (design 19) uses a 200 ms debounce and empty and error states. Searching "am" returns AMZN and AMD.
   - **Refs:** §8.4.12, §11.4 · **Depends:** T-045, T-035 · **P0**
