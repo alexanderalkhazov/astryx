@@ -68,6 +68,7 @@ public class AiOutputValidatorTests
     [InlineData("{\"a\":1,}")] // trailing comma
     [InlineData("{/* c */\"a\":1}")] // comments
     [InlineData("[1,2]")] // not an object
+    [InlineData("{\"a\":1,\"b\":{\"c\":1,\"c\":2}}")] // duplicate keys (seen from qwen3.5:0.8b in T-076)
     public async Task Strict_parsing_rejects_lenient_json(string raw) =>
         _validator.Validate(raw, await InputAsync()).Issues[0].Code.ShouldBe("parse_error");
 
@@ -263,6 +264,17 @@ public class AiOutputValidatorTests
         repair.Select(m => m.Role).ShouldBe(["system", "user", "assistant", "user"]);
         repair[3].Content.ShouldStartWith(prompt);
         repair[3].Content.ShouldEndWith("Reply with only the corrected JSON object.");
+    }
+
+    [Fact]
+    public async Task The_prompts_output_example_travels_with_the_request()
+    {
+        var (generator, fake) = Generator();
+        var next = Stubs.Registry().Get(PromptRegistry.StockAnalysis, "2026-11-12.1");
+
+        await generator.GenerateAsync(await new Stubs().BuildAsync(), next, 1.5m, default);
+
+        fake.Requests.Single().OutputExample.ShouldBe(next.OutputExample);
     }
 
     [Fact]

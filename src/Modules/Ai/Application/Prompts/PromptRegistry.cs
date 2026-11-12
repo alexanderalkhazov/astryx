@@ -20,7 +20,7 @@ public sealed class PromptOptions
 /// One released prompt version: <c>system.md</c>, <c>user.scriban</c> and <c>schema.json</c> from
 /// <c>Prompts/&lt;id&gt;/&lt;version&gt;/</c>. Immutable once released; a change is a new version folder.
 /// </summary>
-public sealed class PromptTemplate(string id, string version, string system, Template user, JsonDocument schema)
+public sealed class PromptTemplate(string id, string version, string system, Template user, JsonDocument schema, string? outputExample = null)
 {
     public string Id { get; } = id;
 
@@ -32,6 +32,9 @@ public sealed class PromptTemplate(string id, string version, string system, Tem
     public string SchemaVersion { get; } = schema.RootElement.GetProperty("properties").GetProperty("schemaVersion").GetProperty("const").GetString()!;
 
     public JsonDocument Schema { get; } = schema;
+
+    /// <summary>Optional <c>example.json</c>: the output skeleton embedded when the model lacks structured output.</summary>
+    public string? OutputExample { get; } = outputExample;
 
     /// <summary>System and user messages for a context. The same context always renders the same text.</summary>
     public IReadOnlyList<AiMessage> Render(AnalysisContext context)
@@ -117,7 +120,13 @@ public sealed class PromptRegistry
                 throw new InvalidOperationException($"Prompt {folder.Key.Item1}/{folder.Key.Item2}: {string.Join("; ", template.Messages)}");
             }
 
-            result[folder.Key] = new PromptTemplate(folder.Key.Item1, folder.Key.Item2, system.Trim(), template, JsonDocument.Parse(schema));
+            var example = byName.GetValueOrDefault("example.json");
+            if (example is not null)
+            {
+                using var _ = JsonDocument.Parse(example); // placeholders live inside strings, so the example is valid JSON
+            }
+
+            result[folder.Key] = new PromptTemplate(folder.Key.Item1, folder.Key.Item2, system.Trim(), template, JsonDocument.Parse(schema), example?.Trim());
         }
 
         return result;

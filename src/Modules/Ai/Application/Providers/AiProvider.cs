@@ -13,8 +13,12 @@ public sealed record AiMessage(string Role, string Content)
 
 /// <summary>A JSON completion request (SYSTEM_DESIGN.md §12.3).</summary>
 /// <param name="OutputSchema">Sent as Ollama <c>format</c> when the model supports structured output; otherwise embedded in the prompt.</param>
+/// <param name="OutputExample">
+/// A filled-in skeleton of the expected JSON. Without structured output, small models follow it far better than the
+/// schema itself, so a provider embeds it instead of the schema when it is set.
+/// </param>
 public sealed record AiCompletionRequest(
-    string Model, IReadOnlyList<AiMessage> Messages, JsonDocument OutputSchema, decimal Temperature, int MaxOutputTokens, TimeSpan Timeout);
+    string Model, IReadOnlyList<AiMessage> Messages, JsonDocument OutputSchema, decimal Temperature, int MaxOutputTokens, TimeSpan Timeout, string? OutputExample = null);
 
 /// <param name="FinishReason">e.g. <c>stop</c>, or <c>length</c> when <c>MaxOutputTokens</c> cut the answer off.</param>
 public sealed record AiCompletion(string RawText, int? PromptTokens, int? CompletionTokens, TimeSpan Latency, string Model, string? ModelDigest, string FinishReason);

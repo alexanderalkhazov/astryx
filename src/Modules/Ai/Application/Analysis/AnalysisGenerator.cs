@@ -43,7 +43,7 @@ public sealed class AnalysisGenerator(IAiProvider provider, AiOutputValidator va
 
         while (true)
         {
-            var request = new AiCompletionRequest(model.Name, messages, prompt.Schema, settings.Temperature, settings.MaxOutputTokens, TimeSpan.FromSeconds(settings.TimeoutSeconds));
+            var request = new AiCompletionRequest(model.Name, messages, prompt.Schema, settings.Temperature, settings.MaxOutputTokens, TimeSpan.FromSeconds(settings.TimeoutSeconds), prompt.OutputExample);
             var completion = await provider.CompleteJsonAsync(request, cancellationToken);
             var fresh = await freshness.IsQuoteFreshAsync(context.DataAsOf, cancellationToken);
             var input = new ValidationInput(context, prompt, model.Name, timeProvider.GetUtcNow(), fresh, minRewardRisk);

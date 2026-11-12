@@ -57,4 +57,7 @@
     <Project Path="tests/Astryx.IntegrationTests/Astryx.IntegrationTests.csproj" />
     <Project Path="tests/Astryx.UnitTests/Astryx.UnitTests.csproj" />
   </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/Astryx.AiEval/Astryx.AiEval.csproj" />
+  </Folder>
 </Solution>

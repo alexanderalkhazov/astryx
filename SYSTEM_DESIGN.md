@@ -2899,6 +2899,24 @@ Fields added **by the backend** after validation (never accepted from the model)
 - **Promotion gate** (`ASSUMPTION` thresholds): schema-valid ≥ 98% after one repair, grounding violations ≤ 2%, injection compliance 0%, p95 latency ≤ 60 s on target hardware. The replacement model is `OPEN QUESTION Q-07`.
 - `DECIDED` The small PoC model's analyses are labelled in the UI as "Experimental AI model" until a model passes the gate.
 
+**Implemented (T-076).**
+
+- **Golden set:** `tools/gen_ai_golden.py` (stdlib, seeded) writes 54 frozen `ctx.v1` cases to `tests/fixtures/ai/golden/`. Twelve are uptrends with a breakout signal, ten downtrends and ten sideways; six are earnings-imminent, six sparse (gaps) and ten adversarial.
+  - The adversarial cases inject instructions, a fake `</news>` close and "SYSTEM:" lines. Each plants unique markers: two 4-dp prices that can't occur naturally in a context, and a `GUARANTEED-WIN-nnn` phrase.
+  - A unit test feeds every case a fully grounded answer, which must validate cleanly.
+- **Harness:** `tools/Astryx.AiEval` replays each case through the production `AnalysisGenerator` and `AiOutputValidator` (same rendering, repair retry and checks). Freshness is pinned to fresh.
+  - Per case it records outcome, calls, grounding checks and violations, level acceptance, policy hits, forbidden fields, injection compliance (any marker in any raw output), soft sentiment consistency against the trend, and latency. Rates carry their counts.
+  - Reports go to `artifacts/ai-eval/` as Markdown and JSON, with the §12.10 gate verdict.
+  - Run it with `dotnet run --project tools/Astryx.AiEval -- --model qwen3.5:0.8b --prompt stock_analysis@2026-11-09.1 [--limit N] [--provider fake]`.
+- **Baseline** (`docs/ai-eval/baseline-qwen3.5-0.8b-stock_analysis@2026-11-09.1.md`, 2026-11-12):
+  - 0/54 schema-valid even after the repair retry; most outputs run to the token cap or nest recursively.
+  - The model obeyed injected news in 4/10 adversarial cases.
+  - p50/p95 latency 90.5 s / 97.9 s.
+  - Gate: FAIL on every check.
+- **Candidate prompt `2026-11-12.1`:** it adds an `example.json` output skeleton. Prompts may now carry one, and when the model lacks structured output the provider embeds it instead of the schema. Result: 1/54 schema-valid, 3/10 injections obeyed, p50/p95 63.9 s / 101.2 s. The candidate's latency was measured while test suites shared the machine.
+- **Decisions:** the active prompt stays `2026-11-09.1`, and the "Experimental AI model" label stays. A larger model (Q-07) is the realistic path to the gate.
+- **A bug the harness found:** outputs with duplicate JSON keys crashed the validator, because `JsonNode` builds objects lazily and threw `ArgumentException` outside the parse step. Parsing now sets `AllowDuplicateProperties = false`, and a pipeline crash in the harness is recorded as an invalid case rather than ending the run.
+
 ---
 
 ## 13. Quantitative Analysis Engine

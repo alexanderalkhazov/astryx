@@ -64,7 +64,7 @@ public sealed class OllamaAiProvider(
         var structured = capabilities.SupportsStructuredOutput == true;
         var body = new ChatRequest(
             request.Model,
-            structured ? request.Messages.Select(ToWire).ToList() : WithEmbeddedSchema(request.Messages, request.OutputSchema),
+            structured ? request.Messages.Select(ToWire).ToList() : WithEmbeddedSchema(request.Messages, request.OutputSchema, request.OutputExample),
             Stream: false,
             Think: false,
             Format: structured ? JsonNode.Parse(request.OutputSchema.RootElement.GetRawText()) : null,
@@ -157,10 +157,12 @@ public sealed class OllamaAiProvider(
         }
     }
 
-    /// <summary>Without <c>format</c>, the schema becomes part of the system prompt.</summary>
-    private static List<WireMessage> WithEmbeddedSchema(IReadOnlyList<AiMessage> messages, JsonDocument schema)
+    /// <summary>Without <c>format</c>, the output example (or else the schema) becomes part of the system prompt.</summary>
+    private static List<WireMessage> WithEmbeddedSchema(IReadOnlyList<AiMessage> messages, JsonDocument schema, string? example)
     {
-        var instruction = "Respond with a single JSON object only: no prose, no markdown fences. It must match this JSON Schema:\n" + schema.RootElement.GetRawText();
+        var instruction = example is not null
+            ? "Respond with one JSON object only, no prose and no markdown fences, in exactly this shape. Replace every <placeholder>; keep each list item a short plain string:\n" + example
+            : "Respond with a single JSON object only: no prose, no markdown fences. It must match this JSON Schema:\n" + schema.RootElement.GetRawText();
         var wire = messages.Select(ToWire).ToList();
         var system = wire.FindIndex(m => m.Role == "system");
         if (system >= 0)

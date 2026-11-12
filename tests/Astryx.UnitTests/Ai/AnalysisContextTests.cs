@@ -132,6 +132,18 @@ public class AnalysisContextTests
     }
 
     [Fact]
+    public void A_prompt_version_may_carry_an_output_example()
+    {
+        var registry = Registry();
+
+        registry.Get(PromptRegistry.StockAnalysis, "2026-11-09.1").OutputExample.ShouldBeNull();
+        var next = registry.Get(PromptRegistry.StockAnalysis, "2026-11-12.1");
+        next.SchemaVersion.ShouldBe("analysis.v1");
+        next.OutputExample.ShouldNotBeNull();
+        System.Text.Json.JsonDocument.Parse(next.OutputExample).RootElement.GetProperty("schemaVersion").GetString().ShouldBe("analysis.v1");
+    }
+
+    [Fact]
     public void An_unknown_configured_version_fails_at_startup() =>
         Should.Throw<InvalidOperationException>(() => Registry("2099-01-01.1")).Message.ShouldContain("Prompts/stock_analysis/2099-01-01.1");
 

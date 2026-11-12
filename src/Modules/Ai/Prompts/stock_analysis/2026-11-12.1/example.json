@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "analysis.v1",
+  "symbol": "<symbol>",
+  "analysisTimestamp": "<dataAsOf>",
+  "dataTimestamp": "<dataAsOf>",
+  "dataQuality": { "status": "ok", "notes": ["<short note>"] },
+  "overallSentiment": "bullish | bearish | neutral | mixed",
+  "scenarios": {
+    "bullish": { "summary": "<one sentence>", "conditions": ["<short condition>", "<short condition>"] },
+    "bearish": { "summary": "<one sentence>", "conditions": ["<short condition>", "<short condition>"] },
+    "neutral": { "summary": "<one sentence>", "conditions": ["<short condition>"] }
+  },
+  "supportingEvidence": ["<short fact from the context>", "<short fact>"],
+  "contradictingEvidence": ["<short fact>"],
+  "keyRisks": ["<short risk>"],
+  "relevantIndicators": [ { "name": "rsi14", "value": "<exact value from context.indicators>", "interpretation": "<short>" } ],
+  "catalysts": [ { "type": "earnings", "date": "<date from the context or null>", "note": "<short>" } ],
+  "confidence": { "value": 0.5, "explanation": "Subjective rating of evidence alignment, not a calibrated probability." },
+  "suggestedLevels": { "justified": true, "entryZone": { "low": "<price>", "high": "<price>" }, "stopLoss": "<price>", "takeProfit": "<price>", "rationale": "<short>" },
+  "explanation": "<two or three sentences>",
+  "insufficientData": false
+}

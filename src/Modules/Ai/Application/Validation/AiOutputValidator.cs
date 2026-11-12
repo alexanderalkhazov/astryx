@@ -52,7 +52,7 @@ public sealed partial class AiOutputValidator
         JsonObject analysis;
         try
         {
-            var node = JsonNode.Parse(StripFence(rawText), documentOptions: new JsonDocumentOptions { MaxDepth = MaxDepth, AllowTrailingCommas = false, CommentHandling = JsonCommentHandling.Disallow });
+            var node = JsonNode.Parse(StripFence(rawText), documentOptions: new JsonDocumentOptions { MaxDepth = MaxDepth, AllowTrailingCommas = false, CommentHandling = JsonCommentHandling.Disallow, AllowDuplicateProperties = false });
             if (node is not JsonObject obj)
             {
                 return Invalid(issues, ValidationIssueCodes.ParseError, "", "Output is not a JSON object.", repairable: true);

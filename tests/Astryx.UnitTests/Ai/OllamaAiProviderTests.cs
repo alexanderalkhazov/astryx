@@ -78,6 +78,19 @@ public class OllamaAiProviderTests
     }
 
     [Fact]
+    public async Task An_output_example_replaces_the_embedded_schema()
+    {
+        var (provider, stub, _, _, _) = Create(structured: false);
+
+        await provider.CompleteJsonAsync(Request() with { OutputExample = "{\"symbol\": \"<symbol>\"}" }, default);
+
+        var system = stub.Calls.Single(c => c.Path == "api/chat").Body!["messages"]![0]!["content"]!.GetValue<string>();
+        system.ShouldContain("in exactly this shape");
+        system.ShouldContain("{\"symbol\": \"<symbol>\"}");
+        system.ShouldNotContain("JSON Schema");
+    }
+
+    [Fact]
     public async Task With_structured_output_the_schema_goes_in_format()
     {
         var (provider, stub, _, _, _) = Create(structured: true);

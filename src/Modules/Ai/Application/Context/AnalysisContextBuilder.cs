@@ -16,6 +16,25 @@ public sealed record AnalysisContext(string Symbol, string Name, DateTimeOffset 
 {
     public string ToJson() => Document.ToJsonString();
 
+    /// <summary>Rehydrates a stored or frozen <c>ctx.v1</c> (golden evaluation set, replays) exactly as it was built.</summary>
+    public static AnalysisContext FromDocument(JsonObject document)
+    {
+        var band = document["constraints"]!["priceBand"]!;
+        var news = document["news"]!.AsArray().Select(n => new ContextNews(
+            DateTimeOffset.Parse(n!["publishedAt"]!.GetValue<string>(), CultureInfo.InvariantCulture),
+            n["source"]!.GetValue<string>(),
+            n["headline"]!.GetValue<string>(),
+            n["snippet"]?.GetValue<string>())).ToList();
+        return new AnalysisContext(
+            document["symbol"]!.GetValue<string>(),
+            document["name"]!.GetValue<string>(),
+            DateTimeOffset.Parse(document["dataAsOf"]!.GetValue<string>(), CultureInfo.InvariantCulture),
+            decimal.Parse(band["min"]!.GetValue<string>(), CultureInfo.InvariantCulture),
+            decimal.Parse(band["max"]!.GetValue<string>(), CultureInfo.InvariantCulture),
+            news,
+            document);
+    }
+
     /// <summary>The document without <c>news</c>, which the prompt carries separately inside the untrusted block.</summary>
     public string PromptJson()
     {
