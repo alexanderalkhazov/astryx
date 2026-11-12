@@ -1,8 +1,9 @@
 import { z } from 'zod';
 
 import type { ApiClient } from './client';
+import type { components } from './generated/schema';
 
-// Hand-written until T-010 generates these from the API's OpenAPI document.
+// Checked against the types generated from the API's OpenAPI document (pnpm api:gen).
 
 export const TokenResponse = z.object({
   accessToken: z.string().min(1),
@@ -10,7 +11,7 @@ export const TokenResponse = z.object({
   refreshToken: z.string().min(1),
   refreshTokenExpiresAt: z.string(),
   tokenType: z.literal('Bearer'),
-});
+}) satisfies z.ZodType<components['schemas']['TokenResponse']>;
 export type TokenResponse = z.infer<typeof TokenResponse>;
 
 export const CurrentUser = z.object({
@@ -23,10 +24,10 @@ export const CurrentUser = z.object({
   biometricLock: z.boolean(),
   tradingMode: z.literal('paper'),
   features: z.object({ liveTrading: z.boolean(), strategyConfigure: z.boolean(), push: z.boolean() }),
-});
+}) satisfies z.ZodType<components['schemas']['CurrentUserResponse']>;
 export type CurrentUser = z.infer<typeof CurrentUser>;
 
-export const RegisterResponse = z.object({ emailVerificationRequired: z.literal(true) });
+export const RegisterResponse = z.object({ emailVerificationRequired: z.literal(true) }) satisfies z.ZodType<components['schemas']['RegisterResponse']>;
 
 /** Auth endpoints (SYSTEM_DESIGN.md §11.3). All except logout and me work without a session. */
 export function authApi(client: ApiClient) {

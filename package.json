@@ -10,6 +10,7 @@
     "test": "turbo run test",
     "api": "dotnet run --project apps/api",
     "api:test": "dotnet test Astryx.slnx",
+    "api:gen": "node scripts/api-gen.mjs",
     "stack:up": "docker compose -f infra/docker/docker-compose.yml --env-file .env up -d --build",
     "stack:down": "docker compose -f infra/docker/docker-compose.yml --env-file .env down",
     "stack:logs": "docker compose -f infra/docker/docker-compose.yml --env-file .env logs -f api"

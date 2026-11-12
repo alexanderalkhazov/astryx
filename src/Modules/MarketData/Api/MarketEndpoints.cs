@@ -26,27 +26,33 @@ public static class MarketEndpoints
         {
             var session = await sessions.GetAsync(cancellationToken);
             return Results.Ok(new MarketSessionResponse(session.Exchange, session.State.ToString().ToLowerInvariant(), session.SessionDate, session.OpensAt, session.ClosesAt, session.IsHalfDay));
-        });
+        }).Produces<MarketSessionResponse>();
 
         api.MapGet("/market/breadth", async (MarketQueries market, CancellationToken cancellationToken) =>
-            Respond(await market.BreadthAsync(cancellationToken)));
+            Respond(await market.BreadthAsync(cancellationToken)))
+            .Produces<BreadthDto>().ProducesProblem(StatusCodes.Status503ServiceUnavailable);
 
         api.MapGet("/instruments/{symbol}", async (string symbol, MarketQueries market, CancellationToken cancellationToken) =>
-            Respond(await market.InstrumentAsync(symbol, cancellationToken)));
+            Respond(await market.InstrumentAsync(symbol, cancellationToken)))
+            .Produces<InstrumentDto>().ProducesProblem(StatusCodes.Status404NotFound);
 
         api.MapGet("/market/{symbol}/quote", async (string symbol, MarketQueries market, CancellationToken cancellationToken) =>
-            Respond(await market.QuoteAsync(symbol, cancellationToken)));
+            Respond(await market.QuoteAsync(symbol, cancellationToken)))
+            .Produces<QuoteDto>().ProducesProblem(StatusCodes.Status404NotFound).ProducesProblem(StatusCodes.Status503ServiceUnavailable);
 
         api.MapGet("/market/{symbol}/bars", async (string symbol, string? timeframe, string? interval, DateOnly? from, DateOnly? to, int? limit, MarketQueries market, CancellationToken cancellationToken) =>
-            Respond(await market.BarsAsync(symbol, new BarsQuery(timeframe ?? (interval is null ? "3M" : null), interval, from, to, limit), cancellationToken)));
+            Respond(await market.BarsAsync(symbol, new BarsQuery(timeframe ?? (interval is null ? "3M" : null), interval, from, to, limit), cancellationToken)))
+            .Produces<BarsDto>().ProducesProblem(StatusCodes.Status404NotFound).ProducesProblem(StatusCodes.Status422UnprocessableEntity).ProducesProblem(StatusCodes.Status503ServiceUnavailable);
 
         api.MapGet("/instruments/{symbol}/fundamentals", async (string symbol, MarketQueries market, CancellationToken cancellationToken) =>
-            Respond(await market.FundamentalsAsync(symbol, cancellationToken)));
+            Respond(await market.FundamentalsAsync(symbol, cancellationToken)))
+            .Produces<FundamentalsDto>().ProducesProblem(StatusCodes.Status404NotFound);
 
         api.MapGet("/instruments/{symbol}/news", async (string symbol, int? limit, MarketQueries market, CancellationToken cancellationToken) =>
             limit is < 1 or > MaxNews
                 ? Error.Validation($"limit must be between 1 and {MaxNews}.").ToProblem()
-                : (await market.NewsAsync(symbol, limit ?? 10, cancellationToken)).Match(items => Results.Ok(new ItemsResponse<NewsItemDto>(items)), error => error.ToProblem()));
+                : (await market.NewsAsync(symbol, limit ?? 10, cancellationToken)).Match(items => Results.Ok(new ItemsResponse<NewsItemDto>(items)), error => error.ToProblem()))
+            .Produces<ItemsResponse<NewsItemDto>>().ProducesProblem(StatusCodes.Status404NotFound).ProducesProblem(StatusCodes.Status422UnprocessableEntity).ProducesProblem(StatusCodes.Status503ServiceUnavailable);
 
         return app;
     }

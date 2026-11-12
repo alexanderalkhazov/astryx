@@ -1,10 +1,26 @@
 // Typed client for the Astryx API (SYSTEM_DESIGN.md §8.8).
-// Types will be generated from apps/api/openapi.json (T-010); until then the schemas are hand-written.
+// Zod schemas validate responses at runtime and `satisfies` the types generated from apps/api/openapi.json
+// (pnpm api:gen, T-010), so server DTO changes surface in `pnpm typecheck`.
 import { z } from 'zod';
 
 export { ApiError, isApiError, toApiError } from './errors';
 export { createApiClient, type ApiClient, type ApiClientOptions, type ApiResponse, type RequestOptions } from './client';
 export { authApi, CurrentUser, RegisterResponse, TokenResponse } from './auth';
+export {
+  Bar,
+  Bars,
+  Breadth,
+  Fundamentals,
+  Instrument,
+  Levels,
+  MarketSession,
+  marketApi,
+  NewsItem,
+  NewsList,
+  Quote,
+  type BarsRequest,
+} from './market';
+export type { components as ApiSchemas } from './generated/schema';
 
 /** Money, prices, quantities and percents travel as decimal strings — never JS numbers. */
 export const Decimal = z.string().regex(/^-?\d+(\.\d+)?$/, 'Expected a decimal string');

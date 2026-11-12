@@ -1279,6 +1279,12 @@ Stale times (`ASSUMPTION`): quotes 15 s, signals 60 s, portfolio 15 s, strategie
 - **401 handling:** single-flight refresh (one in-flight refresh promise shared); on refresh failure → clear session → `(auth)/sign-in` with toast "Session expired".
 - **Money types:** `Decimal = z.string().regex(/^-?\d+(\.\d+)?$/)`. Never `z.number()` for money, price, quantity or percent fields.
 - Response envelope: none for single resources; lists `{ items, nextCursor, totalCount? }`.
+- **Implemented (T-010, local part):**
+  - `pnpm api:gen` exports `apps/api/openapi.json` from the running Development API and runs `openapi-typescript` into `packages/api-client/src/generated/schema.ts`. Both are committed.
+  - A schema transformer (`apps/api/OpenApi`) describes decimals and the Price/Quantity/Percent value objects as decimal strings, integers as integers, and instants and dates as strings.
+  - Endpoints declare `Produces<T>`.
+  - The Zod schemas stay hand-written for runtime validation, and each `satisfies z.ZodType<generated type>`, so an unmirrored DTO change fails `pnpm typecheck`.
+  - The CI drift check arrives with T-001.
 - **Implemented (T-033):** `createApiClient({ baseUrl, getAccessToken, refresh, onSessionExpired, newCorrelationId })` in `src/client.ts`. It is platform-free: the app injects SecureStore, Zustand and router. `request(path, { method, body, schema, idempotencyKey, ifMatch, auth })` retries a 401 exactly once after the shared refresh. A transport failure is `ApiError{status:0, code:"network_error"}`, and a schema mismatch is `invalid_response`. Auth DTO schemas (`src/auth.ts`) are hand-written until T-010. `Accept-Language` is not sent yet.
 
 ### 8.9 Authentication state & secure storage

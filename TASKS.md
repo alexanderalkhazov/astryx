@@ -145,6 +145,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Acceptance:** changing a DTO without regenerating fails CI. `SystemStatus` comes from generated types.
   - **Refs:** §8.8, §11 · **Depends:** T-001 · **P0**
   - **Note (T-033):** until this lands, `packages/api-client/src/auth.ts` holds hand-written Zod schemas for the Identity endpoints. Replace them with the generated ones.
+  - ⏸ Local part done (see commit with `pnpm api:gen`): OpenAPI export, generated types, Zod schemas checked against them with `satisfies` (decimal-string schema transformer in `apps/api/OpenApi`). Missing: the CI step that fails on drift, deferred with T-001.
 - [x] **T-011** SharedKernel primitives — `a1174af`
   - **Scope:** `Money`, `Price`, `Quantity`, `Percent`, `Currency`, `Result<T>`, `Error`, UUIDv7 `Ids`, `RoundingPolicy` (ledger half-even to cents; tick rounding).
   - **Acceptance:** unit tests cover currency mismatch, rounding at boundaries, negative or zero price rejection, and decimal-string JSON converters (round-trip `"186.50"`).

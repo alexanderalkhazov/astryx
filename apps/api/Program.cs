@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Astryx.Api.Dev;
+using Astryx.Api.OpenApi;
 using Astryx.Infrastructure;
 using Astryx.Infrastructure.Health;
 using Astryx.Modules.Ai;
@@ -45,7 +46,7 @@ builder.Services.AddSerilog((services, logger) => logger
     .Enrich.FromLogContext()
     .WriteTo.Console(new RenderedCompactJsonFormatter()));
 
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options => options.AddSchemaTransformer<DecimalStringSchemaTransformer>());
 builder.Services.AddAstryxHttp(builder.Configuration);
 
 builder.Services.AddAstryxPersistence(builder.Configuration);
