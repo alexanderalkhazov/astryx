@@ -1,5 +1,8 @@
-# Expo Go sometimes opens its developer menu on its own; close it so taps reach the app. Not needed in a dev build.
-appId: host.exp.Exponent
+# The developer menu (Expo Go or dev client) can open on its own; close it so taps reach the app.
+appId: ${APP_ID}
+env:
+  APP_ID: app.astryx.mobile # dev client (T-036); Expo Go: -e APP_ID=host.exp.Exponent -e LINK=exp://127.0.0.1:8081/--/
+  LINK: astryx://
 ---
 - runFlow:
     when:

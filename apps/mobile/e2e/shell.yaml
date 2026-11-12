@@ -1,8 +1,16 @@
 # Walks the app shell while signed in (run sign-in.yaml first): Home header, every tab, a pushed screen, Search.
-# Header alerts and settings sit under Expo Go's floating dev-menu button, so Jest covers them until the dev build.
-appId: host.exp.Exponent
+appId: ${APP_ID}
+env:
+  APP_ID: app.astryx.mobile # dev client (T-036); Expo Go: -e APP_ID=host.exp.Exponent -e LINK=exp://127.0.0.1:8081/--/
+  LINK: astryx://
 ---
-- openLink: exp://127.0.0.1:8081/--/
+- openLink: ${LINK}
+- extendedWaitUntil: # iOS may ask before handing a custom-scheme link to the app
+    visible: "Open|Sign in|Overview|Back" # whole-label match
+    timeout: 30000
+- tapOn:
+    text: Open
+    optional: true
 - runFlow: close-dev-menu.yaml
 - tapOn:
     text: Back # a deep link replayed after sign-in may be on top of Home
@@ -43,4 +51,15 @@ appId: host.exp.Exponent
 - tapOn:
     id: header-search
 - assertVisible: "(?i)not implemented · 19"
-- takeScreenshot: search # its Close button is under Expo Go's floating button too
+- takeScreenshot: search
+- tapOn: Close
+- assertVisible: Overview
+- tapOn:
+    id: header-alerts
+- assertVisible: filter=alerts
+- runFlow: close-dev-menu.yaml
+- tapOn:
+    id: tab-index
+- tapOn:
+    id: header-settings
+- assertVisible: "(?i)not implemented · 18, 25"

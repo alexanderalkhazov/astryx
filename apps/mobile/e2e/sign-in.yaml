@@ -1,8 +1,17 @@
-# Signs in through the real form in Expo Go (Metro on :8081). Lands on Home, or on a deep link stashed before sign-in.
+# Signs in through the real form (dev client or Expo Go, with Metro on :8081). Lands on Home, or on a deep link stashed before sign-in.
 #   maestro --device <udid> test -e EMAIL=… -e PASSWORD=… e2e/sign-in.yaml
-appId: host.exp.Exponent
+appId: ${APP_ID}
+env:
+  APP_ID: app.astryx.mobile # dev client (T-036); Expo Go: -e APP_ID=host.exp.Exponent -e LINK=exp://127.0.0.1:8081/--/
+  LINK: astryx://
 ---
-- openLink: exp://127.0.0.1:8081/--/sign-in
+- openLink: ${LINK}sign-in
+- extendedWaitUntil: # iOS may ask before handing a custom-scheme link to the app
+    visible: "Open|Sign in|Overview|Back" # whole-label match
+    timeout: 30000
+- tapOn:
+    text: Open
+    optional: true
 - extendedWaitUntil:
     visible:
       id: sign-in-submit

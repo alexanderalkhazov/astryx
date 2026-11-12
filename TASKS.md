@@ -229,6 +229,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Scope:** a working `npx expo run:ios` dev client (needed for Skia, bottom-sheet and haptics outside Expo Go), and README instructions including `xcode-select`.
   - **Acceptance:** the dev client launches on the simulator and loads the app from Metro.
   - **Refs:** §4.5 · **Depends:** T-031 · **P0**
+  - **Manual check (2026-11-12):** `npx expo run:ios --device "iPhone 17"` built with 0 errors, installed `app.astryx.mobile` and loaded the app from Metro. `e2e/sign-in.yaml` and `e2e/shell.yaml` passed on the dev client, including the header bell, settings and Search close that Expo Go's floating button blocked. A Mailpit `astryx://verify-email` link opened the app directly and verified the email. `expo-dev-client` is held at 58.0.18 by pnpm's `minimumReleaseAge`: 58.0.19 and Expo's other 2026-11-11 patches are too new, so expo-doctor reports patch mismatches until `npx expo install --fix` can take them.
 
 ### M2 · Market data
 

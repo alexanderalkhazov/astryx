@@ -55,9 +55,23 @@ pnpm mobile                   # Metro; press i for the iOS simulator
 
 Ports: the API uses **5080** on the host (`API_PORT` in `.env`) because 8080 is often taken. Ollama runs natively, and containers reach it at `host.docker.internal:11434`.
 
+## Development build (iOS)
+
+Expo Go can't load native modules beyond its own set, and it can't run SDK 58 on a physical iPhone. Daily work uses the dev client:
+
+```bash
+sudo xcode-select -s /Applications/Xcode.app/Contents/Developer   # once; or prefix commands with DEVELOPER_DIR=…
+cd apps/mobile
+npx expo run:ios --device "iPhone 17"   # prebuilds ios/ (gitignored), compiles, installs, starts Metro
+```
+
+After that, JavaScript changes only need `pnpm mobile` (Metro), and the installed **Astryx** app connects to it. Rebuild with `npx expo prebuild --clean -p ios && npx expo run:ios` after adding a native package, editing `app.json` or upgrading the SDK. `ios/` is generated, so never edit it by hand. The dev client registers the `astryx://` scheme, so emailed verify and reset links open the app directly.
+
+If `pod install` fails with an encoding error, run `export LANG=en_US.UTF-8`.
+
 ## Notes
 
 - SDK 58 apps can't be opened in Expo Go on a physical device. Use the simulator, or build a dev client with `npx expo run:ios`.
 - `qwen3.5:0.8b` does not support Ollama structured output (`format`). The AI layer prompts for JSON and validates it (SYSTEM_DESIGN.md §12).
 - Add Expo packages with `npx expo install <pkg>` from `apps/mobile`, never with `pnpm add`. That keeps versions SDK-compatible.
-- Simulator E2E flows live in `apps/mobile/e2e` (Maestro: `brew install openjdk mobile-dev-inc/tap/maestro`). Run them with `JAVA_HOME=/opt/homebrew/opt/openjdk DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer maestro --device <udid> test -e EMAIL=… -e PASSWORD=… e2e/sign-in.yaml`, then `e2e/shell.yaml`. They target Expo Go until the dev build (T-036). Expo Go's floating dev-menu button covers the top-right header icons there.
+- Simulator E2E flows live in `apps/mobile/e2e` (Maestro: `brew install openjdk mobile-dev-inc/tap/maestro`). Run them with `JAVA_HOME=/opt/homebrew/opt/openjdk DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer maestro --device <udid> test -e EMAIL=… -e PASSWORD=… e2e/sign-in.yaml`, then `e2e/shell.yaml`. They target the dev client by default. For Expo Go, add `-e APP_ID=host.exp.Exponent -e LINK=exp://127.0.0.1:8081/--/` (its floating dev-menu button covers the top-right header icons there).
