@@ -15,6 +15,13 @@ public static class SyncDataset
     public const string News = "news";
 }
 
+/// <summary>Error codes recorded in <c>market.provider_sync_state.last_error_code</c>.</summary>
+public static class SyncErrors
+{
+    public const string ProviderUnavailable = "provider_unavailable";
+    public const string RateBudget = "rate_budget";
+}
+
 /// <summary>Reads and records sync outcomes per provider dataset (freshness, failure streaks, request counts).</summary>
 public sealed class SyncStateStore(MarketDataDbContext db, MarketClock clock)
 {

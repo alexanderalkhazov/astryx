@@ -1338,6 +1338,8 @@ RHF + Zod for: sign-in/up, forgot/reset, risk limits, scanner settings, watchlis
 | 5xx | Inline error + Retry; Sentry capture |
 | Render crash | Route-level `ErrorBoundary` with Retry |
 
+- **Implemented (T-050):** `useConnection` combines NetInfo with `/system/status` polled every 15 s. The causes, most fundamental first, are `offline`, `unreachable` (status request fails), `feed_down` (`marketData.feedDown`: the latest quote sync could not reach the provider, reported at once instead of after the 90 s budget) and `stale` (`quotesStale`). Any of them sets `approvalsBlocked`. `ConnectionBanner` on Home shows the design 22 copy with the last sync time in ET and a Retry that refetches the status and invalidates the other queries. TanStack's `onlineManager` follows NetInfo, so queries pause offline and resume on reconnect. Because quote sync calls the provider only around the session, a feed that dies while the market is closed shows at the next sync.
+
 ### 8.12 Responsive & platform behaviour
 
 - Widths 360–430 fluid; rows grow vertically with Dynamic Type up to XXL; numbers never truncate (use `adjustsFontSizeToFit` only for hero value, min scale 0.8).

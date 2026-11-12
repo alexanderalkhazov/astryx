@@ -1,4 +1,8 @@
-import { QueryClient } from '@tanstack/react-query';
+import NetInfo from '@react-native-community/netinfo';
+import { onlineManager, QueryClient } from '@tanstack/react-query';
+
+// Offline pauses queries and resumes them on reconnect (SYSTEM_DESIGN.md §8.11).
+onlineManager.setEventListener((setOnline) => NetInfo.addEventListener((state) => setOnline(state.isConnected !== false)));
 
 export const queryClient = new QueryClient({
   defaultOptions: {

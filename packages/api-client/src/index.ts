@@ -39,6 +39,8 @@ export const SystemStatus = z.object({
     quotesStale: z.boolean().optional(),
     dailyBarsThrough: z.string().nullable().optional(),
     dailyBarsStale: z.boolean().optional(),
+    /** The latest quote sync could not reach the provider (T-050): the banner shows without waiting for quotes to age. */
+    feedDown: z.boolean().optional(),
   }),
   broker: z.object({ adapter: z.string().nullable(), mode: z.literal('paper') }),
   features: z.object({ liveTrading: z.literal(false) }),

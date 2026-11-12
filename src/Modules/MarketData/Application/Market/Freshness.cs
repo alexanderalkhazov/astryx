@@ -22,7 +22,12 @@ public sealed class FreshnessOptions
 public sealed record Freshness(DateTimeOffset? AsOf, bool Stale);
 
 /// <summary>Freshness of the market data as a whole, for <c>/system/status</c> and the connection-lost banner (§8.11).</summary>
-public sealed record MarketDataStatus(Freshness Quotes, DateOnly? DailyBarsThrough, bool DailyBarsStale);
+/// <param name="FeedDown">
+/// The latest quote sync could not reach the provider. Reported at once, before the quotes age past their budget, so
+/// the banner appears within a sync cycle. Quote sync calls the provider only around the session, so a provider that
+/// fails while the market is closed shows up at the next sync.
+/// </param>
+public sealed record MarketDataStatus(Freshness Quotes, DateOnly? DailyBarsThrough, bool DailyBarsStale, bool FeedDown);
 
 /// <summary>
 /// Applies the freshness budgets (SYSTEM_DESIGN.md §20.5). Stale data blocks approvals (<c>data_fresh</c>) and shows
@@ -60,7 +65,12 @@ public sealed class FreshnessPolicy(MarketDataDbContext db, MarketClock clock, I
     {
         var newestQuote = await db.Quotes.MaxAsync(q => (DateTimeOffset?)q.AsOf, cancellationToken);
         var barsThrough = await db.PriceBars.Where(b => b.Timeframe == Timeframe.OneDay && b.IsFinal).MaxAsync(b => (DateOnly?)b.SessionDate, cancellationToken);
-        return new MarketDataStatus(await QuoteAsync(newestQuote, cancellationToken), barsThrough, await DailyBarsStaleAsync(barsThrough, cancellationToken));
+        var quoteSync = await db.ProviderSyncState.AsNoTracking()
+            .Where(s => s.Dataset == SyncDataset.Quotes)
+            .OrderByDescending(s => s.LastAttemptAt)
+            .FirstOrDefaultAsync(cancellationToken);
+        var feedDown = quoteSync is { ConsecutiveFailures: > 0, LastErrorCode: SyncErrors.ProviderUnavailable };
+        return new MarketDataStatus(await QuoteAsync(newestQuote, cancellationToken), barsThrough, await DailyBarsStaleAsync(barsThrough, cancellationToken), feedDown);
     }
 
     private async Task<DateOnly?> RequiredDailySessionAsync(CancellationToken cancellationToken)

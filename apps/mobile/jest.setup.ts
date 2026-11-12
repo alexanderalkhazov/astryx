@@ -14,3 +14,6 @@ jest.mock('react-native-gesture-handler', () => ({
   usePanGesture: () => ({}),
 }));
 jest.mock('expo-haptics', () => ({ selectionAsync: jest.fn(), impactAsync: jest.fn(), notificationAsync: jest.fn(), ImpactFeedbackStyle: {}, NotificationFeedbackType: {} }));
+
+// Connection banner (T-050): NetInfo's own mock reports a connected wifi network.
+jest.mock('@react-native-community/netinfo', () => require('@react-native-community/netinfo/jest/netinfo-mock.js'));

@@ -5,6 +5,8 @@ import { type Href, Link } from 'expo-router';
 import { View } from 'react-native';
 
 import { HomeHeader, SampleDataNotice, Screen } from '@/components/Shell';
+import { ConnectionBanner } from '@/features/connection/ConnectionBanner';
+import { SYSTEM_STATUS_KEY } from '@/features/connection/useConnection';
 import { Pnl, Text } from '@/components/Text';
 import { apiUrl } from '@/lib/config';
 import { formatPct, splitMoney } from '@/lib/format';
@@ -24,13 +26,14 @@ const ROUTES: { label: string; href: Href }[] = [
 ];
 
 export default function HomeScreen() {
-  const status = useQuery({ queryKey: ['system-status'], queryFn: ({ signal }) => getSystemStatus(apiUrl, signal) });
+  const status = useQuery({ queryKey: SYSTEM_STATUS_KEY, queryFn: ({ signal }) => getSystemStatus(apiUrl, signal) });
   const hero = splitMoney(SAMPLE.equity);
 
   return (
     <Screen>
       <HomeHeader unreadAlerts />
       <SampleDataNotice updatedAt="14:32 ET" />
+      <ConnectionBanner />
       <View style={{ gap: space[2], marginTop: space[3] }}>
         <Text.Body tone="secondary">Total portfolio value · paper account</Text.Body>
         <Text.Display>

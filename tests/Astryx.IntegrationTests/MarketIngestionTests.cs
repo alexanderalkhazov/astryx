@@ -1,3 +1,4 @@
+using System.Net.Http.Json;
 using System.Text.Json;
 using Astryx.Contracts.MarketData;
 using Astryx.Infrastructure.Jobs;
@@ -161,6 +162,32 @@ public class MarketIngestionTests(IngestionApiFactory factory) : IClassFixture<I
         {
             faults.Set(MarketDataFaultMode.Ok);
             factory.Priority.Symbols.Clear();
+        }
+    }
+
+    [Fact]
+    public async Task System_status_reports_the_feed_down_after_one_failed_quote_sync_and_clears_on_recovery()
+    {
+        await factory.RunAsync<InstrumentSyncJob, InstrumentSyncHandler>(new InstrumentSyncJob());
+        var faults = factory.Services.GetRequiredService<MarketDataFaults>();
+        async Task<bool> FeedDownAsync() =>
+            (await factory.CreateClient().GetFromJsonAsync<JsonElement>("/api/v1/system/status")).GetProperty("marketData").GetProperty("feedDown").GetBoolean();
+        try
+        {
+            await factory.RunAsync<QuoteSyncJob, QuoteSyncHandler>(new QuoteSyncJob());
+            (await FeedDownAsync()).ShouldBeFalse();
+
+            faults.Set(MarketDataFaultMode.Down);
+            await factory.RunAsync<QuoteSyncJob, QuoteSyncHandler>(new QuoteSyncJob());
+            (await FeedDownAsync()).ShouldBeTrue(); // at once: no waiting for the quotes to age past 90 s
+
+            faults.Set(MarketDataFaultMode.Ok);
+            await factory.RunAsync<QuoteSyncJob, QuoteSyncHandler>(new QuoteSyncJob());
+            (await FeedDownAsync()).ShouldBeFalse();
+        }
+        finally
+        {
+            faults.Set(MarketDataFaultMode.Ok);
         }
     }
 

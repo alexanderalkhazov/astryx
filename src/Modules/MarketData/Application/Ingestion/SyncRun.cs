@@ -35,12 +35,12 @@ public sealed class SyncRunner(SyncStateStore state, IMarketDataProvider provide
         catch (RateBudgetExhaustedException)
         {
             logger.LogInformation("{Dataset} sync paused after {Requests} requests: rate budget exhausted", dataset, meter.Count);
-            await state.RecordFailureAsync(provider.Code, dataset, meter.Count, "rate_budget", cancellationToken);
+            await state.RecordFailureAsync(provider.Code, dataset, meter.Count, SyncErrors.RateBudget, cancellationToken);
         }
         catch (MarketDataUnavailableException ex)
         {
             logger.LogWarning("{Dataset} sync failed: {Reason}", dataset, ex.Reason);
-            await state.RecordFailureAsync(provider.Code, dataset, meter.Count, "provider_unavailable", cancellationToken);
+            await state.RecordFailureAsync(provider.Code, dataset, meter.Count, SyncErrors.ProviderUnavailable, cancellationToken);
             if (rethrowUnavailable)
             {
                 throw;

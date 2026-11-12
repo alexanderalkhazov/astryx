@@ -135,6 +135,7 @@ app.MapGet("/api/v1/system/status", async (HealthCheckService health, FreshnessP
             quotesStale = market.Quotes.Stale,
             dailyBarsThrough = market.DailyBarsThrough,
             dailyBarsStale = market.DailyBarsStale,
+            feedDown = market.FeedDown,
         },
         broker = new { adapter = config["Broker:Adapter"], mode = "paper" },
         features = new { liveTrading = config.GetValue<bool>("Features:LiveTrading") },
