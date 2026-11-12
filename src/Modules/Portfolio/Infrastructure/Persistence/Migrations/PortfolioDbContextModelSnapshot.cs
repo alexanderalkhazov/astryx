@@ -343,6 +343,10 @@ namespace Astryx.Modules.Portfolio.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(8)")
                         .HasColumnName("status");
 
+                    b.Property<DateOnly?>("StopAlertSession")
+                        .HasColumnType("date")
+                        .HasColumnName("stop_alert_session");
+
                     b.Property<decimal?>("StopPrice")
                         .HasPrecision(18, 6)
                         .HasColumnType("numeric(18,6)")

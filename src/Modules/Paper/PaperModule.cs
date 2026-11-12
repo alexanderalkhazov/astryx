@@ -1,3 +1,5 @@
+using Astryx.Infrastructure.Jobs;
+using Astryx.Infrastructure.Outbox;
 using Astryx.Infrastructure.Persistence;
 using Astryx.Modules.Paper.Application;
 using Astryx.Modules.Paper.Infrastructure.Persistence;
@@ -13,6 +15,10 @@ public static class PaperModule
     {
         services.AddModuleDbContext<PaperDbContext>(PaperDbContext.SchemaName, historyKey: "paper");
         services.AddScoped<PaperOrderService>();
+        services.AddScoped<PaperExecution>();
+        services.AddIntegrationEventHandler<Astryx.Contracts.Events.MarketData.QuotesUpdated, PositionMonitor>();
+        services.AddJobHandler<DayOrderExpiryJob, DayOrderExpiryHandler>();
+        services.AddRecurringJob("paper-day-order-expiry", TimeSpan.FromMinutes(1), _ => new DayOrderExpiryJob());
         services.AddScoped<Astryx.Contracts.Paper.IOpenOrders, OpenOrders>();
         return services;
     }

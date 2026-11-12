@@ -37,9 +37,24 @@ public sealed record OpenPositionRequest(
     Guid PortfolioId, Guid InstrumentId, string Symbol, decimal Quantity, decimal AvgEntryPrice, decimal Fee, decimal Stop, decimal Target,
     Guid EntryOrderId, Guid ProposalId, Guid? StrategyVersionId, DateTimeOffset OpenedAt);
 
+/// <summary>An open position as the paper engine needs it to exit.</summary>
+public sealed record PositionSnapshot(Guid Id, Guid PortfolioId, Guid InstrumentId, string Symbol, string Status, decimal Quantity, decimal AvgEntryPrice, decimal FeesPaid, decimal? StopPrice);
+
 /// <summary>Owned by Portfolio; the paper engine is its only writer.</summary>
 public interface IPositionBook
 {
     /// <summary>Opens the position (one open per instrument; <c>conflict</c> if one exists) and returns its id.</summary>
     Task<Result<Guid>> OpenAsync(OpenPositionRequest request, CancellationToken cancellationToken);
+
+    /// <summary>The position, locked for the caller's transaction, or null.</summary>
+    Task<PositionSnapshot?> LockAsync(Guid positionId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Closes an open position at <paramref name="exitPrice"/>: realized P&amp;L = qty × (exit − avg) − all fees, added to
+    /// the portfolio's cumulative realized P&amp;L. Returns the realized P&amp;L; <c>position_not_open</c> if it isn't open.
+    /// </summary>
+    Task<Result<decimal>> CloseAsync(Guid positionId, decimal exitPrice, string exitReason, decimal exitFee, DateTimeOffset closedAt, CancellationToken cancellationToken);
+
+    /// <summary>Records a stop-proximity alert for the session; false if one was already sent that session (§15.4).</summary>
+    Task<bool> MarkStopAlertAsync(Guid positionId, DateOnly session, CancellationToken cancellationToken);
 }

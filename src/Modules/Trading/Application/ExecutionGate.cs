@@ -72,6 +72,10 @@ public sealed class ExecutionGate(TradingDbContext db, AssessmentService assessm
             proposal.EntryPrice, proposal.StopPrice, proposal.TargetPrice, fresh.Quantity, fresh.Quote.Last, fresh.Quote.AsOf, proposal.StrategyVersionId);
     }
 
+    public async Task<ProposalLevels> LevelsAsync(Guid proposalId, CancellationToken cancellationToken) =>
+        await db.Proposals.IgnoreQueryFilters().AsNoTracking().Where(p => p.Id == proposalId)
+            .Select(p => new ProposalLevels(p.EntryPrice, p.StopPrice, p.TargetPrice, p.StrategyVersionId)).SingleAsync(cancellationToken);
+
     public async Task MarkApprovedAsync(Guid proposalId, CancellationToken cancellationToken)
     {
         var now = sessions.Now;

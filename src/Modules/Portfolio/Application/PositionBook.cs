@@ -46,4 +46,39 @@ public sealed class PositionBook(PortfolioDbContext db, TimeProvider timeProvide
 
         return position.Id;
     }
+
+    public static readonly Error NotOpen = new("position_not_open", "This position is no longer open.");
+
+    public async Task<PositionSnapshot?> LockAsync(Guid positionId, CancellationToken cancellationToken) =>
+        (await db.Positions.FromSql($"SELECT * FROM portfolio.positions WHERE id = {positionId} FOR UPDATE").IgnoreQueryFilters().AsNoTracking().ToListAsync(cancellationToken))
+            .Select(p => new PositionSnapshot(p.Id, p.PortfolioId, p.InstrumentId, p.Symbol, p.Status, p.Quantity, p.AvgEntryPrice, p.FeesPaid, p.StopPrice))
+            .FirstOrDefault();
+
+    public async Task<Result<decimal>> CloseAsync(Guid positionId, decimal exitPrice, string exitReason, decimal exitFee, DateTimeOffset closedAt, CancellationToken cancellationToken)
+    {
+        var position = await db.Positions.IgnoreQueryFilters().SingleOrDefaultAsync(p => p.Id == positionId, cancellationToken);
+        if (position is not { Status: PositionStatus.Open })
+        {
+            return NotOpen;
+        }
+
+        var fees = position.FeesPaid + exitFee;
+        var realized = Astryx.SharedKernel.Finance.RoundingPolicy.Ledger((position.Quantity * (exitPrice - position.AvgEntryPrice)) - fees);
+        position.Status = PositionStatus.Closed;
+        position.ExitPrice = exitPrice;
+        position.ExitReason = exitReason;
+        position.ClosedAt = closedAt;
+        position.FeesPaid = fees;
+        position.RealizedPnl = realized;
+        position.Version++;
+        await db.SaveChangesAsync(cancellationToken);
+        await db.Portfolios.IgnoreQueryFilters().Where(p => p.Id == position.PortfolioId)
+            .ExecuteUpdateAsync(s => s.SetProperty(p => p.RealizedPnl, p => p.RealizedPnl + realized), cancellationToken);
+        return realized;
+    }
+
+    public async Task<bool> MarkStopAlertAsync(Guid positionId, DateOnly session, CancellationToken cancellationToken) =>
+        await db.Positions.IgnoreQueryFilters()
+            .Where(p => p.Id == positionId && p.Status == PositionStatus.Open && (p.StopAlertSession == null || p.StopAlertSession < session))
+            .ExecuteUpdateAsync(s => s.SetProperty(p => p.StopAlertSession, session), cancellationToken) == 1;
 }

@@ -3309,6 +3309,22 @@ COMMIT
 
 At session close, `SessionCloseJob` expires `day` entry orders (releasing reserved cash) and expires pending proposals. At the EOD bar, `GapReconciler` evaluates any trigger missed during feed gaps using the bar's high and low.
 
+**Implemented (T-085).**
+
+- **Monitor:** `PositionMonitor` handles `QuotesUpdated`. For each changed instrument it finds the portfolios with working orders. It then evaluates each portfolio in its own `ModuleUnitOfWork` under the portfolio row lock (`FOR UPDATE`, rather than an advisory lock), re-reading the orders and requiring them to still be working.
+  - A triggered entry releases its reservation, then fills through the same `PaperExecution.FillEntryAsync` as T6: fill, ledger, position, OCO exits.
+  - A triggered exit locks the position. If another path already closed it, nothing happens.
+  - Otherwise the exit fills one leg, cancels the sibling, credits the sale (`sell`, and `fee` when non-zero), closes the position with realized P&L = qty × (exit − avg) − all fees, and adds that to the portfolio's realized P&L.
+  - A failure for one portfolio is logged and doesn't stop the others; the next tick retries it.
+- **Trigger rules:** `TriggerEvaluator` (pure) evaluates a `PriceWindow`. A tick has no open; a bar has open, high and low, so a gap fills at the open. When both legs trigger in one window, the stop wins (PAPER-05). A gap below the stop sets `gappedThroughStop` on `PositionClosed`, which is what "Stop filled below plan (gap)" will use (PAPER-04).
+- **Stop proximity:** a last price within 1.5% above the stop publishes `StopProximityReached` once per position per session. `positions.stop_alert_session` records it.
+- **Session jobs:**
+  - `DayOrderExpiryJob` runs every minute. It expires working day entries past `expires_at` and releases their reserved cash. The proposal stays `approved` (PAPER-03).
+  - `StartOfDayJob` runs every 5 minutes after the open and stamps `start_of_day_equity` (cash + open positions at their latest quotes) for the daily loss halt.
+- **Events** published: `OrderFilled`, `PositionOpened`, `PositionClosed`, `OrderExpired`, `StopProximityReached`. Their notifications and SignalR relays come with T-089.
+- `NOT IMPLEMENTED` yet: the EOD `GapReconciler`. The evaluator already accepts bars for it.
+- **Tests:** PAPER-02 (a later fill at 186.57 releases the reservation), PAPER-03, PAPER-04 (exit at 174.98, worse than the planned max loss), PAPER-05 (unit), and PAPER-06 (five concurrent triggers give one exit fill and one sell). The ledger invariants hold after each.
+
 ### 15.5 Close position (T11)
 
 Same transactional pattern as T6: idempotency → lock portfolio → position `FOR UPDATE` must be `open` → cancel OCO exits → market exit fill → ledger `sell` (+qty×price), `fee` → position `closed`, `exit_reason='manual'`, `realized_pnl` → outbox.

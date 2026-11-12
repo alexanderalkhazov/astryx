@@ -24,4 +24,9 @@ public interface IExecutionGate
     Task<Result<ExecutionTicket>> PrepareAsync(Guid userId, Guid proposalId, Guid assessmentId, CancellationToken cancellationToken);
 
     Task MarkApprovedAsync(Guid proposalId, CancellationToken cancellationToken);
+
+    /// <summary>The proposal's levels and lineage, for attaching OCO exits when a working entry fills later.</summary>
+    Task<ProposalLevels> LevelsAsync(Guid proposalId, CancellationToken cancellationToken);
 }
+
+public sealed record ProposalLevels(decimal Entry, decimal Stop, decimal Target, Guid? StrategyVersionId);

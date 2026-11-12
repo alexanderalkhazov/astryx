@@ -150,6 +150,9 @@ public sealed class Position
     /// <summary>Drives the NEW badge until the user opens the position.</summary>
     public DateTimeOffset? SeenAt { get; set; }
 
+    /// <summary>The session of the last stop-proximity alert: at most one per position per session (§15.4).</summary>
+    public DateOnly? StopAlertSession { get; set; }
+
     public long Version { get; set; }
 }
 

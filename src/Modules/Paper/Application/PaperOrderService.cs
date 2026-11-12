@@ -42,16 +42,13 @@ public sealed class PaperOrderService(
     ICurrentUser user,
     IPortfolioDirectory portfolios,
     IPortfolioLedger ledger,
-    IPositionBook positions,
     IExecutionGate gate,
     IMarketSessionClock sessions,
-    IConfiguration configuration)
+    PaperExecution execution)
 {
     public static readonly Error NotFound = new("not_found", "No order with that id.");
     public static readonly Error NoPortfolio = new("conflict", "Your paper portfolio isn't ready yet.");
     public static readonly Error ConcurrencyConflict = new("concurrency_conflict", "The portfolio changed while placing the order. Review and try again.");
-
-    private const string Base32 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 
     public async Task<Result<OrderDto>> PlaceAsync(PlaceOrderRequest request, string idempotencyKey, CancellationToken cancellationToken)
     {
@@ -76,7 +73,7 @@ public sealed class PaperOrderService(
         var ticket = prepared.Value;
         var now = sessions.Now;
         var session = await sessions.TodayAsync(cancellationToken);
-        var costs = Costs();
+        var costs = execution.Costs;
         var slip = costs.Slip(ticket.Entry);
         var order = new Order
         {
@@ -88,7 +85,7 @@ public sealed class PaperOrderService(
             ProposalId = ticket.ProposalId,
             AssessmentId = ticket.AssessmentId,
             ClientOrderId = idempotencyKey,
-            BrokerOrderId = NewBrokerOrderId(),
+            BrokerOrderId = PaperExecution.NewBrokerOrderId(),
             Purpose = OrderPurpose.Entry,
             Side = "buy",
             OrderType = ticket.OrderType,
@@ -118,58 +115,13 @@ public sealed class PaperOrderService(
         }
         else
         {
-            fill = new Fill
+            var filled = await execution.FillEntryAsync(order, simulated, ticket.Stop, ticket.Target, ticket.StrategyVersionId, ticket.QuoteAsOf, now, cancellationToken);
+            if (!filled.IsSuccess)
             {
-                Id = Ids.New(),
-                OrderId = order.Id,
-                PortfolioId = ticket.PortfolioId,
-                InstrumentId = ticket.InstrumentId,
-                Side = "buy",
-                Quantity = ticket.Quantity,
-                Price = simulated.Price,
-                ReferencePrice = simulated.ReferencePrice,
-                SlippagePerShare = simulated.SlippagePerShare,
-                Fee = costs.Fee,
-                QuoteAsOf = ticket.QuoteAsOf,
-                FilledAt = now,
-            };
-            db.Fills.Add(fill);
-            await db.SaveChangesAsync(cancellationToken); // the order row must exist before the ledger references it
-
-            var entries = new List<LedgerEntry>
-            {
-                new("buy", -RoundingPolicy.Ledger(ticket.Quantity * simulated.Price), $"fill:{fill.Id}:principal",
-                    $"Buy {Shares(ticket.Quantity)} {ticket.Symbol} @ {Price(simulated.Price)}", FillId: fill.Id, OrderId: order.Id),
-            };
-            if (costs.Fee > 0)
-            {
-                entries.Add(new("fee", -RoundingPolicy.Ledger(costs.Fee), $"fill:{fill.Id}:fee", "Commission", FillId: fill.Id, OrderId: order.Id));
+                return filled.Error;
             }
 
-            var posted = await ledger.PostAsync(ticket.PortfolioId, entries, cancellationToken);
-            if (!posted.IsSuccess)
-            {
-                return posted.Error.Code == "insufficient_funds" ? new Error("risk_check_failed", posted.Error.Message) : posted.Error;
-            }
-
-            var opened = await positions.OpenAsync(new OpenPositionRequest(
-                ticket.PortfolioId, ticket.InstrumentId, ticket.Symbol, ticket.Quantity, simulated.Price, costs.Fee, ticket.Stop, ticket.Target,
-                order.Id, ticket.ProposalId, ticket.StrategyVersionId, now), cancellationToken);
-            if (!opened.IsSuccess)
-            {
-                return opened.Error;
-            }
-
-            order.Status = OrderStatus.Filled;
-            order.FilledQuantity = ticket.Quantity;
-            order.AvgFillPrice = simulated.Price;
-            order.TriggeredAt = now;
-            order.FilledAt = now;
-            order.PositionId = opened.Value;
-            exits = Exits(order, ticket, opened.Value, now);
-            db.Orders.AddRange(exits);
-            db.Publish(new OrderFilled(userId, order.Id, opened.Value, ticket.Symbol, order.Purpose, ticket.Quantity, simulated.Price, now));
-            db.Publish(new PositionOpened(userId, opened.Value, ticket.PortfolioId, ticket.Symbol, ticket.Quantity, simulated.Price));
+            (fill, exits) = filled.Value;
         }
 
         await gate.MarkApprovedAsync(ticket.ProposalId, cancellationToken);
@@ -212,20 +164,6 @@ public sealed class PaperOrderService(
         return new OrderPageDto(items);
     }
 
-    /// <summary>OCO exits on the new position (§15.2): a GTC sell stop at the stop and a GTC limit sell at the target.</summary>
-    private Order[] Exits(Order entry, ExecutionTicket ticket, Guid positionId, DateTimeOffset now)
-    {
-        var group = Ids.New();
-        Order Exit(string purpose, string type, decimal? stop, decimal? limit) => new()
-        {
-            Id = Ids.New(), UserId = entry.UserId, PortfolioId = entry.PortfolioId, InstrumentId = entry.InstrumentId, Symbol = entry.Symbol,
-            PositionId = positionId, ClientOrderId = $"exit:{positionId}:{purpose}", BrokerOrderId = NewBrokerOrderId(), Purpose = purpose, Side = "sell",
-            OrderType = type, TimeInForce = "gtc", Quantity = ticket.Quantity, StopPrice = stop, LimitPrice = limit, OcoGroupId = group,
-            Status = OrderStatus.Working, SubmittedAt = now,
-        };
-        return [Exit(OrderPurpose.ExitStop, "sell_stop", ticket.Stop, null), Exit(OrderPurpose.ExitTarget, "limit", null, ticket.Target)];
-    }
-
     private async Task<OrderDto> ToDtoAsync(Order order, CancellationToken cancellationToken)
     {
         var fill = await db.Fills.AsNoTracking().FirstOrDefaultAsync(f => f.OrderId == order.Id, cancellationToken);
@@ -250,22 +188,6 @@ public sealed class PaperOrderService(
     private static decimal? Px(decimal? price) => price is { } p ? Math.Round(p, 2, MidpointRounding.ToEven) : null;
 
     private static decimal Whole(decimal q) => Math.Round(q, 0, MidpointRounding.ToEven);
-
-    private static string Shares(decimal q) => Whole(q).ToString(CultureInfo.InvariantCulture);
-
-    private static string Price(decimal p) => p.ToString("F2", CultureInfo.InvariantCulture);
-
-    private static string NewBrokerOrderId() => "SIM-" + string.Concat(RandomNumberGenerator.GetBytes(6).Select(b => Base32[b % 32]));
-
-    private sealed record CostSettings(int Bps, decimal MinSlippage, decimal Fee)
-    {
-        public decimal Slip(decimal price) => Math.Max(MinSlippage, Math.Ceiling(price * Bps / 10_000m * 100m) / 100m);
-    }
-
-    private CostSettings Costs() => new(
-        configuration.GetValue("Paper:SlippageBps", 1),
-        decimal.Parse(configuration["Paper:MinSlippage"] ?? "0.01", CultureInfo.InvariantCulture),
-        decimal.Parse(configuration["Paper:CommissionPerOrder"] ?? "0.00", CultureInfo.InvariantCulture));
 }
 
 /// <summary><see cref="IOpenOrders"/>: working entry orders per portfolio.</summary>

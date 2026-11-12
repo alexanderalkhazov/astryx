@@ -8,7 +8,7 @@ public interface IPortfolioDirectory
 }
 
 /// <summary>An open position as the risk engine sees it (valuation uses the latest quote, not this record).</summary>
-public sealed record OpenPositionView(Guid InstrumentId, string Symbol, decimal Quantity, decimal? StopPrice);
+public sealed record OpenPositionView(Guid InstrumentId, string Symbol, decimal Quantity, decimal? StopPrice, Guid PositionId = default);
 
 /// <summary>
 /// A portfolio's state for a risk assessment (§14.2): the cash ledger cache, what working orders reserved, the

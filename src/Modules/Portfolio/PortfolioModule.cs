@@ -1,3 +1,4 @@
+using Astryx.Infrastructure.Jobs;
 using Astryx.Contracts.Events.Identity;
 using Astryx.Infrastructure.Outbox;
 using Astryx.Infrastructure.Persistence;
@@ -19,6 +20,8 @@ public static class PortfolioModule
         services.AddScoped<Astryx.Contracts.Portfolio.IPortfolioDirectory, PortfolioDirectory>();
         services.AddScoped<Astryx.Contracts.Portfolio.IPortfolioStateSource, PortfolioStateSource>();
         services.AddScoped<Astryx.Contracts.Portfolio.IPositionBook, PositionBook>();
+        services.AddJobHandler<StartOfDayJob, StartOfDayHandler>();
+        services.AddRecurringJob("portfolio-start-of-day", TimeSpan.FromMinutes(5), _ => new StartOfDayJob());
         return services;
     }
 }
