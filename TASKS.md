@@ -341,7 +341,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 
 ### M5 · Paper trading
 
-- [ ] **T-080** Portfolio ledger foundation
+- [x] **T-080** Portfolio ledger foundation
   - **Note:** `portfolio.portfolios` (incl. `reserved_cash`) and `portfolio.transactions` already exist from T-020; this task adds positions, the append-only guard and the ledger service.
   - **Acceptance:** remaining `portfolio.*` migrations. `IPortfolioLedger` posts append-only transactions with a unique `idempotency_ref`. Cash cache plus `version` increment. The DB role has no UPDATE or DELETE on `transactions`. A ledger-sum invariant helper is used by tests.
   - **Refs:** §10.4 (portfolio), §15.3, §20.8 · **Depends:** T-012, T-020 · **P0**
