@@ -101,3 +101,11 @@ export function moneyAccessibilityLabel(value: DecimalString): string {
   const words = sign === MINUS ? 'minus ' : sign === '+' ? 'plus ' : '';
   return `${words}${whole.replace(/,/g, '')} dollars and ${Number.parseInt(fraction, 10)} cents`;
 }
+
+export type Direction = 'up' | 'down' | 'unchanged';
+
+/** Direction of a signed change ("0.0342" → up), for tone and screen-reader wording. */
+export function changeDirection(change: DecimalString): Direction {
+  const value = toDecimal(change);
+  return value.isZero() ? 'unchanged' : value.isNegative() ? 'down' : 'up';
+}

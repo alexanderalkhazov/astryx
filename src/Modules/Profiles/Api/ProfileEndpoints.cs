@@ -144,7 +144,7 @@ public static class ProfileEndpoints
         me.MapGet("/settings/risk", async (ClaimsPrincipal user, ProfileService profiles, HttpContext http, CancellationToken ct) =>
             {
                 var settings = await profiles.GetRiskSettingsAsync(UserId(user), ct);
-                http.Response.Headers.ETag = ETag(settings.Version);
+                http.Response.Headers.ETag = ETags.Format(settings.Version);
                 return Results.Ok(ToDto(settings));
             })
             .WithName("GetRiskSettings")
@@ -154,13 +154,13 @@ public static class ProfileEndpoints
             {
                 var update = new RiskSettingsUpdate(request.MaxRiskPerTradePct, request.MaxPositionWeightPct, request.MaxSectorExposurePct,
                     request.SectorWarningPct, request.DailyLossHaltPct, request.MaxOpenPositions, request.MinRewardRisk);
-                var result = await profiles.UpdateRiskSettingsAsync(UserId(user), ParseIfMatch(http), update, ct);
+                var result = await profiles.UpdateRiskSettingsAsync(UserId(user), ETags.ParseIfMatch(http), update, ct);
                 if (!result.IsSuccess)
                 {
                     return result.Error.ToProblem();
                 }
 
-                http.Response.Headers.ETag = ETag(result.Value.Version);
+                http.Response.Headers.ETag = ETags.Format(result.Value.Version);
                 return Results.Ok(ToDto(result.Value));
             })
             .WithName("UpdateRiskSettings")
@@ -191,21 +191,6 @@ public static class ProfileEndpoints
     }
 
     private static Guid UserId(ClaimsPrincipal user) => Guid.Parse(user.FindFirstValue("sub")!);
-
-    private static string ETag(int version) => $"\"v{version}\"";
-
-    private static int? ParseIfMatch(HttpContext http)
-    {
-        var header = http.Request.Headers.IfMatch.ToString().Trim();
-        if (header.StartsWith("W/", StringComparison.Ordinal))
-        {
-            header = header[2..];
-        }
-
-        return header.Length > 3 && header.StartsWith("\"v", StringComparison.Ordinal) && header.EndsWith('"') && int.TryParse(header[2..^1], out var version)
-            ? version
-            : header.Length == 0 ? null : -1; // present but unparseable never matches
-    }
 
     private static CurrentUserResponse ToCurrentUser(UserAccountSummary account, UserProfile profile, IConfiguration config) =>
         new(account.Id, account.Email, account.EmailVerified, profile.DisplayName, profile.Timezone, profile.Locale, profile.BiometricLock, profile.TradingMode,

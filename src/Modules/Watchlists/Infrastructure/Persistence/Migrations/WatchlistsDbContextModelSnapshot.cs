@@ -56,6 +56,13 @@ namespace Astryx.Modules.Watchlists.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("user_id");
 
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1)
+                        .HasColumnName("version");
+
                     b.HasKey("Id")
                         .HasName("pk_watchlists");
 
@@ -72,6 +79,51 @@ namespace Astryx.Modules.Watchlists.Infrastructure.Persistence.Migrations
                         {
                             t.HasCheckConstraint("ck_watchlists_name_length", "char_length(name) BETWEEN 1 AND 40");
                         });
+                });
+
+            modelBuilder.Entity("Astryx.Modules.Watchlists.Domain.WatchlistItem", b =>
+                {
+                    b.Property<Guid>("WatchlistId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("watchlist_id");
+
+                    b.Property<Guid>("InstrumentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("instrument_id");
+
+                    b.Property<DateTimeOffset>("AddedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("added_at");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(280)
+                        .HasColumnType("character varying(280)")
+                        .HasColumnName("note");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
+                    b.HasKey("WatchlistId", "InstrumentId")
+                        .HasName("pk_watchlist_items");
+
+                    b.HasIndex("InstrumentId")
+                        .HasDatabaseName("ix_watchlist_items_instrument_id");
+
+                    b.ToTable("watchlist_items", "watchlist", t =>
+                        {
+                            t.HasCheckConstraint("ck_watchlist_items_note_length", "note IS NULL OR char_length(note) <= 280");
+                        });
+                });
+
+            modelBuilder.Entity("Astryx.Modules.Watchlists.Domain.WatchlistItem", b =>
+                {
+                    b.HasOne("Astryx.Modules.Watchlists.Domain.Watchlist", null)
+                        .WithMany()
+                        .HasForeignKey("WatchlistId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_watchlist_items_watchlists_watchlist_id");
                 });
 #pragma warning restore 612, 618
         }

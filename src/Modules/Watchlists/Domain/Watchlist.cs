@@ -6,6 +6,9 @@ namespace Astryx.Modules.Watchlists.Domain;
 public sealed class Watchlist : IUserOwned
 {
     public const string DefaultName = "Watchlist";
+    public const int MaxNameLength = 40;
+    public const int MaxLists = 20;
+    public const int MaxItems = 200;
 
     public Guid Id { get; set; }
 
@@ -16,6 +19,9 @@ public sealed class Watchlist : IUserOwned
     public bool IsDefault { get; set; }
 
     public int SortOrder { get; set; }
+
+    /// <summary>Bumped by every change to the list or its items; the ETag is <c>"v{Version}"</c>.</summary>
+    public int Version { get; set; } = 1;
 
     public DateTimeOffset CreatedAt { get; set; }
 

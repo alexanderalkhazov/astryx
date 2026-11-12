@@ -1,0 +1,45 @@
+# Star a stock, then manage it from Settings › Watchlist (T-047). Signed in (run sign-in.yaml first); leaves the list as it found it.
+appId: ${APP_ID}
+env:
+  APP_ID: app.astryx.mobile
+  LINK: astryx://
+---
+- openLink: ${LINK}stock/AMD
+- extendedWaitUntil:
+    visible: "Open|AMD"
+    timeout: 30000
+- tapOn:
+    text: Open
+    optional: true
+- runFlow: close-dev-menu.yaml
+- extendedWaitUntil:
+    visible:
+      id: watchlist-star
+      enabled: true
+    timeout: 15000
+- assertVisible:
+    id: watchlist-star
+    checked: false
+- tapOn:
+    id: watchlist-star
+- assertVisible:
+    id: watchlist-star
+    checked: true
+- takeScreenshot: watchlist-starred
+- openLink: ${LINK}settings/watchlist
+- tapOn:
+    text: Open
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: watchlist-row-AMD
+    timeout: 15000
+- assertVisible: "AMD, Advanced Micro Devices, 168.25, up 2.18%"
+- takeScreenshot: watchlist-manage
+- tapOn: Edit
+- tapOn: Remove AMD
+- assertNotVisible:
+    id: watchlist-row-AMD
+- extendedWaitUntil:
+    visible: No stocks yet
+    timeout: 10000

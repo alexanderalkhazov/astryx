@@ -21,6 +21,7 @@ export {
   type BarsRequest,
 } from './market';
 export { SearchItem, SearchResults, searchApi } from './search';
+export { Watchlist, WatchlistItem, Watchlists, watchlistETag, watchlistsApi } from './watchlists';
 export type { components as ApiSchemas } from './generated/schema';
 
 /** Money, prices, quantities and percents travel as decimal strings — never JS numbers. */

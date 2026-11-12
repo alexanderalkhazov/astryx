@@ -1,4 +1,6 @@
+using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using Astryx.Infrastructure.Security;
 using Astryx.Modules.Identity.Infrastructure.Persistence;
@@ -40,7 +42,12 @@ public partial class DataIsolationTests(ApiFactory factory) : IClassFixture<ApiF
     /// </summary>
     private static readonly Dictionary<string, Func<DataIsolationTests, Task>> IsolationFixtures = new(StringComparer.Ordinal)
     {
-        // e.g. ["GET /api/v1/watchlists/{id}"] = t => t.AssertForeignWatchlistIs404Async(),
+        ["PATCH /api/v1/watchlists/{id}"] = t => t.AssertForeignWatchlistIs404Async(HttpMethod.Patch, "", new { name = "hijacked" }),
+        ["DELETE /api/v1/watchlists/{id}"] = t => t.AssertForeignWatchlistIs404Async(HttpMethod.Delete, "", null),
+        ["POST /api/v1/watchlists/{id}/items"] = t => t.AssertForeignWatchlistIs404Async(HttpMethod.Post, "/items", new { symbol = "NVDA" }),
+        ["DELETE /api/v1/watchlists/{id}/items/{symbol}"] = t => t.AssertForeignWatchlistIs404Async(HttpMethod.Delete, "/items/NVDA", null),
+        ["PUT /api/v1/watchlists/{id}/order"] = t => t.AssertForeignWatchlistIs404Async(HttpMethod.Put, "/order", new { symbols = Array.Empty<string>() }),
+        ["PUT /api/v1/watchlists/default/items/{symbol}"] = t => t.AssertStarOnlyTouchesOwnDefaultAsync(),
     };
 
     /// <summary>
@@ -55,6 +62,38 @@ public partial class DataIsolationTests(ApiFactory factory) : IClassFixture<ApiF
         "GET /api/v1/market/{symbol}/quote",
         "GET /api/v1/market/{symbol}/bars",
     };
+
+    /// <summary>Bob addresses Alice's list by id (with Alice's current ETag): 404, and Alice's list is unchanged.</summary>
+    private async Task AssertForeignWatchlistIs404Async(HttpMethod method, string suffix, object? body)
+    {
+        var alice = await TestUsers.SignedInClientAsync(factory);
+        var bob = await TestUsers.SignedInClientAsync(factory);
+        var created = await (await alice.PostAsJsonAsync("/api/v1/watchlists", new { name = "Mine" })).Content.ReadFromJsonAsync<JsonElement>();
+        var request = new HttpRequestMessage(method, $"/api/v1/watchlists/{created.GetProperty("id").GetString()}{suffix}");
+        request.Headers.TryAddWithoutValidation("If-Match", "\"v1\"");
+        if (body is not null)
+        {
+            request.Content = JsonContent.Create(body);
+        }
+
+        var response = await bob.SendAsync(request);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound, $"{method} {suffix}");
+        var mine = (await alice.GetFromJsonAsync<JsonElement>("/api/v1/watchlists")).GetProperty("items").EnumerateArray().Single(l => l.GetProperty("name").GetString() == "Mine");
+        mine.GetProperty("version").GetInt32().ShouldBe(1);
+    }
+
+    /// <summary>The star route has no list id: it always writes the caller's own default list.</summary>
+    private async Task AssertStarOnlyTouchesOwnDefaultAsync()
+    {
+        var alice = await TestUsers.SignedInClientAsync(factory);
+        var bob = await TestUsers.SignedInClientAsync(factory);
+        var before = (await alice.GetFromJsonAsync<JsonElement>("/api/v1/watchlists")).GetProperty("items")[0].GetProperty("version").GetInt32();
+
+        await bob.PutAsync("/api/v1/watchlists/default/items/NVDA", null);
+
+        (await alice.GetFromJsonAsync<JsonElement>("/api/v1/watchlists")).GetProperty("items")[0].GetProperty("version").GetInt32().ShouldBe(before);
+    }
 
     [GeneratedRegex(@"userId=(?<user>[0-9a-f-]{36})&token=(?<token>[A-Za-z0-9_-]{43})")]
     private static partial Regex LinkPattern();

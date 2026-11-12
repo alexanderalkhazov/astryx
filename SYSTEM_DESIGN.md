@@ -1774,8 +1774,8 @@ Outcome tracking for hit rates is `OPEN QUESTION`-adjacent: the `signal_outcomes
 
 #### Schema `watchlist`
 
-**`watchlist.watchlists`** — `id` PK, `user_id` FK users (cascade), `name` (1–40), `is_default` boolean, `sort_order` int, `updated_at`. UK `(user_id, name)`. Partial UK `(user_id) WHERE is_default`.
-**`watchlist.watchlist_items`** — PK `(watchlist_id, instrument_id)`, `watchlist_id` FK (cascade), `instrument_id` FK, `sort_order` int, `note` text ≤ 280 NULL, `added_at`. IX `(instrument_id)`.
+**`watchlist.watchlists`** — `id` PK, `user_id` FK users (cascade), `name` (1–40), `is_default` boolean, `sort_order` int, `version` int (ETag `"v{version}"`, bumped by every change to the list or its items), `updated_at`. UK `(user_id, name)`. Partial UK `(user_id) WHERE is_default`.
+**`watchlist.watchlist_items`** — PK `(watchlist_id, instrument_id)`, `watchlist_id` FK (cascade), `instrument_id` (no cross-schema FK, as in `discovery`), `sort_order` int, `note` text ≤ 280 NULL, `added_at`. IX `(instrument_id)`.
 
 #### Schema `ai`
 
@@ -2139,7 +2139,7 @@ Error envelope (every problem response also carries `correlationId`; unknown rou
 | 401 | `unauthorized`, `token_expired`, `session_revoked`, `invalid_credentials`, `refresh_token_superseded` | Authentication failure |
 | 403 | `email_not_verified`, `forbidden`, `live_trading_disabled` | Authorisation failure |
 | 404 | `not_found`, `instrument_not_found` | Resource is missing **or belongs to another user** (never 403, to avoid confirming that IDs exist) |
-| 409 | `conflict`, `duplicate`, `request_in_progress`, `proposal_not_pending`, `assessment_stale`, `quote_stale`, `position_not_open`, `concurrency_conflict` | State conflict |
+| 409 | `conflict`, `duplicate`, `request_in_progress`, `proposal_not_pending`, `assessment_stale`, `quote_stale`, `position_not_open`, `concurrency_conflict`, `limit_reached` | State conflict (`limit_reached`: a per-user cap such as 20 watchlists × 200 items) |
 | 412 | `precondition_failed` | ETag mismatch |
 | 428 | `precondition_required` | `If-Match` missing on a concurrency-controlled update |
 | 422 | `validation_failed`, `risk_check_failed`, `idempotency_key_reused`, `insufficient_history`, `ai_levels_rejected` | Semantic validation failure |
@@ -2303,12 +2303,15 @@ Error envelope (every problem response also carries `correlationId`; unknown rou
 | # | Method & route | Request | Response | Validation | Errors |
 |---|---|---|---|---|---|
 | W1 | `GET /watchlists` | — | `200 {items: WatchlistDto[]}` (items include quote summaries) | | |
-| W2 | `POST /watchlists` | `{name}` | `201 WatchlistDto` | name 1–40, unique per user. ≤ 20 lists | 409 `duplicate`, 422 |
-| W3 | `PATCH /watchlists/{id}` (If-Match) | `{name?, sortOrder?}` | `200 WatchlistDto` | | 404, 409, 412 |
+| W2 | `POST /watchlists` | `{name}` | `201 WatchlistDto` + ETag | name 1–40 (trimmed), unique per user. ≤ 20 lists | 409 `duplicate`, 409 `limit_reached`, 422 |
+| W3 | `PATCH /watchlists/{id}` (**If-Match required**) | `{name?, sortOrder?}` | `200 WatchlistDto` + ETag | | 404, 409 `duplicate`, 412, 428 |
 | W4 | `DELETE /watchlists/{id}` | — | `204` | the default list cannot be deleted | 404, 409 `conflict` |
-| W5 | `POST /watchlists/{id}/items` | `{symbol, note?}` | `201 WatchlistItemDto` | ≤ 200 items. note ≤ 280 | 404 `instrument_not_found`, 409 `duplicate` (the client treats this as success) |
+| W5 | `POST /watchlists/{id}/items` | `{symbol, note?}` | `201 WatchlistItemDto` (appended last) | ≤ 200 items. note ≤ 280 | 404 `instrument_not_found`, 409 `duplicate` (the client treats this as success), 409 `limit_reached` |
 | W6 | `DELETE /watchlists/{id}/items/{symbol}` | — | `204` (idempotent: also 204 if the item is absent) | | 404 (list) |
-| W7 | `PUT /watchlists/default/items/{symbol}` | — | `204` | Star toggle on: an idempotent add to the default list. Star toggle off uses W6 with `id=default` | 404 |
+| W7 | `PUT /watchlists/default/items/{symbol}` | — | `204` | Star toggle on: an idempotent add to the default list. Star toggle off uses W6 with `id=default` | 404 `instrument_not_found`, 409 `limit_reached` |
+| W8 | `PUT /watchlists/{id}/order` (**If-Match required**) | `{symbols: string[]}` | `200 WatchlistDto` + ETag | Exactly the list's items, each once, in the new order (T-047, for the Manage screen's reorder) | 404, 409 `conflict` (set differs: reload), 412, 428 |
+
+`{id}` is a list id or `default` everywhere. Item changes (W5–W8) bump the list `version`.
 
 ```json
 // W1 item
@@ -3144,7 +3147,7 @@ Priority rule: **positions and working orders always get fresh quotes first**, b
 - **EOD backfill:** `BackfillDays`, default 730. Upserts are bulk `unnest` statements.
 - **Quote sync:** runs during the session, once after the close, and whenever quotes are missing. Bad ticks are dropped (`MaxQuoteMoveFromPrevClose`, default 50 %). `quote_seq` bumps only when a quote changed.
 - **QuotesUpdated:** one batched `market.quotes_updated.v1` event per cycle instead of one per instrument, published in the upsert's transaction.
-- **Priority symbols:** modules contribute them through `IPrioritySymbolSource` (`Astryx.Contracts.MarketData`). None are registered until positions, watchlists and signals exist.
+- **Priority symbols:** modules contribute them through `IPrioritySymbolSource` (`Astryx.Contracts.MarketData`). Watchlists registers priority 2 (every user's watched symbols, T-047); positions, orders and signals add theirs when those modules exist.
 - **Tests:** integration tests set `MarketData:Ingestion:Enabled=false` and call the handlers directly on a `FakeTimeProvider`.
 
 ### 16.4 Instrument identity

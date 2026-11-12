@@ -15,7 +15,7 @@ import { StatusBanner } from '@/components/StatusBanner';
 import { Text } from '@/components/Text';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { search } from '@/lib/api';
-import { formatPct, formatPrice } from '@/lib/format';
+import { changeDirection, formatPct, formatPrice } from '@/lib/format';
 
 export const RECENT_KEY = ['search', 'recent'] as const;
 
@@ -103,7 +103,7 @@ export default function SearchScreen() {
 
 function ResultRow({ item, first, onPress }: { item: SearchItem; first: boolean; onPress: () => void }) {
   const change = item.changePct;
-  const direction = change === null ? null : change.startsWith('-') ? 'down' : /^0(\.0+)?$/.test(change) ? 'unchanged' : 'up';
+  const direction = change === null ? null : changeDirection(change);
   const signal = item.signalType && item.signalType in signalBadge ? (item.signalType as SignalType) : null;
   const label = [
     item.symbol,

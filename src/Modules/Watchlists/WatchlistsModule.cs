@@ -1,10 +1,14 @@
 using Astryx.Contracts.Events.Identity;
+using Astryx.Contracts.MarketData;
 using Astryx.Infrastructure.Outbox;
 using Astryx.Infrastructure.Persistence;
+using Astryx.Modules.Watchlists.Api;
 using Astryx.Modules.Watchlists.Application;
 using Astryx.Modules.Watchlists.Infrastructure.Persistence;
 using Microsoft.Extensions.Configuration;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Astryx.Modules.Watchlists;
 
@@ -15,6 +19,10 @@ public static class WatchlistsModule
     {
         services.AddModuleDbContext<WatchlistsDbContext>(WatchlistsDbContext.SchemaName, historyKey: "watchlists");
         services.AddIntegrationEventHandler<UserRegistered, CreateDefaultWatchlistHandler>();
+        services.TryAddSingleton(TimeProvider.System);
+        services.AddScoped<WatchlistService>();
+        services.AddScoped<IPrioritySymbolSource, WatchlistPrioritySymbols>();
+        services.AddValidatorsFromAssemblyContaining<CreateWatchlistRequestValidator>(includeInternalTypes: true);
         return services;
     }
 }
