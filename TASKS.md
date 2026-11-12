@@ -225,7 +225,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Acceptance:** navigating every placeholder route works, and the tab bar matches the PNG design.
   - **Refs:** §8.3, §8.12 · **Depends:** T-032 · **P0**
   - **Manual check (2026-11-12):** `e2e/shell.yaml` walked all five tabs, a pushed screen and Search on the iPhone 17 simulator. The tab bar is about 85 pt against the PNG's 83 pt, the active tab is white with the others grey, and Discover shows scan corners around a line. Home matches 01 · Home: bare header icons, PAPER chip, sample-data notice on one line.
-- [ ] **T-036** Development build
+- [x] **T-036** Development build — `905706e`
   - **Scope:** a working `npx expo run:ios` dev client (needed for Skia, bottom-sheet and haptics outside Expo Go), and README instructions including `xcode-select`.
   - **Acceptance:** the dev client launches on the simulator and loads the app from Metro.
   - **Refs:** §4.5 · **Depends:** T-031 · **P0**
