@@ -419,7 +419,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [x] **T-090** Valuation, snapshots and performance
   - **Acceptance:** `ValuationService` (stale flags). `PortfolioSnapshotJob` (hourly and EOD). Benchmark series (SPY proxy in fake data). P1, P2, P5 and P6, with TWR, max DD, win rate and avg win/loss computed from fills and snapshots.
   - **Refs:** §7.12, §7.14, §20.11 · **Depends:** T-085 · **P0**
-- [ ] **T-091** Allocation, exposure and attention
+- [x] **T-091** Allocation, exposure and attention
   - **Acceptance:** P7, P8 (beta-weighted exposure null when beta is missing) and P9 (pending proposals, stop proximity, working orders, halt). Weight drift above the cap is flagged, never auto-sold.
   - **Refs:** §8.4.6, §11.8 · **Depends:** T-090 · **P0**
 - [ ] **T-092** Portfolio screen
