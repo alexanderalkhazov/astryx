@@ -452,7 +452,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [x] **T-099** Paper account reset
   - **Acceptance:** P11 with the `RESET` confirmation, close at last price, cancel orders, `reset_close`/`reset_deposit` entries and a new performance epoch. **PAPER-08 passes.** A PROPOSED confirmation dialog in Settings.
   - **Refs:** §11.8 · **Depends:** T-086, T-098 · **P1**
-- [ ] **T-100** Reconciliation job
+- [x] **T-100** Reconciliation job
   - **Acceptance:** nightly checks 1–6 from §20.13. A mismatch halts new entries for that portfolio, raises a critical log and alert, and writes an audit row. It runs clean after the whole test suite.
   - **Refs:** §20.13 · **Depends:** T-085 · **P1**
 - [ ] **T-101** Push notifications
