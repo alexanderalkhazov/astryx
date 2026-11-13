@@ -56,3 +56,4 @@ export async function getSystemStatus(baseUrl: string, signal?: AbortSignal): Pr
   return SystemStatus.parse(await response.json());
 }
 export { AnalysisJob, AnalysisJobStatus, AnalysisPage, AnalysisResult, AnalysisSummary, analysesApi } from './analyses';
+export { CheckStatus as ProposalCheckStatus, Proposal, RiskAssessment, RiskCheck, RISK_CHOICES, proposalsApi } from './proposals';

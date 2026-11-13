@@ -13,6 +13,7 @@ jest.mock('@/lib/api', () => ({
   watchlists: { list: jest.fn(), star: jest.fn(), unstar: jest.fn() },
   scanner: { list: jest.fn(), get: jest.fn(), status: jest.fn(), count: jest.fn() },
   analyses: { list: jest.fn(async () => ({ data: { items: [], nextCursor: null } })), get: jest.fn(), job: jest.fn(), create: jest.fn(), cancel: jest.fn() },
+  proposals: { fromSignal: jest.fn() },
 }));
 const api = jest.requireMock('@/lib/api') as {
   market: Record<'instrument' | 'quote' | 'bars' | 'fundamentals' | 'news' | 'indicators', jest.Mock>;
@@ -70,6 +71,7 @@ function renderStock(symbol = 'NVDA') {
       'stock/[ticker]': StockScreen,
       search: () => <Text>Search screen</Text>,
       'strategy/[id]': () => <Text>Strategy screen</Text>,
+      'proposal/[id]': () => <Text>Proposal screen</Text>,
     },
     { initialUrl: `/stock/${symbol}` },
   );
@@ -228,6 +230,17 @@ describe('Stock screen', () => {
 
     await fireEvent.press(screen.getByRole('link', { name: 'Base Breakout v3, open strategy' }));
     await waitFor(() => expect(screen).toHavePathname('/strategy/strat-1'));
+  });
+
+  it('opens a proposal from the active signal (T-087)', async () => {
+    api.scanner.list.mockResolvedValue({ data: { items: [{ ...SIGNAL, scoreBreakdown: null }], nextCursor: null, counts: {}, scanner: {} } });
+    api.scanner.get.mockResolvedValue({ data: SIGNAL });
+    (jest.requireMock('@/lib/api') as { proposals: { fromSignal: jest.Mock } }).proposals.fromSignal.mockResolvedValue({ data: { id: 'p-9' } });
+    await renderStock();
+
+    await fireEvent.press(await screen.findByTestId('stock-review-proposal'));
+
+    await waitFor(() => expect(screen).toHavePathname('/proposal/p-9'));
   });
 
   it('says when no strategy finds a setup, with the evaluation time', async () => {

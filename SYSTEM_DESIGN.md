@@ -1158,6 +1158,24 @@ Implementation (T-049):
 | Loading | Skeleton levels; checks show spinners |
 | Error | Proposal not found → EmptyState + "Back to Discover"; assessment error → checks show "Couldn't verify — approval disabled" + Retry |
 
+**Implemented (T-087).**
+
+- `app/(app)/proposal/[id].tsx` follows design 06:
+  - the pending research banner, with expiry in ET;
+  - BUY · LONG and the current price;
+  - a source line that links to the stock;
+  - order type · DAY, and level tiles with % from entry;
+  - `RewardRiskBar` (loss at stop, 1 : R:R, gain at target);
+  - the size stepper, and risk choices with those above the user's max disabled;
+  - "Sized by …", capital / max loss / profit, fees and spread, portfolio impact;
+  - the six design checks, plus engine checks only when they warn or fail.
+- **Recompute:** `useSizing` re-assesses on the server 150 ms after each change and aborts the request still in flight. While a recompute runs, numbers dim and checks show spinners.
+- **Approve gate:** `approveGate` enables Approve only when the latest assessment was made for the current inputs, has no failing check, is not stale and hasn't expired. A 1 s tick catches the 60 s expiry. Otherwise the reason shows under the buttons: the failing check's message, "Checking the latest numbers…", or a stale or failed verification with Recheck.
+- **Reject** uses the design's dialog. A decided or expired proposal hides the actions behind a status banner.
+- The stock screen's bottom button becomes **Review proposal** while a signal is active. It calls T1, which returns the pending proposal if one exists, and opens the screen.
+- Approve opens the confirm sheet (T-088).
+- Not verified on the simulator: the live stack refuses new proposals outside the regular session.
+
 #### 8.4.5 Confirm order sheet & Fill receipt — design 07, 08
 
 | Aspect | Spec |

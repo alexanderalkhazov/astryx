@@ -21,6 +21,7 @@ import { Tabs } from '@/components/Tabs';
 import { Text } from '@/components/Text';
 import { FundamentalsTab } from '@/features/stock/FundamentalsTab';
 import { NewsTab } from '@/features/stock/NewsTab';
+import { useReviewProposal } from '@/features/proposal/useReviewProposal';
 import { SignalTab } from '@/features/stock/SignalTab';
 import { TechnicalsTab } from '@/features/stock/TechnicalsTab';
 import { useActiveSignal } from '@/features/stock/useActiveSignal';
@@ -66,6 +67,7 @@ export default function StockScreen() {
   const active = useActiveSignal(symbol, instrument.isSuccess);
   const scannerStatus = useScannerStatus();
   const star = useWatchlistStar(symbol);
+  const review = useReviewProposal();
 
   const header = (
     <StackHeader
@@ -114,13 +116,22 @@ export default function StockScreen() {
         </Text.Data>
         <Text.Caption tone="pending">Research only · not executed</Text.Caption>
       </View>
-      <Button
-        variant={star.starred ? 'secondary' : 'primary'}
-        label={star.starred ? 'On watchlist' : 'Add to watchlist'}
-        disabled={!star.ready}
-        onPress={star.toggle}
-        testID="stock-watchlist-button"
-      />
+      {active.data ? (
+        <Button
+          label="Review proposal"
+          loading={review.isPending}
+          onPress={() => review.mutate(active.data!.id)}
+          testID="stock-review-proposal"
+        />
+      ) : (
+        <Button
+          variant={star.starred ? 'secondary' : 'primary'}
+          label={star.starred ? 'On watchlist' : 'Add to watchlist'}
+          disabled={!star.ready}
+          onPress={star.toggle}
+          testID="stock-watchlist-button"
+        />
+      )}
     </View>
   );
 
