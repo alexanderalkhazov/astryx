@@ -416,7 +416,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 
 ### M6 · Portfolio, activity, strategy lab, settings
 
-- [ ] **T-090** Valuation, snapshots and performance
+- [x] **T-090** Valuation, snapshots and performance
   - **Acceptance:** `ValuationService` (stale flags). `PortfolioSnapshotJob` (hourly and EOD). Benchmark series (SPY proxy in fake data). P1, P2, P5 and P6, with TWR, max DD, win rate and avg win/loss computed from fills and snapshots.
   - **Refs:** §7.12, §7.14, §20.11 · **Depends:** T-085 · **P0**
 - [ ] **T-091** Allocation, exposure and attention
