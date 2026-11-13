@@ -22,3 +22,12 @@ public interface ISignalLookup
 {
     Task<SignalDetail?> GetAsync(Guid signalId, CancellationToken cancellationToken);
 }
+
+public sealed record StrategySignal(Guid Id, string Symbol, string Type, decimal Score, decimal Entry, DateTimeOffset EvaluatedAt);
+
+/// <summary>Owned by Discovery, read by Strategies through Contracts: a strategy's active signals for its detail screen.</summary>
+public interface IStrategySignalFeed
+{
+    /// <summary>Best score first, at most 20.</summary>
+    Task<IReadOnlyList<StrategySignal>> ActiveForStrategyAsync(Guid strategyId, CancellationToken cancellationToken);
+}

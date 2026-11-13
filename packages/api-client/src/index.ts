@@ -60,3 +60,4 @@ export { CheckStatus as ProposalCheckStatus, Proposal, RiskAssessment, RiskCheck
 export { PaperOrder, paperApi } from './paper';
 export { Allocation, AttentionItem, ClosedTrade, ClosePreview, Exposure, PositionDetail, Performance, type PerformanceRange, PortfolioPosition, PortfolioSummary, portfolioApi } from './portfolio';
 export { ActivityItem, ActivityPage, NotificationCategory, notificationsApi } from './notifications';
+export { BacktestRun, FullMetrics, HeadlineMetrics, RunMetrics, StrategyComparison, StrategyDetail, StrategyParameter, StrategyStatus, StrategySummary, strategiesApi } from './strategies';

@@ -21,7 +21,6 @@ import { toast } from '@/state/toasts';
 /** Screens still waiting for their tasks, reachable in development builds only. */
 const DEV_ROUTES: { label: string; href: Href }[] = [
   { label: 'Stock · NVDA', href: '/stock/NVDA' },
-  { label: 'Strategy', href: '/strategy/demo' },
   { label: 'Analysis history', href: '/analyses' },
   { label: 'Analysis', href: '/analyses/demo' },
   { label: 'Watchlist (proposed)', href: '/settings/watchlist' },
@@ -162,11 +161,17 @@ export default function HomeScreen() {
         {(strategies.data ?? []).length > 0 ? (
           <Section title="Strategies · month to date">
             {strategies.data!.map((st) => (
-              <View key={st.strategyId} style={styles.positionRow} accessible accessibilityLabel={`${st.name}, ${formatPct(st.pnlPct, { signed: true })} month to date, ${st.trades} trades`}>
+              <Pressable
+                key={st.strategyId}
+                style={styles.positionRow}
+                accessibilityRole="button"
+                accessibilityLabel={`${st.name}, ${formatPct(st.pnlPct, { signed: true })} month to date, ${st.trades} trades`}
+                onPress={() => router.push({ pathname: '/strategy/[id]', params: { id: st.strategyId } })}
+              >
                 <Text.Body style={styles.flex}>{st.name}</Text.Body>
                 <Text.DataSm tone={tone(st.pnlPct)}>{formatPct(st.pnlPct, { signed: true })}</Text.DataSm>
                 <Text.DataSm tone="tertiary">{`${st.trades} trades`}</Text.DataSm>
-              </View>
+              </Pressable>
             ))}
           </Section>
         ) : null}

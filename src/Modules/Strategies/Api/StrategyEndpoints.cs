@@ -28,6 +28,13 @@ public static class StrategyEndpoints
             .Produces<StrategyPeriodResponse>()
             .ProducesProblem(StatusCodes.Status400BadRequest);
 
+        strategies.MapGet("/compare", async (string? ids, StrategyCatalog catalog, CancellationToken cancellationToken) =>
+                (await catalog.CompareAsync(ids, cancellationToken)).Match(Results.Ok, error => error.ToProblem()))
+            .WithName("CompareStrategies")
+            .Produces<CompareDto>()
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
         strategies.MapGet("/{id}", async (string id, StrategyCatalog catalog, CancellationToken cancellationToken) =>
                 (await catalog.GetAsync(id, cancellationToken)).Match(Results.Ok, error => error.ToProblem()))
             .WithName("GetStrategy")

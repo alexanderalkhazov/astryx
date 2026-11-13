@@ -1,5 +1,7 @@
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Astryx.Contracts.Discovery;
 using Astryx.Modules.Strategies.Domain;
 using Astryx.Modules.Strategies.Infrastructure.Persistence;
 using Astryx.SharedKernel.Results;
@@ -27,23 +29,36 @@ public sealed record VersionDto(Guid Id, int Number, string State, string CodeVe
 public sealed record RunSummaryDto(Guid Id, int RunNumber, string Status, DateOnly PeriodStart, DateOnly PeriodEnd, DateOnly OosStart, DateTimeOffset? FinishedAt, JsonNode Metrics);
 
 /// <summary>ST3.</summary>
-/// <param name="TodaysSignals">Filled once the scanner exists (T-065).</param>
-public sealed record StrategyDetailDto(StrategySummaryDto Summary, IReadOnlyList<string> Rules, VersionDto Version, RunSummaryDto? LatestRun, IReadOnlyList<object> TodaysSignals);
+/// <param name="TodaysSignals">The strategy's active scanner signals, best first.</param>
+public sealed record StrategyDetailDto(StrategySummaryDto Summary, IReadOnlyList<string> Rules, VersionDto Version, RunSummaryDto? LatestRun, IReadOnlyList<StrategySignalDto> TodaysSignals);
+
+public sealed record StrategySignalDto(Guid Id, string Symbol, string Type, decimal Score, decimal Entry, DateTimeOffset EvaluatedAt);
 
 /// <summary>ST4: a full run with its curves. Results are illustrative of history, never a forecast.</summary>
 public sealed record BacktestRunDto(
     Guid Id, Guid StrategyId, int RunNumber, int Version, string Status, DateOnly PeriodStart, DateOnly PeriodEnd, DateOnly OosStart, decimal InitialCapital,
     JsonNode Assumptions, JsonNode Metrics, JsonNode EquityCurve, JsonNode DrawdownCurve, JsonNode MonthlyReturns, DateTimeOffset? FinishedAt, string? ErrorCode);
 
+/// <summary>One strategy's growth of $1 on its latest run (ST2), sampled as in the run's equity curve.</summary>
+public sealed record CompareSeriesDto(Guid StrategyId, string Name, IReadOnlyList<ComparePointDto> Points);
+
+public sealed record ComparePointDto(DateOnly D, string Growth);
+
+/// <summary>ST2: overlay series and the full-period metrics of each latest run, side by side. Illustrative backtests.</summary>
+public sealed record CompareDto(IReadOnlyList<CompareSeriesDto> Series, IReadOnlyList<CompareMetricsDto> Metrics);
+
+public sealed record CompareMetricsDto(Guid StrategyId, string Name, JsonNode? Metrics);
+
 /// <summary>ST5 item.</summary>
 public sealed record StrategyPeriodDto(Guid StrategyId, string Name, string Pnl, string PnlPct, int Trades, bool Illustrative);
 
 /// <summary>The system strategy catalog (SYSTEM_DESIGN.md §7.8, §11.9 ST1, ST3–ST5). Read-only in the MVP.</summary>
-public sealed class StrategyCatalog(StrategiesDbContext db)
+public sealed class StrategyCatalog(StrategiesDbContext db, IStrategySignalFeed signals)
 {
     public static readonly Error NotFound = new("not_found", "No strategy with that id.");
     public static readonly Error RunNotFound = new("not_found", "No backtest run with that id.");
     public static readonly Error UnsupportedPeriod = new("bad_request", "Only period=mtd is supported.");
+    public static readonly Error BadCompare = new("validation_failed", "ids must name 1–5 strategies.");
 
     public const int SparklinePoints = 60;
 
@@ -82,7 +97,49 @@ public sealed class StrategyCatalog(StrategiesDbContext db)
             rules,
             new VersionDto(version.Id, version.VersionNumber, version.State, version.CodeVersion, parameters),
             run is null ? null : new RunSummaryDto(run.Id, run.RunNumber, run.Status, run.PeriodStart, run.PeriodEnd, run.OosStart, run.FinishedAt, JsonNode.Parse(run.Metrics)!),
-            []);
+            (await signals.ActiveForStrategyAsync(strategy.Id, cancellationToken))
+                .Select(x => new StrategySignalDto(x.Id, x.Symbol, x.Type, x.Score, x.Entry, x.EvaluatedAt)).ToList());
+    }
+
+    /// <summary>ST2 (SYSTEM_DESIGN.md §11.9): ids or codes, comma-separated.</summary>
+    public async Task<Result<CompareDto>> CompareAsync(string? ids, CancellationToken cancellationToken)
+    {
+        var refs = (ids ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Distinct().ToList();
+        if (refs.Count is 0 or > 5)
+        {
+            return BadCompare;
+        }
+
+        var strategies = new List<Strategy>();
+        foreach (var r in refs)
+        {
+            if (await FindAsync(r, cancellationToken) is not { } found)
+            {
+                return NotFound;
+            }
+
+            strategies.Add(found);
+        }
+
+        var runs = await LatestRunsAsync(strategies.Select(x => x.Id).ToList(), cancellationToken);
+        var series = new List<CompareSeriesDto>();
+        var metrics = new List<CompareMetricsDto>();
+        foreach (var strategy in strategies)
+        {
+            if (runs.GetValueOrDefault(strategy.Id) is not { } run)
+            {
+                continue;
+            }
+
+            var curve = JsonNode.Parse(run.EquityCurve)!.AsArray();
+            var points = curve.Select(p => new ComparePointDto(
+                DateOnly.Parse(p![0]!.GetValue<string>(), CultureInfo.InvariantCulture),
+                Math.Round(decimal.Parse(p[1]!.GetValue<string>(), CultureInfo.InvariantCulture) / run.InitialCapital, 4, MidpointRounding.ToEven).ToString("0.0000", CultureInfo.InvariantCulture))).ToList();
+            series.Add(new CompareSeriesDto(strategy.Id, strategy.Name, points));
+            metrics.Add(new CompareMetricsDto(strategy.Id, strategy.Name, JsonNode.Parse(run.Metrics)?["full"]?.DeepClone()));
+        }
+
+        return new CompareDto(series, metrics);
     }
 
     /// <summary>ST4. <paramref name="runRef"/> is a run id or <c>latest</c>.</summary>

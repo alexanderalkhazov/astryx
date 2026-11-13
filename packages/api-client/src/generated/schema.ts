@@ -911,6 +911,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/strategies/compare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["CompareStrategies"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/strategies/{id}": {
         parameters: {
             query?: never;
@@ -1657,6 +1673,27 @@ export interface components {
         ClosedTradePageDto: {
             items: components["schemas"]["ClosedTradeDto"][];
             nextCursor: null | string;
+        };
+        CompareDto: {
+            series: components["schemas"]["CompareSeriesDto"][];
+            metrics: components["schemas"]["CompareMetricsDto"][];
+        };
+        CompareMetricsDto: {
+            /** Format: uuid */
+            strategyId: string;
+            name: string;
+            metrics: null | components["schemas"]["JsonNode"];
+        };
+        ComparePointDto: {
+            /** Format: date */
+            d: string;
+            growth: string;
+        };
+        CompareSeriesDto: {
+            /** Format: uuid */
+            strategyId: string;
+            name: string;
+            points: components["schemas"]["ComparePointDto"][];
         };
         ConcentrationWarningDto: {
             kind: string;
@@ -2415,7 +2452,7 @@ export interface components {
             rules: string[];
             version: components["schemas"]["VersionDto"];
             latestRun: null | components["schemas"]["RunSummaryDto"];
-            todaysSignals: unknown[];
+            todaysSignals: components["schemas"]["StrategySignalDto"][];
         };
         StrategyMetricsDto: {
             cagr: string;
@@ -2436,6 +2473,18 @@ export interface components {
         StrategyPeriodResponse: {
             period: string;
             items: components["schemas"]["StrategyPeriodDto"][];
+        };
+        StrategySignalDto: {
+            /** Format: uuid */
+            id: string;
+            symbol: string;
+            type: string;
+            /** Format: decimal */
+            score: string;
+            /** Format: decimal */
+            entry: string;
+            /** Format: date-time */
+            evaluatedAt: string;
         };
         StrategySummaryDto: {
             /** Format: uuid */
@@ -3592,6 +3641,46 @@ export interface operations {
             };
             /** @description Bad Request */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    CompareStrategies: {
+        parameters: {
+            query?: {
+                ids?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompareDto"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

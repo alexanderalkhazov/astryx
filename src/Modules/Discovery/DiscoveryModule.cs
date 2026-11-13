@@ -24,6 +24,7 @@ public static class DiscoveryModule
         services.AddScoped<Astryx.Contracts.MarketData.IChartLevelsSource, SignalChartLevels>();
         services.AddScoped<Astryx.Contracts.Discovery.IActiveSignalSource, ActiveSignalSource>();
         services.AddScoped<Astryx.Contracts.Discovery.ISignalLookup, SignalLookup>();
+        services.AddScoped<Astryx.Contracts.Discovery.IStrategySignalFeed, StrategySignalFeed>();
         services.AddScoped<Astryx.Contracts.MarketData.IPrioritySymbolSource, SignalPrioritySymbols>();
         services.AddJobHandler<ScannerRunJob, ScannerRunHandler>();
         var scanner = configuration.GetSection(ScannerOptions.SectionName).Get<ScannerOptions>() ?? new ScannerOptions();

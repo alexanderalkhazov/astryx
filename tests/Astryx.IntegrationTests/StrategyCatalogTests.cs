@@ -105,6 +105,34 @@ public class StrategyCatalogTests(ApiFactory factory) : IClassFixture<ApiFactory
     }
 
     [Fact]
+    public async Task Compare_overlays_growth_of_one_dollar_with_full_period_metrics()
+    {
+        var body = await _client.GetFromJsonAsync<JsonElement>("/api/v1/strategies/compare?ids=base_breakout,trend_momentum,base_breakout");
+
+        var series = body.GetProperty("series").EnumerateArray().ToList();
+        series.Select(s => s.GetProperty("name").GetString()).ShouldBe(["Base Breakout v3", "Trend Momentum"]);
+        var points = series[0].GetProperty("points").EnumerateArray().ToList();
+        points.Count.ShouldBe(138);
+        points[0].GetProperty("d").GetString().ShouldBe("2015-01-01");
+        points[0].GetProperty("growth").GetString().ShouldBe("1.0000");
+        decimal.Parse(points[^1].GetProperty("growth").GetString()!).ShouldBeGreaterThan(1m);
+        var metrics = body.GetProperty("metrics").EnumerateArray().ToList();
+        metrics[0].GetProperty("metrics").GetProperty("cagr").GetString().ShouldBe("0.169");
+        metrics[0].GetProperty("metrics").GetProperty("trades").GetInt32().ShouldBe(412);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("?ids=")]
+    [InlineData("?ids=a,b,c,d,e,f")]
+    public async Task Compare_needs_one_to_five_ids(string query) =>
+        (await _client.GetAsync($"/api/v1/strategies/compare{query}")).StatusCode.ShouldBe(HttpStatusCode.UnprocessableEntity);
+
+    [Fact]
+    public async Task Compare_with_an_unknown_strategy_is_404() =>
+        (await _client.GetAsync("/api/v1/strategies/compare?ids=base_breakout,nope")).StatusCode.ShouldBe(HttpStatusCode.NotFound);
+
+    [Fact]
     public async Task Unknown_strategies_are_404_and_a_session_is_required()
     {
         (await _client.GetAsync("/api/v1/strategies/nope")).StatusCode.ShouldBe(HttpStatusCode.NotFound);
@@ -136,5 +164,33 @@ public class StrategyCatalogTests(ApiFactory factory) : IClassFixture<ApiFactory
         (await db.Database.ExecuteSqlAsync($"UPDATE strategy.strategy_versions SET params = '{{\"baseWeeks\": 7}}'::jsonb WHERE id = {draft}")).ShouldBe(1);
         (await db.Database.ExecuteSqlAsync($"UPDATE strategy.strategy_versions SET state = 'archived' WHERE id = {published} AND false")).ShouldBe(0);
         await db.Database.ExecuteSqlAsync($"DELETE FROM strategy.strategy_versions WHERE id = {draft}");
+    }
+}
+
+/// <summary>ST3 lists the strategy's live scanner signals once the scanner has run.</summary>
+public class StrategySignalsTests(TradingApiFactory factory) : IClassFixture<TradingApiFactory>, IAsyncLifetime
+{
+    public async Task InitializeAsync()
+    {
+        await factory.PrepareAsync();
+        await factory.ScanAsync();
+    }
+
+    public Task DisposeAsync() => Task.CompletedTask;
+
+    [Fact]
+    public async Task Base_breakout_shows_todays_NVDA_signal()
+    {
+        var client = await TestUsers.SignedInClientAsync(factory);
+        var signalId = await factory.ActiveSignalIdAsync("NVDA");
+
+        var detail = await client.GetFromJsonAsync<JsonElement>("/api/v1/strategies/base_breakout");
+
+        var signals = detail.GetProperty("todaysSignals").EnumerateArray().ToList();
+        var nvda = signals.Single(s => s.GetProperty("symbol").GetString() == "NVDA");
+        nvda.GetProperty("id").GetGuid().ShouldBe(signalId);
+        nvda.GetProperty("type").GetString().ShouldBe("breakout");
+        var others = await client.GetFromJsonAsync<JsonElement>("/api/v1/strategies/earnings_drift");
+        others.GetProperty("todaysSignals").EnumerateArray().ShouldNotContain(s => s.GetProperty("symbol").GetString() == "NVDA" && s.GetProperty("type").GetString() == "breakout");
     }
 }

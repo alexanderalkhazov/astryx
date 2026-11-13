@@ -1272,6 +1272,26 @@ Implementation (T-049):
 | APIs | `GET /strategies/{id}`, `GET /strategies/{id}/runs/{runId|latest}`, `PUT /strategies/{id}/draft`, `POST /strategies/{id}/runs` (Phase 6+) |
 | Status | Configure/re-run **NOT IMPLEMENTED in MVP** — renders read-only with "Coming soon" disabled stepper state (`ASSUMPTION`) |
 
+**Implemented (T-096).**
+
+- **ST2:** `ids` takes 1–5 strategy ids or codes, de-duplicated; outside that range it is 422 and an unknown id is 404. Each series is the latest run's monthly equity divided by its initial capital (growth of $1, 4 dp). `metrics` is that run's `full` block.
+- **ST3 today's signals:** read from Discovery through `IStrategySignalFeed`: active signals for the strategy, best score first, at most 20.
+- **Strategy lab** (`(tabs)/strategies.tsx`, designs 13–14):
+  - a Strategies · Compare segment and the caption "N strategies · backtests Jan 2015 – Jun 2026 · illustrative results";
+  - cards with a status badge, sparkline, CAGR, Sharpe, Max DD, Win rate and "Live since … · MTD";
+  - Compare: chips pick up to five strategies, each keeping its catalog colour, for the growth-of-$1 overlay and the side-by-side metrics table.
+  - `NOT IMPLEMENTED`: the dashed benchmark line on Compare. ST2 has no benchmark series; the run's benchmark multiple is shown on the Backtest tab.
+- **Strategy detail** (`strategy/[id].tsx`, designs 11–12):
+  - **Overview:** numbered rules, illustrative live results, and today's signals linking to the stock.
+  - **Backtest:**
+    - the run line ("Run #1 · 2026-06-30 · v3");
+    - an equity chart with the out-of-sample period shaded (`LineChart bandFrom`) and a drawdown chart;
+    - the eight metrics (CAGR, Sharpe, Max DD, Win rate, Profit factor, Avg trade, Trades, Expectancy);
+    - an IS vs OOS table and a monthly returns heatmap;
+    - assumptions, including the survivorship-bias warning.
+  - **Configure:** "Coming soon", with disabled steppers showing default and range, and a disabled "Run backtest · 2015–2026".
+- Every results view carries the copy that backtests are historical and illustrative, not a forecast.
+
 #### 8.4.10 Activity (`(tabs)/activity`) — design 17
 
 | Aspect | Spec |

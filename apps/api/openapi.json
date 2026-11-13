@@ -1678,6 +1678,55 @@
         }
       }
     },
+    "/api/v1/strategies/compare": {
+      "get": {
+        "tags": [
+          "Strategies"
+        ],
+        "operationId": "CompareStrategies",
+        "parameters": [
+          {
+            "name": "ids",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompareDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/strategies/{id}": {
       "get": {
         "tags": [
@@ -4331,6 +4380,97 @@
               "null",
               "string"
             ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "CompareDto": {
+        "required": [
+          "series",
+          "metrics"
+        ],
+        "type": "object",
+        "properties": {
+          "series": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CompareSeriesDto"
+            }
+          },
+          "metrics": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CompareMetricsDto"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "CompareMetricsDto": {
+        "required": [
+          "strategyId",
+          "name",
+          "metrics"
+        ],
+        "type": "object",
+        "properties": {
+          "strategyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "metrics": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/JsonNode"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "ComparePointDto": {
+        "required": [
+          "d",
+          "growth"
+        ],
+        "type": "object",
+        "properties": {
+          "d": {
+            "type": "string",
+            "format": "date"
+          },
+          "growth": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CompareSeriesDto": {
+        "required": [
+          "strategyId",
+          "name",
+          "points"
+        ],
+        "type": "object",
+        "properties": {
+          "strategyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "points": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ComparePointDto"
+            }
           }
         },
         "additionalProperties": false
@@ -7327,7 +7467,10 @@
             ]
           },
           "todaysSignals": {
-            "type": "array"
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StrategySignalDto"
+            }
           }
         },
         "additionalProperties": false
@@ -7405,6 +7548,44 @@
             "items": {
               "$ref": "#/components/schemas/StrategyPeriodDto"
             }
+          }
+        },
+        "additionalProperties": false
+      },
+      "StrategySignalDto": {
+        "required": [
+          "id",
+          "symbol",
+          "type",
+          "score",
+          "entry",
+          "evaluatedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "symbol": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "score": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "entry": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "evaluatedAt": {
+            "type": "string",
+            "format": "date-time"
           }
         },
         "additionalProperties": false

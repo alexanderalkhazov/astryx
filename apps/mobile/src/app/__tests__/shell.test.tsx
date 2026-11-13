@@ -119,7 +119,6 @@ describe('app shell', () => {
 
   it.each([
     ['Stock · NVDA', '/stock/NVDA', 'Stock with sheet'],
-    ['Strategy', '/strategy/demo', 'Strategy · demo'],
     ['Analysis history', '/analyses', 'Analysis history'],
     ['Analysis', '/analyses/demo', 'Analysis · demo'],
     ['Watchlist (proposed)', '/settings/watchlist', 'Watchlist'],

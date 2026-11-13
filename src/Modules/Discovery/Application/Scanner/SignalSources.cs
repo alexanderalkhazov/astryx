@@ -61,3 +61,15 @@ public sealed class SignalLookup(DiscoveryDbContext db) : ISignalLookup
             Metric("relVolume"), Metric("relStrength"), Metric("rewardRisk"), Metric("rsi14"));
     }
 }
+
+/// <summary>A strategy's active signals (ST3 "today's signals").</summary>
+public sealed class StrategySignalFeed(DiscoveryDbContext db) : IStrategySignalFeed
+{
+    public async Task<IReadOnlyList<StrategySignal>> ActiveForStrategyAsync(Guid strategyId, CancellationToken cancellationToken) =>
+        await db.Signals.AsNoTracking()
+            .Where(s => s.StrategyId == strategyId && s.Status == SignalStatus.Active)
+            .OrderByDescending(s => s.Score).ThenBy(s => s.Symbol)
+            .Take(20)
+            .Select(s => new StrategySignal(s.Id, s.Symbol, s.SignalType, s.Score, s.EntryPrice, s.EvaluatedAt))
+            .ToListAsync(cancellationToken);
+}

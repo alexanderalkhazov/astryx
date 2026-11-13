@@ -1,5 +1,5 @@
 import { color, motion } from '@astryx/design-tokens';
-import { Canvas, DashPathEffect, Line, Path, Skia, type SkPath, vec } from '@shopify/react-native-skia';
+import { Canvas, DashPathEffect, Line, Path, Rect, Skia, type SkPath, vec } from '@shopify/react-native-skia';
 import * as Haptics from 'expo-haptics';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { type LayoutChangeEvent, View } from 'react-native';
@@ -27,6 +27,8 @@ export interface LineChartProps {
   /** Grey dashed overlay, e.g. "vs S&P 500" (design 01). Same length and instants as the series. */
   benchmark?: readonly LinePoint[];
   height?: number;
+  /** Shades from this point index to the end, e.g. a backtest's out-of-sample period (design 11). */
+  bandFrom?: number;
   /** Index of the point under the finger while scrubbing, then null on release. */
   onScrub?: (index: number | null) => void;
   accessibilityLabel: string;
@@ -36,7 +38,7 @@ export interface LineChartProps {
  * Line chart (SYSTEM_DESIGN.md §8.6): one or more series plus an optional dashed benchmark, scrubbed like
  * CandleChart (snap to a point, selection haptic at most every 30 ms, release returns to the latest point).
  */
-export function LineChart({ series, benchmark, height = 160, onScrub, accessibilityLabel }: LineChartProps) {
+export function LineChart({ series, benchmark, height = 160, bandFrom, onScrub, accessibilityLabel }: LineChartProps) {
   const [width, setWidth] = useState(0);
   const count = Math.max(0, ...series.map((s) => s.points.length));
 
@@ -111,6 +113,9 @@ export function LineChart({ series, benchmark, height = 160, onScrub, accessibil
       <View onLayout={onLayout} style={{ height }} accessible accessibilityRole="image" accessibilityLabel={accessibilityLabel} testID="line-chart">
         {width > 0 && count > 0 ? (
           <Canvas style={{ width, height }}>
+            {bandFrom !== undefined && bandFrom < count ? (
+              <Rect x={xFor(bandFrom, count, width)} y={0} width={width - xFor(bandFrom, count, width)} height={height} color={color.surface2} />
+            ) : null}
             {gridRows(height, 3).map((y) => (
               <Line key={y} p1={vec(0, y)} p2={vec(width, y)} color={color.line} strokeWidth={1} />
             ))}
