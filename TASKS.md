@@ -438,7 +438,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Story:** As a user, every fill, alert, strategy event and system issue is in one timeline that links to its source.
   - **Acceptance:** `notify.*` migrations. Outbox handlers create notifications with `deep_link` and dedupe keys. N1–N3 and N6. Activity screen (design 17): filter chips, pending orders (dashed empty card), dated timeline, system status, cancel working order dialog. The bell shows an unread dot.
   - **Refs:** §7.15, §8.4.10, §11.10 · **Depends:** T-089 · **P0**
-- [ ] **T-096** Strategy lab (read-only)
+- [x] **T-096** Strategy lab (read-only)
   - **Story:** As a user, I want to inspect the strategy that generated a trade, including its backtest and out-of-sample results.
   - **Acceptance:** seeded backtest runs. ST1–ST5. Strategy lab list and Compare (designs 13 and 14). Strategy detail tabs Overview, Backtest (OOS band, drawdown, 8 metrics, IS vs OOS, monthly heatmap — design 11) and Configure as a read-only "Coming soon" state (design 12). Copy states that backtests are historical and illustrative.
   - **Refs:** §8.4.8–8.4.9 · **Depends:** T-063, T-048 · **P0**
