@@ -422,7 +422,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [x] **T-091** Allocation, exposure and attention
   - **Acceptance:** P7, P8 (beta-weighted exposure null when beta is missing) and P9 (pending proposals, stop proximity, working orders, halt). Weight drift above the cap is flagged, never auto-sold.
   - **Refs:** §8.4.6, §11.8 · **Depends:** T-090 · **P0**
-- [ ] **T-092** Portfolio screen
+- [x] **T-092** Portfolio screen
   - **Story:** As a user, I want to see my positions against the 12% cap, my allocation and my performance.
   - **Acceptance:** hero with dimmed cents and PAPER chip. Tabs Positions (`PositionRow`, weight bar vs cap, NEW badge until seen), Allocation (sector bar, warnings above 30%, asset donut, exposure, open risk to stops) and Performance (equity vs benchmark, metrics, closed trades). Matches designs 09 and 15.
   - **Refs:** §8.4.6 · **Depends:** T-091, T-048 · **P0**
