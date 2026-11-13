@@ -467,7 +467,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [ ] **T-111** E2E: states and failures
   - **Acceptance:** `states.yaml` toggles dev faults and asserts the connection-lost banner, approval disabled, scanner error, empty Discover, a stop-hit toast and the Activity entry.
   - **Refs:** §21.8–21.9 · **Depends:** T-110 · **P0**
-- [ ] **T-112** Order-path safety proof test
+- [x] **T-112** Order-path safety proof test
   - **Acceptance:** an API test calls `POST /paper/orders` with every combination of missing, stale, foreign, failed, expired and mismatched-hash assessments, and also with `Features:LiveTrading=true`. Each one is rejected and no order or ledger row is created.
   - **Refs:** §21.10 items 4–5, A5 · **Depends:** T-084 · **P0**
 - [ ] **T-113** Observability
