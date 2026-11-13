@@ -4305,6 +4305,25 @@ Covered in §13.6: golden files, hand cases, properties, insufficient-data and d
 5. `Features:LiveTrading=true` makes the app refuse to start (test).
 6. Zero high or critical dependency vulnerabilities.
 
+**Items 4–5 proven (T-112).** `OrderPathSafetyTests` gives every case a fresh user, so "nothing created" is exact: no order, fill or position, a ledger of just the initial deposit, $100,000 cash and nothing reserved. Each case below is refused by `POST /paper/orders`:
+
+| Case | Response |
+|---|---|
+| Missing assessment id (binds as the empty GUID) | 404 |
+| Unknown assessment | 404 |
+| Another user's proposal and assessment | 404 |
+| Another proposal's assessment | 404 |
+| A failed (non-approvable) assessment | 409 `assessment_stale` |
+| An expired assessment | 409 `assessment_stale` |
+| An expired proposal | 409 `proposal_not_pending` |
+| A rejected proposal | 409 `proposal_not_pending` |
+| Inputs changed: risk settings version | 409 `assessment_stale` |
+| Inputs changed: quote moved > 0.5 % | 409 `assessment_stale` or 422 `risk_check_failed` |
+| A stale quote | 409 `quote_stale` |
+| A closed market | 409 `market_closed` |
+
+`Features:LiveTrading=true` throws at host start ("Features:LiveTrading is enabled…"), so no request is ever served.
+
 ---
 
 ## 22. Deployment Architecture
