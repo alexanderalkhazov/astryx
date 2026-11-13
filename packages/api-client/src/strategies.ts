@@ -39,6 +39,8 @@ export const StrategySummary = z.object({
   sparkline: z.array(Decimal),
   backtestStart: z.string().nullable(),
   backtestEnd: z.string().nullable(),
+  /** Drawdown guard (T-097): drawdown from the window's high and the warn/pause thresholds, as fractions. */
+  guard: z.object({ drawdown: Decimal, warnAt: Decimal, pauseAt: Decimal, windowDays: z.number().int(), asOf: z.string() }).nullable(),
 });
 export type StrategySummary = z.infer<typeof StrategySummary>;
 

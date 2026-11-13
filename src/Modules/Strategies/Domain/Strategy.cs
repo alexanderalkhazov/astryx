@@ -47,6 +47,19 @@ public sealed class Strategy
     /// <summary>Order in the Strategy lab and the colour index in charts.</summary>
     public int DisplayOrder { get; set; }
 
+    /// <summary>Drawdown guard (§7.8): new signals pause when the drawdown from the window's high reaches this (negative fraction).</summary>
+    public decimal GuardPausePct { get; set; } = DrawdownGuard.DefaultPausePct;
+
+    public int GuardWindowDays { get; set; } = DrawdownGuard.DefaultWindowDays;
+
+    /// <summary>The latest guard evaluation: drawdown from the window's high, as of the last live point.</summary>
+    public decimal? GuardDrawdown { get; set; }
+
+    public DateOnly? GuardAsOf { get; set; }
+
+    /// <summary>The status last announced to users, so each transition (and the seeded state) is announced once.</summary>
+    public string? GuardAnnouncedStatus { get; set; }
+
     public DateTimeOffset UpdatedAt { get; set; }
 }
 
@@ -155,4 +168,17 @@ public sealed class BacktestTrade
     public decimal RMultiple { get; set; }
 
     public required string ExitReason { get; set; }
+}
+
+/// <summary>
+/// Row in <c>strategy.live_points</c>: the strategy's live paper equity at a session close. Illustrative (seeded) until
+/// Portfolio attributes fills to strategies; the drawdown guard reads it either way.
+/// </summary>
+public sealed class LivePoint
+{
+    public Guid StrategyId { get; set; }
+
+    public DateOnly D { get; set; }
+
+    public decimal Equity { get; set; }
 }

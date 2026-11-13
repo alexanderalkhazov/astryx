@@ -779,6 +779,27 @@ flowchart TD
 | Responsibilities | Strategy catalog, versioned parameter sets, rule evaluation for the scanner, backtest runs, metrics (CAGR, Sharpe, max DD, win rate, profit factor, avg trade, expectancy, trades), IS/OOS split, monthly returns, live paper results attribution |
 | Business rules | A strategy version is immutable once it has produced a signal. Editing parameters (Configure tab) creates a **draft** version and marks displayed results `stale` until a re-run produces a numbered run (`run_number` per strategy). Status: `Active`, `ActiveGuarded` (drawdown guard warning — design "Active · guard"), `Paused`, `Retired`. **Drawdown guard** (design Activity: "Trend Pullback drawdown guard · 30-day drawdown −5.4% · pauses at −6.0%"): rolling 30-day drawdown of the strategy's live paper results. Warn at ≥ 90% of the threshold, auto-pause new signals at −6.0% (`ASSUMPTION` defaults per strategy). Backtest results are illustrative of history, never a forecast — the UI keeps this copy. |
 | Main services | `StrategyCatalog`, `IStrategyRule` (one impl per strategy), `BacktestEngine`, `StrategyMetricsCalculator`, `DrawdownGuard` |
+
+**Implemented (T-097): drawdown guard.**
+
+- **Live track:** `strategy.live_points` (`strategy_id`, `d`, `equity numeric(19,4)`) is the strategy's daily live paper equity.
+  - Until Portfolio attributes fills to strategies, it is the illustrative track seeded from `catalog.json` (`livePoints`: 45 weekdays ending 2026-11-09).
+  - Trend Pullback ends 5.4 % below its 30-day high (design 17).
+- **Drawdown** (`ASSUMPTION`): the last point against the highest point in the window (the 30 calendar days ending at the last point). It is the current drawdown from the rolling high, not the window's worst drawdown.
+- **Thresholds** are per strategy: `guard_pause_pct` (default −0.06) and `guard_window_days` (30).
+- **Status rules** (`DrawdownGuard`, pure):
+  - at ≤ 90 % of the threshold → `active_guarded`;
+  - at ≤ the threshold → `paused`, and `StrategySignals` stops evaluating it, so no new signals are produced. Existing signals run out normally.
+  - A guarded strategy that recovers returns to `active`.
+  - A pause is **never lifted automatically**. Resuming is `NOT IMPLEMENTED`.
+- **`DrawdownGuardJob`** (hourly):
+  - stores `guard_drawdown` / `guard_as_of` and the status;
+  - publishes `StrategyGuardChanged` when the status differs from `guard_announced_status`, so the seeded guarded state is announced once and re-runs announce nothing.
+- **Activity:** Notifications fans the event out to every non-deleted account (strategies are shared) as a `strategy` item, deduplicated per strategy, status and day, linking to `/strategy/{code}`:
+  - "Trend Pullback drawdown guard · 30-day drawdown −5.4% · pauses at −6.0%";
+  - "… paused";
+  - "… guard cleared".
+- **ST1/ST3** carry `guard {drawdown, warnAt, pauseAt, windowDays, asOf}`. The Strategy lab card and the detail screen show the guard line while the strategy is guarded or paused.
 | Data owned | `strategy.strategies`, `strategy.strategy_versions`, `strategy.backtest_runs`, `strategy.backtest_trades` |
 | Dependencies | Quant, MarketData |
 | Status | **NOT IMPLEMENTED.** Rule definitions are `OPEN QUESTION Q-09`; backtest engine scope is `OPEN QUESTION Q-10`. MVP ships the catalog + one implemented rule (Base Breakout) + read-only backtest display from seeded runs. |

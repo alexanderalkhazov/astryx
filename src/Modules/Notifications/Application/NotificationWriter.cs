@@ -2,6 +2,8 @@ using System.Globalization;
 using Astryx.Contracts.Events;
 using Astryx.Contracts.Events.Ai;
 using Astryx.Contracts.Events.Paper;
+using Astryx.Contracts.Events.Strategies;
+using Astryx.Contracts.Identity;
 using Astryx.Infrastructure.Realtime;
 using Astryx.Modules.Notifications.Domain;
 using Astryx.Modules.Notifications.Infrastructure.Persistence;
@@ -18,12 +20,13 @@ public sealed record ActivityCreatedMessage(Guid Id, string Category, string Typ
 /// deterministic <c>dedupe_key</c>, inserted with <c>ON CONFLICT DO NOTHING</c>, so at-least-once delivery shows each
 /// thing once (IDEM-06). New items are pushed as <c>activity.created</c>.
 /// </summary>
-public sealed class NotificationWriter(NotificationsDbContext db, IRealtimeNotifier notifier, TimeProvider timeProvider) :
+public sealed class NotificationWriter(NotificationsDbContext db, IRealtimeNotifier notifier, IUserAccountQuery accounts, TimeProvider timeProvider) :
     IIntegrationEventHandler<OrderFilled>,
     IIntegrationEventHandler<PositionClosed>,
     IIntegrationEventHandler<OrderExpired>,
     IIntegrationEventHandler<StopProximityReached>,
-    IIntegrationEventHandler<AnalysisUpdated>
+    IIntegrationEventHandler<AnalysisUpdated>,
+    IIntegrationEventHandler<StrategyGuardChanged>
 {
     public const string ActivityCreated = "activity.created";
 
@@ -67,6 +70,24 @@ public sealed class NotificationWriter(NotificationsDbContext db, IRealtimeNotif
         _ => Task.CompletedTask,
     };
 
+    /// <summary>Strategies are shared, so a guard change is fanned out to every account (design 17 "drawdown guard").</summary>
+    public async Task HandleAsync(StrategyGuardChanged e, IntegrationEventContext context, CancellationToken cancellationToken)
+    {
+        var drawdown = Pct(e.Drawdown);
+        var pause = Pct(e.PausePct);
+        var (type, title, body, severity) = e.Status switch
+        {
+            "paused" => ("strategy_paused", $"{e.Name} paused", $"{e.WindowDays}-day drawdown {drawdown} reached the {pause} guard. New signals from this strategy are paused.", "error"),
+            "active_guarded" => ("strategy_guard", $"{e.Name} drawdown guard", $"{e.WindowDays}-day drawdown {drawdown} · pauses at {pause}", "warning"),
+            _ => ("strategy_guard_cleared", $"{e.Name} guard cleared", $"{e.WindowDays}-day drawdown recovered to {drawdown}. Signals continue as normal.", "info"),
+        };
+        var dedupeKey = $"strategy_guard:{e.StrategyId}:{e.Status}:{e.AsOf:yyyy-MM-dd}";
+        foreach (var userId in await accounts.ListActiveIdsAsync(cancellationToken))
+        {
+            await WriteAsync(userId, NotificationCategory.Strategy, type, title, body, severity, $"/strategy/{e.Code}", "strategy", e.StrategyId, dedupeKey, cancellationToken);
+        }
+    }
+
     private async Task WriteAsync(
         Guid userId, string category, string type, string title, string body, string severity, string deepLink, string entityType, Guid entityId, string dedupeKey, CancellationToken cancellationToken)
     {
@@ -84,6 +105,9 @@ public sealed class NotificationWriter(NotificationsDbContext db, IRealtimeNotif
             await notifier.SendToUserAsync(userId, ActivityCreated, new ActivityCreatedMessage(id, category, type, title, body, severity, deepLink, now), cancellationToken);
         }
     }
+
+    /// <summary>−0.054 → "−5.4%".</summary>
+    private static string Pct(decimal fraction) => (fraction < 0 ? "−" : string.Empty) + Math.Round(Math.Abs(fraction) * 100, 1, MidpointRounding.ToEven).ToString("0.0", CultureInfo.InvariantCulture) + "%";
 
     private static string Money(decimal value) => Math.Round(value, 2, MidpointRounding.ToEven).ToString("N2", CultureInfo.InvariantCulture);
 

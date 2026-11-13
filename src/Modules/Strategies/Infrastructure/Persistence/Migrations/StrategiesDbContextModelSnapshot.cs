@@ -191,6 +191,30 @@ namespace Astryx.Modules.Strategies.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Astryx.Modules.Strategies.Domain.LivePoint", b =>
+                {
+                    b.Property<Guid>("StrategyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("strategy_id");
+
+                    b.Property<DateOnly>("D")
+                        .HasColumnType("date")
+                        .HasColumnName("d");
+
+                    b.Property<decimal>("Equity")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)")
+                        .HasColumnName("equity");
+
+                    b.HasKey("StrategyId", "D")
+                        .HasName("pk_live_points");
+
+                    b.ToTable("live_points", "strategy", t =>
+                        {
+                            t.HasCheckConstraint("ck_live_points_equity", "equity > 0");
+                        });
+                });
+
             modelBuilder.Entity("Astryx.Modules.Strategies.Domain.Strategy", b =>
                 {
                     b.Property<Guid>("Id")
@@ -212,6 +236,33 @@ namespace Astryx.Modules.Strategies.Infrastructure.Persistence.Migrations
                     b.Property<int>("DisplayOrder")
                         .HasColumnType("integer")
                         .HasColumnName("display_order");
+
+                    b.Property<string>("GuardAnnouncedStatus")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("guard_announced_status");
+
+                    b.Property<DateOnly?>("GuardAsOf")
+                        .HasColumnType("date")
+                        .HasColumnName("guard_as_of");
+
+                    b.Property<decimal?>("GuardDrawdown")
+                        .HasPrecision(8, 6)
+                        .HasColumnType("numeric(8,6)")
+                        .HasColumnName("guard_drawdown");
+
+                    b.Property<decimal>("GuardPausePct")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(8, 6)
+                        .HasColumnType("numeric(8,6)")
+                        .HasDefaultValue(-0.0600m)
+                        .HasColumnName("guard_pause_pct");
+
+                    b.Property<int>("GuardWindowDays")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(30)
+                        .HasColumnName("guard_window_days");
 
                     b.Property<string>("IllustrativeLive")
                         .HasColumnType("jsonb")
@@ -349,6 +400,16 @@ namespace Astryx.Modules.Strategies.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_backtest_trades_backtest_runs_run_id");
+                });
+
+            modelBuilder.Entity("Astryx.Modules.Strategies.Domain.LivePoint", b =>
+                {
+                    b.HasOne("Astryx.Modules.Strategies.Domain.Strategy", null)
+                        .WithMany()
+                        .HasForeignKey("StrategyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_live_points_strategies_strategy_id");
                 });
 
             modelBuilder.Entity("Astryx.Modules.Strategies.Domain.Strategy", b =>

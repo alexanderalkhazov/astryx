@@ -11,4 +11,7 @@ public sealed class UserAccountQuery(IdentityDbContext db) : IUserAccountQuery
             .Where(u => u.Id == userId && u.DeletedAt == null)
             .Select(u => new UserAccountSummary(u.Id, u.Email, u.EmailConfirmed))
             .SingleOrDefaultAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<Guid>> ListActiveIdsAsync(CancellationToken cancellationToken) =>
+        await db.Users.AsNoTracking().Where(u => u.DeletedAt == null).OrderBy(u => u.Id).Select(u => u.Id).ToListAsync(cancellationToken);
 }

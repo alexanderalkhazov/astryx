@@ -19,10 +19,11 @@ const OOS = { cagr: '0.141', sharpe: '1.11', maxDrawdown: '-0.123', winRate: '0.
 const SUMMARY = (over: Partial<StrategySummary> = {}): StrategySummary => ({
   id: 'st1', code: 'base_breakout', name: 'Base Breakout v3', description: 'Buys breakouts from tight multi-week bases on heavy volume.', status: 'active', displayOrder: 1, version: 3,
   liveSince: '2025-03-03', live: { sinceInceptionPct: '0.114', mtdPct: '0.028', mtdPnl: '1330.00', mtdTrades: 3, illustrative: true },
-  metrics: { cagr: '0.169', sharpe: '1.31', maxDrawdown: '-0.148', winRate: '0.46' }, sparkline: ['1.00', '2.00', '6.02'], backtestStart: '2015-01-01', backtestEnd: '2026-06-30', ...over,
+  metrics: { cagr: '0.169', sharpe: '1.31', maxDrawdown: '-0.148', winRate: '0.46' }, sparkline: ['1.00', '2.00', '6.02'], backtestStart: '2015-01-01', backtestEnd: '2026-06-30',
+  guard: { drawdown: '-0.0120', warnAt: '-0.0540', pauseAt: '-0.0600', windowDays: 30, asOf: '2026-11-09' }, ...over,
 });
 
-const PULLBACK = SUMMARY({ id: 'st3', code: 'trend_pullback', name: 'Trend Pullback', status: 'active_guarded', live: { sinceInceptionPct: '0.02', mtdPct: '-0.011', mtdPnl: '-712.40', mtdTrades: 2, illustrative: true } });
+const PULLBACK = SUMMARY({ id: 'st3', code: 'trend_pullback', name: 'Trend Pullback', status: 'active_guarded', guard: { drawdown: '-0.0540', warnAt: '-0.0540', pauseAt: '-0.0600', windowDays: 30, asOf: '2026-11-09' }, live: { sinceInceptionPct: '0.02', mtdPct: '-0.011', mtdPnl: '-712.40', mtdTrades: 2, illustrative: true } });
 
 const DETAIL = (over: Partial<StrategyDetail> = {}): StrategyDetail => ({
   summary: SUMMARY(),
@@ -88,6 +89,9 @@ describe('Strategy lab (designs 13 and 14)', () => {
     expect(screen.getAllByLabelText('Max DD: −14.8%')).toHaveLength(2);
     expect(screen.getByText(' · MTD +2.8%')).toBeOnTheScreen();
     expect(screen.getByText(/historical and illustrative/)).toBeOnTheScreen();
+    // Drawdown guard (T-097): only the guarded strategy shows it.
+    expect(screen.getAllByTestId('guard-line')).toHaveLength(1);
+    expect(screen.getByText('30-day drawdown −5.4% · pauses at −6.0%')).toBeOnTheScreen();
 
     await fireEvent.press(screen.getByTestId('strategy-trend_pullback'));
     await waitFor(() => expect(screen).toHavePathname('/strategy/trend_pullback'));
@@ -163,6 +167,14 @@ describe('Strategy detail (designs 11 and 12)', () => {
     expect(await screen.findByText('COMING SOON')).toBeOnTheScreen();
     expect(screen.getByText('Default 6 wk · range 4–10')).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'Run backtest · 2015–2026' })).toBeDisabled();
+  });
+
+  it('says a paused strategy produces no new signals', async () => {
+    mocks.strategies.get.mockResolvedValue(ok(DETAIL({ summary: SUMMARY({ status: 'paused', guard: { drawdown: '-0.0620', warnAt: '-0.0540', pauseAt: '-0.0600', windowDays: 30, asOf: '2026-11-10' } }) })));
+    await renderAt('/strategy/base_breakout');
+
+    expect(await screen.findByText('Paused by the drawdown guard · 30-day drawdown −6.2%. No new signals.')).toBeOnTheScreen();
+    expect(screen.getByText('Paused')).toBeOnTheScreen();
   });
 
   it('says when the strategy does not exist', async () => {

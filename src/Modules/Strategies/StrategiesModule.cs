@@ -1,3 +1,4 @@
+using Astryx.Infrastructure.Jobs;
 using Astryx.Infrastructure.Persistence;
 using Astryx.Modules.Strategies.Application;
 using Astryx.Modules.Strategies.Application.Rules;
@@ -17,6 +18,8 @@ public static class StrategiesModule
         services.AddScoped<StrategyEvaluator>();
         services.AddScoped<Astryx.Contracts.Strategies.IStrategySignals, StrategySignals>();
         services.AddSingleton<IStrategyRule, BaseBreakoutRule>();
+        services.AddJobHandler<DrawdownGuardJob, DrawdownGuardHandler>();
+        services.AddRecurringJob("strategies-drawdown-guard", TimeSpan.FromHours(1), _ => new DrawdownGuardJob());
         return services;
     }
 }

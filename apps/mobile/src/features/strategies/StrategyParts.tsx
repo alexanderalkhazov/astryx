@@ -46,6 +46,21 @@ export function HeadlineGrid({ metrics }: { metrics: HeadlineMetrics }) {
   );
 }
 
+/** "30-day drawdown −5.4% · pauses at −6.0%" (design 17), shown while the guard is warning or has paused the strategy. */
+export function GuardLine({ strategy }: { strategy: StrategySummary }) {
+  const g = strategy.guard;
+  if (!g || strategy.status === 'active') return null;
+  const text =
+    strategy.status === 'paused'
+      ? `Paused by the drawdown guard · ${g.windowDays}-day drawdown ${formatPct(g.drawdown, { dp: 1 })}. No new signals.`
+      : `${g.windowDays}-day drawdown ${formatPct(g.drawdown, { dp: 1 })} · pauses at ${formatPct(g.pauseAt, { dp: 1 })}`;
+  return (
+    <Text.DataSm tone={strategy.status === 'paused' ? 'loss' : 'pending'} testID="guard-line">
+      {text}
+    </Text.DataSm>
+  );
+}
+
 /** Strategy lab card (design 13). */
 export function StrategyCard({ strategy, onPress }: { strategy: StrategySummary; onPress: () => void }) {
   const s = strategy;
@@ -62,6 +77,7 @@ export function StrategyCard({ strategy, onPress }: { strategy: StrategySummary;
       </View>
       {s.sparkline.length > 1 ? <Sparkline closes={s.sparkline} width={280} height={44} /> : null}
       {s.metrics ? <HeadlineGrid metrics={s.metrics} /> : <Text.Caption tone="tertiary">No backtest yet.</Text.Caption>}
+      <GuardLine strategy={s} />
       {s.liveSince ? (
         <Text.DataSm tone="tertiary">
           {`Live since ${formatMonthYear(s.liveSince)}`}

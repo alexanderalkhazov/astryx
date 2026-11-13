@@ -4871,6 +4871,36 @@
         },
         "additionalProperties": false
       },
+      "GuardDto": {
+        "required": [
+          "drawdown",
+          "warnAt",
+          "pauseAt",
+          "windowDays",
+          "asOf"
+        ],
+        "type": "object",
+        "properties": {
+          "drawdown": {
+            "type": "string"
+          },
+          "warnAt": {
+            "type": "string"
+          },
+          "pauseAt": {
+            "type": "string"
+          },
+          "windowDays": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "asOf": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "additionalProperties": false
+      },
       "HttpValidationProblemDetails": {
         "type": "object",
         "properties": {
@@ -7604,7 +7634,8 @@
           "metrics",
           "sparkline",
           "backtestStart",
-          "backtestEnd"
+          "backtestEnd",
+          "guard"
         ],
         "type": "object",
         "properties": {
@@ -7678,6 +7709,16 @@
               "string"
             ],
             "format": "date"
+          },
+          "guard": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/GuardDto"
+              }
+            ]
           }
         },
         "additionalProperties": false

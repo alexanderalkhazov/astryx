@@ -247,11 +247,51 @@ STRATEGIES = [
 ]
 
 
+# Live paper track (T-097): daily equity for the drawdown guard, illustrative until Portfolio attributes fills to
+# strategies. Weekdays ending on the design's date; the last value sits `dd` below the 30-day high, so Trend Pullback
+# shows the design's "30-day drawdown −5.4% · pauses at −6.0%".
+LIVE_END = (2026, 11, 9)
+LIVE_DAYS = 45
+LIVE_DD = {"base_breakout": -0.012, "trend_momentum": -0.020, "trend_pullback": -0.054, "rsi2_mean_reversion": -0.008, "earnings_drift": -0.015}
+
+
+def live_points(code, seed, start_equity):
+    import datetime as dt
+
+    days = []
+    d = dt.date(*LIVE_END)
+    while len(days) < LIVE_DAYS:
+        if d.weekday() < 5:
+            days.append(d)
+        d -= dt.timedelta(days=1)
+    days.reverse()
+    rng = random.Random(seed * 7919)
+    # Rise to a peak about ten sessions before the end, then fall to exactly dd below it.
+    peak_at = LIVE_DAYS - 11
+    values = [start_equity]
+    for i in range(1, LIVE_DAYS):
+        if i <= peak_at:
+            values.append(values[-1] * (1 + 0.0015 + rng.uniform(-0.004, 0.004)))
+        else:
+            values.append(values[-1] * (1 + rng.uniform(-0.006, 0.003)))
+    peak = max(values[: peak_at + 1])
+    values = [min(v, peak) for v in values]
+    tail = values[peak_at:]
+    # Rescale the decline so the last value is exactly dd below the peak.
+    low = tail[-1]
+    target = peak * (1 + LIVE_DD[code])
+    scaled = [peak - (peak - v) * ((peak - target) / (peak - low)) if peak != low else v for v in tail]
+    values = values[:peak_at] + scaled
+    values[-1] = target
+    return [[day.isoformat(), f"{v:.2f}"] for day, v in zip(days, values)]
+
+
 def main():
     catalog = []
     for s in STRATEGIES:
         entry = {k: v for k, v in s.items() if k != "run"}
         entry["run"] = run(**s["run"])
+        entry["livePoints"] = live_points(s["code"], s["run"]["seed"], CAPITAL * (1 + float(s["live"]["sinceInceptionPct"])))
         catalog.append(entry)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps({"generatedBy": "tools/gen_strategy_seed.py", "strategies": catalog}, indent=1) + "\n")

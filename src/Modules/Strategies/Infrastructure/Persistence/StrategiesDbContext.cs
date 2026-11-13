@@ -19,6 +19,8 @@ public sealed class StrategiesDbContext(DbContextOptions<StrategiesDbContext> op
 
     public DbSet<BacktestTrade> Trades => Set<BacktestTrade>();
 
+    public DbSet<LivePoint> LivePoints => Set<LivePoint>();
+
     protected override void ConfigureModel(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Strategy>(entity =>
@@ -32,6 +34,10 @@ public sealed class StrategiesDbContext(DbContextOptions<StrategiesDbContext> op
             entity.Property(s => s.Rules).HasColumnType("jsonb");
             entity.Property(s => s.ParamSchema).HasColumnType("jsonb");
             entity.Property(s => s.IllustrativeLive).HasColumnType("jsonb");
+            entity.Property(s => s.GuardPausePct).HasPrecision(8, 6).HasDefaultValue(DrawdownGuard.DefaultPausePct);
+            entity.Property(s => s.GuardWindowDays).HasDefaultValue(DrawdownGuard.DefaultWindowDays);
+            entity.Property(s => s.GuardDrawdown).HasPrecision(8, 6);
+            entity.Property(s => s.GuardAnnouncedStatus).HasMaxLength(16);
             entity.HasOne<StrategyVersion>().WithMany().HasForeignKey(s => s.PublishedVersionId).OnDelete(DeleteBehavior.Restrict);
         });
 
@@ -61,6 +67,14 @@ public sealed class StrategiesDbContext(DbContextOptions<StrategiesDbContext> op
 
             entity.HasOne<Strategy>().WithMany().HasForeignKey(r => r.StrategyId).OnDelete(DeleteBehavior.Cascade);
             entity.HasOne<StrategyVersion>().WithMany().HasForeignKey(r => r.StrategyVersionId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<LivePoint>(entity =>
+        {
+            entity.ToTable("live_points", t => t.HasCheckConstraint("ck_live_points_equity", "equity > 0"));
+            entity.HasKey(p => new { p.StrategyId, p.D });
+            entity.Property(p => p.Equity).HasPrecision(19, 4);
+            entity.HasOne<Strategy>().WithMany().HasForeignKey(p => p.StrategyId).OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<BacktestTrade>(entity =>

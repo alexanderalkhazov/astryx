@@ -16,7 +16,7 @@ import { StatusBanner } from '@/components/StatusBanner';
 import { Stepper } from '@/components/Stepper';
 import { Tabs } from '@/components/Tabs';
 import { Text } from '@/components/Text';
-import { formatMonthYear, ILLUSTRATIVE_COPY, MetricsTable, MonthlyHeatmap, StrategyStatusBadge } from '@/features/strategies/StrategyParts';
+import { formatMonthYear, GuardLine, ILLUSTRATIVE_COPY, MetricsTable, MonthlyHeatmap, StrategyStatusBadge } from '@/features/strategies/StrategyParts';
 import { strategies } from '@/lib/api';
 import { formatEtTime, formatMoney, formatPct, formatPnl, formatPrice, formatRatio } from '@/lib/format';
 
@@ -60,6 +60,7 @@ export default function StrategyScreen() {
         </Text.Body>
         <StrategyStatusBadge status={d.summary.status} />
       </View>
+      <GuardLine strategy={d.summary} />
       <Tabs<Tab>
         tabs={[
           { value: 'overview', label: 'Overview' },

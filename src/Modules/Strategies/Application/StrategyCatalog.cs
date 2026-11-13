@@ -15,11 +15,14 @@ public sealed record StrategyMetricsDto(string Cagr, string Sharpe, string MaxDr
 /// <summary>Live paper results. Illustrative (seeded) until Portfolio attributes fills to strategies (M5).</summary>
 public sealed record LiveResultsDto(string SinceInceptionPct, string MtdPct, string MtdPnl, int MtdTrades, bool Illustrative);
 
+/// <summary>Drawdown guard state (§7.8): drawdown from the window's high, the warning and pause thresholds (fractions).</summary>
+public sealed record GuardDto(string Drawdown, string WarnAt, string PauseAt, int WindowDays, DateOnly AsOf);
+
 /// <summary>ST1 item (SYSTEM_DESIGN.md §11.9).</summary>
 /// <param name="Sparkline">Equity of the latest run, downsampled to at most 60 points, as decimal strings.</param>
 public sealed record StrategySummaryDto(
     Guid Id, string Code, string Name, string Description, string Status, int DisplayOrder, int Version,
-    DateOnly? LiveSince, LiveResultsDto? Live, StrategyMetricsDto? Metrics, IReadOnlyList<string> Sparkline, DateOnly? BacktestStart, DateOnly? BacktestEnd);
+    DateOnly? LiveSince, LiveResultsDto? Live, StrategyMetricsDto? Metrics, IReadOnlyList<string> Sparkline, DateOnly? BacktestStart, DateOnly? BacktestEnd, GuardDto? Guard);
 
 public sealed record ParameterDto(string Key, string Label, string Unit, JsonNode? Default, JsonNode? Min, JsonNode? Max, JsonNode? Step, JsonNode? Value);
 
@@ -190,6 +193,13 @@ public sealed class StrategyCatalog(StrategiesDbContext db, IStrategySignalFeed 
             .ToList();
     }
 
+    private static GuardDto? Guard(Strategy s) =>
+        s is { GuardDrawdown: { } drawdown, GuardAsOf: { } asOf }
+            ? new GuardDto(
+                drawdown.ToString("0.0000", CultureInfo.InvariantCulture), DrawdownGuard.WarnAt(s.GuardPausePct).ToString("0.0000", CultureInfo.InvariantCulture),
+                s.GuardPausePct.ToString("0.0000", CultureInfo.InvariantCulture), s.GuardWindowDays, asOf)
+            : null;
+
     private IQueryable<Strategy> SystemStrategies() => db.Strategies.AsNoTracking().Where(s => s.OwnerUserId == null && s.Status != StrategyStatus.Retired);
 
     private async Task<Strategy?> FindAsync(string idOrCode, CancellationToken cancellationToken) =>
@@ -223,7 +233,7 @@ public sealed class StrategyCatalog(StrategiesDbContext db, IStrategySignalFeed 
         }
 
         return new StrategySummaryDto(
-            s.Id, s.Code, s.Name, s.Description, s.Status, s.DisplayOrder, version?.VersionNumber ?? 0, s.LiveSince, Live(s), metrics, sparkline, run?.PeriodStart, run?.PeriodEnd);
+            s.Id, s.Code, s.Name, s.Description, s.Status, s.DisplayOrder, version?.VersionNumber ?? 0, s.LiveSince, Live(s), metrics, sparkline, run?.PeriodStart, run?.PeriodEnd, Guard(s));
     }
 
     private static LiveResultsDto? Live(Strategy s)

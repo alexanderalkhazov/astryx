@@ -1794,6 +1794,15 @@ export interface components {
             /** Format: date-time */
             at: null | string;
         };
+        GuardDto: {
+            drawdown: string;
+            warnAt: string;
+            pauseAt: string;
+            /** Format: int32 */
+            windowDays: number;
+            /** Format: date */
+            asOf: string;
+        };
         HttpValidationProblemDetails: {
             type?: null | string;
             title?: null | string;
@@ -2506,6 +2515,7 @@ export interface components {
             backtestStart: null | string;
             /** Format: date */
             backtestEnd: null | string;
+            guard: null | components["schemas"]["GuardDto"];
         };
         SuggestedLevelsDto: {
             justified: boolean;

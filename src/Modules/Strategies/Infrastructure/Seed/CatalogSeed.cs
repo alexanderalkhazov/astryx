@@ -75,6 +75,22 @@ public static class CatalogSeed
         return statements;
     }
 
+    /// <summary>The illustrative live paper track per strategy (T-097), for the <c>DrawdownGuard</c> migration.</summary>
+    public static IReadOnlyList<string> LivePointStatements()
+    {
+        using var stream = typeof(CatalogSeed).Assembly.GetManifestResourceStream(Resource)
+            ?? throw new InvalidOperationException($"Embedded resource {Resource} is missing.");
+        var statements = new List<string>();
+        foreach (var node in JsonNode.Parse(stream)!["strategies"]!.AsArray())
+        {
+            var strategyId = StrategyId((string)node!["code"]!);
+            var values = node["livePoints"]!.AsArray().Select(p => $"('{strategyId}', '{(string)p![0]!}', {(string)p[1]!})");
+            statements.Add($"INSERT INTO strategy.live_points (strategy_id, d, equity) VALUES {string.Join(", ", values)} ON CONFLICT DO NOTHING;");
+        }
+
+        return statements;
+    }
+
     /// <summary>A SQL string literal (single quotes doubled).</summary>
     private static string Text(string value) => $"'{value.Replace("'", "''", StringComparison.Ordinal)}'";
 
