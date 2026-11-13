@@ -19,6 +19,11 @@ public static class PaperModule
         services.AddScoped<PositionActions>();
         services.AddIntegrationEventHandler<Astryx.Contracts.Events.MarketData.QuotesUpdated, PositionMonitor>();
         services.AddJobHandler<DayOrderExpiryJob, DayOrderExpiryHandler>();
+        services.AddIntegrationEventHandler<Astryx.Contracts.Events.Paper.OrderAccepted, PaperRealtimeRelays>();
+        services.AddIntegrationEventHandler<Astryx.Contracts.Events.Paper.OrderFilled, PaperRealtimeRelays>();
+        services.AddIntegrationEventHandler<Astryx.Contracts.Events.Paper.OrderExpired, PaperRealtimeRelays>();
+        services.AddIntegrationEventHandler<Astryx.Contracts.Events.Paper.PositionOpened, PaperRealtimeRelays>();
+        services.AddIntegrationEventHandler<Astryx.Contracts.Events.Paper.PositionClosed, PaperRealtimeRelays>();
         services.AddRecurringJob("paper-day-order-expiry", TimeSpan.FromMinutes(1), _ => new DayOrderExpiryJob());
         services.AddScoped<Astryx.Contracts.Paper.IOpenOrders, OpenOrders>();
         return services;

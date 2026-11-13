@@ -122,3 +122,49 @@ describe('realtime', () => {
     expect(mockHub.start).toHaveBeenCalledTimes(3);
   });
 });
+
+describe('order and position events (T-089)', () => {
+  const { useToasts } = jest.requireActual('@/state/toasts') as typeof import('@/state/toasts');
+
+  beforeEach(() => {
+    jest.useFakeTimers({ doNotFake: ['setImmediate'] }); // toasts schedule their own dismissal
+    useToasts.setState({ toasts: [] });
+  });
+
+  afterEach(() => {
+    jest.clearAllTimers();
+    jest.useRealTimers();
+  });
+
+  it('refreshes money queries and toasts a simulated fill', async () => {
+    const queryClient = new QueryClient();
+    const invalidate = jest.spyOn(queryClient, 'invalidateQueries');
+    const { stop } = start(queryClient);
+    await flush();
+
+    mockHub.handlers['order.updated']!({ orderId: 'o1', proposalId: 'p1', symbol: 'NVDA', status: 'filled', purpose: 'entry', quantity: '64', price: '186.62' });
+
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['portfolio'] });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['proposal'] });
+    expect(useToasts.getState().toasts.at(-1)).toMatchObject({ tone: 'success', title: 'Filled (simulated)', body: 'Bought 64 NVDA at $186.62' });
+    stop();
+  });
+
+  it('toasts stop and target exits, flagging a gap below plan', async () => {
+    const { stop } = start();
+    await flush();
+
+    mockHub.handlers['position.updated']!({ positionId: 'x', symbol: 'NVDA', status: 'closed', exitReason: 'stop', price: '174.98', realizedPnl: '-744.96', gappedThroughStop: true });
+    expect(useToasts.getState().toasts.at(-1)).toMatchObject({ tone: 'warning', title: 'Stop hit · NVDA' });
+    expect(useToasts.getState().toasts.at(-1)!.body).toContain('Stop filled below plan (gap).');
+
+    mockHub.handlers['position.updated']!({ positionId: 'y', symbol: 'NVDA', status: 'closed', exitReason: 'target', price: '204.00', realizedPnl: '1112.32', gappedThroughStop: false });
+    expect(useToasts.getState().toasts.at(-1)).toMatchObject({ tone: 'success', title: 'Target hit · NVDA' });
+
+    const before = useToasts.getState().toasts.length;
+    mockHub.handlers['position.updated']!({ positionId: 'z', symbol: 'NVDA', status: 'open', exitReason: null, price: '186.62', realizedPnl: null, gappedThroughStop: false });
+    mockHub.handlers['order.updated']!({ orderId: 'o2', proposalId: null, symbol: 'NVDA', status: 'filled', purpose: 'entry', quantity: null, price: null }); // the accepted echo: no toast
+    expect(useToasts.getState().toasts.length).toBe(before);
+    stop();
+  });
+});

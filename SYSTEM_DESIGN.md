@@ -1553,6 +1553,15 @@ SignalR is an optimisation; every state is also reachable by polling REST (clien
 - `useRealtimeConnection()` is mounted by the `(app)` layout.
 - Verified on 2026-11-12 against the docker stack over WebSockets with `skipNegotiation`.
 
+**Implemented (T-089).**
+
+- `PaperRealtimeRelays` relays `OrderAccepted`, `OrderFilled` and `OrderExpired` as `order.updated` with `{orderId, proposalId, symbol, status, purpose, quantity, price}`. It relays `PositionOpened` and `PositionClosed` as `position.updated` with `{positionId, symbol, status, exitReason, price, realizedPnl, gappedThroughStop}`.
+- **Mobile:** both events invalidate the proposal, portfolio, positions and activity queries, and a reconnect does the same. Toasts:
+  - "Filled (simulated) · Bought N SYM at $X" for an entry fill. The accepted echo has no price and shows no toast.
+  - "Stop hit · SYM" with the exit price and P&L, adding "Stop filled below plan (gap)." when gapped.
+  - "Target hit · SYM".
+  - "Order expired · SYM".
+
 
 
 ### 9.7 Configuration
