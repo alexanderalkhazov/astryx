@@ -434,7 +434,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Story:** As a user, opening the app shows me what my portfolio did and what needs my attention.
   - **Acceptance:** design 01: hero (value, day P&L, all time), performance chart with timeframes and S&P 500 overlay, scrub readout, Cash/Invested/Unrealized, Needs attention (deep-links two levels), Top opportunities carousel (snap 246), market breadth (M11), open positions, strategy MTD. Pull to refresh (`POST /portfolio/sync`, toast "Synced HH:MM ET").
   - **Refs:** §8.4.1 · **Depends:** T-091, T-067 · **P0**
-- [ ] **T-095** Activity feed and notifications
+- [x] **T-095** Activity feed and notifications
   - **Story:** As a user, every fill, alert, strategy event and system issue is in one timeline that links to its source.
   - **Acceptance:** `notify.*` migrations. Outbox handlers create notifications with `deep_link` and dedupe keys. N1–N3 and N6. Activity screen (design 17): filter chips, pending orders (dashed empty card), dated timeline, system status, cancel working order dialog. The bell shows an unread dot.
   - **Refs:** §7.15, §8.4.10, §11.10 · **Depends:** T-089 · **P0**
