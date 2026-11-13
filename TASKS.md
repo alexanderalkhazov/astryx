@@ -371,7 +371,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Story:** As a user, I want approval to be deliberate and impossible to trigger by accident, and to get a clear receipt.
   - **Acceptance:** `HoldToConfirm` (1200 ms linear fill, release resets, success haptic, keyboard Enter/Space, VoiceOver action plus second confirm). `ConfirmOrderSheet` repeats every field (design 07). One Idempotency-Key per sheet session. The sheet is locked while sending. `FillReceiptSheet` (design 08) shows the executed banner, order ID, slippage, OCO and commission, or the "Order working · not filled" variant. Errors unlock the sheet and show a reason toast. RNTL tests: 1199 ms does not fire, 1200 ms fires exactly once.
   - **Refs:** §8.4.5 · **Depends:** T-087, T-084 · **P0**
-- [ ] **T-089** Order and position real-time events
+- [x] **T-089** Order and position real-time events
   - **Acceptance:** `order.updated` and `position.updated` SignalR events invalidate proposal, portfolio, positions and activity queries. Fill and stop/target toasts appear.
   - **Refs:** §9.6 · **Depends:** T-088, T-074 · **P0**
 
