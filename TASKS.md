@@ -449,7 +449,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Story:** As a user, I want to see my paper connection and permissions, adjust risk limits and scanner settings, and understand that live trading is unavailable.
   - **Acceptance:** design 18: eToro connection card (from T-141: "eToro · paper account", masked key, sync time, permissions incl. "Deposits & withdrawals — Never requested"; "Connect eToro" when not connected), Paper/Live segmented with the guard dialog (design 25) ending in "Live trading isn't available yet" (server 403), risk limit steppers with bounds, scanner universe and filters, watchlist link, notification toggles, security (sign out, sign out of all devices, change password), and prototype controls in dev builds only.
   - **Refs:** §8.4.11, §17.3 · **Depends:** T-023, T-095 · **P0**
-- [ ] **T-099** Paper account reset
+- [x] **T-099** Paper account reset
   - **Acceptance:** P11 with the `RESET` confirmation, close at last price, cancel orders, `reset_close`/`reset_deposit` entries and a new performance epoch. **PAPER-08 passes.** A PROPOSED confirmation dialog in Settings.
   - **Refs:** §11.8 · **Depends:** T-086, T-098 · **P1**
 - [ ] **T-100** Reconciliation job
