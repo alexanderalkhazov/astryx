@@ -442,7 +442,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Story:** As a user, I want to inspect the strategy that generated a trade, including its backtest and out-of-sample results.
   - **Acceptance:** seeded backtest runs. ST1–ST5. Strategy lab list and Compare (designs 13 and 14). Strategy detail tabs Overview, Backtest (OOS band, drawdown, 8 metrics, IS vs OOS, monthly heatmap — design 11) and Configure as a read-only "Coming soon" state (design 12). Copy states that backtests are historical and illustrative.
   - **Refs:** §8.4.8–8.4.9 · **Depends:** T-063, T-048 · **P0**
-- [ ] **T-097** Drawdown guard
+- [x] **T-097** Drawdown guard
   - **Acceptance:** a rolling 30-day drawdown of each strategy's live paper results. Warn at 90% of the threshold, auto-pause signals at −6.0% (`active_guarded` / `paused`). An Activity "Strategy" event is emitted.
   - **Refs:** §7.8 · **Depends:** T-096, T-095 · **P1**
 - [ ] **T-098** Settings screen
