@@ -45,7 +45,7 @@ export interface PositionUpdatedMessage {
 }
 
 /** Queries that money movements change; refetched on every order or position event. */
-export const MONEY_QUERY_KEYS = [['portfolio'], ['positions'], ['activity'], ['proposal']] as const;
+export const MONEY_QUERY_KEYS = [['portfolio'], ['positions'], ['notifications'], ['proposal']] as const;
 
 /** Whether the socket is up. Pollers slow down while it is, and take over when it isn't. */
 export const useRealtime = create<{ connected: boolean }>(() => ({ connected: false }));
@@ -104,6 +104,7 @@ export function startRealtime({ baseUrl, getAccessToken, queryClient }: Realtime
   connection.on('analysis.updated', (message: AnalysisUpdatedMessage) => handleAnalysisUpdated(queryClient, message));
   connection.on('order.updated', (message: OrderUpdatedMessage) => handleOrderUpdated(queryClient, message));
   connection.on('position.updated', (message: PositionUpdatedMessage) => handlePositionUpdated(queryClient, message));
+  connection.on('activity.created', () => void queryClient.invalidateQueries({ queryKey: ['notifications'] }));
   connection.onreconnecting(() => setConnected(false));
   connection.onreconnected(() => {
     setConnected(true);

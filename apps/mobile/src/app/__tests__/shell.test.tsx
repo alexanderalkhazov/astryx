@@ -96,7 +96,7 @@ describe('app shell', () => {
     await fireEvent.press(screen.getByRole('button', { name: /^Alerts/ }));
 
     await waitFor(() => expect(screen).toHavePathname('/activity'));
-    expect(screen.getByText('filter=alerts')).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: /^Alerts/, selected: true })).toBeOnTheScreen();
   });
 
   it('switches between all five tabs, with the PAPER chip on Portfolio', async () => {

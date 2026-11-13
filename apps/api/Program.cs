@@ -15,6 +15,7 @@ using Astryx.Modules.MarketData;
 using Astryx.Modules.MarketData.Api;
 using Astryx.Modules.MarketData.Application.Market;
 using Astryx.Modules.Notifications;
+using Astryx.Modules.Notifications.Api;
 using Astryx.Modules.Paper;
 using Astryx.Modules.Paper.Api;
 using Astryx.Modules.Portfolio;
@@ -163,6 +164,7 @@ app.MapProposalEndpoints();
 app.MapPaperOrderEndpoints();
 app.MapPositionEndpoints();
 app.MapPortfolioEndpoints();
+app.MapNotificationEndpoints();
 app.MapRealtime();
 
 if (DevEndpoints.IsEnabled(app.Environment, app.Configuration))

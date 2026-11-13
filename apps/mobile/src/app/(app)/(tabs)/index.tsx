@@ -14,7 +14,7 @@ import { Segmented } from '@/components/Segmented';
 import { HomeHeader, Screen } from '@/components/Shell';
 import { Text } from '@/components/Text';
 import { ConnectionBanner } from '@/features/connection/ConnectionBanner';
-import { market, portfolio, scanner } from '@/lib/api';
+import { market, notifications, portfolio, scanner } from '@/lib/api';
 import { formatEtTime, formatMoney, formatPct, formatPnl, formatPrice, formatRatio } from '@/lib/format';
 import { toast } from '@/state/toasts';
 
@@ -45,6 +45,7 @@ export default function HomeScreen() {
   const positions = useQuery({ queryKey: ['positions', 'open'], queryFn: async () => (await portfolio.positions('open')).data });
   const opportunities = useQuery({ queryKey: ['signals', 'home'], queryFn: async () => (await scanner.list({ sort: 'score' }, { limit: 8 })).data.items, retry: false });
   const breadth = useQuery({ queryKey: ['market', 'breadth'], queryFn: async () => (await market.breadth()).data, retry: false });
+  const unread = useQuery({ queryKey: ['notifications', 'unread'], queryFn: async () => (await notifications.list('all')).data.unreadCount, retry: false });
   const strategies = useQuery({ queryKey: ['portfolio', 'strategies-mtd'], queryFn: async () => (await portfolio.strategyMtd()).data.items, retry: false });
 
   const refresh = async () => {
@@ -73,7 +74,7 @@ export default function HomeScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void refresh()} tintColor={color.text3} />}
         testID="home-scroll"
       >
-        <HomeHeader unreadAlerts={(attention.data?.length ?? 0) > 0} />
+        <HomeHeader unreadAlerts={(unread.data ?? 0) > 0 || (attention.data?.length ?? 0) > 0} />
         <ConnectionBanner />
 
         {s ? (

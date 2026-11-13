@@ -1280,6 +1280,27 @@ Implementation (T-049):
 | APIs | `GET /notifications?category=&cursor=`, `GET /paper/orders?status=working`, `POST /paper/orders/{id}/cancel`, `GET /system/status` |
 | Actions | Tap event → its `deepLink`; cancel working order (dialog) |
 
+**Implemented (T-095).**
+
+- **Feed rows:** `notify.notifications` follows §10.4. `NotificationWriter` turns outbox events into feed rows, inserted with `ON CONFLICT (user_id, dedupe_key) DO NOTHING` so a redelivery creates nothing new (IDEM-06):
+  - entry fills: "Filled (simulated) · SYM", linking to `/position/SYM`;
+  - `PositionClosed`: "Stop hit" / "Target hit" / "Position closed", with the P&L and "Stop filled below plan (gap)." when gapped;
+  - expired orders, linking to `/activity`;
+  - stop proximity: alerts, deduplicated once per position per day;
+  - AI analysis ready or failed, linking to `/stock/SYM?tab=signal`.
+  - Each new row is pushed as `activity.created`.
+- **N1–N3:** a category filter, `unreadOnly`, a cursor and `unreadCount`; idempotent mark-read; and read-all, optionally per category. Another user's notification is 404.
+- `NOT IMPLEMENTED` yet:
+  - "New signal" items. Signals are global, so a per-user fan-out (for example, watchlist only) needs a decision.
+  - Push devices (N4/N5).
+- **Screen** (`(tabs)/activity.tsx`, design 17):
+  - filter chips, honouring `?filter=alerts` from the bell;
+  - **Pending orders** (working entry orders, with the cancel dialog through T9), or the dashed empty card;
+  - a dated timeline ("Today · Nov 9") where unread items are emphasised and tapping marks read and follows the deep link;
+  - "Mark all read";
+  - system status for the data feed, scanner, AI model and broker.
+- The Home bell shows its dot when there are unread notifications or attention items. `activity.created`, `order.updated` and `position.updated` refresh the feed.
+
 #### 8.4.11 Settings (`settings`) — design 18, 25
 
 | Section | Content | Behaviour |

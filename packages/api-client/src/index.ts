@@ -59,3 +59,4 @@ export { AnalysisJob, AnalysisJobStatus, AnalysisPage, AnalysisResult, AnalysisS
 export { CheckStatus as ProposalCheckStatus, Proposal, RiskAssessment, RiskCheck, RISK_CHOICES, proposalsApi } from './proposals';
 export { PaperOrder, paperApi } from './paper';
 export { Allocation, AttentionItem, ClosedTrade, ClosePreview, Exposure, PositionDetail, Performance, type PerformanceRange, PortfolioPosition, PortfolioSummary, portfolioApi } from './portfolio';
+export { ActivityItem, ActivityPage, NotificationCategory, notificationsApi } from './notifications';

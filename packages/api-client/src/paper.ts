@@ -32,5 +32,8 @@ export function paperApi(client: ApiClient) {
   return {
     place: (input: { proposalId: string; assessmentId: string }, idempotencyKey: string) =>
       client.request('/api/v1/paper/orders', { method: 'POST', body: input, idempotencyKey, schema: PaperOrder }),
+    working: () => client.request('/api/v1/paper/orders?status=working', { schema: z.object({ items: z.array(PaperOrder) }) }),
+    cancel: (orderId: string, idempotencyKey: string) =>
+      client.request(`/api/v1/paper/orders/${encodeURIComponent(orderId)}/cancel`, { method: 'POST', body: {}, idempotencyKey, schema: PaperOrder }),
   };
 }
