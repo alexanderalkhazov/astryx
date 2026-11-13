@@ -3390,6 +3390,21 @@ All-time              = E_now − starting_cash − (reset adjustments)
 
 Slippage is embedded in the fill prices (and also reported separately on the fill). Fees are separate ledger entries.
 
+**Implemented (T-090).**
+
+- `ValuationService` (Portfolio) values a portfolio at the latest quotes:
+  - equity = cash + Σ qty × last, and invested and unrealized P&L the same way;
+  - day P&L against `start_of_day_equity`, and all-time against starting cash;
+  - `halted` when day P&L ≤ −the daily loss halt;
+  - `stale` when the feed is stale or an open position has no quote.
+- **P1** (`GET /portfolio`) also returns `cashAvailable` (cash − reserved) and the cumulative realized P&L.
+- **P2** rows carry market value, unrealized P&L and %, weight against the cap and `overCap` (flagged, never auto-sold), stop distance and `nearStop` (≤ 1.5%), and `isNew` until `seen_at`. Closed rows carry the exit.
+- **P5:** 1D and 1W use hourly snapshots; longer ranges use EOD snapshots. The live valuation is appended as the last point. SPY's close is rebased to the first equity value.
+  - Metrics: TWR from EOD snapshots plus the live point, the benchmark's change, max drawdown over the series, and win rate / average win / average loss / count from positions closed in the range.
+- **P6** lists closed positions with return % and holding days.
+- `PortfolioSnapshotJob` runs every 15 minutes. It writes each session hour's snapshot once (slot = top of the hour) and the EOD snapshot once after the close (slot = the close). The primary key with `ON CONFLICT DO NOTHING` makes both idempotent.
+- `PerformanceMath` holds the pure, decimal-only TWR, drawdown, trade-stats and rebasing functions.
+
 ### 15.7 Fees and slippage assumptions
 
 | Parameter | Default | Status |

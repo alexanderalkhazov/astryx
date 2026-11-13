@@ -325,6 +325,14 @@
           "Astryx.SharedKernel": "[1.0.0, )"
         }
       },
+      "astryx.modules.portfolio": {
+        "type": "Project",
+        "dependencies": {
+          "Astryx.Contracts": "[1.0.0, )",
+          "Astryx.Infrastructure": "[1.0.0, )",
+          "Astryx.SharedKernel": "[1.0.0, )"
+        }
+      },
       "astryx.modules.quant": {
         "type": "Project",
         "dependencies": {

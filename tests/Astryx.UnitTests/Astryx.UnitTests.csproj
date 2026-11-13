@@ -25,5 +25,6 @@
     <ProjectReference Include="../../tools/Astryx.AiEval/Astryx.AiEval.csproj" />
     <ProjectReference Include="../../src/Modules/Trading/Astryx.Modules.Trading.csproj" />
     <ProjectReference Include="../../src/Modules/Paper/Astryx.Modules.Paper.csproj" />
+    <ProjectReference Include="../../src/Modules/Portfolio/Astryx.Modules.Portfolio.csproj" />
   </ItemGroup>
 </Project>

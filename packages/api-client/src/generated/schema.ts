@@ -1167,6 +1167,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/portfolio": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetPortfolio"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/portfolio/positions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListPortfolioPositions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/portfolio/performance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetPortfolioPerformance"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/portfolio/trades": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListClosedTrades"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1399,6 +1463,32 @@ export interface components {
             /** Format: date-time */
             asOf: string;
         };
+        ClosedTradeDto: {
+            /** Format: uuid */
+            positionId: string;
+            symbol: string;
+            /** Format: decimal */
+            quantity: string;
+            /** Format: decimal */
+            entryPrice: string;
+            /** Format: decimal */
+            exitPrice: string;
+            exitReason: string;
+            /** Format: decimal */
+            realizedPnl: string;
+            /** Format: decimal */
+            returnPct: string;
+            /** Format: date-time */
+            openedAt: string;
+            /** Format: date-time */
+            closedAt: string;
+            /** Format: int32 */
+            holdingDays: number;
+        };
+        ClosedTradePageDto: {
+            items: components["schemas"]["ClosedTradeDto"][];
+            nextCursor: null | string;
+        };
         ConfidenceDto: {
             /** Format: decimal */
             value: string;
@@ -1627,11 +1717,73 @@ export interface components {
             step: null | components["schemas"]["JsonNode"];
             value: null | components["schemas"]["JsonNode"];
         };
+        PerformanceDto: {
+            range: string;
+            benchmark: string;
+            series: components["schemas"]["PerformancePointDto"][];
+            metrics: components["schemas"]["PerformanceMetricsDto"];
+        };
+        PerformanceMetricsDto: {
+            /** Format: decimal */
+            twrPct: null | string;
+            /** Format: decimal */
+            benchmarkPct: null | string;
+            /** Format: decimal */
+            maxDrawdownPct: string;
+            /** Format: decimal */
+            winRate: null | string;
+            /** Format: decimal */
+            avgWin: null | string;
+            /** Format: decimal */
+            avgLoss: null | string;
+            /** Format: int32 */
+            trades: number;
+        };
+        PerformancePointDto: {
+            /** Format: date-time */
+            t: string;
+            /** Format: decimal */
+            equity: string;
+            /** Format: decimal */
+            benchmark: null | string;
+        };
         PlaceOrderRequest: {
             /** Format: uuid */
             proposalId: string;
             /** Format: uuid */
             assessmentId: string;
+        };
+        PortfolioDto: {
+            /** Format: uuid */
+            id: string;
+            mode: string;
+            currency: string;
+            /** Format: decimal */
+            equity: string;
+            /** Format: decimal */
+            cash: string;
+            /** Format: decimal */
+            cashAvailable: string;
+            /** Format: decimal */
+            invested: string;
+            /** Format: decimal */
+            unrealizedPnl: string;
+            /** Format: decimal */
+            dayPnl: string;
+            /** Format: decimal */
+            dayPnlPct: null | string;
+            /** Format: decimal */
+            allTimePnl: string;
+            /** Format: decimal */
+            allTimeReturnPct: string;
+            /** Format: decimal */
+            realizedPnl: string;
+            /** Format: int32 */
+            openPositions: number;
+            halted: boolean;
+            /** Format: date-time */
+            asOf: string;
+            stale: boolean;
         };
         PositionDto: {
             /** Format: uuid */
@@ -1649,6 +1801,10 @@ export interface components {
             realizedPnl: null | string;
             /** Format: date-time */
             closedAt: null | string;
+        };
+        PositionPageDto: {
+            items: components["schemas"]["PositionDto"][];
+            nextCursor: null | string;
         };
         PriceZoneDto: {
             low: null | string;
@@ -3971,6 +4127,113 @@ export interface operations {
                 };
                 content: {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    GetPortfolio: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortfolioDto"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    ListPortfolioPositions: {
+        parameters: {
+            query?: {
+                status?: string;
+                limit?: null | number;
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PositionPageDto"];
+                };
+            };
+        };
+    };
+    GetPortfolioPerformance: {
+        parameters: {
+            query?: {
+                range?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PerformanceDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    ListClosedTrades: {
+        parameters: {
+            query?: {
+                limit?: null | number;
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClosedTradePageDto"];
                 };
             };
         };

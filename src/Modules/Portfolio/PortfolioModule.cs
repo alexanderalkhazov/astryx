@@ -20,6 +20,9 @@ public static class PortfolioModule
         services.AddScoped<Astryx.Contracts.Portfolio.IPortfolioDirectory, PortfolioDirectory>();
         services.AddScoped<Astryx.Contracts.Portfolio.IPortfolioStateSource, PortfolioStateSource>();
         services.AddScoped<Astryx.Contracts.Portfolio.IPositionBook, PositionBook>();
+        services.AddScoped<ValuationService>();
+        services.AddJobHandler<PortfolioSnapshotJob, PortfolioSnapshotHandler>();
+        services.AddRecurringJob("portfolio-snapshot", TimeSpan.FromMinutes(15), _ => new PortfolioSnapshotJob());
         services.AddJobHandler<StartOfDayJob, StartOfDayHandler>();
         services.AddRecurringJob("portfolio-start-of-day", TimeSpan.FromMinutes(5), _ => new StartOfDayJob());
         return services;

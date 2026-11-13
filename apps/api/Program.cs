@@ -18,6 +18,7 @@ using Astryx.Modules.Notifications;
 using Astryx.Modules.Paper;
 using Astryx.Modules.Paper.Api;
 using Astryx.Modules.Portfolio;
+using Astryx.Modules.Portfolio.Api;
 using Astryx.Modules.Profiles;
 using Astryx.Modules.Profiles.Api;
 using Astryx.Modules.Quant;
@@ -161,6 +162,7 @@ app.MapAnalysisEndpoints();
 app.MapProposalEndpoints();
 app.MapPaperOrderEndpoints();
 app.MapPositionEndpoints();
+app.MapPortfolioEndpoints();
 app.MapRealtime();
 
 if (DevEndpoints.IsEnabled(app.Environment, app.Configuration))

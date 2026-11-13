@@ -2853,6 +2853,162 @@
           }
         }
       }
+    },
+    "/api/v1/portfolio": {
+      "get": {
+        "tags": [
+          "Portfolio"
+        ],
+        "operationId": "GetPortfolio",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortfolioDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/portfolio/positions": {
+      "get": {
+        "tags": [
+          "Portfolio"
+        ],
+        "operationId": "ListPortfolioPositions",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": [
+                "null",
+                "integer"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PositionPageDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/portfolio/performance": {
+      "get": {
+        "tags": [
+          "Portfolio"
+        ],
+        "operationId": "GetPortfolioPerformance",
+        "parameters": [
+          {
+            "name": "range",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PerformanceDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/portfolio/trades": {
+      "get": {
+        "tags": [
+          "Portfolio"
+        ],
+        "operationId": "ListClosedTrades",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": [
+                "null",
+                "integer"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClosedTradePageDto"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -3698,6 +3854,94 @@
           "asOf": {
             "type": "string",
             "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClosedTradeDto": {
+        "required": [
+          "positionId",
+          "symbol",
+          "quantity",
+          "entryPrice",
+          "exitPrice",
+          "exitReason",
+          "realizedPnl",
+          "returnPct",
+          "openedAt",
+          "closedAt",
+          "holdingDays"
+        ],
+        "type": "object",
+        "properties": {
+          "positionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "symbol": {
+            "type": "string"
+          },
+          "quantity": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "entryPrice": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "exitPrice": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "exitReason": {
+            "type": "string"
+          },
+          "realizedPnl": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "returnPct": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "openedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "closedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "holdingDays": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClosedTradePageDto": {
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClosedTradeDto"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         },
         "additionalProperties": false
@@ -4652,6 +4896,125 @@
         },
         "additionalProperties": false
       },
+      "PerformanceDto": {
+        "required": [
+          "range",
+          "benchmark",
+          "series",
+          "metrics"
+        ],
+        "type": "object",
+        "properties": {
+          "range": {
+            "type": "string"
+          },
+          "benchmark": {
+            "type": "string"
+          },
+          "series": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PerformancePointDto"
+            }
+          },
+          "metrics": {
+            "$ref": "#/components/schemas/PerformanceMetricsDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PerformanceMetricsDto": {
+        "required": [
+          "twrPct",
+          "benchmarkPct",
+          "maxDrawdownPct",
+          "winRate",
+          "avgWin",
+          "avgLoss",
+          "trades"
+        ],
+        "type": "object",
+        "properties": {
+          "twrPct": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "decimal"
+          },
+          "benchmarkPct": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "decimal"
+          },
+          "maxDrawdownPct": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "winRate": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "decimal"
+          },
+          "avgWin": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "decimal"
+          },
+          "avgLoss": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "decimal"
+          },
+          "trades": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PerformancePointDto": {
+        "required": [
+          "t",
+          "equity",
+          "benchmark"
+        ],
+        "type": "object",
+        "properties": {
+          "t": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "equity": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "benchmark": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "decimal"
+          }
+        },
+        "additionalProperties": false
+      },
       "PlaceOrderRequest": {
         "required": [
           "proposalId",
@@ -4666,6 +5029,108 @@
           "assessmentId": {
             "type": "string",
             "format": "uuid"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PortfolioDto": {
+        "required": [
+          "id",
+          "mode",
+          "currency",
+          "equity",
+          "cash",
+          "cashAvailable",
+          "invested",
+          "unrealizedPnl",
+          "dayPnl",
+          "dayPnlPct",
+          "allTimePnl",
+          "allTimeReturnPct",
+          "realizedPnl",
+          "openPositions",
+          "halted",
+          "asOf",
+          "stale"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "mode": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "equity": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "cash": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "cashAvailable": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "invested": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "unrealizedPnl": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "dayPnl": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "dayPnlPct": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "decimal"
+          },
+          "allTimePnl": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "allTimeReturnPct": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "realizedPnl": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "openPositions": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "halted": {
+            "type": "boolean"
+          },
+          "asOf": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "stale": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -4732,6 +5197,28 @@
               "string"
             ],
             "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PositionPageDto": {
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PositionDto"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         },
         "additionalProperties": false
@@ -6599,6 +7086,9 @@
     },
     {
       "name": "Positions"
+    },
+    {
+      "name": "Portfolio"
     }
   ]
 }
