@@ -26,6 +26,7 @@ public static class NotificationsModule
         services.AddIntegrationEventHandler<StopProximityReached, NotificationWriter>();
         services.AddIntegrationEventHandler<AnalysisUpdated, NotificationWriter>();
         services.AddIntegrationEventHandler<Astryx.Contracts.Events.Strategies.StrategyGuardChanged, NotificationWriter>();
+        services.AddIntegrationEventHandler<Astryx.Contracts.Events.Paper.PaperAccountReset, NotificationWriter>();
         return services;
     }
 }

@@ -2741,7 +2741,27 @@ Clients poll AI2 with `pollAfterMs` (2 s, growing to 5 s, give up after 120 s wi
 | P8 | `GET /portfolio/exposure` | `200 {grossPct, betaWeightedPct?, openRiskToStops, concentrationWarnings[]}` | `betaWeightedPct` is null when beta is missing |
 | P9 | `GET /portfolio/attention` | `200 {items: AttentionItemDto[]}` | Pending proposals, stop proximity, working orders, halted state |
 | P10 | `POST /portfolio/sync` | `202 {asOf}` | Paper: re-values using fresh quotes. Future broker: reconcile. Rate limit 1 per 10 s |
-| P11 | `POST /portfolio/reset` + `Idempotency-Key` | `200 PortfolioDto` | Body `{confirm:"RESET"}`. Closes all positions at the last price (`exit_reason=reset`), cancels working orders, books `reset_close` + `reset_deposit`. 409 `market_closed` is not applied |
+| P11 | `POST /portfolio/reset` + `Idempotency-Key` | `200 PaperResetDto` (T-099) | Body `{confirm:"RESET"}`. Closes all positions at the last price (`exit_reason=reset`), cancels working orders, books `reset_close` + `reset_deposit`. 409 `market_closed` is not applied |
+
+**Implemented (T-099): P11 paper account reset.**
+
+- **Where:** `PaperResetService` (Paper) runs in one `ModuleUnitOfWork` and sits behind the Idempotency-Key filter, so a replay returns the first response and resets once.
+- **Confirmation:** anything other than `confirm:"RESET"` is 422.
+- **Steps:**
+  1. Lock the portfolio.
+  2. Cancel every working or accepted order, both entries and stop/target legs, and release `reserved_cash`.
+  3. Close every open position at the quote's `last` (at cost if there is no quote): no fee or slippage, `exit_reason=reset`, booked as `reset_close` (qty × last).
+  4. `IPortfolioEpochs.ResetAsync` (Portfolio):
+     - posts `reset_deposit` = starting cash − cash (signed; none when already equal);
+     - zeroes `realized_pnl`;
+     - sets start-of-day equity to the starting cash, so the daily halt is clear;
+     - increments `reset_count` and sets `epoch_started_at`.
+- **Market hours:** the reset works with the market closed.
+- **Response:** `PaperResetDto {portfolioId, cashBalance, startingCash, closedPositions, cancelledOrders, resetCount, epochStartedAt}`. The client reloads P1.
+- **New epoch:** `portfolio.portfolios.epoch_started_at` (backfilled from `created_at`). P5 (series, TWR, drawdown, trade stats) and P10 (trades) read snapshots from the epoch start and positions closed after it. Positions closed by a reset belong to the epoch that ended.
+- **Event and audit:** `PaperAccountReset` becomes a System Activity item "Paper account reset" (linking to `/portfolio`), and `paper.account_reset` is audited.
+- **Settings › Paper account:** the PROPOSED dialog: type RESET, one idempotency key per opened dialog, then the money queries refresh.
+
 
 ```json
 // P1 PortfolioDto

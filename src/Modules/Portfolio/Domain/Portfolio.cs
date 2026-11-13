@@ -36,6 +36,9 @@ public sealed class Portfolio : IUserOwned
 
     public int ResetCount { get; set; }
 
+    /// <summary>Performance (P5), trade history and snapshots count from here; a reset starts a new epoch (§15.6).</summary>
+    public DateTimeOffset EpochStartedAt { get; set; }
+
     public long Version { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; }

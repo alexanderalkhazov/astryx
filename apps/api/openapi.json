@@ -198,6 +198,66 @@
         }
       }
     },
+    "/api/v1/portfolio/reset": {
+      "post": {
+        "tags": [
+          "Portfolio"
+        ],
+        "operationId": "ResetPaperAccount",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPaperAccountRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaperResetDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/auth/register": {
       "post": {
         "tags": [
@@ -5679,6 +5739,51 @@
         },
         "additionalProperties": false
       },
+      "PaperResetDto": {
+        "required": [
+          "portfolioId",
+          "cashBalance",
+          "startingCash",
+          "closedPositions",
+          "cancelledOrders",
+          "resetCount",
+          "epochStartedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "portfolioId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "cashBalance": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "startingCash": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "closedPositions": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "cancelledOrders": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "resetCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "epochStartedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
       "ParameterDto": {
         "required": [
           "key",
@@ -6728,6 +6833,21 @@
         "properties": {
           "email": {
             "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ResetPaperAccountRequest": {
+        "required": [
+          "confirm"
+        ],
+        "type": "object",
+        "properties": {
+          "confirm": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         },
         "additionalProperties": false
@@ -8277,6 +8397,9 @@
       "name": "Paper orders"
     },
     {
+      "name": "Portfolio"
+    },
+    {
       "name": "Authentication"
     },
     {
@@ -8296,9 +8419,6 @@
     },
     {
       "name": "Positions"
-    },
-    {
-      "name": "Portfolio"
     },
     {
       "name": "Notifications"

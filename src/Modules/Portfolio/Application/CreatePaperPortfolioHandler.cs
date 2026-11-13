@@ -36,6 +36,7 @@ public sealed class CreatePaperPortfolioHandler(PortfolioDbContext db, IConfigur
             Version = 1,
             CreatedAt = now,
             UpdatedAt = now,
+            EpochStartedAt = now,
         };
         db.Portfolios.Add(portfolio);
         db.Transactions.Add(new LedgerTransaction

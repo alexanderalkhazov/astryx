@@ -58,7 +58,7 @@ export async function getSystemStatus(baseUrl: string, signal?: AbortSignal): Pr
 export { AnalysisJob, AnalysisJobStatus, AnalysisPage, AnalysisResult, AnalysisSummary, analysesApi } from './analyses';
 export { CheckStatus as ProposalCheckStatus, Proposal, RiskAssessment, RiskCheck, RISK_CHOICES, proposalsApi } from './proposals';
 export { PaperOrder, paperApi } from './paper';
-export { Allocation, AttentionItem, ClosedTrade, ClosePreview, Exposure, PositionDetail, Performance, type PerformanceRange, PortfolioPosition, PortfolioSummary, portfolioApi } from './portfolio';
+export { Allocation, AttentionItem, ClosedTrade, ClosePreview, Exposure, PaperReset, PositionDetail, Performance, type PerformanceRange, PortfolioPosition, PortfolioSummary, portfolioApi } from './portfolio';
 export { ActivityItem, ActivityPage, NotificationCategory, notificationsApi } from './notifications';
 export { BacktestRun, FullMetrics, HeadlineMetrics, RunMetrics, StrategyComparison, StrategyDetail, StrategyParameter, StrategyStatus, StrategySummary, strategiesApi } from './strategies';
 export { DevFaults, NotificationPreferences, RiskSettings, type RiskSettingsUpdate, riskSettingsETag, ScannerSettings, settingsApi } from './settings';

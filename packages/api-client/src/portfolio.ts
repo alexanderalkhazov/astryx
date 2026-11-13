@@ -142,7 +142,19 @@ export type ClosePreview = z.infer<typeof ClosePreview>;
 
 export type PerformanceRange = '1D' | '1W' | '1M' | '3M' | '1Y' | 'ALL';
 
-/** Portfolio P1, P2 and P5–P9. */
+/** P11 response: what a paper reset did. */
+export const PaperReset = z.object({
+  portfolioId: z.string(),
+  cashBalance: Decimal,
+  startingCash: Decimal,
+  closedPositions: z.number().int(),
+  cancelledOrders: z.number().int(),
+  resetCount: z.number().int(),
+  epochStartedAt: z.string(),
+});
+export type PaperReset = z.infer<typeof PaperReset>;
+
+/** Portfolio P1, P2, P5–P9 and P11. */
 export function portfolioApi(client: ApiClient) {
   return {
     summary: () => client.request('/api/v1/portfolio', { schema: PortfolioSummary }),
@@ -160,6 +172,8 @@ export function portfolioApi(client: ApiClient) {
     closePreview: (positionId: string) => client.request(`/api/v1/positions/${encodeURIComponent(positionId)}/close-preview`, { method: 'POST', schema: ClosePreview }),
     close: (positionId: string, idempotencyKey: string) =>
       client.request(`/api/v1/positions/${encodeURIComponent(positionId)}/close`, { method: 'POST', body: {}, idempotencyKey, schema: z.object({ position: z.object({ status: z.string(), realizedPnl: Decimal.nullable() }) }) }),
+    /** P11: closes everything at the last price and restores the starting cash. `confirm` must be RESET. */
+    reset: (idempotencyKey: string) => client.request('/api/v1/portfolio/reset', { method: 'POST', body: { confirm: 'RESET' }, idempotencyKey, schema: PaperReset }),
     attention: () => client.request('/api/v1/portfolio/attention', { schema: z.object({ items: z.array(AttentionItem) }) }),
   };
 }

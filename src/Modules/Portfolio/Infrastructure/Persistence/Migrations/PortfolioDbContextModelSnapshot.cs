@@ -138,6 +138,10 @@ namespace Astryx.Modules.Portfolio.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
+                    b.Property<DateTimeOffset>("EpochStartedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("epoch_started_at");
+
                     b.Property<string>("Mode")
                         .IsRequired()
                         .HasMaxLength(16)

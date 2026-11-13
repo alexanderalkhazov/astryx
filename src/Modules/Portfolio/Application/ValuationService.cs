@@ -150,7 +150,7 @@ public sealed class ValuationService(PortfolioDbContext db, ICurrentUser user, I
 
         var kind = r is "1D" or "1W" ? SnapshotKind.Hourly : SnapshotKind.Eod;
         var snapshots = await db.Snapshots.IgnoreQueryFilters().AsNoTracking()
-            .Where(s => s.PortfolioId == portfolio.Id && s.Kind == kind && (from == null || s.SnapshotAt >= from))
+            .Where(s => s.PortfolioId == portfolio.Id && s.Kind == kind && s.SnapshotAt >= portfolio.EpochStartedAt && (from == null || s.SnapshotAt >= from))
             .OrderBy(s => s.SnapshotAt).ToListAsync(cancellationToken);
         var current = (await ValueAsync(portfolio, cancellationToken)).Portfolio;
         var benchmarkNow = (await instruments.FindAsync(Benchmark, cancellationToken))?.Last;
@@ -159,13 +159,13 @@ public sealed class ValuationService(PortfolioDbContext db, ICurrentUser user, I
         var series = points.Select((p, i) => new PerformancePointDto(p.Item1, Money(p.Item2), rebased[i] is { } b ? Money(b) : null)).ToList();
 
         var eod = await db.Snapshots.IgnoreQueryFilters().AsNoTracking()
-            .Where(s => s.PortfolioId == portfolio.Id && s.Kind == SnapshotKind.Eod && (from == null || s.SnapshotAt >= from))
+            .Where(s => s.PortfolioId == portfolio.Id && s.Kind == SnapshotKind.Eod && s.SnapshotAt >= portfolio.EpochStartedAt && (from == null || s.SnapshotAt >= from))
             .OrderBy(s => s.SnapshotAt).Select(s => s.Equity).ToListAsync(cancellationToken);
         var twr = PerformanceMath.TimeWeightedReturn([.. eod, current.Equity]);
         var benchFirst = points.Select(p => p.Item3).FirstOrDefault(b => b is > 0);
         decimal? benchPct = benchFirst is { } bf && benchmarkNow is { } bn ? (bn / bf) - 1 : null;
         var closed = await db.Positions.IgnoreQueryFilters().AsNoTracking()
-            .Where(p => p.PortfolioId == portfolio.Id && p.Status == PositionStatus.Closed && (from == null || p.ClosedAt >= from) && p.RealizedPnl != null)
+            .Where(p => p.PortfolioId == portfolio.Id && p.Status == PositionStatus.Closed && p.ClosedAt > portfolio.EpochStartedAt && (from == null || p.ClosedAt >= from) && p.RealizedPnl != null)
             .Select(p => p.RealizedPnl!.Value).ToListAsync(cancellationToken);
         var stats = PerformanceMath.Trades(closed);
         var metrics = new PerformanceMetricsDto(
@@ -182,7 +182,8 @@ public sealed class ValuationService(PortfolioDbContext db, ICurrentUser user, I
         }
 
         var take = Math.Clamp(limit ?? 50, 1, 100);
-        var query = db.Positions.IgnoreQueryFilters().AsNoTracking().Where(p => p.PortfolioId == portfolio.Id && p.Status == PositionStatus.Closed);
+        // The current epoch only: positions closed by a reset (at the epoch start) belong to the previous one.
+        var query = db.Positions.IgnoreQueryFilters().AsNoTracking().Where(p => p.PortfolioId == portfolio.Id && p.Status == PositionStatus.Closed && p.ClosedAt > portfolio.EpochStartedAt);
         if (cursor is not null && Decode(cursor) is { } after)
         {
             query = query.Where(p => p.ClosedAt < after.At || (p.ClosedAt == after.At && p.Id.CompareTo(after.Id) < 0));

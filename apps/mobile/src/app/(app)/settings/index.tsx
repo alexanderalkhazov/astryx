@@ -18,6 +18,7 @@ import { Stepper } from '@/components/Stepper';
 import { Switch } from '@/components/Switch';
 import { Text } from '@/components/Text';
 import { LiveTradingGuardDialog } from '@/features/settings/LiveTradingGuardDialog';
+import { ResetPaperAccountDialog } from '@/features/settings/ResetPaperAccountDialog';
 import { useDefaultWatchlist } from '@/features/watchlist/useWatchlist';
 import { portfolio, settings } from '@/lib/api';
 import { formatCompactMoney, formatEtTime, formatMoney } from '@/lib/format';
@@ -53,6 +54,7 @@ export default function SettingsScreen() {
       <WatchlistRow />
       <NotificationsSection />
       <SecuritySection />
+      <PaperAccountSection />
       {__DEV__ ? <PrototypeControls /> : null}
     </Screen>
   );
@@ -313,6 +315,19 @@ function SecuritySection() {
         onCancel={() => setConfirmAll(false)}
         onConfirm={() => all.mutate()}
       />
+    </Section>
+  );
+}
+
+function PaperAccountSection() {
+  const [open, setOpen] = useState(false);
+  return (
+    <Section title="Paper account">
+      <View style={styles.card}>
+        <Text.Body tone="secondary">Start over with the starting cash. Open positions close at their last price and performance starts a new period.</Text.Body>
+        <Button variant="danger" label="Reset paper account" onPress={() => setOpen(true)} />
+      </View>
+      <ResetPaperAccountDialog visible={open} onClose={() => setOpen(false)} />
     </Section>
   );
 }

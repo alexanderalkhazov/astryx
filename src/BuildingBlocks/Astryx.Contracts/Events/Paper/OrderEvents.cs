@@ -36,3 +36,9 @@ public sealed record StopProximityReached(Guid UserId, Guid PositionId, string S
 {
     public static string EventName => "paper.stop_proximity.v1";
 }
+
+/// <summary>The user reset their paper account (P11): positions closed at the last price, orders cancelled, cash restored.</summary>
+public sealed record PaperAccountReset(Guid UserId, Guid PortfolioId, int ClosedPositions, int CancelledOrders, decimal StartingCash, DateTimeOffset At) : IIntegrationEvent
+{
+    public static string EventName => "paper.account_reset.v1";
+}

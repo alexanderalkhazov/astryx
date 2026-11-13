@@ -7,6 +7,7 @@ import { Text } from 'react-native';
 import ChangePasswordScreen from '../(app)/settings/change-password';
 import SettingsScreen from '../(app)/settings/index';
 
+jest.mock('expo-crypto', () => ({ randomUUID: () => 'reset-key-0001' }));
 jest.mock('expo-secure-store', () => ({ WHEN_UNLOCKED_THIS_DEVICE_ONLY: 'x', getItemAsync: jest.fn(), setItemAsync: jest.fn(), deleteItemAsync: jest.fn() }));
 jest.mock('@/lib/session', () => ({ signOut: jest.fn(() => Promise.resolve()) }));
 jest.mock('@/lib/api', () => ({
@@ -14,11 +15,11 @@ jest.mock('@/lib/api', () => ({
     risk: jest.fn(), updateRisk: jest.fn(), notifications: jest.fn(), updateNotifications: jest.fn(), scanner: jest.fn(), setTradingMode: jest.fn(),
     changePassword: jest.fn(), logoutAll: jest.fn(), devFaults: jest.fn(), setDevFaults: jest.fn(),
   },
-  portfolio: { summary: jest.fn() },
+  portfolio: { summary: jest.fn(), reset: jest.fn() },
   watchlists: { list: jest.fn() },
 }));
 type SettingsMock = Record<'risk' | 'updateRisk' | 'notifications' | 'updateNotifications' | 'scanner' | 'setTradingMode' | 'changePassword' | 'logoutAll' | 'devFaults' | 'setDevFaults', jest.Mock>;
-const api = jest.requireMock('@/lib/api') as { settings: SettingsMock; portfolio: { summary: jest.Mock }; watchlists: { list: jest.Mock } };
+const api = jest.requireMock('@/lib/api') as { settings: SettingsMock; portfolio: { summary: jest.Mock; reset: jest.Mock }; watchlists: { list: jest.Mock } };
 const { signOut } = jest.requireMock('@/lib/session') as { signOut: jest.Mock };
 const ok = <T,>(data: T) => ({ data });
 
@@ -147,6 +148,21 @@ describe('Settings (designs 18 and 25)', () => {
     await fireEvent.press(screen.getByRole('radio', { name: 'down' }));
 
     await waitFor(() => expect(api.settings.setDevFaults).toHaveBeenCalledWith('down'));
+  });
+});
+
+describe('Paper account reset (P11, proposed dialog)', () => {
+  it('needs RESET typed, then resets once with one key and reports what it did', async () => {
+    api.portfolio.reset.mockResolvedValue(ok({ portfolioId: 'p1', cashBalance: '100000.00', startingCash: '100000.00', closedPositions: 2, cancelledOrders: 4, resetCount: 1, epochStartedAt: '2026-11-13T05:00:00Z' }));
+    await renderAt();
+
+    await fireEvent.press(await screen.findByRole('button', { name: 'Reset paper account' }));
+    expect(screen.getByRole('button', { name: 'Reset' })).toBeDisabled();
+    await fireEvent.changeText(screen.getByLabelText('Type RESET to confirm'), 'RESET');
+    await fireEvent.press(screen.getByRole('button', { name: 'Reset' }));
+
+    await waitFor(() => expect(api.portfolio.reset).toHaveBeenCalledWith('reset-key-0001'));
+    await waitFor(() => expect(screen.queryByTestId('reset-dialog')).toBeNull());
   });
 });
 

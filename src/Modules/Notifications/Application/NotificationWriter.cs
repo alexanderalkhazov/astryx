@@ -26,7 +26,8 @@ public sealed class NotificationWriter(NotificationsDbContext db, IRealtimeNotif
     IIntegrationEventHandler<OrderExpired>,
     IIntegrationEventHandler<StopProximityReached>,
     IIntegrationEventHandler<AnalysisUpdated>,
-    IIntegrationEventHandler<StrategyGuardChanged>
+    IIntegrationEventHandler<StrategyGuardChanged>,
+    IIntegrationEventHandler<PaperAccountReset>
 {
     public const string ActivityCreated = "activity.created";
 
@@ -69,6 +70,11 @@ public sealed class NotificationWriter(NotificationsDbContext db, IRealtimeNotif
             "Analysis couldn't be generated reliably. Indicators are still available.", "error", $"/stock/{e.Symbol}?tab=signal", "analysis_job", e.JobId, $"analysis:{e.JobId}", cancellationToken),
         _ => Task.CompletedTask,
     };
+
+    public Task HandleAsync(PaperAccountReset e, IntegrationEventContext context, CancellationToken cancellationToken) =>
+        WriteAsync(e.UserId, NotificationCategory.System, "paper_reset", "Paper account reset",
+            $"Closed {e.ClosedPositions} {(e.ClosedPositions == 1 ? "position" : "positions")} and cancelled {e.CancelledOrders} {(e.CancelledOrders == 1 ? "order" : "orders")}. Cash is back to ${Money(e.StartingCash)}; performance starts fresh.",
+            "info", "/portfolio", "portfolio", e.PortfolioId, $"paper_reset:{e.PortfolioId}:{e.At.UtcTicks}", cancellationToken);
 
     /// <summary>Strategies are shared, so a guard change is fanned out to every account (design 17 "drawdown guard").</summary>
     public async Task HandleAsync(StrategyGuardChanged e, IntegrationEventContext context, CancellationToken cancellationToken)

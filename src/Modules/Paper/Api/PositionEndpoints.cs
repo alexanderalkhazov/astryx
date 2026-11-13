@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Astryx.Modules.Paper.Api;
 
-/// <summary>T9–T11 (SYSTEM_DESIGN.md §11.7, §15.5).</summary>
+/// <summary>T9–T11 and P11 (SYSTEM_DESIGN.md §11.7, §11.8, §15.5).</summary>
 public static class PositionEndpoints
 {
     public static IEndpointRouteBuilder MapPositionEndpoints(this IEndpointRouteBuilder app)
@@ -42,6 +42,18 @@ public static class PositionEndpoints
             .Produces<OrderDto>()
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict);
+
+        // P11 lives under /portfolio but is a paper engine action: it cancels orders and closes positions (§11.8).
+        app.MapPost("/api/v1/portfolio/reset", (ResetPaperAccountRequest request, IServiceProvider services, CancellationToken cancellationToken) =>
+                InTransactionAsync(services, sp => sp.GetRequiredService<PaperResetService>().ResetAsync(request, cancellationToken), Results.Ok, cancellationToken))
+            .WithTags("Portfolio")
+            .RequireAuthorization("Authenticated")
+            .WithName("ResetPaperAccount")
+            .RequireIdempotency()
+            .RequireRateLimiting(RateLimitPolicies.Orders)
+            .Produces<PaperResetDto>()
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 
         return app;
     }

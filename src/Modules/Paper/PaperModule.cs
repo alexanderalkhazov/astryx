@@ -17,6 +17,7 @@ public static class PaperModule
         services.AddScoped<PaperOrderService>();
         services.AddScoped<PaperExecution>();
         services.AddScoped<PositionActions>();
+        services.AddScoped<PaperResetService>();
         services.AddIntegrationEventHandler<Astryx.Contracts.Events.MarketData.QuotesUpdated, PositionMonitor>();
         services.AddJobHandler<DayOrderExpiryJob, DayOrderExpiryHandler>();
         services.AddIntegrationEventHandler<Astryx.Contracts.Events.Paper.OrderAccepted, PaperRealtimeRelays>();

@@ -101,6 +101,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/portfolio/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ResetPaperAccount"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/register": {
         parameters: {
             query?: never;
@@ -1998,6 +2014,22 @@ export interface components {
         OrderPageDto: {
             items: components["schemas"]["OrderDto"][];
         };
+        PaperResetDto: {
+            /** Format: uuid */
+            portfolioId: string;
+            /** Format: decimal */
+            cashBalance: string;
+            /** Format: decimal */
+            startingCash: string;
+            /** Format: int32 */
+            closedPositions: number;
+            /** Format: int32 */
+            cancelledOrders: number;
+            /** Format: int32 */
+            resetCount: number;
+            /** Format: date-time */
+            epochStartedAt: string;
+        };
         ParameterDto: {
             key: string;
             label: string;
@@ -2254,6 +2286,9 @@ export interface components {
         };
         ResendVerificationRequest: {
             email: string;
+        };
+        ResetPaperAccountRequest: {
+            confirm: null | string;
         };
         ResetPasswordRequest: {
             /** Format: uuid */
@@ -2780,6 +2815,57 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OrderDto"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    ResetPaperAccount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResetPaperAccountRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaperResetDto"];
                 };
             };
             /** @description Not Found */

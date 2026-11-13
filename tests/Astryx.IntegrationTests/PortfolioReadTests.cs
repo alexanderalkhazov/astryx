@@ -83,6 +83,8 @@ public class PortfolioReadTests(TradingApiFactory factory) : IClassFixture<Tradi
             (await scope.ServiceProvider.GetRequiredService<PortfolioDbContext>().Snapshots.IgnoreQueryFilters().CountAsync(s => s.PortfolioId == portfolioId && s.Kind == "hourly")).ShouldBe(1);
 
             var db = scope.ServiceProvider.GetRequiredService<PortfolioDbContext>();
+            // Synthetic history from before this test's account existed: start its epoch three days back (T-099).
+            await db.Portfolios.IgnoreQueryFilters().Where(p => p.Id == portfolioId).ExecuteUpdateAsync(u => u.SetProperty(p => p.EpochStartedAt, DateTimeOffset.UtcNow.AddDays(-3)));
             db.Snapshots.Add(new PortfolioSnapshot { PortfolioId = portfolioId, Kind = "eod", SnapshotAt = DateTimeOffset.UtcNow.AddDays(-2), Equity = 100_000m, Cash = 100_000m, BenchmarkClose = 500m });
             db.Snapshots.Add(new PortfolioSnapshot { PortfolioId = portfolioId, Kind = "eod", SnapshotAt = DateTimeOffset.UtcNow.AddDays(-1), Equity = 101_000m, Cash = 88_056.32m, BenchmarkClose = 505m });
             await db.SaveChangesAsync();

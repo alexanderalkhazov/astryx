@@ -60,3 +60,18 @@ public interface IPositionBook
     /// <summary>Records a stop-proximity alert for the session; false if one was already sent that session (§15.4).</summary>
     Task<bool> MarkStopAlertAsync(Guid positionId, DateOnly session, CancellationToken cancellationToken);
 }
+
+/// <summary>The outcome of starting a new performance epoch (P11).</summary>
+/// <param name="Deposit">The <c>reset_deposit</c> posted to bring cash back to the starting cash (0 when already there).</param>
+public sealed record EpochReset(decimal Deposit, decimal CashBalance, decimal StartingCash, int ResetCount, DateTimeOffset EpochStartedAt);
+
+/// <summary>Owned by Portfolio; the paper reset is its only caller (SYSTEM_DESIGN.md §11.8 P11).</summary>
+public interface IPortfolioEpochs
+{
+    /// <summary>
+    /// With every position closed and every reservation released: posts <c>reset_deposit</c> back to the starting cash
+    /// (ref <c>{resetRef}:deposit</c>), zeroes realized P&amp;L, sets start-of-day equity to the starting cash and starts a new
+    /// epoch at <paramref name="at"/>. Joins the caller's transaction.
+    /// </summary>
+    Task<Result<EpochReset>> ResetAsync(Guid portfolioId, string resetRef, DateTimeOffset at, CancellationToken cancellationToken);
+}
