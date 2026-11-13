@@ -85,6 +85,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/paper/orders/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["CancelPaperOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/register": {
         parameters: {
             query?: never;
@@ -1119,6 +1135,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/positions/{id}/close-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PreviewClosePosition"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/positions/{id}/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ClosePosition"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1332,6 +1380,24 @@ export interface components {
         ChangePasswordRequest: {
             currentPassword: string;
             newPassword: string;
+        };
+        ClosePositionDto: {
+            order: components["schemas"]["OrderDto"];
+            position: components["schemas"]["PositionDto"];
+        };
+        ClosePreviewDto: {
+            /** Format: decimal */
+            quantity: string;
+            /** Format: decimal */
+            marketValue: string;
+            /** Format: decimal */
+            estExitPrice: string;
+            /** Format: decimal */
+            estFees: string;
+            /** Format: decimal */
+            estRealizedPnl: string;
+            /** Format: date-time */
+            asOf: string;
         };
         ConfidenceDto: {
             /** Format: decimal */
@@ -1566,6 +1632,23 @@ export interface components {
             proposalId: string;
             /** Format: uuid */
             assessmentId: string;
+        };
+        PositionDto: {
+            /** Format: uuid */
+            id: string;
+            symbol: string;
+            status: string;
+            /** Format: decimal */
+            quantity: string;
+            /** Format: decimal */
+            avgEntryPrice: string;
+            /** Format: decimal */
+            exitPrice: null | string;
+            exitReason: null | string;
+            /** Format: decimal */
+            realizedPnl: null | string;
+            /** Format: date-time */
+            closedAt: null | string;
         };
         PriceZoneDto: {
             low: null | string;
@@ -2141,6 +2224,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ScannerStatusDto"];
+                };
+            };
+        };
+    };
+    CancelPaperOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDto"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
         };
@@ -3745,6 +3877,95 @@ export interface operations {
             };
             /** @description Not Found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    PreviewClosePosition: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClosePreviewDto"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    ClosePosition: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClosePositionDto"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

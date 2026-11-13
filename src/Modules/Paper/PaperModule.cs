@@ -16,6 +16,7 @@ public static class PaperModule
         services.AddModuleDbContext<PaperDbContext>(PaperDbContext.SchemaName, historyKey: "paper");
         services.AddScoped<PaperOrderService>();
         services.AddScoped<PaperExecution>();
+        services.AddScoped<PositionActions>();
         services.AddIntegrationEventHandler<Astryx.Contracts.Events.MarketData.QuotesUpdated, PositionMonitor>();
         services.AddJobHandler<DayOrderExpiryJob, DayOrderExpiryHandler>();
         services.AddRecurringJob("paper-day-order-expiry", TimeSpan.FromMinutes(1), _ => new DayOrderExpiryJob());

@@ -60,6 +60,10 @@ public partial class DataIsolationTests(ApiFactory factory) : IClassFixture<ApiF
         ["GET /api/v1/proposals/{id:guid}"] = t => t.AssertForeignProposalIs404Async(HttpMethod.Get, ""),
         ["POST /api/v1/proposals/{id:guid}/reject"] = t => t.AssertForeignProposalIs404Async(HttpMethod.Post, "/reject"),
         ["GET /api/v1/paper/orders/{id:guid}"] = t => t.AssertForeignOrderIs404Async(),
+        // Positions and order cancellation are covered with real fills in ClosePositionTests.Another_users_position_and_order_are_not_found.
+        ["POST /api/v1/paper/orders/{id:guid}/cancel"] = t => t.AssertForeignOrderIs404Async(cancel: true),
+        ["POST /api/v1/positions/{id:guid}/close-preview"] = t => t.AssertUnknownPositionIs404Async("/close-preview"),
+        ["POST /api/v1/positions/{id:guid}/close"] = t => t.AssertUnknownPositionIs404Async("/close"),
         ["POST /api/v1/proposals/{id:guid}/assessments"] = t => t.AssertForeignProposalIs404Async(HttpMethod.Post, "/assessments", new { riskPerTradePct = "0.0075" }),
     };
 
@@ -141,7 +145,16 @@ public partial class DataIsolationTests(ApiFactory factory) : IClassFixture<ApiF
     }
 
     /// <summary>Bob addresses Alice's paper order: 404.</summary>
-    private async Task AssertForeignOrderIs404Async()
+    /// <summary>Bob addresses a position that isn't his (here one that doesn't exist for him): 404.</summary>
+    private async Task AssertUnknownPositionIs404Async(string suffix)
+    {
+        var bob = await TestUsers.SignedInClientAsync(factory);
+        var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/positions/{Guid.NewGuid()}{suffix}") { Content = JsonContent.Create(new { }) };
+        request.Headers.Add("Idempotency-Key", $"isolation-{Guid.NewGuid():N}");
+        (await bob.SendAsync(request)).StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
+    private async Task AssertForeignOrderIs404Async(bool cancel = false)
     {
         var alice = await TestUsers.SignedInClientAsync(factory);
         var bob = await TestUsers.SignedInClientAsync(factory);
@@ -157,6 +170,14 @@ public partial class DataIsolationTests(ApiFactory factory) : IClassFixture<ApiF
                 Quantity = 1, StopPrice = 186.5m, Status = "working", SubmittedAt = DateTimeOffset.UtcNow,
             });
             await db.SaveChangesAsync();
+        }
+
+        if (cancel)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/paper/orders/{id}/cancel") { Content = JsonContent.Create(new { }) };
+            request.Headers.Add("Idempotency-Key", $"isolation-{Guid.NewGuid():N}");
+            (await bob.SendAsync(request)).StatusCode.ShouldBe(HttpStatusCode.NotFound);
+            return;
         }
 
         (await bob.GetAsync($"/api/v1/paper/orders/{id}")).StatusCode.ShouldBe(HttpStatusCode.NotFound);

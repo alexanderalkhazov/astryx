@@ -3329,6 +3329,16 @@ At session close, `SessionCloseJob` expires `day` entry orders (releasing reserv
 
 Same transactional pattern as T6: idempotency → lock portfolio → position `FOR UPDATE` must be `open` → cancel OCO exits → market exit fill → ledger `sell` (+qty×price), `fee` → position `closed`, `exit_reason='manual'`, `realized_pnl` → outbox.
 
+**Implemented (T-086).**
+
+- **T11** (`PositionActions.CloseAsync`) runs in a `ModuleUnitOfWork`. It locks the portfolio and the position, and requires the position to be the user's (404 otherwise) and `open` (409 `position_not_open`). It also requires the session open (409 `market_closed`) and a fresh quote (409 `quote_stale`).
+  - It then places an `exit_manual` market order (client order id = the Idempotency-Key), filled at last − slippage, through the same `PaperExecution.ExitAsync` as the monitor. The OCO legs are cancelled, the sale is credited, and realized P&L = qty × (exit − avg) − all fees.
+  - Reposting the same key returns the original result. A second key gets `position_not_open`.
+- **T10** returns `{quantity, marketValue, estExitPrice, estFees, estRealizedPnl, asOf}` from the latest quote, using the same pricing as T11.
+- **T9** cancels only a working entry order (409 otherwise) and releases its reservation.
+- Because the monitor and T11 take the same locks and both require the position to be open, a manual close racing a stop trigger produces exactly one exit (PAPER-06).
+- **Tests:** PAPER-07 passes. The preview and the close agree (64 × (189.98 − 186.62) = 215.04), and the ledger invariants hold.
+
 ### 15.6 P&L
 
 ```

@@ -51,7 +51,7 @@ public sealed class PositionBook(PortfolioDbContext db, TimeProvider timeProvide
 
     public async Task<PositionSnapshot?> LockAsync(Guid positionId, CancellationToken cancellationToken) =>
         (await db.Positions.FromSql($"SELECT * FROM portfolio.positions WHERE id = {positionId} FOR UPDATE").IgnoreQueryFilters().AsNoTracking().ToListAsync(cancellationToken))
-            .Select(p => new PositionSnapshot(p.Id, p.PortfolioId, p.InstrumentId, p.Symbol, p.Status, p.Quantity, p.AvgEntryPrice, p.FeesPaid, p.StopPrice))
+            .Select(p => new PositionSnapshot(p.Id, p.PortfolioId, p.InstrumentId, p.Symbol, p.Status, p.Quantity, p.AvgEntryPrice, p.FeesPaid, p.StopPrice, p.ExitPrice, p.ExitReason, p.RealizedPnl, p.ClosedAt))
             .FirstOrDefault();
 
     public async Task<Result<decimal>> CloseAsync(Guid positionId, decimal exitPrice, string exitReason, decimal exitFee, DateTimeOffset closedAt, CancellationToken cancellationToken)

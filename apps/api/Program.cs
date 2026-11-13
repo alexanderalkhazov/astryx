@@ -160,6 +160,7 @@ app.MapScannerEndpoints();
 app.MapAnalysisEndpoints();
 app.MapProposalEndpoints();
 app.MapPaperOrderEndpoints();
+app.MapPositionEndpoints();
 app.MapRealtime();
 
 if (DevEndpoints.IsEnabled(app.Environment, app.Configuration))

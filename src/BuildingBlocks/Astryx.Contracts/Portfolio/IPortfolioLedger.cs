@@ -38,7 +38,9 @@ public sealed record OpenPositionRequest(
     Guid EntryOrderId, Guid ProposalId, Guid? StrategyVersionId, DateTimeOffset OpenedAt);
 
 /// <summary>An open position as the paper engine needs it to exit.</summary>
-public sealed record PositionSnapshot(Guid Id, Guid PortfolioId, Guid InstrumentId, string Symbol, string Status, decimal Quantity, decimal AvgEntryPrice, decimal FeesPaid, decimal? StopPrice);
+public sealed record PositionSnapshot(
+    Guid Id, Guid PortfolioId, Guid InstrumentId, string Symbol, string Status, decimal Quantity, decimal AvgEntryPrice, decimal FeesPaid, decimal? StopPrice,
+    decimal? ExitPrice = null, string? ExitReason = null, decimal? RealizedPnl = null, DateTimeOffset? ClosedAt = null);
 
 /// <summary>Owned by Portfolio; the paper engine is its only writer.</summary>
 public interface IPositionBook
