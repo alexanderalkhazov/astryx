@@ -15,7 +15,7 @@ namespace Astryx.Modules.Portfolio.Application;
 /// <summary>P1 (SYSTEM_DESIGN.md §11.8). Valuation only: unrealized P&amp;L is never posted.</summary>
 public sealed record PortfolioDto(
     Guid Id, string Mode, string Currency, decimal Equity, decimal Cash, decimal CashAvailable, decimal Invested, decimal UnrealizedPnl, decimal DayPnl, decimal? DayPnlPct,
-    decimal AllTimePnl, decimal AllTimeReturnPct, decimal RealizedPnl, int OpenPositions, bool Halted, DateTimeOffset AsOf, bool Stale);
+    decimal AllTimePnl, decimal AllTimeReturnPct, decimal RealizedPnl, int OpenPositions, bool Halted, DateTimeOffset AsOf, bool Stale, string? HaltReason = null);
 
 /// <summary>P2 row. Open rows carry valuation and weight against the cap; closed rows carry the exit.</summary>
 public sealed record PositionDto(
@@ -70,11 +70,13 @@ public sealed class ValuationService(PortfolioDbContext db, ICurrentUser user, I
         var asOf = open.Select(p => marks[p.InstrumentId].AsOf).Where(a => a is not null).Max() ?? feed.QuotesAsOf ?? sessions.Now;
         decimal? dayPct = portfolio.StartOfDayEquity is > 0 and { } sod ? (equity - sod) / sod : null;
         var limits = await riskSettings.GetAsync(portfolio.UserId, cancellationToken);
+        // Reconciliation wins: it lasts until an operator clears it, the daily halt only until the next session.
+        var halted = portfolio.ReconciliationHaltedAt is not null ? "reconciliation" : dayPct is { } halt && halt <= -limits.DailyLossHaltPct ? "daily_loss" : null;
         var dto = new PortfolioDto(
             portfolio.Id, "paper", portfolio.BaseCurrency, Money(equity), Money(portfolio.CashBalance), Money(portfolio.CashBalance - portfolio.ReservedCash), Money(invested),
             Money(unrealized), Money(portfolio.StartOfDayEquity is { } s0 ? equity - s0 : 0m), dayPct is { } d ? Pct(d) : null,
             Money(equity - portfolio.StartingCash), portfolio.StartingCash > 0 ? Pct((equity - portfolio.StartingCash) / portfolio.StartingCash) : 0m, Money(portfolio.RealizedPnl),
-            open.Count, dayPct is { } halt && halt <= -limits.DailyLossHaltPct, asOf, stale);
+            open.Count, halted is not null, asOf, stale, halted);
         return new Valuation(dto, marks);
     }
 

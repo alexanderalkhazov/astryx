@@ -75,7 +75,9 @@ public sealed class PositionMonitor(IServiceProvider services, ILogger<PositionM
             .Where(o => o.PortfolioId == portfolioId && o.InstrumentId == quote.InstrumentId && o.Status == OrderStatus.Working)
             .ToListAsync(cancellationToken);
 
-        foreach (var entry in working.Where(o => o.Purpose == OrderPurpose.Entry))
+        // A reconciliation halt (§20.13) keeps working entries from filling; exits below still run.
+        var halted = (await sp.GetRequiredService<IPortfolioStateSource>().GetAsync(portfolioId, cancellationToken))?.ReconciliationHaltedAt is not null;
+        foreach (var entry in working.Where(o => o.Purpose == OrderPurpose.Entry && !halted))
         {
             var level = entry.StopPrice ?? entry.LimitPrice ?? 0m;
             if (TriggerEvaluator.Entry(entry.OrderType, level, window, execution.Costs.Slip(level)) is not { } simulated)

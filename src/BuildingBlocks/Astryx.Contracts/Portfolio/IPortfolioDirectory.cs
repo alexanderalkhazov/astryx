@@ -14,7 +14,10 @@ public sealed record OpenPositionView(Guid InstrumentId, string Symbol, decimal 
 /// A portfolio's state for a risk assessment (§14.2): the cash ledger cache, what working orders reserved, the
 /// concurrency version and start-of-day equity for the daily loss halt.
 /// </summary>
-public sealed record PortfolioState(Guid Id, Guid UserId, decimal CashBalance, decimal ReservedCash, long Version, decimal? StartOfDayEquity, IReadOnlyList<OpenPositionView> OpenPositions);
+/// <param name="ReconciliationHaltedAt">Set when nightly reconciliation found a mismatch (§20.13): new entries are blocked, exits allowed.</param>
+public sealed record PortfolioState(
+    Guid Id, Guid UserId, decimal CashBalance, decimal ReservedCash, long Version, decimal? StartOfDayEquity, IReadOnlyList<OpenPositionView> OpenPositions,
+    DateTimeOffset? ReconciliationHaltedAt = null);
 
 /// <summary>Owned by Portfolio; read by Trading (risk engine) through Contracts.</summary>
 public interface IPortfolioStateSource

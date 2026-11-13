@@ -27,6 +27,9 @@ public static class PortfolioModule
         services.AddJobHandler<PortfolioSnapshotJob, PortfolioSnapshotHandler>();
         services.AddRecurringJob("portfolio-snapshot", TimeSpan.FromMinutes(15), _ => new PortfolioSnapshotJob());
         services.AddJobHandler<StartOfDayJob, StartOfDayHandler>();
+        services.AddScoped<PortfolioReconciler>();
+        services.AddJobHandler<ReconciliationJob, ReconciliationHandler>();
+        services.AddRecurringJob("portfolio-reconciliation", TimeSpan.FromMinutes(30), _ => new ReconciliationJob());
         services.AddRecurringJob("portfolio-start-of-day", TimeSpan.FromMinutes(5), _ => new StartOfDayJob());
         return services;
     }

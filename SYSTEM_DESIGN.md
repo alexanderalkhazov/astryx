@@ -4152,6 +4152,26 @@ The nightly `ReconciliationJob` checks, per portfolio:
 
 Any mismatch: critical alert, the portfolio is flagged `halted_reconciliation` (new entries blocked, exits allowed), and an audit entry is written. Future broker reconciliation compares broker positions and cash against ours with the same halting rule.
 
+**Implemented (T-100).**
+
+- **Scheduling:** `ReconciliationJob` (Portfolio) is scheduled every 30 minutes but does nothing while the regular session is open. Each portfolio is checked at most once per 20 hours, which makes it nightly.
+- **Data:** `PortfolioReconciler` reads Paper's side through `IPaperReconciliationFacts` (fill totals per position, overdue working orders, working OCO legs).
+- **Checks:**
+  1. `LedgerInvariants`: every `balance_after` is a running sum, and the cash cache equals the ledger.
+  2. Per position, the bought quantity equals the quantity, and the sold quantity is that quantity when closed, or 0 when open or reset.
+  3. Per closed position, realized = sold value (or qty × exit for a `reset`) − bought value − fees, within $0.01; the portfolio's `realized_pnl` equals its positions closed this epoch.
+  4. No order still working 5 minutes after `expires_at`.
+  5. Every open position has a working `exit_stop` and `exit_target`.
+  6. The epoch's latest snapshot has equity = cash + invested within $0.01.
+
+  `ASSUMPTION`: snapshots are compared with themselves, not with the ledger at the slot, because a snapshot is valued when the job runs, after the slot.
+- **On a mismatch:**
+  - `LogCritical`, an audit entry `portfolio.reconciliation_failed` with the issues, and `reconciliation_halted_at` / `reconciliation_issues` (jsonb) on `portfolio.portfolios`;
+  - `IExecutionGate` refuses entries with 409 `portfolio_halted`, and the position monitor does not fill working entries; exits (stops, targets, manual close) still run;
+  - P1 sets `halted` with `haltReason: "reconciliation"` (otherwise `"daily_loss"` or null), with an attention item and the Portfolio banner.
+- **Clearing:** a halt is never cleared automatically. An operator clears it (admin tooling is `NOT IMPLEMENTED`).
+- **Tests:** `ReconciliationCleanTests` reconciles every portfolio in its database, built from ordinary activity (fills, a manual close, a reset, a working order and snapshots), and finds no issues.
+
 ---
 ## 21. Testing Strategy
 

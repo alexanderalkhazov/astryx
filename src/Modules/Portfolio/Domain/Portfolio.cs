@@ -39,6 +39,15 @@ public sealed class Portfolio : IUserOwned
     /// <summary>Performance (P5), trade history and snapshots count from here; a reset starts a new epoch (§15.6).</summary>
     public DateTimeOffset EpochStartedAt { get; set; }
 
+    /// <summary>Nightly reconciliation (§20.13) last checked this portfolio.</summary>
+    public DateTimeOffset? ReconciledAt { get; set; }
+
+    /// <summary>Set by a reconciliation mismatch: new entries are blocked, exits allowed. Cleared by an operator.</summary>
+    public DateTimeOffset? ReconciliationHaltedAt { get; set; }
+
+    /// <summary>JSON array of the mismatches that halted the portfolio.</summary>
+    public string? ReconciliationIssues { get; set; }
+
     public long Version { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; }

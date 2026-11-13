@@ -70,6 +70,13 @@ describe('Portfolio (designs 09 and 15)', () => {
     await waitFor(() => expect(screen).toHavePathname('/position/NVDA'));
   });
 
+  it('explains a reconciliation halt differently from the daily loss halt', async () => {
+    api.summary.mockResolvedValue(ok({ ...SUMMARY, halted: true, haltReason: 'reconciliation' }));
+    await renderPortfolio();
+
+    expect(await screen.findByText(/nightly check found a mismatch/)).toBeOnTheScreen();
+  });
+
   it('offers a way to find a setup when nothing is open', async () => {
     api.positions.mockResolvedValue(ok({ items: [], nextCursor: null }));
     await renderPortfolio();

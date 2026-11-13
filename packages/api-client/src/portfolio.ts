@@ -23,6 +23,8 @@ export const PortfolioSummary = z.object({
   halted: z.boolean(),
   asOf: z.string(),
   stale: z.boolean(),
+  /** Why entries are paused: the daily loss halt (until next session) or a reconciliation mismatch (until reviewed). */
+  haltReason: z.enum(['daily_loss', 'reconciliation']).nullable().optional(),
 });
 export type PortfolioSummary = z.infer<typeof PortfolioSummary>;
 

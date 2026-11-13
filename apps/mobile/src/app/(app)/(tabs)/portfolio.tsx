@@ -49,7 +49,17 @@ export default function PortfolioScreen() {
               <Text.DataSm tone={tone(s.allTimePnl)}>{`${formatPnl(s.allTimePnl)} (${formatPct(s.allTimeReturnPct, { signed: true })}) all time`}</Text.DataSm>
             </View>
           </MetricHero>
-          {s.halted ? <StatusBanner tone="error" title="New entries paused" body="The daily loss halt is reached. Entries resume next session." /> : null}
+          {s.halted ? (
+            <StatusBanner
+              tone="error"
+              title="New entries paused"
+              body={
+                s.haltReason === 'reconciliation'
+                  ? 'A nightly check found a mismatch in this account. Exits still work; entries resume once it is reviewed.'
+                  : 'The daily loss halt is reached. Entries resume next session.'
+              }
+            />
+          ) : null}
         </View>
       ) : (
         <SkeletonRow />

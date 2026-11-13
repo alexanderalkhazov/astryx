@@ -12,7 +12,9 @@ namespace Astryx.Modules.Trading.Application;
 /// client's assessment: the engine runs again on the fresh quote, and execution proceeds only if every check still
 /// passes, the quantity is unchanged and the price moved at most 0.5%.
 /// </summary>
-public sealed class ExecutionGate(TradingDbContext db, AssessmentService assessments, IRiskSettingsSource riskSettings, Astryx.Contracts.MarketData.IMarketSessionClock sessions) : IExecutionGate
+public sealed class ExecutionGate(
+    TradingDbContext db, AssessmentService assessments, IRiskSettingsSource riskSettings, Astryx.Contracts.MarketData.IMarketSessionClock sessions,
+    Astryx.Contracts.Portfolio.IPortfolioStateSource portfolios) : IExecutionGate
 {
     public const decimal MaxPriceDrift = 0.005m;
 
@@ -21,6 +23,7 @@ public sealed class ExecutionGate(TradingDbContext db, AssessmentService assessm
     public static readonly Error RiskCheckFailed = new("risk_check_failed", "A pre-trade check now fails. Review the assessment.");
     public static readonly Error QuoteStale = new("quote_stale", "The quote is stale. Approvals need live data.");
     public static readonly Error MarketClosed = new("market_closed", "The regular session is closed or closes within 5 minutes.");
+    public static readonly Error PortfolioHalted = new("portfolio_halted", "New entries are paused while this account's records are reviewed. Exits still work.");
 
     public async Task<Result<ExecutionTicket>> PrepareAsync(Guid userId, Guid proposalId, Guid assessmentId, CancellationToken cancellationToken)
     {
@@ -34,6 +37,12 @@ public sealed class ExecutionGate(TradingDbContext db, AssessmentService assessm
         if (proposal.Status != ProposalStatus.Pending || proposal.ExpiresAt <= sessions.Now)
         {
             return ProposalService.NotPending;
+        }
+
+        // A reconciliation halt (§20.13) blocks every new entry, whatever the assessment says.
+        if ((await portfolios.GetAsync(proposal.PortfolioId, cancellationToken))?.ReconciliationHaltedAt is not null)
+        {
+            return PortfolioHalted;
         }
 
         var previous = await db.RiskAssessments.IgnoreQueryFilters().AsNoTracking().SingleOrDefaultAsync(a => a.Id == assessmentId && a.ProposalId == proposalId, cancellationToken);

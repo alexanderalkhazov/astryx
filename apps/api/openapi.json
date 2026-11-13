@@ -6094,6 +6094,12 @@
           },
           "stale": {
             "type": "boolean"
+          },
+          "haltReason": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         },
         "additionalProperties": false

@@ -153,6 +153,18 @@ namespace Astryx.Modules.Portfolio.Infrastructure.Persistence.Migrations
                         .HasColumnType("numeric(20,4)")
                         .HasColumnName("realized_pnl");
 
+                    b.Property<DateTimeOffset?>("ReconciledAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("reconciled_at");
+
+                    b.Property<DateTimeOffset?>("ReconciliationHaltedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("reconciliation_halted_at");
+
+                    b.Property<string>("ReconciliationIssues")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("reconciliation_issues");
+
                     b.Property<decimal>("ReservedCash")
                         .HasPrecision(20, 4)
                         .HasColumnType("numeric(20,4)")

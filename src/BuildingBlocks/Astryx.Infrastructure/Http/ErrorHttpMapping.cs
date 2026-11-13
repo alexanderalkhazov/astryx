@@ -14,7 +14,7 @@ public static class ErrorHttpMapping
         ["not_found"] = 404, ["instrument_not_found"] = 404,
         ["conflict"] = 409, ["duplicate"] = 409, ["request_in_progress"] = 409, ["proposal_not_pending"] = 409,
         ["assessment_stale"] = 409, ["quote_stale"] = 409, ["position_not_open"] = 409, ["concurrency_conflict"] = 409,
-        ["market_closed"] = 409, ["limit_reached"] = 409, ["data_stale"] = 409, ["signal_not_active"] = 409, ["insufficient_funds"] = 409, ["analysis_stale"] = 409,
+        ["market_closed"] = 409, ["limit_reached"] = 409, ["data_stale"] = 409, ["signal_not_active"] = 409, ["insufficient_funds"] = 409, ["analysis_stale"] = 409, ["portfolio_halted"] = 409,
         ["precondition_failed"] = 412,
         ["precondition_required"] = 428,
         ["validation_failed"] = 422, ["risk_check_failed"] = 422, ["idempotency_key_reused"] = 422,

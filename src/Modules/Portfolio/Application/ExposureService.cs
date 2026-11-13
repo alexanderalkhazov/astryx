@@ -96,7 +96,11 @@ public sealed class ExposureService(
 
         var (v, open, limits) = state;
         var items = new List<AttentionItemDto>();
-        if (v.Portfolio.Halted)
+        if (v.Portfolio.HaltReason == "reconciliation")
+        {
+            items.Add(new("halted", "New entries paused", "A nightly check found a mismatch in this account. Exits still work; entries resume once it is reviewed.", "/portfolio", "error"));
+        }
+        else if (v.Portfolio.Halted)
         {
             items.Add(new("halted", "New entries paused", $"Today is {Percent(v.Portfolio.DayPnlPct ?? 0m)}, at the {Percent(-limits.DailyLossHaltPct)} daily loss halt. Entries resume next session.", "/portfolio", "error"));
         }

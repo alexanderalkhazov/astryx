@@ -2107,6 +2107,7 @@ export interface components {
             /** Format: date-time */
             asOf: string;
             stale: boolean;
+            haltReason?: null | string;
         };
         PositionDetailDto: {
             /** Format: uuid */

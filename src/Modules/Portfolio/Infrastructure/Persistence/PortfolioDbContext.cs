@@ -30,6 +30,7 @@ public sealed class PortfolioDbContext(DbContextOptions<PortfolioDbContext> opti
                 t.HasCheckConstraint("ck_portfolios_mode", "mode IN ('simulated', 'etoro_demo')");
                 t.HasCheckConstraint("ck_portfolios_cash", "cash_balance >= 0 AND reserved_cash >= 0 AND reserved_cash <= cash_balance");
             });
+            entity.Property(p => p.ReconciliationIssues).HasColumnType("jsonb");
             entity.HasKey(p => p.Id);
             entity.Property(p => p.Mode).HasMaxLength(16);
             entity.Property(p => p.BaseCurrency).HasMaxLength(3).IsFixedLength();
