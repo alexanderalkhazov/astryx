@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Routing;
 
 namespace Astryx.Modules.Portfolio.Api;
 
-/// <summary>P1, P2, P5 and P6 (SYSTEM_DESIGN.md §11.8).</summary>
+/// <summary>P1, P2 and P5–P9 (SYSTEM_DESIGN.md §11.8).</summary>
 public static class PortfolioEndpoints
 {
     public static IEndpointRouteBuilder MapPortfolioEndpoints(this IEndpointRouteBuilder app)
@@ -27,6 +27,15 @@ public static class PortfolioEndpoints
         portfolio.MapGet("/trades", async (int? limit, string? cursor, ValuationService service, CancellationToken ct) =>
                 (await service.TradesAsync(limit, cursor, ct)).Match(Results.Ok, e => e.ToProblem()))
             .WithName("ListClosedTrades").Produces<ClosedTradePageDto>();
+
+        portfolio.MapGet("/allocation", async (ExposureService service, CancellationToken ct) => (await service.AllocationAsync(ct)).Match(Results.Ok, e => e.ToProblem()))
+            .WithName("GetPortfolioAllocation").Produces<AllocationDto>();
+
+        portfolio.MapGet("/exposure", async (ExposureService service, CancellationToken ct) => (await service.ExposureAsync(ct)).Match(Results.Ok, e => e.ToProblem()))
+            .WithName("GetPortfolioExposure").Produces<ExposureDto>();
+
+        portfolio.MapGet("/attention", async (ExposureService service, CancellationToken ct) => (await service.AttentionAsync(ct)).Match(Results.Ok, e => e.ToProblem()))
+            .WithName("GetPortfolioAttention").Produces<AttentionDto>();
 
         return app;
     }

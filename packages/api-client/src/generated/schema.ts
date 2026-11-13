@@ -1231,6 +1231,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/portfolio/allocation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetPortfolioAllocation"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/portfolio/exposure": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetPortfolioExposure"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/portfolio/attention": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetPortfolioAttention"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1241,6 +1289,14 @@ export interface components {
         AddWatchlistItemRequest: {
             symbol: string;
             note: null | string;
+        };
+        AllocationDto: {
+            sectors: components["schemas"]["SectorSliceDto"][];
+            assets: components["schemas"]["AssetSliceDto"][];
+            /** Format: decimal */
+            sectorWarningPct: string;
+            /** Format: decimal */
+            maxSectorExposurePct: string;
         };
         AnalysisDataQualityDto: {
             status: string;
@@ -1350,6 +1406,13 @@ export interface components {
             /** Format: date-time */
             asOf: string;
         };
+        AssetSliceDto: {
+            asset: string;
+            /** Format: decimal */
+            value: string;
+            /** Format: decimal */
+            pct: string;
+        };
         AttachedExitsDto: {
             /** Format: uuid */
             ocoGroupId: string;
@@ -1357,6 +1420,16 @@ export interface components {
             stop: string;
             /** Format: decimal */
             target: string;
+        };
+        AttentionDto: {
+            items: components["schemas"]["AttentionItemDto"][];
+        };
+        AttentionItemDto: {
+            kind: string;
+            title: string;
+            body: string;
+            deepLink: string;
+            severity: string;
         };
         BacktestRunDto: {
             /** Format: uuid */
@@ -1489,6 +1562,15 @@ export interface components {
             items: components["schemas"]["ClosedTradeDto"][];
             nextCursor: null | string;
         };
+        ConcentrationWarningDto: {
+            kind: string;
+            subject: string;
+            /** Format: decimal */
+            pct: string;
+            /** Format: decimal */
+            limit: string;
+            message: string;
+        };
         ConfidenceDto: {
             /** Format: decimal */
             value: string;
@@ -1522,6 +1604,15 @@ export interface components {
             biometricLock: boolean;
             tradingMode: string;
             features: components["schemas"]["FeatureFlags"];
+        };
+        ExposureDto: {
+            /** Format: decimal */
+            grossPct: string;
+            /** Format: decimal */
+            betaWeightedPct: null | string;
+            /** Format: decimal */
+            openRiskToStops: string;
+            concentrationWarnings: components["schemas"]["ConcentrationWarningDto"][];
         };
         FeatureFlags: {
             liveTrading: boolean;
@@ -2048,6 +2139,15 @@ export interface components {
         };
         SearchItemsResponse: {
             items: components["schemas"]["InstrumentSearchItem"][];
+        };
+        SectorSliceDto: {
+            sector: string;
+            /** Format: decimal */
+            value: string;
+            /** Format: decimal */
+            pct: string;
+            warning: boolean;
+            overLimit: boolean;
         };
         SignalCountResponse: {
             /** Format: int32 */
@@ -4234,6 +4334,66 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ClosedTradePageDto"];
+                };
+            };
+        };
+    };
+    GetPortfolioAllocation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AllocationDto"];
+                };
+            };
+        };
+    };
+    GetPortfolioExposure: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExposureDto"];
+                };
+            };
+        };
+    };
+    GetPortfolioAttention: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttentionDto"];
                 };
             };
         };

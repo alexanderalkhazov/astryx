@@ -3009,6 +3009,66 @@
           }
         }
       }
+    },
+    "/api/v1/portfolio/allocation": {
+      "get": {
+        "tags": [
+          "Portfolio"
+        ],
+        "operationId": "GetPortfolioAllocation",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AllocationDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/portfolio/exposure": {
+      "get": {
+        "tags": [
+          "Portfolio"
+        ],
+        "operationId": "GetPortfolioExposure",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExposureDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/portfolio/attention": {
+      "get": {
+        "tags": [
+          "Portfolio"
+        ],
+        "operationId": "GetPortfolioAttention",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttentionDto"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -3040,6 +3100,40 @@
               "null",
               "string"
             ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "AllocationDto": {
+        "required": [
+          "sectors",
+          "assets",
+          "sectorWarningPct",
+          "maxSectorExposurePct"
+        ],
+        "type": "object",
+        "properties": {
+          "sectors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SectorSliceDto"
+            }
+          },
+          "assets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssetSliceDto"
+            }
+          },
+          "sectorWarningPct": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "maxSectorExposurePct": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
           }
         },
         "additionalProperties": false
@@ -3468,6 +3562,30 @@
         },
         "additionalProperties": false
       },
+      "AssetSliceDto": {
+        "required": [
+          "asset",
+          "value",
+          "pct"
+        ],
+        "type": "object",
+        "properties": {
+          "asset": {
+            "type": "string"
+          },
+          "value": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "pct": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          }
+        },
+        "additionalProperties": false
+      },
       "AttachedExitsDto": {
         "required": [
           "ocoGroupId",
@@ -3489,6 +3607,49 @@
             "pattern": "^-?\\d+(\\.\\d+)?$",
             "type": "string",
             "format": "decimal"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AttentionDto": {
+        "required": [
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AttentionItemDto"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "AttentionItemDto": {
+        "required": [
+          "kind",
+          "title",
+          "body",
+          "deepLink",
+          "severity"
+        ],
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "deepLink": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -3946,6 +4107,38 @@
         },
         "additionalProperties": false
       },
+      "ConcentrationWarningDto": {
+        "required": [
+          "kind",
+          "subject",
+          "pct",
+          "limit",
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "pct": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "limit": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
       "ConfidenceDto": {
         "required": [
           "value",
@@ -4082,6 +4275,42 @@
           },
           "features": {
             "$ref": "#/components/schemas/FeatureFlags"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ExposureDto": {
+        "required": [
+          "grossPct",
+          "betaWeightedPct",
+          "openRiskToStops",
+          "concentrationWarnings"
+        ],
+        "type": "object",
+        "properties": {
+          "grossPct": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "betaWeightedPct": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "decimal"
+          },
+          "openRiskToStops": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "concentrationWarnings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConcentrationWarningDto"
+            }
           }
         },
         "additionalProperties": false
@@ -6143,6 +6372,38 @@
             "items": {
               "$ref": "#/components/schemas/InstrumentSearchItem"
             }
+          }
+        },
+        "additionalProperties": false
+      },
+      "SectorSliceDto": {
+        "required": [
+          "sector",
+          "value",
+          "pct",
+          "warning",
+          "overLimit"
+        ],
+        "type": "object",
+        "properties": {
+          "sector": {
+            "type": "string"
+          },
+          "value": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "pct": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "warning": {
+            "type": "boolean"
+          },
+          "overLimit": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false

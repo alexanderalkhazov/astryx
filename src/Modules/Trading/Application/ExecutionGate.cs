@@ -84,3 +84,17 @@ public sealed class ExecutionGate(TradingDbContext db, AssessmentService assessm
             .ExecuteUpdateAsync(s => s.SetProperty(p => p.Status, ProposalStatus.Approved).SetProperty(p => p.DecidedAt, now).SetProperty(p => p.Version, p => p.Version + 1), cancellationToken);
     }
 }
+
+/// <summary><see cref="Astryx.Contracts.Trading.IPendingProposals"/>: the user's pending, unexpired proposals.</summary>
+public sealed class PendingProposals(TradingDbContext db, Astryx.Contracts.MarketData.IMarketSessionClock sessions) : Astryx.Contracts.Trading.IPendingProposals
+{
+    public async Task<IReadOnlyList<Astryx.Contracts.Trading.PendingProposal>> ListAsync(Guid userId, CancellationToken cancellationToken)
+    {
+        var now = sessions.Now;
+        return await db.Proposals.IgnoreQueryFilters().AsNoTracking()
+            .Where(p => p.UserId == userId && p.Status == ProposalStatus.Pending && p.ExpiresAt > now)
+            .OrderBy(p => p.ExpiresAt)
+            .Select(p => new Astryx.Contracts.Trading.PendingProposal(p.Id, p.Symbol, p.ExpiresAt))
+            .ToListAsync(cancellationToken);
+    }
+}

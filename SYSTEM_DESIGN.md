@@ -3405,6 +3405,20 @@ Slippage is embedded in the fill prices (and also reported separately on the fil
 - `PortfolioSnapshotJob` runs every 15 minutes. It writes each session hour's snapshot once (slot = top of the hour) and the EOD snapshot once after the close (slot = the close). The primary key with `ON CONFLICT DO NOTHING` makes both idempotent.
 - `PerformanceMath` holds the pure, decimal-only TWR, drawdown, trade-stats and rebasing functions.
 
+**Implemented (T-091).** `ExposureService` builds on the same valuation as P1:
+
+- **P7:** sector slices by value and % of equity, with `warning` above `sectorWarningPct` and `overLimit` above the max. Assets are split stocks / cash.
+- **P8:**
+  - gross exposure %;
+  - beta-weighted exposure Σ β × value / equity, which is `null` as soon as any open position lacks a beta in `market.fundamentals`;
+  - open risk to stops Σ qty × max(last − stop, 0);
+  - concentration warnings for a position over the weight cap or a sector over its limit, flagged only and never auto-sold.
+- **P9** (attention), each item with a deep link of at most two levels:
+  - the daily loss halt (`/portfolio`);
+  - pending proposals (`/proposal/{id}`, via Trading's `IPendingProposals`);
+  - positions within 1.5% of their stop (`/position/{symbol}`);
+  - working entry orders (`/activity`, via Paper's `IOpenOrders.ListWorkingEntriesAsync`).
+
 ### 15.7 Fees and slippage assumptions
 
 | Parameter | Default | Status |

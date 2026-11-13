@@ -200,4 +200,11 @@ public sealed class OpenOrders(PaperDbContext db) : IOpenOrders
             .Select(o => o.InstrumentId).ToListAsync(cancellationToken);
         return new WorkingEntries(ids.Count, ids);
     }
+
+    public async Task<IReadOnlyList<WorkingOrder>> ListWorkingEntriesAsync(Guid portfolioId, CancellationToken cancellationToken) =>
+        await db.Orders.IgnoreQueryFilters().AsNoTracking()
+            .Where(o => o.PortfolioId == portfolioId && o.Purpose == OrderPurpose.Entry && o.Status == OrderStatus.Working)
+            .OrderBy(o => o.SubmittedAt)
+            .Select(o => new WorkingOrder(o.Id, o.Symbol, o.Quantity, o.StopPrice ?? o.LimitPrice ?? 0m, o.ExpiresAt))
+            .ToListAsync(cancellationToken);
 }

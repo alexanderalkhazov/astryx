@@ -7,4 +7,9 @@ public sealed record WorkingEntries(int Count, IReadOnlyList<Guid> InstrumentIds
 public interface IOpenOrders
 {
     Task<WorkingEntries> GetWorkingEntriesAsync(Guid portfolioId, CancellationToken cancellationToken);
+
+    /// <summary>Working entry orders with their trigger, for the attention list (§11.8 P9).</summary>
+    Task<IReadOnlyList<WorkingOrder>> ListWorkingEntriesAsync(Guid portfolioId, CancellationToken cancellationToken);
 }
+
+public sealed record WorkingOrder(Guid OrderId, string Symbol, decimal Quantity, decimal Trigger, DateTimeOffset? ExpiresAt);

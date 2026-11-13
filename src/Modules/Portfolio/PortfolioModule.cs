@@ -21,6 +21,7 @@ public static class PortfolioModule
         services.AddScoped<Astryx.Contracts.Portfolio.IPortfolioStateSource, PortfolioStateSource>();
         services.AddScoped<Astryx.Contracts.Portfolio.IPositionBook, PositionBook>();
         services.AddScoped<ValuationService>();
+        services.AddScoped<ExposureService>();
         services.AddJobHandler<PortfolioSnapshotJob, PortfolioSnapshotHandler>();
         services.AddRecurringJob("portfolio-snapshot", TimeSpan.FromMinutes(15), _ => new PortfolioSnapshotJob());
         services.AddJobHandler<StartOfDayJob, StartOfDayHandler>();

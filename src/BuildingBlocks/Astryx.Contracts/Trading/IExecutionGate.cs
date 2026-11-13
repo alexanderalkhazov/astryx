@@ -30,3 +30,12 @@ public interface IExecutionGate
 }
 
 public sealed record ProposalLevels(decimal Entry, decimal Stop, decimal Target, Guid? StrategyVersionId);
+
+/// <summary>A pending proposal for the attention list (§11.8 P9).</summary>
+public sealed record PendingProposal(Guid Id, string Symbol, DateTimeOffset ExpiresAt);
+
+/// <summary>Owned by Trading; read by Portfolio through Contracts.</summary>
+public interface IPendingProposals
+{
+    Task<IReadOnlyList<PendingProposal>> ListAsync(Guid userId, CancellationToken cancellationToken);
+}

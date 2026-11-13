@@ -111,4 +111,48 @@ public class PortfolioReadTests(TradingApiFactory factory) : IClassFixture<Tradi
         (trade.GetProperty("exitReason").GetString(), trade.GetProperty("exitPrice").GetString(), trade.GetProperty("realizedPnl").GetString(), trade.GetProperty("returnPct").GetString())
             .ShouldBe(("target", "204.00", "1112.32", "0.0931"));
     }
+
+    [Fact]
+    public async Task Allocation_and_exposure_come_from_the_same_valuation()
+    {
+        var (client, _, _) = await HoldNvdaAsync();
+
+        var allocation = await client.GetFromJsonAsync<JsonElement>("/api/v1/portfolio/allocation");
+        var sector = allocation.GetProperty("sectors").EnumerateArray().Single();
+        (sector.GetProperty("value").GetString(), sector.GetProperty("pct").GetString(), sector.GetProperty("warning").GetBoolean()).ShouldBe(("11942.40", "0.1194", false));
+        allocation.GetProperty("assets").EnumerateArray().Select(a => a.GetProperty("asset").GetString()).ShouldBe(["stocks", "cash"]);
+
+        var exposure = await client.GetFromJsonAsync<JsonElement>("/api/v1/portfolio/exposure");
+        (exposure.GetProperty("grossPct").GetString(), exposure.GetProperty("openRiskToStops").GetString()).ShouldBe(("0.1194", "537.60")); // 64 × (186.60 − 178.20)
+        exposure.GetProperty("concentrationWarnings").GetArrayLength().ShouldBe(0);
+        var beta = exposure.GetProperty("betaWeightedPct");
+        (beta.ValueKind == JsonValueKind.Null || decimal.Parse(beta.GetString()!, System.Globalization.CultureInfo.InvariantCulture) > 0).ShouldBeTrue(); // null only when a beta is missing
+    }
+
+    [Fact]
+    public async Task Attention_lists_pending_proposals_stops_nearby_and_working_orders()
+    {
+        var (client, _, _) = await HoldNvdaAsync();
+        await factory.MakeQuoteLiveAsync("NVDA", 180.00m); // 1.0% above the 178.20 stop
+
+        var items = (await client.GetFromJsonAsync<JsonElement>("/api/v1/portfolio/attention")).GetProperty("items").EnumerateArray().ToList();
+
+        var near = items.Single(i => i.GetProperty("kind").GetString() == "stop_proximity");
+        (near.GetProperty("title").GetString(), near.GetProperty("deepLink").GetString()).ShouldBe(("NVDA near its stop", "/position/NVDA"));
+
+        var other = await TestUsers.SignedInClientAsync(factory);
+        await factory.MakeQuoteLiveAsync("NVDA", 186.40m);
+        var proposal = await (await other.PostAsJsonAsync("/api/v1/proposals", new { source = "signal", signalId = await factory.ActiveSignalIdAsync("NVDA") })).Content.ReadFromJsonAsync<JsonElement>();
+        var pending = (await other.GetFromJsonAsync<JsonElement>("/api/v1/portfolio/attention")).GetProperty("items").EnumerateArray().Single();
+        (pending.GetProperty("kind").GetString(), pending.GetProperty("deepLink").GetString()).ShouldBe(("pending_proposal", $"/proposal/{proposal.GetProperty("id").GetGuid()}"));
+
+        var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/paper/orders")
+        {
+            Content = JsonContent.Create(new { proposalId = proposal.GetProperty("id").GetGuid(), assessmentId = proposal.GetProperty("assessment").GetProperty("id").GetGuid() }),
+        };
+        request.Headers.Add("Idempotency-Key", $"order-{Guid.NewGuid():N}");
+        (await other.SendAsync(request)).EnsureSuccessStatusCode(); // a working buy stop (last 186.40 < 186.50)
+        var working = (await other.GetFromJsonAsync<JsonElement>("/api/v1/portfolio/attention")).GetProperty("items").EnumerateArray().Single();
+        (working.GetProperty("kind").GetString(), working.GetProperty("title").GetString()).ShouldBe(("working_order", "NVDA buy stop working"));
+    }
 }
