@@ -98,3 +98,11 @@ public sealed class PendingProposals(TradingDbContext db, Astryx.Contracts.Marke
             .ToListAsync(cancellationToken);
     }
 }
+
+/// <summary><see cref="Astryx.Contracts.Trading.IProposalLineage"/>.</summary>
+public sealed class ProposalLineageSource(TradingDbContext db) : Astryx.Contracts.Trading.IProposalLineage
+{
+    public async Task<Astryx.Contracts.Trading.ProposalLineage?> GetAsync(Guid proposalId, CancellationToken cancellationToken) =>
+        await db.Proposals.IgnoreQueryFilters().AsNoTracking().Where(p => p.Id == proposalId)
+            .Select(p => new Astryx.Contracts.Trading.ProposalLineage(p.Id, p.Source, p.StrategyId, p.StrategyName, p.SourceAt)).SingleOrDefaultAsync(cancellationToken);
+}

@@ -1279,6 +1279,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/positions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetPosition"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/positions/by-symbol/{symbol}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetPositionBySymbol"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1653,6 +1685,14 @@ export interface components {
             sector: null | string;
             industry: null | string;
         };
+        GeneratedByDto: {
+            source: string;
+            /** Format: uuid */
+            strategyId: null | string;
+            strategyName: null | string;
+            /** Format: date-time */
+            at: null | string;
+        };
         HttpValidationProblemDetails: {
             type?: null | string;
             title?: null | string;
@@ -1709,6 +1749,18 @@ export interface components {
             items: components["schemas"]["NewsItemDto"][];
         };
         JsonNode: unknown;
+        LevelTrackDto: {
+            /** Format: decimal */
+            stop: null | string;
+            /** Format: decimal */
+            entry: string;
+            /** Format: decimal */
+            current: null | string;
+            /** Format: decimal */
+            target: null | string;
+            /** Format: decimal */
+            progressPct: null | string;
+        };
         LevelValidationDto: {
             accepted: boolean;
             reasons: string[];
@@ -1875,6 +1927,44 @@ export interface components {
             /** Format: date-time */
             asOf: string;
             stale: boolean;
+        };
+        PositionDetailDto: {
+            /** Format: uuid */
+            id: string;
+            symbol: string;
+            name: string;
+            status: string;
+            isNew: boolean;
+            /** Format: decimal */
+            quantity: string;
+            /** Format: decimal */
+            avgEntryPrice: string;
+            /** Format: decimal */
+            costBasis: string;
+            /** Format: decimal */
+            last: null | string;
+            /** Format: decimal */
+            marketValue: null | string;
+            /** Format: decimal */
+            unrealizedPnl: null | string;
+            /** Format: decimal */
+            unrealizedPct: null | string;
+            track: components["schemas"]["LevelTrackDto"];
+            /** Format: decimal */
+            feesPaid: string;
+            /** Format: date-time */
+            openedAt: string;
+            entryOrderId: null | string;
+            generatedBy: null | components["schemas"]["GeneratedByDto"];
+            /** Format: decimal */
+            exitPrice: null | string;
+            exitReason: null | string;
+            /** Format: decimal */
+            realizedPnl: null | string;
+            /** Format: date-time */
+            closedAt: null | string;
+            /** Format: date-time */
+            quoteAsOf: null | string;
         };
         PositionDto: {
             /** Format: uuid */
@@ -4394,6 +4484,68 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AttentionDto"];
+                };
+            };
+        };
+    };
+    GetPosition: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PositionDetailDto"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    GetPositionBySymbol: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                symbol: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PositionDetailDto"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
         };

@@ -19,6 +19,7 @@ public static class TradingModule
         services.AddScoped<AssessmentService>();
         services.AddScoped<Astryx.Contracts.Trading.IExecutionGate, ExecutionGate>();
         services.AddScoped<Astryx.Contracts.Trading.IPendingProposals, PendingProposals>();
+        services.AddScoped<Astryx.Contracts.Trading.IProposalLineage, ProposalLineageSource>();
         services.AddValidatorsFromAssemblyContaining<CreateProposalRequestValidator>(includeInternalTypes: true);
         services.AddJobHandler<ProposalExpiryJob, ProposalExpiryHandler>();
         services.AddRecurringJob("proposal-expiry", TimeSpan.FromMinutes(1), _ => new ProposalExpiryJob());

@@ -109,6 +109,37 @@ export const ClosedTradePage = z.object({ items: z.array(ClosedTrade), nextCurso
 export const AttentionItem = z.object({ kind: z.string(), title: z.string(), body: z.string(), deepLink: z.string(), severity: z.enum(['info', 'warning', 'error']) });
 export type AttentionItem = z.infer<typeof AttentionItem>;
 
+/** P3 (§11.8): facts, the stop → target track and lineage. */
+export const PositionDetail = z.object({
+  id: z.string(),
+  symbol: z.string(),
+  name: z.string(),
+  status: z.enum(['open', 'closed']),
+  isNew: z.boolean(),
+  quantity: Decimal,
+  avgEntryPrice: Decimal,
+  costBasis: Decimal,
+  last: Decimal.nullable(),
+  marketValue: Decimal.nullable(),
+  unrealizedPnl: Decimal.nullable(),
+  unrealizedPct: Decimal.nullable(),
+  track: z.object({ stop: Decimal.nullable(), entry: Decimal, current: Decimal.nullable(), target: Decimal.nullable(), progressPct: Decimal.nullable() }),
+  feesPaid: Decimal,
+  openedAt: z.string(),
+  entryOrderId: z.string().nullable(),
+  generatedBy: z.object({ source: z.string(), strategyId: z.string().nullable(), strategyName: z.string().nullable(), at: z.string().nullable() }).nullable(),
+  exitPrice: Decimal.nullable(),
+  exitReason: z.string().nullable(),
+  realizedPnl: Decimal.nullable(),
+  closedAt: z.string().nullable(),
+  quoteAsOf: z.string().nullable(),
+});
+export type PositionDetail = z.infer<typeof PositionDetail>;
+
+/** T10: what closing now would do (server-computed). */
+export const ClosePreview = z.object({ quantity: Decimal, marketValue: Decimal, estExitPrice: Decimal, estFees: Decimal, estRealizedPnl: Decimal, asOf: z.string() });
+export type ClosePreview = z.infer<typeof ClosePreview>;
+
 export type PerformanceRange = '1D' | '1W' | '1M' | '3M' | '1Y' | 'ALL';
 
 /** Portfolio P1, P2 and P5–P9. */
@@ -120,6 +151,10 @@ export function portfolioApi(client: ApiClient) {
     exposure: () => client.request('/api/v1/portfolio/exposure', { schema: Exposure }),
     performance: (range: PerformanceRange) => client.request(`/api/v1/portfolio/performance?range=${range}`, { schema: Performance }),
     trades: () => client.request('/api/v1/portfolio/trades', { schema: ClosedTradePage }),
+    positionBySymbol: (symbol: string) => client.request(`/api/v1/positions/by-symbol/${encodeURIComponent(symbol)}`, { schema: PositionDetail }),
+    closePreview: (positionId: string) => client.request(`/api/v1/positions/${encodeURIComponent(positionId)}/close-preview`, { method: 'POST', schema: ClosePreview }),
+    close: (positionId: string, idempotencyKey: string) =>
+      client.request(`/api/v1/positions/${encodeURIComponent(positionId)}/close`, { method: 'POST', body: {}, idempotencyKey, schema: z.object({ position: z.object({ status: z.string(), realizedPnl: Decimal.nullable() }) }) }),
     attention: () => client.request('/api/v1/portfolio/attention', { schema: z.object({ items: z.array(AttentionItem) }) }),
   };
 }

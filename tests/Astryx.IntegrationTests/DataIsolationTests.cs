@@ -64,6 +64,9 @@ public partial class DataIsolationTests(ApiFactory factory) : IClassFixture<ApiF
         ["POST /api/v1/paper/orders/{id:guid}/cancel"] = t => t.AssertForeignOrderIs404Async(cancel: true),
         ["POST /api/v1/positions/{id:guid}/close-preview"] = t => t.AssertUnknownPositionIs404Async("/close-preview"),
         ["POST /api/v1/positions/{id:guid}/close"] = t => t.AssertUnknownPositionIs404Async("/close"),
+        // Detail reads with a real foreign position are in PortfolioReadTests.Position_detail_has_facts_the_level_track_and_lineage_and_clears_NEW.
+        ["GET /api/v1/positions/{id:guid}"] = t => t.AssertUnknownPositionReadIs404Async($"/api/v1/positions/{Guid.NewGuid()}"),
+        ["GET /api/v1/positions/by-symbol/{symbol}"] = t => t.AssertUnknownPositionReadIs404Async("/api/v1/positions/by-symbol/NVDA"),
         ["POST /api/v1/proposals/{id:guid}/assessments"] = t => t.AssertForeignProposalIs404Async(HttpMethod.Post, "/assessments", new { riskPerTradePct = "0.0075" }),
     };
 
@@ -152,6 +155,12 @@ public partial class DataIsolationTests(ApiFactory factory) : IClassFixture<ApiF
         var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/positions/{Guid.NewGuid()}{suffix}") { Content = JsonContent.Create(new { }) };
         request.Headers.Add("Idempotency-Key", $"isolation-{Guid.NewGuid():N}");
         (await bob.SendAsync(request)).StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
+    private async Task AssertUnknownPositionReadIs404Async(string path)
+    {
+        var bob = await TestUsers.SignedInClientAsync(factory);
+        (await bob.GetAsync(path)).StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     private async Task AssertForeignOrderIs404Async(bool cancel = false)

@@ -208,3 +208,10 @@ public sealed class OpenOrders(PaperDbContext db) : IOpenOrders
             .Select(o => new WorkingOrder(o.Id, o.Symbol, o.Quantity, o.StopPrice ?? o.LimitPrice ?? 0m, o.ExpiresAt))
             .ToListAsync(cancellationToken);
 }
+
+/// <summary><see cref="IOrderLookup"/>.</summary>
+public sealed class OrderLookup(PaperDbContext db) : IOrderLookup
+{
+    public async Task<string?> BrokerOrderIdAsync(Guid orderId, CancellationToken cancellationToken) =>
+        await db.Orders.IgnoreQueryFilters().AsNoTracking().Where(o => o.Id == orderId).Select(o => o.BrokerOrderId).SingleOrDefaultAsync(cancellationToken);
+}

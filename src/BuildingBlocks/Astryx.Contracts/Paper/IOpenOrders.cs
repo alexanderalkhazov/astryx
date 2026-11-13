@@ -13,3 +13,9 @@ public interface IOpenOrders
 }
 
 public sealed record WorkingOrder(Guid OrderId, string Symbol, decimal Quantity, decimal Trigger, DateTimeOffset? ExpiresAt);
+
+/// <summary>Owned by Paper: the broker-side id of an order (e.g. <c>SIM-4G3AC2</c>) for position facts.</summary>
+public interface IOrderLookup
+{
+    Task<string?> BrokerOrderIdAsync(Guid orderId, CancellationToken cancellationToken);
+}

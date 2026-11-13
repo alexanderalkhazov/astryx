@@ -37,6 +37,12 @@ public static class PortfolioEndpoints
         portfolio.MapGet("/attention", async (ExposureService service, CancellationToken ct) => (await service.AttentionAsync(ct)).Match(Results.Ok, e => e.ToProblem()))
             .WithName("GetPortfolioAttention").Produces<AttentionDto>();
 
+        var positions = app.MapGroup("/api/v1/positions").WithTags("Positions").RequireAuthorization("Authenticated");
+        positions.MapGet("/{id:guid}", async (Guid id, PositionDetailService service, CancellationToken ct) => (await service.GetAsync(id, ct)).Match(Results.Ok, e => e.ToProblem()))
+            .WithName("GetPosition").Produces<PositionDetailDto>().ProducesProblem(StatusCodes.Status404NotFound);
+        positions.MapGet("/by-symbol/{symbol}", async (string symbol, PositionDetailService service, CancellationToken ct) => (await service.BySymbolAsync(symbol, ct)).Match(Results.Ok, e => e.ToProblem()))
+            .WithName("GetPositionBySymbol").Produces<PositionDetailDto>().ProducesProblem(StatusCodes.Status404NotFound);
+
         return app;
     }
 }

@@ -155,4 +155,25 @@ public class PortfolioReadTests(TradingApiFactory factory) : IClassFixture<Tradi
         var working = (await other.GetFromJsonAsync<JsonElement>("/api/v1/portfolio/attention")).GetProperty("items").EnumerateArray().Single();
         (working.GetProperty("kind").GetString(), working.GetProperty("title").GetString()).ShouldBe(("working_order", "NVDA buy stop working"));
     }
+
+    [Fact]
+    public async Task Position_detail_has_facts_the_level_track_and_lineage_and_clears_NEW()
+    {
+        var (client, _, positionId) = await HoldNvdaAsync();
+
+        var d = await client.GetFromJsonAsync<JsonElement>($"/api/v1/positions/{positionId}");
+
+        (d.GetProperty("symbol").GetString(), d.GetProperty("status").GetString(), d.GetProperty("isNew").GetBoolean(), d.GetProperty("quantity").GetString()).ShouldBe(("NVDA", "open", true, "64"));
+        d.GetProperty("entryOrderId").GetString()!.ShouldStartWith("SIM-");
+        var track = d.GetProperty("track");
+        (track.GetProperty("stop").GetString(), track.GetProperty("entry").GetString(), track.GetProperty("current").GetString(), track.GetProperty("target").GetString(), track.GetProperty("progressPct").GetString())
+            .ShouldBe(("178.20", "186.62", "186.60", "204.00", "0.3256")); // (186.60 − 178.20) ÷ (204.00 − 178.20)
+        d.GetProperty("generatedBy").GetProperty("strategyName").GetString().ShouldBe("Base Breakout v3");
+
+        var bySymbol = await client.GetFromJsonAsync<JsonElement>("/api/v1/positions/by-symbol/nvda");
+        (bySymbol.GetProperty("id").GetGuid(), bySymbol.GetProperty("isNew").GetBoolean()).ShouldBe((positionId, false)); // seen by the first read
+        var bob = await TestUsers.SignedInClientAsync(factory);
+        (await bob.GetAsync($"/api/v1/positions/{positionId}")).StatusCode.ShouldBe(System.Net.HttpStatusCode.NotFound);
+        (await bob.GetAsync("/api/v1/positions/by-symbol/NVDA")).StatusCode.ShouldBe(System.Net.HttpStatusCode.NotFound);
+    }
 }

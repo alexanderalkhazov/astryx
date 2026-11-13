@@ -17,7 +17,6 @@ const SAMPLE = { equity: '118181.30', dayPnl: '493.25', dayPct: '0.0042', allTim
 /** Every placeholder route, so the shell can be walked end to end before the screens exist. */
 const ROUTES: { label: string; href: Href }[] = [
   { label: 'Stock · NVDA', href: '/stock/NVDA' },
-  { label: 'Position · NVDA', href: '/position/NVDA' },
   { label: 'Strategy', href: '/strategy/demo' },
   { label: 'Analysis history', href: '/analyses' },
   { label: 'Analysis', href: '/analyses/demo' },
