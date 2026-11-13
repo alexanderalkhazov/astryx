@@ -1,15 +1,16 @@
 import { ApiError, type Proposal, type RiskAssessment } from '@astryx/api-client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Slot } from 'expo-router';
-import { fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
-import { Text } from 'react-native';
+import { fireEvent, renderRouter, screen, waitFor, within } from 'expo-router/testing-library';
+import { Alert, Text } from 'react-native';
 
 import ProposalScreen from '../(app)/proposal/[id]';
 
 jest.mock('expo-crypto', () => ({ randomUUID: () => '00000000-0000-4000-8000-000000000001' }));
 jest.mock('expo-secure-store', () => ({ WHEN_UNLOCKED_THIS_DEVICE_ONLY: 'x', getItemAsync: jest.fn(), setItemAsync: jest.fn(), deleteItemAsync: jest.fn() }));
-jest.mock('@/lib/api', () => ({ proposals: { get: jest.fn(), assess: jest.fn(), reject: jest.fn(), riskLimits: jest.fn() } }));
+jest.mock('@/lib/api', () => ({ proposals: { get: jest.fn(), assess: jest.fn(), reject: jest.fn(), riskLimits: jest.fn() }, paper: { place: jest.fn() } }));
 const api = (jest.requireMock('@/lib/api') as { proposals: Record<'get' | 'assess' | 'reject' | 'riskLimits', jest.Mock> }).proposals;
+const paper = (jest.requireMock('@/lib/api') as { paper: { place: jest.Mock } }).paper;
 
 const inAMinute = () => new Date(Date.now() + 60_000).toISOString();
 
@@ -56,6 +57,8 @@ async function renderProposal() {
       'proposal/[id]': ProposalScreen,
       'stock/[ticker]': () => <Text>Stock screen</Text>,
       discover: () => <Text>Discover screen</Text>,
+      portfolio: () => <Text>Portfolio screen</Text>,
+      activity: () => <Text>Activity screen</Text>,
     },
     { initialUrl: '/proposal/p1' },
   );
@@ -80,7 +83,7 @@ describe('Trade proposal (design 06)', () => {
     expect(screen.getByLabelText('Target +9.38%: 204.00')).toBeOnTheScreen();
     expect(screen.getByLabelText('Loss at stop $630.80, gain at target $1,330.00, risk to reward 1 to 2.11')).toBeOnTheScreen();
     expect(screen.getByText('Sized by the max position weight')).toBeOnTheScreen();
-    expect(screen.getByLabelText('Capital required: $14,174.00')).toBeOnTheScreen();
+    expect(screen.getAllByLabelText('Capital required: $14,174.00')[0]).toBeOnTheScreen();
     expect(screen.getByLabelText('Cash after: $7,665.03')).toBeOnTheScreen();
     expect(screen.getByText('Weight 11.99%, close to 12% cap')).toBeOnTheScreen();
     expect(screen.getByText('Regular session open')).toBeOnTheScreen();
@@ -159,4 +162,72 @@ describe('Trade proposal (design 06)', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Back to Discover' }));
     await waitFor(() => expect(screen).toHavePathname('/discover'));
   });
+
+  describe('approving (designs 07 and 08, T-088)', () => {
+    const FILLED = {
+      id: 'o1', brokerOrderId: 'SIM-4G3AC2', mode: 'paper', broker: 'mock', status: 'filled', purpose: 'entry', symbol: 'NVDA', side: 'buy', orderType: 'buy_stop',
+      quantity: '76', stopPrice: '186.50', limitPrice: null,
+      fill: { price: '186.52', referencePrice: '186.50', slippagePerShare: '0.02', slippage: '1.52', fee: '0.00', filledAt: '2026-11-09T19:36:08Z' },
+      attached: { ocoGroupId: 'g', stop: '178.20', target: '204.00' }, positionId: 'pos1', proposalId: 'p1', submittedAt: '2026-11-09T19:36:08Z', expiresAt: null,
+    };
+
+    /** The screen-reader path of HoldToConfirm: the Approve action, then the native confirm's Approve. */
+    async function approve() {
+      jest.spyOn(Alert, 'alert').mockImplementation((_t, _b, buttons) => buttons?.find((b) => b.text === 'Approve')?.onPress?.());
+      await fireEvent(screen.getByTestId('hold-to-approve'), 'accessibilityAction', { nativeEvent: { actionName: 'activate' } });
+    }
+
+    it('repeats every field, places the order with one key and shows the fill receipt', async () => {
+      paper.place.mockResolvedValue(ok(FILLED));
+      await renderProposal();
+      await waitFor(() => expect(screen.getByTestId('proposal-approve')).toBeEnabled());
+
+      await fireEvent.press(screen.getByTestId('proposal-approve'));
+      expect(await screen.findByText('PAPER ACCOUNT · SIMULATED FILL · NO REAL MONEY')).toBeOnTheScreen();
+      const sheet = within(screen.getByTestId('confirm-order-sheet'));
+      expect(sheet.getByLabelText('Action: Buy 76 shares · long')).toBeOnTheScreen();
+      expect(sheet.getByLabelText('Order: Buy stop @ 186.50 · day')).toBeOnTheScreen();
+      expect(sheet.getByLabelText('Attached stop: Stop loss @ 178.20')).toBeOnTheScreen();
+      expect(sheet.getByLabelText('Max loss: −$630.80')).toBeOnTheScreen();
+      await approve();
+
+      expect(paper.place).toHaveBeenCalledWith({ proposalId: 'p1', assessmentId: 'a1' }, '00000000-0000-4000-8000-000000000001');
+      expect(await screen.findByText('EXECUTED · SIMULATED FILL')).toBeOnTheScreen();
+      expect(screen.getByText('Bought 76 NVDA at $186.52')).toBeOnTheScreen();
+      expect(screen.getByLabelText('Order ID: SIM-4G3AC2')).toBeOnTheScreen();
+      expect(screen.getByLabelText('Slippage: +$0.02 vs entry 186.50')).toBeOnTheScreen();
+      expect(screen.getByLabelText('Stop / target: OCO attached · 178.20 / 204.00')).toBeOnTheScreen();
+      await fireEvent.press(screen.getByRole('button', { name: 'View in portfolio' }));
+      await waitFor(() => expect(screen).toHavePathname('/portfolio'));
+    });
+
+    it('says when a buy stop is working rather than filled', async () => {
+      paper.place.mockResolvedValue(ok({ ...FILLED, status: 'working', fill: null, attached: null, positionId: null }));
+      await renderProposal();
+      await waitFor(() => expect(screen.getByTestId('proposal-approve')).toBeEnabled());
+
+      await fireEvent.press(screen.getByTestId('proposal-approve'));
+      await approve();
+
+      expect(await screen.findByText('ORDER WORKING · NOT FILLED')).toBeOnTheScreen();
+      expect(screen.getByRole('button', { name: 'View in Activity' })).toBeOnTheScreen();
+    });
+
+    it('unlocks with the reason on error and retries with the same key', async () => {
+      paper.place.mockRejectedValueOnce(new ApiError({ status: 409, code: 'assessment_stale', detail: 'The numbers changed since this assessment.' })).mockResolvedValue(ok(FILLED));
+      const { useToasts } = jest.requireActual('@/state/toasts') as typeof import('@/state/toasts');
+      await renderProposal();
+      await waitFor(() => expect(screen.getByTestId('proposal-approve')).toBeEnabled());
+      await fireEvent.press(screen.getByTestId('proposal-approve'));
+
+      await approve();
+      await waitFor(() => expect(useToasts.getState().toasts.at(-1)?.body).toBe('The numbers changed since this assessment.'));
+      expect(screen.getByText('Hold to approve')).toBeOnTheScreen(); // unlocked
+      await approve();
+
+      expect(await screen.findByText('EXECUTED · SIMULATED FILL')).toBeOnTheScreen();
+      expect(paper.place.mock.calls[0]![1]).toBe(paper.place.mock.calls[1]![1]);
+    });
+  });
 });
+

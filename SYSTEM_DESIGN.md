@@ -1185,6 +1185,18 @@ Implementation (T-049):
 | Accessibility | Keyboard Enter/Space holds; VoiceOver: `accessibilityActions=[{name:'activate', label:'Approve'}]` then a second native `Alert` confirm |
 | FillReceiptSheet | StatusBanner **executed** (green solid): "EXECUTED · SIMULATED FILL". "Bought 76 NVDA at $186.52". Rows: Order ID (`SIM-…`), Filled (14:36:08 ET · paper account), Slippage (+$0.02 vs entry 186.50), Stop/target (OCO attached · 178.20 / 204.00), Commission ($0.00). Buttons **Done** · **View in portfolio**. If the order is *working* (buy-stop not yet triggered): banner pending "ORDER WORKING · NOT FILLED", order ID, trigger price, "View in Activity". |
 
+**Implemented (T-088).**
+
+- **HoldToConfirm** (`components/HoldToConfirm.tsx`) is a 56 pt control with a linear Reanimated fill over 1200 ms. Its label goes "Hold to approve" → "Keep holding…" → "Sending…".
+  - Releasing early resets it. Completing fires exactly once, with a success haptic. Tests check that 1199 ms doesn't fire and 1200 ms fires once.
+  - Screen readers and keyboard users (iOS Full Keyboard Access activates through the same action) get the `activate` action labelled "Approve", followed by a native `Alert` confirm.
+- **ConfirmOrderSheet** repeats every field from design 07.
+  - It creates the `Idempotency-Key` when it opens and reuses it if the user holds again after an error.
+  - It can't be dismissed while the order sends.
+  - An error shows the server's reason as a toast, then re-arms the hold control so the same key can be retried. The proposal stays unchanged.
+- **FillReceiptSheet** shows the executed receipt: the order ID in the banner, "Bought N SYM at $X", fill time in ET, slippage against the entry, OCO stop/target and commission, with Done and View in portfolio. A working buy stop shows "ORDER WORKING · NOT FILLED" with its trigger price and View in Activity.
+- `packages/api-client` gains `paperApi.place` (T6) and the `PaperOrder` schema.
+
 #### 8.4.6 Portfolio (`(tabs)/portfolio`) — design 09, 15
 
 | Aspect | Spec |

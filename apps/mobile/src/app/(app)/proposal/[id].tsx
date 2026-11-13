@@ -1,5 +1,6 @@
-import { type Proposal, type RiskAssessment, RISK_CHOICES } from '@astryx/api-client';
+import { type PaperOrder, type Proposal, type RiskAssessment, RISK_CHOICES } from '@astryx/api-client';
 import { color, radius, space } from '@astryx/design-tokens';
+import { useQueryClient } from '@tanstack/react-query';
 import Decimal from 'decimal.js-light';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
@@ -18,7 +19,9 @@ import { Screen } from '@/components/Shell';
 import { StatusBanner } from '@/components/StatusBanner';
 import { Stepper } from '@/components/Stepper';
 import { Text } from '@/components/Text';
-import { approveGate, isNotFound, useNow, useProposal, useRejectProposal, useRiskLimits, useSizing } from '@/features/proposal/useProposal';
+import { ConfirmOrderSheet } from '@/features/proposal/ConfirmOrderSheet';
+import { FillReceiptSheet } from '@/features/proposal/FillReceiptSheet';
+import { approveGate, isNotFound, proposalKey, useNow, useProposal, useRejectProposal, useRiskLimits, useSizing } from '@/features/proposal/useProposal';
 import { formatEtTime, formatMoney, formatPct, formatPrice } from '@/lib/format';
 
 const ORDER_LABEL: Record<Proposal['orderType'], string> = { buy_stop: 'BUY STOP', limit: 'LIMIT', market: 'MARKET' };
@@ -46,7 +49,9 @@ export default function ProposalScreen() {
   const reject = useRejectProposal(id);
   const now = useNow();
   const [rejectOpen, setRejectOpen] = useState(false);
-  const [, setConfirmOpen] = useState(false); // the confirm sheet arrives with T-088
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [placed, setPlaced] = useState<PaperOrder | null>(null);
+  const queryClient = useQueryClient();
 
   const header = <StackHeader title={proposal.data?.symbol ?? 'Proposal'} subtitle="Trade proposal" />;
 
@@ -210,6 +215,30 @@ export default function ProposalScreen() {
         busy={reject.isPending}
         onCancel={() => setRejectOpen(false)}
         onConfirm={() => reject.mutate(undefined, { onSettled: () => setRejectOpen(false) })}
+      />
+      {a ? (
+        <ConfirmOrderSheet
+          open={confirmOpen}
+          proposal={p}
+          assessment={a}
+          onClose={() => setConfirmOpen(false)}
+          onPlaced={(order) => {
+            setConfirmOpen(false);
+            setPlaced(order);
+            void queryClient.invalidateQueries({ queryKey: proposalKey(p.id) });
+          }}
+        />
+      ) : null}
+      <FillReceiptSheet
+        order={placed}
+        onDone={() => {
+          setPlaced(null);
+          router.back();
+        }}
+        onView={(where) => {
+          setPlaced(null);
+          router.replace(where === 'portfolio' ? '/portfolio' : '/activity');
+        }}
       />
     </>
   );

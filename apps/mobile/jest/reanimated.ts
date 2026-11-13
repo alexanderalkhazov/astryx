@@ -15,6 +15,7 @@ module.exports = {
   useAnimatedStyle: (factory: () => object) => factory(),
   useDerivedValue: (factory: () => unknown) => ({ value: factory() }),
   withTiming: identity,
+  cancelAnimation: () => undefined,
   withRepeat: identity,
   withDelay: (_delay: number, value: unknown) => value,
   Easing: { bezier: () => identity, inOut: () => identity, ease: identity, linear: identity },
