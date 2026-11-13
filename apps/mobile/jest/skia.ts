@@ -4,7 +4,7 @@ const Stub = () => null;
 
 const builder = () => {
   const b: Record<string, unknown> = {};
-  for (const method of ['moveTo', 'lineTo', 'addRect', 'close']) b[method] = () => b;
+  for (const method of ['moveTo', 'lineTo', 'addRect', 'addArc', 'close']) b[method] = () => b;
   b.build = () => ({});
   return b;
 };

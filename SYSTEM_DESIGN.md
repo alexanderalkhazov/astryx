@@ -1210,6 +1210,19 @@ Implementation (T-049):
 | Empty | No positions → EmptyState "No open positions" + "Find a setup" |
 | Error | Stale banner; values flagged |
 
+**Implemented (T-092).**
+
+- `(tabs)/portfolio.tsx` shows the header with the PAPER chip and a stale-quotes banner. The hero is `MetricHero` with dimmed cents, day P&L and all-time return, plus a halt banner when entries are paused.
+- **Positions:** the Invested / Unrealized / Cash row, then `PositionRow`s with:
+  - shares · avg cost, value, and P&L in $ and %;
+  - a NEW badge until seen, and "x% to stop" when within 1.5%;
+  - a `WeightBar` against the cap. The track spans 1.5 × the cap with a tick at the cap, and the fill turns amber once the holding drifts over it.
+  - With no positions: "No open positions" and "Find a setup".
+- **Allocation:** a sector stacked bar and rows, with "Near limit 35%" (or "Over limit") above the warning line. Also a Skia `AssetDonut` (US equities / Cash), gross and beta-weighted exposure (shown as "—" with an explanation when a beta is missing), open risk to stops, and concentration warnings.
+- **Performance:** range segments 1W–ALL, a `LineChart` of equity with SPY dashed (rebased on the server), TWR, the benchmark's change, max drawdown, win rate, average win and loss, and closed trades.
+- Query keys start with `portfolio` or `positions`, so the `order.updated` and `position.updated` pushes refresh the screen.
+- Not checked on the simulator yet: the local account has no fills while the market is closed.
+
 #### 8.4.7 Position detail (`position/[ticker]`) — design 10, 24
 
 | Aspect | Spec |
