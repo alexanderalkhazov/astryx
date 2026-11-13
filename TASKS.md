@@ -445,7 +445,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [x] **T-097** Drawdown guard
   - **Acceptance:** a rolling 30-day drawdown of each strategy's live paper results. Warn at 90% of the threshold, auto-pause signals at −6.0% (`active_guarded` / `paused`). An Activity "Strategy" event is emitted.
   - **Refs:** §7.8 · **Depends:** T-096, T-095 · **P1**
-- [ ] **T-098** Settings screen
+- [x] **T-098** Settings screen
   - **Story:** As a user, I want to see my paper connection and permissions, adjust risk limits and scanner settings, and understand that live trading is unavailable.
   - **Acceptance:** design 18: eToro connection card (from T-141: "eToro · paper account", masked key, sync time, permissions incl. "Deposits & withdrawals — Never requested"; "Connect eToro" when not connected), Paper/Live segmented with the guard dialog (design 25) ending in "Live trading isn't available yet" (server 403), risk limit steppers with bounds, scanner universe and filters, watchlist link, notification toggles, security (sign out, sign out of all devices, change password), and prototype controls in dev builds only.
   - **Refs:** §8.4.11, §17.3 · **Depends:** T-023, T-095 · **P0**
