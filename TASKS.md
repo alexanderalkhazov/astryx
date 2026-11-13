@@ -455,7 +455,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [x] **T-100** Reconciliation job
   - **Acceptance:** nightly checks 1–6 from §20.13. A mismatch halts new entries for that portfolio, raises a critical log and alert, and writes an audit row. It runs clean after the whole test suite.
   - **Refs:** §20.13 · **Depends:** T-085 · **P1**
-- [ ] **T-101** Push notifications
+- [x] **T-101** Push notifications
   - **Acceptance:** `expo-notifications` registration (N4/N5). `PushSender` respects preference categories. Tapping a notification deep-links to the same route as its Activity event. Revoked tokens are cleaned up.
   - **Refs:** §7.15 · **Depends:** T-095, T-036 · **P1**
 
