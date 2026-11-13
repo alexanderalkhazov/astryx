@@ -146,6 +146,11 @@ export type PerformanceRange = '1D' | '1W' | '1M' | '3M' | '1Y' | 'ALL';
 export function portfolioApi(client: ApiClient) {
   return {
     summary: () => client.request('/api/v1/portfolio', { schema: PortfolioSummary }),
+    sync: () => client.request('/api/v1/portfolio/sync', { method: 'POST', schema: PortfolioSummary }),
+    strategyMtd: () =>
+      client.request('/api/v1/strategies/summary?period=mtd', {
+        schema: z.object({ period: z.string(), items: z.array(z.object({ strategyId: z.string(), name: z.string(), pnl: Decimal, pnlPct: Decimal, trades: z.number().int(), illustrative: z.boolean() })) }),
+      }),
     positions: (status: 'open' | 'closed' = 'open') => client.request(`/api/v1/portfolio/positions?status=${status}`, { schema: PositionPage }),
     allocation: () => client.request('/api/v1/portfolio/allocation', { schema: Allocation }),
     exposure: () => client.request('/api/v1/portfolio/exposure', { schema: Exposure }),

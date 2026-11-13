@@ -1065,6 +1065,17 @@ Shared for every screen:
 | Empty | New account: hero $100,000.00, no positions → EmptyState "No open positions" with "Find a setup" (goes to Discover) |
 | Error | **Connection lost** (design 22): red banner "Values are from the last sync at 14:12 ET and may be stale · Approvals are disabled · Retry" |
 
+**Implemented (T-094).** `(tabs)/index.tsx` follows design 01 with live data:
+
+- **Hero:** value with dimmed cents, day P&L and all time. Scrubbing the chart swaps in the point under the finger.
+- **Chart:** the performance `LineChart` with SPY dashed and ranges 1D–1Y.
+- Cash / Invested / Unrealized.
+- **Needs attention** from P9, with each item deep-linking to its proposal, position or activity. The header bell shows "unread" while items exist.
+- **Top opportunities:** a horizontal carousel of the highest-scoring signals (card 234 + gap 12, snap 246) that opens the stock.
+- **Market breadth** (M11), up to five open positions, and strategies month to date (ST5).
+- **Pull to refresh** calls `POST /portfolio/sync` (for paper, a revaluation at the latest quotes), refetches the portfolio queries and toasts "Synced HH:MM ET".
+- The sample-data notice and the placeholder hero are gone. The remaining placeholder routes are listed only in development builds.
+
 #### 8.4.2 Discover (`(tabs)/discover`) — design 02, 03, 20, 21, 23
 
 | Aspect | Spec |

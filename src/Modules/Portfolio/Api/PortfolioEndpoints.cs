@@ -16,6 +16,10 @@ public static class PortfolioEndpoints
         portfolio.MapGet("/", async (ValuationService service, CancellationToken ct) => (await service.GetAsync(ct)).Match(Results.Ok, e => e.ToProblem()))
             .WithName("GetPortfolio").Produces<PortfolioDto>().ProducesProblem(StatusCodes.Status404NotFound);
 
+        // P10 sync: a paper portfolio has nothing to pull from a broker, so it revalues at the latest quotes (eToro sync arrives with T-145).
+        portfolio.MapPost("/sync", async (ValuationService service, CancellationToken ct) => (await service.GetAsync(ct)).Match(Results.Ok, e => e.ToProblem()))
+            .WithName("SyncPortfolio").RequireRateLimiting(RateLimitPolicies.Sync).Produces<PortfolioDto>();
+
         portfolio.MapGet("/positions", async (string? status, int? limit, string? cursor, ValuationService service, CancellationToken ct) =>
                 (await service.PositionsAsync(status, limit, cursor, ct)).Match(Results.Ok, e => e.ToProblem()))
             .WithName("ListPortfolioPositions").Produces<PositionPageDto>();

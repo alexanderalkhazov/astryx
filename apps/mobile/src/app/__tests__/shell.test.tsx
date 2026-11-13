@@ -73,14 +73,12 @@ beforeEach(() => {
 });
 
 describe('app shell', () => {
-  it('shows the Home header with the PAPER chip, sample-data notice and actions', async () => {
+  it('shows the Home header with the PAPER chip and actions', async () => {
     await renderRouter(routes, { initialUrl: '/' });
 
     expect(screen.getByRole('header', { name: 'Overview' })).toBeOnTheScreen();
     expect(screen.getByTestId('paper-chip')).toBeOnTheScreen();
-    expect(screen.getByText('Illustrative sample data — not live prices')).toBeOnTheScreen();
-    expect(screen.getByText('Updated 14:32 ET')).toBeOnTheScreen();
-    expect(screen.getByRole('button', { name: 'Alerts, unread' })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: /^Alerts/ })).toBeOnTheScreen(); // "unread" only when something needs attention
   });
 
   it('opens Settings from the Home header', async () => {
@@ -95,7 +93,7 @@ describe('app shell', () => {
   it('opens Activity filtered to alerts from the bell', async () => {
     await renderRouter(routes, { initialUrl: '/' });
 
-    await fireEvent.press(screen.getByRole('button', { name: 'Alerts, unread' }));
+    await fireEvent.press(screen.getByRole('button', { name: /^Alerts/ }));
 
     await waitFor(() => expect(screen).toHavePathname('/activity'));
     expect(screen.getByText('filter=alerts')).toBeOnTheScreen();
