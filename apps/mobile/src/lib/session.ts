@@ -1,5 +1,6 @@
 import { isApiError } from '@astryx/api-client';
 
+import { unregisterPush } from '@/features/push/push';
 import { auth, clearLocalSession, refreshSession } from '@/lib/api';
 import { secureStorage } from '@/lib/secureStorage';
 import { clearPendingLink } from '@/state/pendingLink';
@@ -20,6 +21,7 @@ export async function signOut(): Promise<void> {
   const refreshToken = await secureStorage.getRefreshToken();
   try {
     if (refreshToken && useSession.getState().accessToken) {
+      await unregisterPush(); // while the session can still call N5
       await auth.logout({ refreshToken });
     }
   } catch {

@@ -3,6 +3,7 @@ import { Redirect, Stack, useGlobalSearchParams, usePathname, useSegments } from
 import { useEffect } from 'react';
 import { useReducedMotion } from 'react-native-reanimated';
 
+import { usePushNotifications } from '@/features/push/usePushNotifications';
 import { useRealtimeConnection } from '@/features/realtime/useRealtimeConnection';
 import { stackTransition } from '@/lib/motion';
 import { clearPendingLink, currentHref, stashPendingLink } from '@/state/pendingLink';
@@ -17,6 +18,7 @@ export default function AppLayout() {
   const params = useGlobalSearchParams();
   const reduceMotion = useReducedMotion();
   useRealtimeConnection();
+  usePushNotifications();
 
   useEffect(() => {
     if (status === 'signedOut' && !signedOutByUser) stashPendingLink(currentHref(pathname, segments, params));

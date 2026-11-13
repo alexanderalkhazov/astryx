@@ -25,3 +25,7 @@ jest.mock('@shopify/flash-list', () => {
   const { FlatList } = jest.requireActual('react-native');
   return { FlashList: FlatList };
 });
+
+// Push (T-101): no native notification module or device info in Jest.
+jest.mock('expo-notifications', () => require('./jest/notifications'));
+jest.mock('expo-device', () => ({ isDevice: true }));

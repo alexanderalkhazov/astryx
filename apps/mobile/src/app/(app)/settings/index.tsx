@@ -17,6 +17,7 @@ import { Screen } from '@/components/Shell';
 import { Stepper } from '@/components/Stepper';
 import { Switch } from '@/components/Switch';
 import { Text } from '@/components/Text';
+import { registerForPush, unregisterPush } from '@/features/push/push';
 import { LiveTradingGuardDialog } from '@/features/settings/LiveTradingGuardDialog';
 import { ResetPaperAccountDialog } from '@/features/settings/ResetPaperAccountDialog';
 import { useDefaultWatchlist } from '@/features/watchlist/useWatchlist';
@@ -250,6 +251,13 @@ const NOTIFICATION_ROWS: readonly { key: keyof Omit<NotificationPreferences, 'pu
   { key: 'dailySummary', label: 'Daily summary' },
 ];
 
+const PUSH_UNAVAILABLE = {
+  simulator: 'Push notifications need a physical device.',
+  denied: 'Notifications are off for Astryx. Turn them on in your phone settings.',
+  no_project: 'This build has no push project configured.',
+  failed: "Couldn't register this device. Try again in a moment.",
+} as const;
+
 function NotificationsSection() {
   const queryClient = useQueryClient();
   const prefs = useQuery({ queryKey: ['settings', 'notifications'], queryFn: async () => (await settings.notifications()).data });
@@ -267,14 +275,33 @@ function NotificationsSection() {
     onSuccess: (data) => queryClient.setQueryData(['settings', 'notifications'], data),
   });
   const p = prefs.data;
+  // Turning push on asks for permission and registers this device (N4); off stops pushes to it (N5).
+  const togglePush = async (on: boolean) => {
+    if (!p) return;
+    if (on) {
+      const registered = await registerForPush();
+      if (!registered.ok) {
+        toast({ tone: 'error', title: "Push isn't available", body: PUSH_UNAVAILABLE[registered.reason] });
+        return;
+      }
+    } else {
+      await unregisterPush();
+    }
+    update.mutate({ ...p, pushEnabled: on });
+  };
   return (
     <Section title="Notifications">
       {p ? (
         <View style={styles.card}>
+          <Row
+            label="Push notifications"
+            value={<Switch value={p.pushEnabled} accessibilityLabel="Push notifications" onValueChange={(v) => void togglePush(v)} />}
+            testID="push-master"
+          />
           {NOTIFICATION_ROWS.map((r) => (
             <Row key={r.key} label={r.label} value={<Switch value={p[r.key]} accessibilityLabel={r.label} onValueChange={(v) => update.mutate({ ...p, [r.key]: v })} />} />
           ))}
-          <Text.Caption tone="tertiary">These choose what reaches you as a push notification. Activity always lists everything.</Text.Caption>
+          <Text.Caption tone="tertiary">The categories choose what reaches this device as a push. Activity always lists everything.</Text.Caption>
         </View>
       ) : (
         <SkeletonRow />

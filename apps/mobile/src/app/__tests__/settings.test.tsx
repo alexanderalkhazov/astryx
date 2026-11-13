@@ -10,6 +10,7 @@ import SettingsScreen from '../(app)/settings/index';
 jest.mock('expo-crypto', () => ({ randomUUID: () => 'reset-key-0001' }));
 jest.mock('expo-secure-store', () => ({ WHEN_UNLOCKED_THIS_DEVICE_ONLY: 'x', getItemAsync: jest.fn(), setItemAsync: jest.fn(), deleteItemAsync: jest.fn() }));
 jest.mock('@/lib/session', () => ({ signOut: jest.fn(() => Promise.resolve()) }));
+jest.mock('@/features/push/push', () => ({ registerForPush: jest.fn(() => Promise.resolve({ ok: true })), unregisterPush: jest.fn(() => Promise.resolve()) }));
 jest.mock('@/lib/api', () => ({
   settings: {
     risk: jest.fn(), updateRisk: jest.fn(), notifications: jest.fn(), updateNotifications: jest.fn(), scanner: jest.fn(), setTradingMode: jest.fn(),
@@ -21,6 +22,7 @@ jest.mock('@/lib/api', () => ({
 type SettingsMock = Record<'risk' | 'updateRisk' | 'notifications' | 'updateNotifications' | 'scanner' | 'setTradingMode' | 'changePassword' | 'logoutAll' | 'devFaults' | 'setDevFaults', jest.Mock>;
 const api = jest.requireMock('@/lib/api') as { settings: SettingsMock; portfolio: { summary: jest.Mock; reset: jest.Mock }; watchlists: { list: jest.Mock } };
 const { signOut } = jest.requireMock('@/lib/session') as { signOut: jest.Mock };
+const push = jest.requireMock('@/features/push/push') as { registerForPush: jest.Mock; unregisterPush: jest.Mock };
 const ok = <T,>(data: T) => ({ data });
 
 /** Design 18 defaults. */
@@ -127,6 +129,19 @@ describe('Settings (designs 18 and 25)', () => {
     await fireEvent.press(await screen.findByLabelText('Strategy guard'));
 
     await waitFor(() => expect(api.settings.updateNotifications).toHaveBeenCalledWith({ ...PREFS, strategyGuard: false }));
+  });
+
+  it('turns push on only after this device registers, and explains when it cannot', async () => {
+    api.settings.updateNotifications.mockResolvedValue(ok({ ...PREFS, pushEnabled: true }));
+    push.registerForPush.mockResolvedValueOnce({ ok: false, reason: 'denied' });
+    await renderAt();
+
+    await fireEvent.press(await screen.findByLabelText('Push notifications'));
+    await waitFor(() => expect(push.registerForPush).toHaveBeenCalledTimes(1));
+    expect(api.settings.updateNotifications).not.toHaveBeenCalled();
+
+    await fireEvent.press(screen.getByLabelText('Push notifications'));
+    await waitFor(() => expect(api.settings.updateNotifications).toHaveBeenCalledWith({ ...PREFS, pushEnabled: true }));
   });
 
   it('signs out of all devices after confirming', async () => {

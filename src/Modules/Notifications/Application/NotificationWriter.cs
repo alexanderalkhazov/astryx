@@ -4,11 +4,13 @@ using Astryx.Contracts.Events.Ai;
 using Astryx.Contracts.Events.Paper;
 using Astryx.Contracts.Events.Strategies;
 using Astryx.Contracts.Identity;
+using Astryx.Infrastructure.Jobs;
 using Astryx.Infrastructure.Realtime;
 using Astryx.Modules.Notifications.Domain;
 using Astryx.Modules.Notifications.Infrastructure.Persistence;
 using Astryx.SharedKernel;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace Astryx.Modules.Notifications.Application;
 
@@ -20,7 +22,8 @@ public sealed record ActivityCreatedMessage(Guid Id, string Category, string Typ
 /// deterministic <c>dedupe_key</c>, inserted with <c>ON CONFLICT DO NOTHING</c>, so at-least-once delivery shows each
 /// thing once (IDEM-06). New items are pushed as <c>activity.created</c>.
 /// </summary>
-public sealed class NotificationWriter(NotificationsDbContext db, IRealtimeNotifier notifier, IUserAccountQuery accounts, TimeProvider timeProvider) :
+public sealed class NotificationWriter(
+    NotificationsDbContext db, IRealtimeNotifier notifier, IUserAccountQuery accounts, IJobQueue jobs, IConfiguration configuration, TimeProvider timeProvider) :
     IIntegrationEventHandler<OrderFilled>,
     IIntegrationEventHandler<PositionClosed>,
     IIntegrationEventHandler<OrderExpired>,
@@ -109,6 +112,11 @@ public sealed class NotificationWriter(NotificationsDbContext db, IRealtimeNotif
         if (inserted == 1)
         {
             await notifier.SendToUserAsync(userId, ActivityCreated, new ActivityCreatedMessage(id, category, type, title, body, severity, deepLink, now), cancellationToken);
+            if (configuration.GetValue<bool>("Features:Push"))
+            {
+                // Shortly after, so this handler's transaction has committed the row the job reads.
+                await jobs.EnqueueAsync(new PushNotificationJob(id), new EnqueueOptions { RunAfter = now.AddSeconds(1), MaxAttempts = 3, Timeout = TimeSpan.FromSeconds(10), DedupeKey = $"push:{id}" }, cancellationToken);
+            }
         }
     }
 

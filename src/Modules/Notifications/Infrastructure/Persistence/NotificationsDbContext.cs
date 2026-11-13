@@ -13,6 +13,8 @@ public sealed class NotificationsDbContext(DbContextOptions<NotificationsDbConte
 
     public DbSet<Notification> Notifications => Set<Notification>();
 
+    public DbSet<PushDevice> PushDevices => Set<PushDevice>();
+
     protected override void ConfigureModel(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Notification>(entity =>
@@ -34,6 +36,18 @@ public sealed class NotificationsDbContext(DbContextOptions<NotificationsDbConte
             entity.HasIndex(n => new { n.UserId, n.DedupeKey }).IsUnique();
             entity.HasIndex(n => new { n.UserId, n.CreatedAt }).IsDescending(false, true);
             entity.HasIndex(n => n.UserId).HasFilter("read_at IS NULL").HasDatabaseName("ix_notifications_unread");
+        });
+
+        modelBuilder.Entity<PushDevice>(entity =>
+        {
+            entity.ToTable("push_devices", t => t.HasCheckConstraint("ck_push_devices_platform", "platform IN ('ios', 'android')"));
+            entity.HasKey(d => d.Id);
+            entity.Property(d => d.DeviceId).HasMaxLength(128);
+            entity.Property(d => d.PushToken).HasMaxLength(256);
+            entity.Property(d => d.Platform).HasMaxLength(8);
+            entity.Property(d => d.RevokedReason).HasMaxLength(40);
+            entity.HasIndex(d => d.PushToken).IsUnique();
+            entity.HasIndex(d => new { d.UserId, d.DeviceId }).IsUnique();
         });
     }
 }

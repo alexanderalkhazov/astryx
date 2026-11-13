@@ -2807,6 +2807,24 @@ Clients poll AI2 with `pollAfterMs` (2 s, growing to 5 s, give up after 120 s wi
 | N8 | `POST /broker/connections` | `{broker:"etoro", environment:"demo", apiKey, userKey}` (TLS, never logged) | `201` connection (keys validated with eToro identity + read call; write permission detected) | 422 `broker_credentials_invalid`, 403 `live_trading_disabled` for `environment:"real"` |
 | N9 | `DELETE /broker/connections/{id}` | — | `204` (ciphertext deleted; user told to revoke the key in eToro) | 404 |
 
+**Implemented (T-101): push notifications.**
+
+- **Devices (N4/N5):** `notify.push_devices`, with the token unique and (user, device) unique.
+  - N4 validates an Expo token (`ExponentPushToken[…]`) and `ios`/`android`, then upserts. A token held by another row (a reinstall, or the phone changed hands) is revoked there first (`token_moved`).
+  - N5 revokes this user's device (`unregistered`) and is idempotent.
+- **Sending:** `NotificationWriter` enqueues `PushNotificationJob(notificationId)` (dedupe `push:{id}`, 3 attempts, 10 s) after each new Activity item, only when `Features:Push` is on. `PushSender` then:
+  - checks the S4 master switch (`pushEnabled`) and the item's category (`fills` for fills, closes and expiries; `stopProximity`; `signals` for AI analysis and new signals; `strategyGuard`; `dailySummary`; everything else `system`);
+  - claims `pushed_at` (send once), then sends `{title, body, data:{deepLink, notificationId}}` to every live device;
+  - releases the claim if the send throws, so the retry can send;
+  - revokes tokens Expo reports as `DeviceNotRegistered`.
+- **Gateway:** `Push:Provider=expo` posts to `https://exp.host/--/api/v2/push/send` (optional `Push:ExpoAccessToken`); otherwise `FakePushGateway` records the pushes. Expo receipts are `NOT IMPLEMENTED`; only the immediate tickets are read.
+- **Mobile** (`features/push`, `expo-notifications` and `expo-device` via `npx expo install`, plus the config plugin):
+  - The Settings "Push notifications" switch asks for permission and registers (N4) before saving `pushEnabled`. It explains when push is unavailable (simulator, permission denied, no EAS project id). Off → N5.
+  - On sign-in with push on, the token registration is refreshed. Sign-out calls N5 first.
+  - Tapping a push, including one that cold-started the app, opens its `deepLink`: the same route as the Activity item. Only in-app paths are followed.
+  - In the foreground, pushes go to the notification list only; the toasts and the Activity feed already show the item.
+
+
 ```json
 // NotificationDto
 {

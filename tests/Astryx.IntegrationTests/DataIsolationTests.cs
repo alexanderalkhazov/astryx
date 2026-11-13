@@ -70,6 +70,8 @@ public partial class DataIsolationTests(ApiFactory factory) : IClassFixture<ApiF
         ["GET /api/v1/positions/{id:guid}"] = t => t.AssertUnknownPositionReadIs404Async($"/api/v1/positions/{Guid.NewGuid()}"),
         ["GET /api/v1/positions/by-symbol/{symbol}"] = t => t.AssertUnknownPositionReadIs404Async("/api/v1/positions/by-symbol/NVDA"),
         ["POST /api/v1/proposals/{id:guid}/assessments"] = t => t.AssertForeignProposalIs404Async(HttpMethod.Post, "/assessments", new { riskPerTradePct = "0.0075" }),
+        // N5 is idempotent (204 either way, so it reveals nothing); isolation means Alice's device keeps its pushes.
+        ["DELETE /api/v1/devices/{deviceId}"] = t => t.AssertForeignDeviceIsUntouchedAsync(),
     };
 
     /// <summary>
@@ -157,6 +159,21 @@ public partial class DataIsolationTests(ApiFactory factory) : IClassFixture<ApiF
         var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/positions/{Guid.NewGuid()}{suffix}") { Content = JsonContent.Create(new { }) };
         request.Headers.Add("Idempotency-Key", $"isolation-{Guid.NewGuid():N}");
         (await bob.SendAsync(request)).StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
+    private async Task AssertForeignDeviceIsUntouchedAsync()
+    {
+        var alice = await TestUsers.SignedInClientAsync(factory);
+        var bob = await TestUsers.SignedInClientAsync(factory);
+        var deviceId = $"isolation-{Guid.NewGuid():N}";
+        (await alice.PostAsJsonAsync("/api/v1/devices", new { deviceId, pushToken = $"ExponentPushToken[{Guid.NewGuid():N}]", platform = "ios" })).StatusCode.ShouldBe(HttpStatusCode.Created);
+
+        (await bob.DeleteAsync($"/api/v1/devices/{deviceId}")).StatusCode.ShouldBe(HttpStatusCode.NoContent);
+
+        await using var scope = factory.Services.CreateAsyncScope();
+        var device = await scope.ServiceProvider.GetRequiredService<Astryx.Modules.Notifications.Infrastructure.Persistence.NotificationsDbContext>()
+            .PushDevices.IgnoreQueryFilters().SingleAsync(d => d.DeviceId == deviceId);
+        device.RevokedAt.ShouldBeNull();
     }
 
     private async Task AssertUnknownNotificationIs404Async()

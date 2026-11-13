@@ -19,6 +19,7 @@ public static class ProfilesModule
         services.AddScoped<ProfileProvisioner>();
         services.AddScoped<ProfileService>();
         services.AddScoped<Astryx.Contracts.Profiles.IRiskSettingsSource, RiskSettingsSource>();
+        services.AddScoped<Astryx.Contracts.Profiles.INotificationPreferencesSource, NotificationPreferencesSource>();
         services.AddValidatorsFromAssemblyContaining<UpdateRiskSettingsRequestValidator>(includeInternalTypes: true);
         services.AddIntegrationEventHandler<UserRegistered, ProvisionProfileHandler>();
         return services;

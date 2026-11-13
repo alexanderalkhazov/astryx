@@ -165,6 +165,7 @@ app.MapPaperOrderEndpoints();
 app.MapPositionEndpoints();
 app.MapPortfolioEndpoints();
 app.MapNotificationEndpoints();
+app.MapDeviceEndpoints();
 app.MapRealtime();
 
 if (DevEndpoints.IsEnabled(app.Environment, app.Configuration))

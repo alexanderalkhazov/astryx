@@ -47,3 +47,34 @@ public sealed class Notification : IUserOwned
 
     public DateTimeOffset? PushedAt { get; set; }
 }
+
+public static class PushPlatform
+{
+    public const string Ios = "ios";
+    public const string Android = "android";
+}
+
+/// <summary>Row in <c>notify.push_devices</c> (§10.4): one Expo push token per device. Revoked rows are kept for audit.</summary>
+public sealed class PushDevice : IUserOwned
+{
+    public Guid Id { get; set; }
+
+    public Guid UserId { get; set; }
+
+    /// <summary>The app's install id (the one sent at sign-in).</summary>
+    public required string DeviceId { get; set; }
+
+    /// <summary><c>ExponentPushToken[…]</c>; unique across users.</summary>
+    public required string PushToken { get; set; }
+
+    public required string Platform { get; set; }
+
+    public DateTimeOffset CreatedAt { get; set; }
+
+    public DateTimeOffset LastSeenAt { get; set; }
+
+    /// <summary>Set by N5, by a newer registration of the token elsewhere, or when Expo reports DeviceNotRegistered.</summary>
+    public DateTimeOffset? RevokedAt { get; set; }
+
+    public string? RevokedReason { get; set; }
+}
