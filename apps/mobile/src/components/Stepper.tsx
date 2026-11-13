@@ -14,10 +14,12 @@ export interface StepperProps {
   unit: string;
   onChange: (value: DecimalString) => void;
   disabled?: boolean;
+  /** Names the control when several share a unit, e.g. "Max risk per trade". Defaults to the unit. */
+  accessibilityLabel?: string;
 }
 
 /** Quantity stepper (design 03 · "76 shares · stepper"). Arithmetic is decimal; bounds disable the buttons. */
-export function Stepper({ value, min = '0', max, step = '1', unit, onChange, disabled = false }: StepperProps) {
+export function Stepper({ value, min = '0', max, step = '1', unit, onChange, disabled = false, accessibilityLabel }: StepperProps) {
   const current = toDecimal(value);
   const canDecrement = !disabled && current.minus(toDecimal(step)).greaterThanOrEqualTo(toDecimal(min));
   const canIncrement = !disabled && (max === undefined || current.plus(toDecimal(step)).lessThanOrEqualTo(toDecimal(max)));
@@ -29,17 +31,17 @@ export function Stepper({ value, min = '0', max, step = '1', unit, onChange, dis
       style={styles.row}
       accessible
       accessibilityRole="adjustable"
-      accessibilityLabel={unit}
+      accessibilityLabel={accessibilityLabel ?? unit}
       accessibilityValue={{ text: `${formatQuantity(value)} ${unit}` }}
       accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
       onAccessibilityAction={(event) => (event.nativeEvent.actionName === 'increment' ? increment() : decrement())}
     >
-      <StepButton label={`Decrease ${unit}`} disabled={!canDecrement} onPress={decrement} icon="minus" />
+      <StepButton label={`Decrease ${accessibilityLabel ?? unit}`} disabled={!canDecrement} onPress={decrement} icon="minus" />
       <View style={styles.value}>
         <Text style={styles.number}>{formatQuantity(value)}</Text>
         <Text style={styles.unit}>{unit}</Text>
       </View>
-      <StepButton label={`Increase ${unit}`} disabled={!canIncrement} onPress={increment} icon="plus" />
+      <StepButton label={`Increase ${accessibilityLabel ?? unit}`} disabled={!canIncrement} onPress={increment} icon="plus" />
     </View>
   );
 }

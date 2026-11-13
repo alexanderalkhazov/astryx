@@ -1,4 +1,4 @@
-import { analysesApi, authApi, notificationsApi, paperApi, portfolioApi, proposalsApi, createApiClient, marketApi, scannerApi, searchApi, strategiesApi, watchlistsApi } from '@astryx/api-client';
+import { analysesApi, authApi, notificationsApi, paperApi, portfolioApi, proposalsApi, createApiClient, marketApi, scannerApi, searchApi, settingsApi, strategiesApi, watchlistsApi } from '@astryx/api-client';
 import { randomUUID } from 'expo-crypto';
 import { router } from 'expo-router';
 
@@ -54,3 +54,4 @@ export const notifications = notificationsApi(api);
 
 export { refreshSession };
 export const strategies = strategiesApi(api);
+export const settings = settingsApi(api);

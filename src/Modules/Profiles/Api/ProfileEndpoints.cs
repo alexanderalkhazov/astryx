@@ -95,13 +95,40 @@ public sealed class UpdateRiskSettingsRequestValidator : AbstractValidator<Updat
             .Must(v => v.Scale <= RiskBounds.PctScale).WithMessage($"Use at most {RiskBounds.PctScale} decimal places.");
 }
 
+/// <summary>A scanner universe the configuration offers (design 18: "S&amp;P 500 + Nasdaq 100 + 450").</summary>
+public sealed record ScannerUniverseDto(string Code, string Label);
+
+/// <summary>S3. The scanner itself is shared (§7.4): these are the user's saved preferences, shown in Settings.</summary>
+public sealed record ScannerSettingsDto(string Universe, decimal MinPrice, decimal MinAvgDollarVolume, decimal? MinScore, IReadOnlyList<string> SignalTypes, IReadOnlyList<ScannerUniverseDto> Universes);
+
+public sealed record UpdateScannerSettingsRequest(string Universe, decimal MinPrice, decimal MinAvgDollarVolume, decimal? MinScore);
+
+public sealed class UpdateScannerSettingsRequestValidator : AbstractValidator<UpdateScannerSettingsRequest>
+{
+    public UpdateScannerSettingsRequestValidator()
+    {
+        RuleFor(r => r.Universe).Must(u => ScannerUniverses.All.Any(x => x.Code == u)).WithMessage("Unknown universe.");
+        RuleFor(r => r.MinPrice).InclusiveBetween(1m, 1000m).Must(v => v.Scale <= 2).WithMessage("Use at most 2 decimal places.");
+        RuleFor(r => r.MinAvgDollarVolume).GreaterThanOrEqualTo(0m).Must(v => v.Scale <= 2).WithMessage("Use at most 2 decimal places.");
+        RuleFor(r => r.MinScore).InclusiveBetween(0m, 100m).When(r => r.MinScore is not null);
+    }
+}
+
+/// <summary>The configured scanner universes (§16.2) and the signal types the strategies produce.</summary>
+public static class ScannerUniverses
+{
+    public static readonly IReadOnlyList<ScannerUniverseDto> All = [new("us_large_cap", "S&P 500 + Nasdaq 100 + 450")];
+
+    public static readonly IReadOnlyList<string> SignalTypes = ["breakout", "momentum", "pullback", "unusual_volume", "earnings"];
+}
+
 public sealed class TradingModeRequestValidator : AbstractValidator<TradingModeRequest>
 {
     public TradingModeRequestValidator() =>
         RuleFor(r => r.Mode).Must(m => m is "paper" or "live").WithMessage("Mode must be 'paper' or 'live'.");
 }
 
-/// <summary>Routes under <c>/api/v1/me</c> (SYSTEM_DESIGN.md §11.3 A10, A11, S1, S2, S4, S5).</summary>
+/// <summary>Routes under <c>/api/v1/me</c> (SYSTEM_DESIGN.md §11.3 A10, A11, S1–S5).</summary>
 public static class ProfileEndpoints
 {
     private static readonly RiskBoundsDto Bounds = new(
@@ -180,6 +207,17 @@ public static class ProfileEndpoints
             .WithName("UpdateNotificationPreferences")
             .Produces<NotificationPreferencesDto>();
 
+        me.MapGet("/settings/scanner", async (ClaimsPrincipal user, ProfileService profiles, CancellationToken ct) =>
+                Results.Ok(ToDto(await profiles.GetProfileAsync(UserId(user), ct))))
+            .WithName("GetScannerSettings")
+            .Produces<ScannerSettingsDto>();
+
+        me.MapPut("/settings/scanner", async (UpdateScannerSettingsRequest request, ClaimsPrincipal user, ProfileService profiles, CancellationToken ct) =>
+                Results.Ok(ToDto(await profiles.UpdateScannerAsync(UserId(user), new ScannerUpdate(request.Universe, request.MinPrice, request.MinAvgDollarVolume, request.MinScore), ct))))
+            .WithName("UpdateScannerSettings")
+            .WithValidation<UpdateScannerSettingsRequest>()
+            .Produces<ScannerSettingsDto>();
+
         me.MapPut("/settings/trading-mode", async (TradingModeRequest request, ClaimsPrincipal user, ProfileService profiles, CancellationToken ct) =>
                 (await profiles.SetTradingModeAsync(UserId(user), request.Mode, ct)).Match(mode => Results.Ok(new TradingModeResponse(mode)), e => e.ToProblem()))
             .WithName("SetTradingMode")
@@ -195,6 +233,9 @@ public static class ProfileEndpoints
     private static CurrentUserResponse ToCurrentUser(UserAccountSummary account, UserProfile profile, IConfiguration config) =>
         new(account.Id, account.Email, account.EmailVerified, profile.DisplayName, profile.Timezone, profile.Locale, profile.BiometricLock, profile.TradingMode,
             new FeatureFlags(config.GetValue<bool>("Features:LiveTrading"), config.GetValue<bool>("Features:StrategyConfigure"), config.GetValue<bool>("Features:Push")));
+
+    private static ScannerSettingsDto ToDto(UserProfile p) =>
+        new(p.ScannerUniverse, Math.Round(p.ScannerMinPrice, 2), Math.Round(p.ScannerMinAvgDollarVolume, 0), p.ScannerMinScore is { } score ? Math.Round(score, 0) : null, ScannerUniverses.SignalTypes, ScannerUniverses.All);
 
     private static RiskSettingsDto ToDto(RiskSettings s) =>
         new(s.MaxRiskPerTradePct, s.MaxPositionWeightPct, s.MaxSectorExposurePct, s.SectorWarningPct, s.DailyLossHaltPct, s.MaxOpenPositions, s.MinRewardRisk, s.Version, Bounds);

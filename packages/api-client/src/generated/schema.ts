@@ -293,6 +293,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/me/settings/scanner": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetScannerSettings"];
+        put: operations["UpdateScannerSettings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/me/settings/trading-mode": {
         parameters: {
             query?: never;
@@ -2343,6 +2359,17 @@ export interface components {
             /** Format: date-time */
             dataAsOf: null | string;
         };
+        ScannerSettingsDto: {
+            universe: string;
+            /** Format: decimal */
+            minPrice: string;
+            /** Format: decimal */
+            minAvgDollarVolume: string;
+            /** Format: decimal */
+            minScore: null | string;
+            signalTypes: string[];
+            universes: components["schemas"]["ScannerUniverseDto"][];
+        };
         ScannerStatusDto: {
             status: string;
             /** Format: int32 */
@@ -2352,6 +2379,10 @@ export interface components {
             /** Format: date-time */
             dataAsOf: null | string;
             errorCode: null | string;
+        };
+        ScannerUniverseDto: {
+            code: string;
+            label: string;
         };
         ScenarioDto: {
             summary: string;
@@ -2563,6 +2594,15 @@ export interface components {
             maxOpenPositions: number;
             /** Format: decimal */
             minRewardRisk: string;
+        };
+        UpdateScannerSettingsRequest: {
+            universe: string;
+            /** Format: decimal */
+            minPrice: string;
+            /** Format: decimal */
+            minAvgDollarVolume: string;
+            /** Format: decimal */
+            minScore: null | string;
         };
         UpdateWatchlistRequest: {
             name: null | string;
@@ -3200,6 +3240,59 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["NotificationPreferencesDto"];
+                };
+            };
+        };
+    };
+    GetScannerSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScannerSettingsDto"];
+                };
+            };
+        };
+    };
+    UpdateScannerSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateScannerSettingsRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScannerSettingsDto"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
                 };
             };
         };

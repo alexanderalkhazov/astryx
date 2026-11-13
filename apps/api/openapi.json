@@ -677,6 +677,64 @@
         }
       }
     },
+    "/api/v1/me/settings/scanner": {
+      "get": {
+        "tags": [
+          "Me"
+        ],
+        "operationId": "GetScannerSettings",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScannerSettingsDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Me"
+        ],
+        "operationId": "UpdateScannerSettings",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateScannerSettingsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScannerSettingsDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/me/settings/trading-mode": {
       "put": {
         "tags": [
@@ -7025,6 +7083,53 @@
         },
         "additionalProperties": false
       },
+      "ScannerSettingsDto": {
+        "required": [
+          "universe",
+          "minPrice",
+          "minAvgDollarVolume",
+          "minScore",
+          "signalTypes",
+          "universes"
+        ],
+        "type": "object",
+        "properties": {
+          "universe": {
+            "type": "string"
+          },
+          "minPrice": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "minAvgDollarVolume": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "minScore": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "decimal"
+          },
+          "signalTypes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "universes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScannerUniverseDto"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
       "ScannerStatusDto": {
         "required": [
           "status",
@@ -7061,6 +7166,22 @@
               "null",
               "string"
             ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "ScannerUniverseDto": {
+        "required": [
+          "code",
+          "label"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -7912,6 +8033,39 @@
           "minRewardRisk": {
             "pattern": "^-?\\d+(\\.\\d+)?$",
             "type": "string",
+            "format": "decimal"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateScannerSettingsRequest": {
+        "required": [
+          "universe",
+          "minPrice",
+          "minAvgDollarVolume",
+          "minScore"
+        ],
+        "type": "object",
+        "properties": {
+          "universe": {
+            "type": "string"
+          },
+          "minPrice": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "minAvgDollarVolume": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "minScore": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": [
+              "null",
+              "string"
+            ],
             "format": "decimal"
           }
         },

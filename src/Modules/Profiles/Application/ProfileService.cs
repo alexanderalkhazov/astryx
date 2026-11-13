@@ -9,6 +9,8 @@ namespace Astryx.Modules.Profiles.Application;
 
 public sealed record ProfileUpdate(string? DisplayName, string? Timezone, string? Locale, bool? BiometricLock);
 
+public sealed record ScannerUpdate(string Universe, decimal MinPrice, decimal MinAvgDollarVolume, decimal? MinScore);
+
 public sealed record RiskSettingsUpdate(
     decimal MaxRiskPerTradePct,
     decimal MaxPositionWeightPct,
@@ -49,6 +51,23 @@ public sealed class ProfileService(ProfilesDbContext db, ProfileProvisioner prov
         profile.UpdatedAt = timeProvider.GetUtcNow();
         db.Audit(new AuditEntry("profile.updated", AuditActor.User, userId, "user_profile", userId.ToString(), before,
             new { profile.DisplayName, profile.Timezone, profile.Locale, profile.BiometricLock }));
+        await db.SaveChangesAsync(cancellationToken);
+        return profile;
+    }
+
+    /// <summary>S3: saved per user and audited. The shared scanner does not read them yet (§8.4.11).</summary>
+    public async Task<UserProfile> UpdateScannerAsync(Guid userId, ScannerUpdate update, CancellationToken cancellationToken)
+    {
+        await provisioner.EnsureAsync(userId, null, cancellationToken);
+        var profile = await db.Profiles.SingleAsync(p => p.UserId == userId, cancellationToken);
+        var before = new { profile.ScannerUniverse, profile.ScannerMinPrice, profile.ScannerMinAvgDollarVolume, profile.ScannerMinScore };
+        profile.ScannerUniverse = update.Universe;
+        profile.ScannerMinPrice = update.MinPrice;
+        profile.ScannerMinAvgDollarVolume = update.MinAvgDollarVolume;
+        profile.ScannerMinScore = update.MinScore;
+        profile.UpdatedAt = timeProvider.GetUtcNow();
+        db.Audit(new AuditEntry("scanner_settings.updated", AuditActor.User, userId, "user_profile", userId.ToString(), before,
+            new { profile.ScannerUniverse, profile.ScannerMinPrice, profile.ScannerMinAvgDollarVolume, profile.ScannerMinScore }));
         await db.SaveChangesAsync(cancellationToken);
         return profile;
     }

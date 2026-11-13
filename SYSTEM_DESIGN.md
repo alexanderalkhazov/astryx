@@ -1356,6 +1356,36 @@ Implementation (T-049):
 | Paper account | Reset paper account (PROPOSED dialog) | `POST /portfolio/reset` |
 | Prototype controls | Toggle connection error / scanner error / reset prototype | **Dev builds only** (`__DEV__` or `EXPO_PUBLIC_ENABLE_DEV_TOOLS`); drives fake provider fault injection via `/dev/*` endpoints enabled only in Development environment |
 
+**Implemented (T-098).** `settings/index.tsx`, `settings/change-password.tsx` and `features/settings/LiveTradingGuardDialog.tsx`.
+
+- **Broker connection:**
+  - "Paper account (simulated)", with a PAPER badge, "Connected · synced HH:MM ET" (P1 `asOf`) and the equity;
+  - permissions: Read — Allowed; Orders — Paper only; Deposits & withdrawals — **Never requested**;
+  - a disabled "Connect eToro", until the eToro Demo connection lands (T-141).
+- **Trading mode:** Paper · Live. Live opens the guard (design 25):
+  1. re-confirm the five limits;
+  2. type `LIVE`;
+  3. S5 → 403 `live_trading_disabled` → "Live trading isn't available yet".
+
+  The selection never leaves Paper. Biometric confirmation is `NOT IMPLEMENTED` until live exists (§17.9).
+- **Risk limits:**
+  - steppers in percent units (0.75), stored as fractions (0.0075), with steps of 0.05 / 1 / 1 / 0.25 points and 1 position;
+  - the S1 bounds disable the buttons at each end;
+  - Save sends S2 with `If-Match: "v{version}"`. A 412 reloads the values and says so.
+  - The sector warning stays at its value, or 5 points under a lowered cap.
+- **Scanner (S3, new):** `GET/PUT /me/settings/scanner`:
+  - fields: universe (from the configured list, label "S&P 500 + Nasdaq 100 + 450"), `minPrice` (1–1000), `minAvgDollarVolume` (≥ 0) and `minScore` (0–100 or null);
+  - `signalTypes` and `universes` are returned read-only; PUT is audited.
+  - The scanner is shared, so it does not read per-user values yet (`NOT IMPLEMENTED`). Settings shows them **read-only** ("$10 · $20M") and points to Discover's filters.
+- **Notifications:** S4 toggles (optimistic, rolled back on failure). They govern push (T-101); Activity always lists everything.
+- **Security:**
+  - Change password (A11): other devices are signed out and this one stays signed in.
+  - Sign out.
+  - Sign out of all devices, with a dialog → `POST /auth/logout-all`, then a local sign-out.
+  - `NOT IMPLEMENTED`: the biometric unlock toggle (no `expo-local-authentication` gate yet) and delete account.
+- **Prototype controls:** `__DEV__` only. The market data fault (`ok · down · stale · bad_tick`) goes through `/dev/faults`, which exists only in Development with `Features:DevFaultInjection=true`.
+- Paper account reset is T-099.
+
 #### 8.4.12 Search (`search`, fullScreenModal) — design 19
 
 | Aspect | Spec |

@@ -198,6 +198,39 @@ public partial class ProfileTests(ApiFactory factory) : IClassFixture<ApiFactory
     }
 
     [Fact]
+    public async Task Scanner_settings_start_at_the_design_defaults_and_round_trip()
+    {
+        var (userId, token) = await SignedInUserAsync();
+        var defaults = await JsonAsync(await SendAsync(HttpMethod.Get, "/api/v1/me/settings/scanner", token));
+        defaults.GetProperty("universe").GetString().ShouldBe("us_large_cap");
+        (defaults.GetProperty("minPrice").GetString(), defaults.GetProperty("minAvgDollarVolume").GetString()).ShouldBe(("10.00", "20000000")); // design 18: "$10 · $20M"
+        defaults.GetProperty("minScore").ValueKind.ShouldBe(JsonValueKind.Null);
+        defaults.GetProperty("universes")[0].GetProperty("label").GetString().ShouldBe("S&P 500 + Nasdaq 100 + 450");
+        defaults.GetProperty("signalTypes").GetArrayLength().ShouldBe(5);
+
+        var updated = await SendAsync(HttpMethod.Put, "/api/v1/me/settings/scanner", token, """{"universe":"us_large_cap","minPrice":"15.50","minAvgDollarVolume":"50000000","minScore":"70"}""");
+
+        updated.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var after = await JsonAsync(await SendAsync(HttpMethod.Get, "/api/v1/me/settings/scanner", token));
+        decimal.Parse(after.GetProperty("minPrice").GetString()!).ShouldBe(15.50m);
+        decimal.Parse(after.GetProperty("minScore").GetString()!).ShouldBe(70m);
+        await using var scope = factory.Services.CreateAsyncScope();
+        (await scope.ServiceProvider.GetRequiredService<AuditDbContext>().AuditLogs.AnyAsync(l => l.UserId == userId && l.Action == "scanner_settings.updated")).ShouldBeTrue();
+    }
+
+    [Theory]
+    [InlineData("""{"universe":"mars","minPrice":"10","minAvgDollarVolume":"0","minScore":null}""")]
+    [InlineData("""{"universe":"us_large_cap","minPrice":"0.50","minAvgDollarVolume":"0","minScore":null}""")]
+    [InlineData("""{"universe":"us_large_cap","minPrice":"10","minAvgDollarVolume":"-1","minScore":null}""")]
+    [InlineData("""{"universe":"us_large_cap","minPrice":"10","minAvgDollarVolume":"0","minScore":"101"}""")]
+    public async Task Scanner_settings_outside_the_bounds_are_rejected(string body)
+    {
+        var (_, token) = await SignedInUserAsync();
+
+        (await SendAsync(HttpMethod.Put, "/api/v1/me/settings/scanner", token, body)).StatusCode.ShouldBe(HttpStatusCode.UnprocessableEntity);
+    }
+
+    [Fact]
     public async Task Requesting_live_trading_is_refused_and_audited()
     {
         var (userId, token) = await SignedInUserAsync();
@@ -221,6 +254,8 @@ public partial class ProfileTests(ApiFactory factory) : IClassFixture<ApiFactory
     [InlineData("PUT", "/api/v1/me/settings/risk")]
     [InlineData("GET", "/api/v1/me/settings/notifications")]
     [InlineData("PUT", "/api/v1/me/settings/trading-mode")]
+    [InlineData("GET", "/api/v1/me/settings/scanner")]
+    [InlineData("PUT", "/api/v1/me/settings/scanner")]
     public async Task Every_me_endpoint_requires_authentication(string method, string path)
     {
         using var request = new HttpRequestMessage(new HttpMethod(method), path) { Content = new StringContent("{}", Encoding.UTF8, "application/json") };
