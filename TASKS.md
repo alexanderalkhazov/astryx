@@ -367,7 +367,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Story:** As a user, I want to review entry, stop, target, size and pre-trade checks, adjusting size and risk %, before deciding.
   - **Acceptance:** design 06 fidelity: pending StatusBanner with expiry, BUY · LONG, source link, order type, level tiles, R:R bar, size stepper, risk 0.50/0.75/1.00% (choices above the max disabled), "Sized by …", capital, max loss, profit, fees and spread, portfolio impact, the six checks (plus engine checks when they warn or fail). Each change triggers a debounced (150 ms) server re-assessment that cancels in-flight requests. Approve is enabled **only** when the assessment matches the current inputs, is approvable and not expired. Disabled reasons are shown. The Reject dialog works.
   - **Refs:** §8.4.4 · **Depends:** T-083, T-032 · **P0**
-- [ ] **T-088** Hold-to-approve, confirm sheet and fill receipt
+- [x] **T-088** Hold-to-approve, confirm sheet and fill receipt
   - **Story:** As a user, I want approval to be deliberate and impossible to trigger by accident, and to get a clear receipt.
   - **Acceptance:** `HoldToConfirm` (1200 ms linear fill, release resets, success haptic, keyboard Enter/Space, VoiceOver action plus second confirm). `ConfirmOrderSheet` repeats every field (design 07). One Idempotency-Key per sheet session. The sheet is locked while sending. `FillReceiptSheet` (design 08) shows the executed banner, order ID, slippage, OCO and commission, or the "Order working · not filled" variant. Errors unlock the sheet and show a reason toast. RNTL tests: 1199 ms does not fire, 1200 ms fires exactly once.
   - **Refs:** §8.4.5 · **Depends:** T-087, T-084 · **P0**
