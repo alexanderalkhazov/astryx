@@ -363,7 +363,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [x] **T-086** Close position and cancel order
   - **Acceptance:** T9, T10 and T11 with idempotency. The close preview is computed server-side. **PAPER-07 passes.**
   - **Refs:** §15.5, §11.7 · **Depends:** T-085 · **P0**
-- [ ] **T-087** Trade proposal screen
+- [x] **T-087** Trade proposal screen
   - **Story:** As a user, I want to review entry, stop, target, size and pre-trade checks, adjusting size and risk %, before deciding.
   - **Acceptance:** design 06 fidelity: pending StatusBanner with expiry, BUY · LONG, source link, order type, level tiles, R:R bar, size stepper, risk 0.50/0.75/1.00% (choices above the max disabled), "Sized by …", capital, max loss, profit, fees and spread, portfolio impact, the six checks (plus engine checks when they warn or fail). Each change triggers a debounced (150 ms) server re-assessment that cancels in-flight requests. Approve is enabled **only** when the assessment matches the current inputs, is approvable and not expired. Disabled reasons are shown. The Reject dialog works.
   - **Refs:** §8.4.4 · **Depends:** T-083, T-032 · **P0**
