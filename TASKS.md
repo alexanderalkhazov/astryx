@@ -360,7 +360,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [x] **T-085** Position monitor and session jobs
   - **Acceptance:** `PositionMonitor` consumes `QuoteUpdated` and triggers working entries and OCO exits under a per-portfolio lock. A gap-aware evaluation, where the stop wins when both levels trigger in one bar. Stop-proximity alert (≤ 1.5%, once per session). `SessionCloseJob` expires day orders and releases reserved cash. `StartOfDayJob` and the daily loss halt. **PAPER-03…06 pass.**
   - **Refs:** §15.4, §7.13 · **Depends:** T-084, T-042 · **P0**
-- [ ] **T-086** Close position and cancel order
+- [x] **T-086** Close position and cancel order
   - **Acceptance:** T9, T10 and T11 with idempotency. The close preview is computed server-side. **PAPER-07 passes.**
   - **Refs:** §15.5, §11.7 · **Depends:** T-085 · **P0**
 - [ ] **T-087** Trade proposal screen
