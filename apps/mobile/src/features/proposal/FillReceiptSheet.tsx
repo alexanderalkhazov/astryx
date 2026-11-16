@@ -12,10 +12,24 @@ import { formatEtTime, formatMoney, formatPrice, formatQuantity } from '@/lib/fo
  * FillReceiptSheet (design 08): the executed receipt with order id, fill time, slippage, OCO exits and commission,
  * or "Order working · not filled" when a buy stop is waiting for its trigger.
  */
-export function FillReceiptSheet({ order, onDone, onView }: { order: PaperOrder | null; onDone: () => void; onView: (where: 'portfolio' | 'activity') => void }) {
+/**
+ * `onClose` only clears the receipt (drag-down, backdrop, or the sheet finishing its dismiss); navigation happens in
+ * `onDone` / `onView` alone, so closing never navigates a second time.
+ */
+export function FillReceiptSheet({
+  order,
+  onClose,
+  onDone,
+  onView,
+}: {
+  order: PaperOrder | null;
+  onClose: () => void;
+  onDone: () => void;
+  onView: (where: 'portfolio' | 'activity') => void;
+}) {
   const fill = order?.fill;
   return (
-    <Sheet open={order !== null} onClose={onDone} accessibilityLabel={fill ? 'Simulated fill receipt' : 'Order working'}>
+    <Sheet open={order !== null} onClose={onClose} accessibilityLabel={fill ? 'Simulated fill receipt' : 'Order working'}>
       {order ? (
         <View style={styles.body} testID="fill-receipt">
           {fill ? (
@@ -29,7 +43,7 @@ export function FillReceiptSheet({ order, onDone, onView }: { order: PaperOrder 
               <Row label="Commission" value={formatMoney(fill.fee)} />
               <View style={styles.buttons}>
                 <Button variant="secondary" label="Done" block={false} onPress={onDone} style={styles.flex} />
-                <Button label="View in portfolio" block={false} onPress={() => onView('portfolio')} style={styles.flex} />
+                <Button label="View in portfolio" block={false} onPress={() => onView('portfolio')} style={styles.flex} testID="receipt-view-portfolio" />
               </View>
             </>
           ) : (
@@ -38,7 +52,7 @@ export function FillReceiptSheet({ order, onDone, onView }: { order: PaperOrder 
               <Text.Headline accessibilityRole="header">{`Buy ${formatQuantity(order.quantity)} ${order.symbol} is working`}</Text.Headline>
               <View style={styles.buttons}>
                 <Button variant="secondary" label="Done" block={false} onPress={onDone} style={styles.flex} />
-                <Button label="View in Activity" block={false} onPress={() => onView('activity')} style={styles.flex} />
+                <Button label="View in Activity" block={false} onPress={() => onView('activity')} style={styles.flex} testID="receipt-view-activity" />
               </View>
             </>
           )}

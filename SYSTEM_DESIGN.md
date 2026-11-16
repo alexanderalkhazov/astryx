@@ -4296,6 +4296,26 @@ Covered in §13.6: golden files, hand cases, properties, insufficient-data and d
   - `journey.yaml` covers the ten steps and asserts the NVDA position with a NEW badge, the Activity "Filled (simulated) · NVDA" entry and Home "Needs attention" updated.
   - `states.yaml` toggles dev faults (connection lost, scanner error) and asserts the banners and the disabled approval.
 
+**T-110 journey** (`apps/mobile/e2e/journey.yaml`; it sits beside the other flows rather than in `tests/e2e`).
+
+`scripts/journey-setup.js` prepares a repeatable run at any hour through Development-only routes (absent unless `Features:DevFaultInjection=true` in Development):
+
+- **`POST /dev/market/reseed`** (fake provider only) replaces the stored fake daily bars and cached indicator snapshots with history shaped for today, then rescans.
+  - Why: the fake provider shapes history around the current session, but stored bars keep the shape of the day they were synced, so after a session the fixture setups (NVDA's breakout) are gone.
+- **`POST /dev/faults {session:"open", prices:{NVDA:"186.60"}}`**:
+  - `MarketSessionClock` reports a regular session from an hour ago until three hours ahead;
+  - quote sync keeps running, and the fake provider stamps quotes now and pins NVDA above its 186.50 buy stop, so the entry fills at once;
+  - `session:"real", prices:{}` restores normal behaviour (the teardown script).
+- **P11** resets the paper account, so the one-position-per-instrument rule never blocks a rerun.
+
+The flow relaunches the app, loads the bundle from Metro, signs in and walks the ten steps, then checks Activity and Home.
+
+**Found while building it:**
+
+- `ProposalService` returned a pending proposal whose signal the scanner had re-issued, so 15 minutes after creation it could never be approved, and it blocked a new proposal until the close. It now expires and is replaced.
+- `FillReceiptSheet` passed `onDone` (which navigates back) as the sheet's `onClose`, so dismissing navigated a second time. `onClose` now only clears the receipt.
+- `Sheet` now dismisses its presented modal on unmount, so a screen replaced in the frame its sheet closes leaves no sheet behind.
+
 ### 21.10 Acceptance criteria (release gate for MVP)
 
 1. Every check in §21.2 marked "Required" passes in CI.

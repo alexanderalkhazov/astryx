@@ -36,6 +36,7 @@ public sealed class QuoteSyncHandler(
     MarketClock clock,
     QuoteRotation rotation,
     IOptions<IngestionOptions> options,
+    Astryx.Modules.MarketData.Infrastructure.Providers.Fake.MarketDataFaults faults,
     ILogger<QuoteSyncHandler> logger)
     : IJobHandler<QuoteSyncJob>
 {
@@ -52,7 +53,7 @@ public sealed class QuoteSyncHandler(
     private async Task<bool> IsDueAsync(CancellationToken cancellationToken)
     {
         var session = await clock.CurrentSessionAsync(cancellationToken);
-        if (clock.Now < session.CloseAt)
+        if (clock.Now < session.CloseAt || faults.SessionForcedOpen) // the E2E session override keeps quotes live (T-110)
         {
             return true;
         }

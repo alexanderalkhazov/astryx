@@ -231,6 +231,7 @@ export default function ProposalScreen() {
       ) : null}
       <FillReceiptSheet
         order={placed}
+        onClose={() => setPlaced(null)}
         onDone={() => {
           setPlaced(null);
           router.back();

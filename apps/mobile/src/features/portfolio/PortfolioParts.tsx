@@ -26,7 +26,7 @@ export function WeightBar({ weight, cap, over }: { weight: string; cap: string; 
 export function PositionRow({ position, onPress }: { position: PortfolioPosition; onPress: () => void }) {
   const p = position;
   return (
-    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={`${p.symbol}, ${formatQuantity(p.quantity)} shares, value ${p.marketValue ? formatMoney(p.marketValue) : 'unknown'}`} style={({ pressed }) => [styles.row, { opacity: pressed ? 0.7 : 1 }]} testID={`position-${p.symbol}`}>
+    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={`${p.symbol}${p.isNew ? ', new' : ''}, ${formatQuantity(p.quantity)} shares, value ${p.marketValue ? formatMoney(p.marketValue) : 'unknown'}`} style={({ pressed }) => [styles.row, { opacity: pressed ? 0.7 : 1 }]} testID={`position-${p.symbol}`}>
       <View style={styles.rowTop}>
         <View style={styles.left}>
           <View style={styles.symbolLine}>

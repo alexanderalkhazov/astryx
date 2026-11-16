@@ -39,6 +39,15 @@ export function Sheet({ open, onClose, children, dismissible = true, accessibili
   // Whether the modal is up. Dismissing a modal that was never presented leaves bottom-sheet unable to present it
   // later, so a sheet that mounts closed must not call dismiss().
   const presented = useRef(false);
+  // The presented modal, kept past unmount: the modal lives in the provider's portal, so a screen that unmounts in
+  // the frame its sheet closes (router.replace from a button in the sheet) would otherwise leave it on screen.
+  const instance = useRef<BottomSheetModal | null>(null);
+  useEffect(
+    () => () => {
+      if (presented.current) instance.current?.dismiss();
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!open && !presented.current) return undefined;
@@ -46,6 +55,7 @@ export function Sheet({ open, onClose, children, dismissible = true, accessibili
     const frame = requestAnimationFrame(() => {
       if (open) {
         presented.current = true;
+        instance.current = ref.current;
         ref.current?.present();
       } else {
         presented.current = false;

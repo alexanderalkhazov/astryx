@@ -76,7 +76,8 @@ describe('AnalysisCard', () => {
     expect(await screen.findByText('Analyzing NVDA')).toBeOnTheScreen();
     api.list.mockResolvedValue(page(RESULT));
 
-    expect(await screen.findByTestId('analysis-result')).toBeOnTheScreen();
+    // Poll → completed → result list → render: several async hops, slow when the whole suite runs in parallel.
+    expect(await screen.findByTestId('analysis-result', {}, { timeout: 5000 })).toBeOnTheScreen();
     expect(screen.getByText('Bullish')).toBeOnTheScreen();
     expect(screen.getByText('Bullish case')).toBeOnTheScreen();
     expect(screen.getByText('Breakout fails back into the base.')).toBeOnTheScreen();

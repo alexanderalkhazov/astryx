@@ -44,13 +44,18 @@ internal sealed class FakeMarketDataProvider(FixtureData fixtures, FakeCalendar 
             var session = calendar.CurrentSession(instrument.ExchangeMic, now);
             var bar = FakeSeries.CurrentBar(instrument, session);
             var (last, high, low) = Options.IntradayWalk ? Walk(instrument, bar, now) : (bar.Close, bar.High, bar.Low);
+            if (faults.PriceOverrides.TryGetValue(instrument.Symbol, out var fixedLast))
+            {
+                (last, high, low) = (fixedLast, Math.Max(high, fixedLast), Math.Min(low, fixedLast));
+            }
+
             if (faults.Mode == MarketDataFaultMode.BadTick && quotes.Count == 0)
             {
                 last = instrument.PrevClose * 10;
             }
 
             var spread = last < 50m ? 0.01m : 0.02m;
-            var asOf = now < session.CloseAt ? now : session.CloseAt!.Value;
+            var asOf = now < session.CloseAt || faults.SessionForcedOpen ? now : session.CloseAt!.Value; // E2E session override (T-110)
             quotes.Add(new ProviderQuote(instrument.Symbol, last, last - spread, last + spread, bar.Open, high, low, instrument.PrevClose, bar.Volume, asOf, QuoteQuality.Synthetic));
         }
 

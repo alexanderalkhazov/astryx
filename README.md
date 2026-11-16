@@ -75,3 +75,10 @@ If `pod install` fails with an encoding error, run `export LANG=en_US.UTF-8`.
 - `qwen3.5:0.8b` does not support Ollama structured output (`format`). The AI layer prompts for JSON and validates it (SYSTEM_DESIGN.md §12).
 - Add Expo packages with `npx expo install <pkg>` from `apps/mobile`, never with `pnpm add`. That keeps versions SDK-compatible.
 - Simulator E2E flows live in `apps/mobile/e2e` (Maestro: `brew install openjdk mobile-dev-inc/tap/maestro`). Run them with `JAVA_HOME=/opt/homebrew/opt/openjdk DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer maestro --device <udid> test -e EMAIL=… -e PASSWORD=… e2e/sign-in.yaml`, then `e2e/shell.yaml`. They target the dev client by default. For Expo Go, add `-e APP_ID=host.exp.Exponent -e LINK=exp://127.0.0.1:8081/--/` (its floating dev-menu button covers the top-right header icons there).
+- The ten-step journey (T-110) runs against the compose stack with fake data, at any hour:
+  1. Create a verified user once: `node e2e/scripts/create-user.mjs` (uses Mailpit on :8025). It prints `EMAIL=… PASSWORD=…`.
+  2. Stop the dev client's own menu from opening at launch and covering taps (once per simulator):
+     `for k in EXDevMenuShowsAtLaunch EXDevMenuShowFloatingActionButton EXDevMenuTouchGestureEnabled EXDevMenuMotionGestureEnabled; do xcrun simctl spawn <udid> defaults write app.astryx.mobile $k -bool NO; done`
+  3. With Metro running (`npx expo start --dev-client`), run `maestro --device <udid> test -e EMAIL=… -e PASSWORD=… e2e/journey.yaml`.
+
+  The setup script reseeds the fake market (`POST /dev/market/reseed`) and forces an open session with NVDA at 186.60 (`POST /dev/faults`). It also resets the paper account. These dev routes exist only in Development with `Features:DevFaultInjection=true`.
