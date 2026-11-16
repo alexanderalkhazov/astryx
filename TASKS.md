@@ -476,7 +476,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [ ] **T-114** Alerts and runbooks
   - **Acceptance:** alert rules from §23.8, with a runbook entry in `docs/runbooks/` for each (stale market data, monitor lag, reconciliation mismatch, live flag enabled, …).
   - **Refs:** §23.8 · **Depends:** T-113 · **P1**
-- [ ] **T-115** Security hardening pass
+- [x] **T-115** Security hardening pass
   - **Acceptance:** an OWASP ASVS L1 checklist is completed and recorded in `docs/security/`. Log redaction is verified. JWT key rotation drill. Screenshot protection on balance screens. Postgres row-level security evaluated and an ADR recorded.
   - **Refs:** §18 · **Depends:** T-024, T-113 · **P1**
 - [ ] **T-116** Load smoke test
