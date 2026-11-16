@@ -371,3 +371,45 @@ public class AssessmentTests(TradingApiFactory factory) : IClassFixture<TradingA
         (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("code").GetString().ShouldBe("proposal_not_pending");
     }
 }
+
+/// <summary>Its own database: these tests supersede the NVDA signal, as a later scanner run would.</summary>
+public class ProposalSignalTurnoverTests(TradingApiFactory factory) : IClassFixture<TradingApiFactory>, IAsyncLifetime
+{
+    public async Task InitializeAsync()
+    {
+        await factory.PrepareAsync();
+        await factory.ScanAsync();
+    }
+
+    public Task DisposeAsync() => Task.CompletedTask;
+
+    /// <summary>The scanner's next run on moved quotes: the active signal is re-issued with a new id.</summary>
+    private async Task<Guid> ReissueAsync(Guid signalId)
+    {
+        await factory.MakeQuoteLiveAsync("NVDA", 186.61m);
+        await factory.ScanAsync();
+        var current = await factory.ActiveSignalIdAsync("NVDA");
+        current.ShouldNotBe(signalId);
+        return current;
+    }
+
+    [Fact]
+    public async Task A_pending_proposal_on_a_superseded_signal_gives_way_to_the_current_signal()
+    {
+        var client = await TestUsers.SignedInClientAsync(factory);
+        await factory.MakeQuoteLiveAsync("NVDA", 186.60m);
+        var original = await factory.ActiveSignalIdAsync("NVDA");
+        var first = await (await client.PostAsJsonAsync("/api/v1/proposals", new { source = "signal", signalId = original })).Content.ReadFromJsonAsync<JsonElement>();
+        var current = await ReissueAsync(original);
+
+        var response = await client.PostAsJsonAsync("/api/v1/proposals", new { source = "signal", signalId = current });
+
+        response.StatusCode.ShouldBe(HttpStatusCode.Created);
+        var second = await response.Content.ReadFromJsonAsync<JsonElement>();
+        second.GetProperty("id").GetGuid().ShouldNotBe(first.GetProperty("id").GetGuid());
+        second.GetProperty("assessment").GetProperty("approvable").GetBoolean().ShouldBeTrue();
+        (await client.GetFromJsonAsync<JsonElement>($"/api/v1/proposals/{first.GetProperty("id").GetGuid()}")).GetProperty("status").GetString().ShouldBe("expired");
+        // The same current signal again: the new pending proposal answers.
+        (await client.PostAsJsonAsync("/api/v1/proposals", new { source = "signal", signalId = current })).StatusCode.ShouldBe(HttpStatusCode.OK);
+    }
+}

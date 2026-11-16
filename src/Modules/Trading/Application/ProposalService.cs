@@ -121,7 +121,16 @@ public sealed class ProposalService(
 
         if (await db.Proposals.AsNoTracking().FirstOrDefaultAsync(p => p.InstrumentId == draft.InstrumentId && p.Status == ProposalStatus.Pending, cancellationToken) is { } existing)
         {
-            return new CreateProposalOutcome(await ToDtoAsync(existing, cancellationToken), Created: false);
+            // The scanner re-issues signals every run: a pending proposal whose signal is no longer active can never be
+            // approved (data_fresh fails), so it expires and the current signal gets a fresh proposal instead.
+            if (existing.SignalId is not { } previousSignal || previousSignal == draft.SignalId
+                || (await signals.GetAsync(previousSignal, cancellationToken))?.Status == "active")
+            {
+                return new CreateProposalOutcome(await ToDtoAsync(existing, cancellationToken), Created: false);
+            }
+
+            await db.Proposals.Where(p => p.Id == existing.Id && p.Status == ProposalStatus.Pending).ExecuteUpdateAsync(
+                u => u.SetProperty(p => p.Status, ProposalStatus.Expired).SetProperty(p => p.DecidedAt, sessions.Now).SetProperty(p => p.Version, p => p.Version + 1), cancellationToken);
         }
 
         if (await research.GetQuoteAsync(draft.Symbol, cancellationToken) is not { Stale: false })
