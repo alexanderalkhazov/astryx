@@ -123,7 +123,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Acceptance:** a PR with a failing test is blocked. A green run takes under 10 minutes.
   - **Refs:** §21.2, §22.2 · **Depends:** T-000 · **P0**
   - ⏸ WIP: `.github/workflows/ci.yml` runs on github.com/alexanderalkhazov/astryx. Green since `cb41771`; the mobile job had failed on a fresh clone until then. A green run takes **14 m 45 s**, over the 10-minute target. The backend job is ~14 min, almost all integration tests (one Postgres container per test class). **Open:** (1) the owner must enable branch protection on `main` requiring both jobs, before "a PR with a failing test is blocked" can be verified; (2) the run time needs sharing containers across test classes, or splitting the integration tests into parallel jobs.
-- [ ] **T-002** Secret and dependency scanning in CI
+- [x] **T-002** Secret and dependency scanning in CI
   - **Scope:** gitleaks; `dotnet list package --vulnerable`; `pnpm audit --prod` (fail on high or critical); Dependabot/Renovate config.
   - **Acceptance:** a committed fake secret fails CI. A weekly update PR is opened automatically.
   - **Refs:** §18.8, §18.14 · **Depends:** T-001 · **P1**
