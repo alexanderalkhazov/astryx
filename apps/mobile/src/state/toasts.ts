@@ -36,7 +36,10 @@ export const useToasts = create<ToastState>((set, get) => ({
       timers.delete(t.id);
     });
     set({ toasts: next.slice(-MAX_TOASTS) });
-    timers.set(id, setTimeout(() => get().dismiss(id), motion.toast));
+    timers.set(
+      id,
+      setTimeout(() => get().dismiss(id), motion.toast),
+    );
     return id;
   },
   dismiss: (id) => {

@@ -76,7 +76,12 @@ export default function SearchScreen() {
       ) : null}
 
       {query.length === 0 ? null : results.isError ? (
-        <StatusBanner tone="error" title="Search failed" body="Check your connection and try again." action={{ label: 'Retry', onPress: () => void results.refetch() }} />
+        <StatusBanner
+          tone="error"
+          title="Search failed"
+          body="Check your connection and try again."
+          action={{ label: 'Retry', onPress: () => void results.refetch() }}
+        />
       ) : results.isPending ? (
         <View testID="search-loading">
           <SkeletonRow index={0} />
@@ -137,7 +142,9 @@ function ResultRow({ item, first, onPress }: { item: SearchItem; first: boolean;
       <View style={styles.price}>
         {item.last ? <Text.Data>{formatPrice(item.last)}</Text.Data> : null}
         {change ? (
-          <Text.DataSm tone={direction === 'up' ? 'gain' : direction === 'down' ? 'loss' : 'secondary'}>{formatPct(change, { signed: true })}</Text.DataSm>
+          <Text.DataSm tone={direction === 'up' ? 'gain' : direction === 'down' ? 'loss' : 'secondary'}>
+            {formatPct(change, { signed: true })}
+          </Text.DataSm>
         ) : null}
       </View>
     </Pressable>
@@ -145,7 +152,15 @@ function ResultRow({ item, first, onPress }: { item: SearchItem; first: boolean;
 }
 
 const styles = StyleSheet.create({
-  bar: { flexDirection: 'row', alignItems: 'center', gap: space[3], paddingHorizontal: space[4], paddingVertical: space[2], borderBottomWidth: 1, borderBottomColor: color.line },
+  bar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space[3],
+    paddingHorizontal: space[4],
+    paddingVertical: space[2],
+    borderBottomWidth: 1,
+    borderBottomColor: color.line,
+  },
   field: { flex: 1 },
   section: { gap: space[3], marginTop: space[3] },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space[2] },

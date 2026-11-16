@@ -32,7 +32,11 @@ export function Segmented<T extends string>({ options, value, onChange, mono = t
             onPress={() => {
               if (!selected) onChange(option.value);
             }}
-            style={({ pressed }) => [styles.segment, selected ? styles.selected : null, { opacity: option.disabled ? 0.35 : pressed ? 0.7 : 1 }]}
+            style={({ pressed }) => [
+              styles.segment,
+              selected ? styles.selected : null,
+              { opacity: option.disabled ? 0.35 : pressed ? 0.7 : 1 },
+            ]}
           >
             <Text style={[mono ? styles.mono : styles.sans, { color: selected ? color.text : color.text3 }]}>{option.label}</Text>
           </Pressable>
@@ -43,8 +47,22 @@ export function Segmented<T extends string>({ options, value, onChange, mono = t
 }
 
 const styles = StyleSheet.create({
-  track: { flexDirection: 'row', backgroundColor: color.surface2, borderRadius: radius.button, padding: 4, gap: 2, alignSelf: 'flex-start' },
-  segment: { minHeight: 36, minWidth: 44, paddingHorizontal: space[3], borderRadius: radius.chip, alignItems: 'center', justifyContent: 'center' },
+  track: {
+    flexDirection: 'row',
+    backgroundColor: color.surface2,
+    borderRadius: radius.button,
+    padding: 4,
+    gap: 2,
+    alignSelf: 'flex-start',
+  },
+  segment: {
+    minHeight: 36,
+    minWidth: 44,
+    paddingHorizontal: space[3],
+    borderRadius: radius.chip,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   selected: { backgroundColor: color.lineStrong },
   mono: { ...(typeScale.dataSm as TextStyle), fontFamily: 'GeistMono_600SemiBold' },
   sans: { ...(typeScale.body as TextStyle), lineHeight: undefined, fontFamily: 'Geist_500Medium' },

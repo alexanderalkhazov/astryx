@@ -20,7 +20,10 @@ const same = (a: string, b: string) => new Decimal(a).eq(b);
 
 /** Whether an assessment was made for exactly these inputs. */
 export function assessedFor(assessment: RiskAssessment, inputs: SizingInputs): boolean {
-  return same(assessment.riskPerTradePct, inputs.riskPerTradePct) && (inputs.quantity === undefined || same(assessment.quantity, inputs.quantity));
+  return (
+    same(assessment.riskPerTradePct, inputs.riskPerTradePct) &&
+    (inputs.quantity === undefined || same(assessment.quantity, inputs.quantity))
+  );
 }
 
 export function useProposal(id: string) {
@@ -72,10 +75,13 @@ export function useSizing(proposal: Proposal | undefined) {
     [proposal],
   );
 
-  useEffect(() => () => {
-    clearTimeout(timer.current);
-    controller.current?.abort();
-  }, []);
+  useEffect(
+    () => () => {
+      clearTimeout(timer.current);
+      controller.current?.abort();
+    },
+    [],
+  );
 
   const change = (next: SizingInputs) => {
     setInputs(next);
@@ -109,16 +115,25 @@ export type ApproveGate = { enabled: true } | { enabled: false; reason: string; 
  * Approve is enabled only when the assessment is for the current inputs, approvable, not stale and unexpired, and
  * no recompute is in flight (§8.4.4).
  */
-export function approveGate(args: { proposal: Proposal; current: RiskAssessment | null; inputs: SizingInputs | null; assessing: boolean; error: unknown; now: number }): ApproveGate {
+export function approveGate(args: {
+  proposal: Proposal;
+  current: RiskAssessment | null;
+  inputs: SizingInputs | null;
+  assessing: boolean;
+  error: unknown;
+  now: number;
+}): ApproveGate {
   const { proposal, current, inputs, assessing, error, now } = args;
-  if (proposal.status !== 'pending' || Date.parse(proposal.expiresAt) <= now) return { enabled: false, reason: 'This proposal is no longer pending.' };
+  if (proposal.status !== 'pending' || Date.parse(proposal.expiresAt) <= now)
+    return { enabled: false, reason: 'This proposal is no longer pending.' };
   if (assessing) return { enabled: false, reason: 'Checking the latest numbers…' };
   if (error) return { enabled: false, reason: "Couldn't verify the checks, so approval is disabled.", recheck: true };
   if (!current || !inputs || !assessedFor(current, inputs)) return { enabled: false, reason: 'Checking the latest numbers…' };
   const failing = current.checks.find((c) => c.status === 'fail');
   // Stale data can pass on a recheck once the feed recovers; other failures need a change of inputs.
   if (failing) return { enabled: false, reason: failing.message, recheck: failing.code === 'data_fresh' || undefined };
-  if (current.stale || Date.parse(current.expiresAt) <= now) return { enabled: false, reason: 'The checks are more than a minute old.', recheck: true };
+  if (current.stale || Date.parse(current.expiresAt) <= now)
+    return { enabled: false, reason: 'The checks are more than a minute old.', recheck: true };
   return current.approvable ? { enabled: true } : { enabled: false, reason: 'A pre-trade check fails.' };
 }
 

@@ -12,7 +12,13 @@ export function NewsTab({ symbol }: { symbol: string }) {
   const news = useNews(symbol, true);
   if (news.isPending) return <SkeletonRow />;
   if (news.isError) {
-    return <EmptyState title="News unavailable" body="The news feed didn't answer. Try again shortly." action={{ label: 'Retry', onPress: () => void news.refetch() }} />;
+    return (
+      <EmptyState
+        title="News unavailable"
+        body="The news feed didn't answer. Try again shortly."
+        action={{ label: 'Retry', onPress: () => void news.refetch() }}
+      />
+    );
   }
   if (news.data.length === 0) return <EmptyState title="No recent news" body={`Nothing new on ${symbol} from the news source.`} />;
 

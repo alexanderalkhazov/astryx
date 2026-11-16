@@ -154,6 +154,13 @@ public sealed class ProfileService(ProfilesDbContext db, ProfileProvisioner prov
 
     private static object Snapshot(RiskSettings s) => new
     {
-        s.MaxRiskPerTradePct, s.MaxPositionWeightPct, s.MaxSectorExposurePct, s.SectorWarningPct, s.DailyLossHaltPct, s.MaxOpenPositions, s.MinRewardRisk, s.Version,
+        s.MaxRiskPerTradePct,
+        s.MaxPositionWeightPct,
+        s.MaxSectorExposurePct,
+        s.SectorWarningPct,
+        s.DailyLossHaltPct,
+        s.MaxOpenPositions,
+        s.MinRewardRisk,
+        s.Version,
     };
 }

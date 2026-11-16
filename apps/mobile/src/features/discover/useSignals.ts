@@ -12,7 +12,11 @@ export const PAGE_SIZE = 20;
 export const SCANNER_STATUS_KEY = ['scanner', 'status'] as const;
 
 export function useScannerStatus() {
-  return useQuery({ queryKey: SCANNER_STATUS_KEY, queryFn: async () => (await scanner.status()).data, refetchInterval: SIGNALS_REFRESH_MS });
+  return useQuery({
+    queryKey: SCANNER_STATUS_KEY,
+    queryFn: async () => (await scanner.status()).data,
+    refetchInterval: SIGNALS_REFRESH_MS,
+  });
 }
 
 /** D2 pages for the current filters (`['signals', filters]`, §8.7). A 503 means the scanner is unavailable: hide, don't show stale. */
@@ -41,7 +45,12 @@ export function useSignalCount(filters: DiscoverFilters, enabled: boolean) {
 
 /** Total active signals for the Discover tab badge; none while the scanner is unavailable. */
 export function useSignalBadge() {
-  const count = useQuery({ queryKey: ['signals', 'count', 'all'], queryFn: async () => (await scanner.count({})).data.count, refetchInterval: SIGNALS_REFRESH_MS, retry: false });
+  const count = useQuery({
+    queryKey: ['signals', 'count', 'all'],
+    queryFn: async () => (await scanner.count({})).data.count,
+    refetchInterval: SIGNALS_REFRESH_MS,
+    retry: false,
+  });
   return count.isSuccess && count.data > 0 ? count.data : undefined;
 }
 

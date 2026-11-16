@@ -1,5 +1,5 @@
-using Astryx.Infrastructure.Persistence;
 using Astryx.Infrastructure.Jobs;
+using Astryx.Infrastructure.Persistence;
 using Astryx.Modules.Discovery.Application;
 using Astryx.Modules.Discovery.Application.Scanner;
 using Astryx.Modules.Discovery.Infrastructure.Persistence;

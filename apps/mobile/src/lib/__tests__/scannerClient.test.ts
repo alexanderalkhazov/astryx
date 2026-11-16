@@ -1,7 +1,13 @@
 import { ScannerStatus, Signal, SignalPage } from '@astryx/api-client';
 
 // Payloads captured from the local stack after a scanner run (T-066).
-const STATUS = { status: 'live', symbolsTotal: 1031, lastRunAt: '2026-11-12T15:00:14.217141Z', dataAsOf: '2026-11-12T15:00:00.490773Z', errorCode: null };
+const STATUS = {
+  status: 'live',
+  symbolsTotal: 1031,
+  lastRunAt: '2026-11-12T15:00:14.217141Z',
+  dataAsOf: '2026-11-12T15:00:00.490773Z',
+  errorCode: null,
+};
 const DETAIL = {
   id: '01a1d045-f39e-7804-a3fd-bfd4e5ec9cb1',
   rank: 1,
@@ -27,7 +33,10 @@ const DETAIL = {
     { value: '1', weight: '15', component: 'trend', contribution: '15' },
     { value: '0.7027', weight: '15', component: 'rewardRisk', contribution: '10.54' },
   ],
-  proposalId: null, sparkline: ['180.24', '186.40'], volume: 412800000, expiresAt: '2026-11-10T19:32:00Z',
+  proposalId: null,
+  sparkline: ['180.24', '186.40'],
+  volume: 412800000,
+  expiresAt: '2026-11-10T19:32:00Z',
 };
 const PAGE = {
   items: [
@@ -50,7 +59,10 @@ const PAGE = {
       dataAsOf: '2026-11-12T15:00:00.491065Z',
       status: 'active',
       scoreBreakdown: null,
-      proposalId: null, sparkline: ['180.24', '186.40'], volume: 412800000, expiresAt: '2026-11-10T19:32:00Z',
+      proposalId: null,
+      sparkline: ['180.24', '186.40'],
+      volume: 412800000,
+      expiresAt: '2026-11-10T19:32:00Z',
     },
   ],
   nextCursor: null,

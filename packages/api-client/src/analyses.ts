@@ -91,7 +91,8 @@ export function analysesApi(client: ApiClient) {
     create: (symbol: string, idempotencyKey: string) =>
       client.request('/api/v1/analyses', { method: 'POST', body: { symbol }, idempotencyKey, schema: AnalysisJob }),
     job: (jobId: string) => client.request(`/api/v1/analyses/jobs/${encodeURIComponent(jobId)}`, { schema: AnalysisJob }),
-    cancel: (jobId: string) => client.request(`/api/v1/analyses/jobs/${encodeURIComponent(jobId)}`, { method: 'DELETE', schema: AnalysisJob }),
+    cancel: (jobId: string) =>
+      client.request(`/api/v1/analyses/jobs/${encodeURIComponent(jobId)}`, { method: 'DELETE', schema: AnalysisJob }),
     get: (id: string) => client.request(`/api/v1/analyses/${encodeURIComponent(id)}`, { schema: AnalysisResult }),
     list: (params: { symbol?: string; limit?: number; cursor?: string } = {}) => {
       const entries = Object.entries(params).filter((e): e is [string, string | number] => e[1] !== undefined);

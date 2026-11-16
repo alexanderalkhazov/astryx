@@ -44,7 +44,15 @@ export default function SignUpScreen() {
       footer={<Button variant="link" label="I already have an account" onPress={() => router.replace('/sign-in')} />}
     >
       {failure ? <StatusBanner tone="error" title="Couldn't create your account" body={failure} testID="sign-up-error" /> : null}
-      <FormField control={control} name="displayName" label="Name (optional)" autoComplete="name" textContentType="name" returnKeyType="next" onSubmitEditing={() => setFocus('email')} />
+      <FormField
+        control={control}
+        name="displayName"
+        label="Name (optional)"
+        autoComplete="name"
+        textContentType="name"
+        returnKeyType="next"
+        onSubmitEditing={() => setFocus('email')}
+      />
       <FormField
         control={control}
         name="email"

@@ -25,7 +25,9 @@ describe('StatusBanner', () => {
   });
 
   it('renders research as an amber dashed banner without any order ID', async () => {
-    await render(<StatusBanner tone="pending" title="Research proposal — not executed" body="Nothing is sent until you hold to approve." testID="b" />);
+    await render(
+      <StatusBanner tone="pending" title="Research proposal — not executed" body="Nothing is sent until you hold to approve." testID="b" />,
+    );
 
     const banner = screen.getByTestId('b');
     expect(flat(banner).borderStyle).toBe('dashed');
@@ -34,7 +36,9 @@ describe('StatusBanner', () => {
   });
 
   it('announces errors as alerts', async () => {
-    await render(<StatusBanner tone="error" title="Connection lost" body="Approvals are disabled." action={{ label: 'Retry', onPress: () => {} }} />);
+    await render(
+      <StatusBanner tone="error" title="Connection lost" body="Approvals are disabled." action={{ label: 'Retry', onPress: () => {} }} />,
+    );
 
     expect(screen.getByRole('alert')).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'Retry' })).toBeOnTheScreen();
@@ -71,7 +75,12 @@ describe('Metrics', () => {
     await render(
       <>
         <MetricTile label="Max potential loss" value="−$630.80" tone="loss" caption="0.53% of equity" />
-        <MetricGrid items={[{ label: 'CAGR', value: '+16.9%' }, { label: 'Sharpe', value: '1.31' }]} />
+        <MetricGrid
+          items={[
+            { label: 'CAGR', value: '+16.9%' },
+            { label: 'Sharpe', value: '1.31' },
+          ]}
+        />
         <ScoreBreakdownBar label="Pattern quality" value="24" max="30" />
       </>,
     );
@@ -87,7 +96,17 @@ describe('Dialog', () => {
     const onCancel = jest.fn();
     const onConfirm = jest.fn();
     await render(
-      <Dialog visible title="Close NVDA position?" body="Sell 76 NVDA at market." overline="Simulated · paper account" cancelLabel="Keep open" confirmLabel="Close position" destructive onCancel={onCancel} onConfirm={onConfirm} />,
+      <Dialog
+        visible
+        title="Close NVDA position?"
+        body="Sell 76 NVDA at market."
+        overline="Simulated · paper account"
+        cancelLabel="Keep open"
+        confirmLabel="Close position"
+        destructive
+        onCancel={onCancel}
+        onConfirm={onConfirm}
+      />,
     );
 
     const buttons = screen.getAllByRole('button');
@@ -103,7 +122,18 @@ describe('Dialog', () => {
 
   it('cannot be cancelled while busy', async () => {
     const onCancel = jest.fn();
-    await render(<Dialog visible busy title="Closing" body="…" cancelLabel="Keep open" confirmLabel="Close" onCancel={onCancel} onConfirm={() => {}} />);
+    await render(
+      <Dialog
+        visible
+        busy
+        title="Closing"
+        body="…"
+        cancelLabel="Keep open"
+        confirmLabel="Close"
+        onCancel={onCancel}
+        onConfirm={() => {}}
+      />,
+    );
 
     await fireEvent.press(screen.getByRole('button', { name: 'Keep open' }));
 
@@ -194,7 +224,9 @@ describe('Toasts', () => {
     useToasts.getState().show({ tone: 'success', title: 'Simulated order filled', body: 'Bought 76 NVDA at $186.52' });
     // The app root provides safe areas; without a provider useSafeAreaInsets throws.
     await render(
-      <SafeAreaProvider initialMetrics={{ frame: { x: 0, y: 0, width: 390, height: 844 }, insets: { top: 47, left: 0, right: 0, bottom: 34 } }}>
+      <SafeAreaProvider
+        initialMetrics={{ frame: { x: 0, y: 0, width: 390, height: 844 }, insets: { top: 47, left: 0, right: 0, bottom: 34 } }}
+      >
         <ToastHost />
       </SafeAreaProvider>,
     );

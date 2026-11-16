@@ -27,15 +27,19 @@ export const CurrentUser = z.object({
 }) satisfies z.ZodType<components['schemas']['CurrentUserResponse']>;
 export type CurrentUser = z.infer<typeof CurrentUser>;
 
-export const RegisterResponse = z.object({ emailVerificationRequired: z.literal(true) }) satisfies z.ZodType<components['schemas']['RegisterResponse']>;
+export const RegisterResponse = z.object({ emailVerificationRequired: z.literal(true) }) satisfies z.ZodType<
+  components['schemas']['RegisterResponse']
+>;
 
 /** Auth endpoints (SYSTEM_DESIGN.md §11.3). All except logout and me work without a session. */
 export function authApi(client: ApiClient) {
   return {
     register: (body: { email: string; password: string; displayName?: string }) =>
       client.request('/api/v1/auth/register', { method: 'POST', body, schema: RegisterResponse, auth: false }),
-    verifyEmail: (body: { userId: string; token: string }) => client.request('/api/v1/auth/verify-email', { method: 'POST', body, auth: false }),
-    resendVerification: (body: { email: string }) => client.request('/api/v1/auth/resend-verification', { method: 'POST', body, auth: false }),
+    verifyEmail: (body: { userId: string; token: string }) =>
+      client.request('/api/v1/auth/verify-email', { method: 'POST', body, auth: false }),
+    resendVerification: (body: { email: string }) =>
+      client.request('/api/v1/auth/resend-verification', { method: 'POST', body, auth: false }),
     login: (body: { email: string; password: string; deviceId: string }) =>
       client.request('/api/v1/auth/login', { method: 'POST', body, schema: TokenResponse, auth: false }),
     refresh: (body: { refreshToken: string; deviceId: string }) =>

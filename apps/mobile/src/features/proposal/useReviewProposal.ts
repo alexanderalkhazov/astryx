@@ -31,7 +31,11 @@ export function useReviewProposal() {
       router.push({ pathname: '/proposal/[id]', params: { id: proposal.id } });
     },
     onError: (error) => {
-      toast({ tone: 'warning', title: "Couldn't create the proposal", body: isApiError(error) ? (error.detail ?? error.message) : 'Try again in a moment.' });
+      toast({
+        tone: 'warning',
+        title: "Couldn't create the proposal",
+        body: isApiError(error) ? (error.detail ?? error.message) : 'Try again in a moment.',
+      });
     },
   });
 }

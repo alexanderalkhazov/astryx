@@ -25,7 +25,15 @@ function patchDefault(queryClient: QueryClient, change: (list: Watchlist) => Wat
 
 /** Shown until the refetch brings the name and price. */
 const pendingItem = (symbol: string): WatchlistItem => ({
-  symbol, name: symbol, sector: null, last: null, changePct: null, hasActiveSignal: false, held: false, note: null, addedAt: new Date().toISOString(),
+  symbol,
+  name: symbol,
+  sector: null,
+  last: null,
+  changePct: null,
+  hasActiveSignal: false,
+  held: false,
+  note: null,
+  addedAt: new Date().toISOString(),
 });
 
 /**

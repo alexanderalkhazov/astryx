@@ -3,11 +3,11 @@ using System.Security.Claims;
 using Astryx.Infrastructure.Http;
 using Astryx.Modules.Identity.Application;
 using Astryx.Modules.Identity.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.EntityFrameworkCore;
 
 namespace Astryx.Modules.Identity.Api;
 

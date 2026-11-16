@@ -18,7 +18,9 @@ export const PaperOrder = z.object({
   quantity: Decimal,
   stopPrice: Decimal.nullable(),
   limitPrice: Decimal.nullable(),
-  fill: z.object({ price: Decimal, referencePrice: Decimal, slippagePerShare: Decimal, slippage: Decimal, fee: Decimal, filledAt: z.string() }).nullable(),
+  fill: z
+    .object({ price: Decimal, referencePrice: Decimal, slippagePerShare: Decimal, slippage: Decimal, fee: Decimal, filledAt: z.string() })
+    .nullable(),
   attached: z.object({ ocoGroupId: z.string(), stop: Decimal, target: Decimal }).nullable(),
   positionId: z.string().nullable(),
   proposalId: z.string().nullable(),
@@ -34,6 +36,11 @@ export function paperApi(client: ApiClient) {
       client.request('/api/v1/paper/orders', { method: 'POST', body: input, idempotencyKey, schema: PaperOrder }),
     working: () => client.request('/api/v1/paper/orders?status=working', { schema: z.object({ items: z.array(PaperOrder) }) }),
     cancel: (orderId: string, idempotencyKey: string) =>
-      client.request(`/api/v1/paper/orders/${encodeURIComponent(orderId)}/cancel`, { method: 'POST', body: {}, idempotencyKey, schema: PaperOrder }),
+      client.request(`/api/v1/paper/orders/${encodeURIComponent(orderId)}/cancel`, {
+        method: 'POST',
+        body: {},
+        idempotencyKey,
+        schema: PaperOrder,
+      }),
   };
 }

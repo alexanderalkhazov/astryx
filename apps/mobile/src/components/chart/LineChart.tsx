@@ -57,7 +57,11 @@ export function LineChart({ series, benchmark, height = 160, bandFrom, onScrub, 
       return builder.build();
     };
     return {
-      series: numeric.map((values, i) => ({ key: series[i]!.key, path: line(values), color: series[i]!.color ?? color.series[i % color.series.length]! })),
+      series: numeric.map((values, i) => ({
+        key: series[i]!.key,
+        path: line(values),
+        color: series[i]!.color ?? color.series[i % color.series.length]!,
+      })),
       benchmark: bench.length > 0 ? line(bench) : null,
     };
   }, [series, benchmark, count, width, height]);
@@ -110,11 +114,24 @@ export function LineChart({ series, benchmark, height = 160, bandFrom, onScrub, 
 
   return (
     <GestureDetector gesture={pan}>
-      <View onLayout={onLayout} style={{ height }} accessible accessibilityRole="image" accessibilityLabel={accessibilityLabel} testID="line-chart">
+      <View
+        onLayout={onLayout}
+        style={{ height }}
+        accessible
+        accessibilityRole="image"
+        accessibilityLabel={accessibilityLabel}
+        testID="line-chart"
+      >
         {width > 0 && count > 0 ? (
           <Canvas style={{ width, height }}>
             {bandFrom !== undefined && bandFrom < count ? (
-              <Rect x={xFor(bandFrom, count, width)} y={0} width={width - xFor(bandFrom, count, width)} height={height} color={color.surface2} />
+              <Rect
+                x={xFor(bandFrom, count, width)}
+                y={0}
+                width={width - xFor(bandFrom, count, width)}
+                height={height}
+                color={color.surface2}
+              />
             ) : null}
             {gridRows(height, 3).map((y) => (
               <Line key={y} p1={vec(0, y)} p2={vec(width, y)} color={color.line} strokeWidth={1} />

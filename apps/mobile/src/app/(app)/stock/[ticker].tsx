@@ -88,9 +88,17 @@ export default function StockScreen() {
     return (
       <Screen header={header}>
         {missing ? (
-          <EmptyState title={`No stock called ${symbol}`} body="Check the ticker, or search by company name." action={{ label: 'Search stocks', onPress: () => router.replace('/search') }} />
+          <EmptyState
+            title={`No stock called ${symbol}`}
+            body="Check the ticker, or search by company name."
+            action={{ label: 'Search stocks', onPress: () => router.replace('/search') }}
+          />
         ) : (
-          <EmptyState title="Couldn't load this stock" body="Check your connection and try again." action={{ label: 'Retry', onPress: () => void instrument.refetch() }} />
+          <EmptyState
+            title="Couldn't load this stock"
+            body="Check your connection and try again."
+            action={{ label: 'Retry', onPress: () => void instrument.refetch() }}
+          />
         )}
       </Screen>
     );
@@ -140,7 +148,11 @@ export default function StockScreen() {
       <Screen header={header} footer={footer}>
         <PriceBlock quote={quote.data} sector={instrument.data?.industry ?? instrument.data?.sector ?? null} pending={quote.isPending} />
         {quote.data?.stale ? (
-          <StatusBanner tone="error" title="Prices may be out of date" body={`Last update ${formatEtTime(quote.data.asOf)}. Values refresh when the data feed recovers.`} />
+          <StatusBanner
+            tone="error"
+            title="Prices may be out of date"
+            body={`Last update ${formatEtTime(quote.data.asOf)}. Values refresh when the data feed recovers.`}
+          />
         ) : null}
 
         <SignalRibbon signal={active.data} unavailable={active.unavailable} pending={active.isPending} />
@@ -149,7 +161,11 @@ export default function StockScreen() {
 
         {chart.isError && !chart.data ? (
           <View style={styles.chartBox}>
-            <EmptyState title="Price history unavailable" body="The data source didn't answer. Try again shortly." action={{ label: 'Retry', onPress: () => void chart.refetch() }} />
+            <EmptyState
+              title="Price history unavailable"
+              body="The data source didn't answer. Try again shortly."
+              action={{ label: 'Retry', onPress: () => void chart.refetch() }}
+            />
           </View>
         ) : !chart.data ? (
           <View testID="chart-loading">
@@ -200,7 +216,13 @@ export default function StockScreen() {
         </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.toggles}>
           {OVERLAYS.filter((o) => o.key !== 'levels' || (levels && levelsAllowed)).map((o) => (
-            <OverlayToggle key={o.key} label={o.label} swatch={o.swatch} on={overlays[o.key]} onPress={() => setOverlays((v) => ({ ...v, [o.key]: !v[o.key] }))} />
+            <OverlayToggle
+              key={o.key}
+              label={o.label}
+              swatch={o.swatch}
+              on={overlays[o.key]}
+              onPress={() => setOverlays((v) => ({ ...v, [o.key]: !v[o.key] }))}
+            />
           ))}
         </ScrollView>
 
@@ -226,9 +248,20 @@ export default function StockScreen() {
 
         <Tabs tabs={TABS} value={tab} onChange={setTab} />
         {tab === 'signal' ? (
-          <SignalTab symbol={symbol} signal={active.data} pending={active.isPending} unavailable={active.unavailable} evaluatedAt={scannerStatus.data?.lastRunAt} />
+          <SignalTab
+            symbol={symbol}
+            signal={active.data}
+            pending={active.isPending}
+            unavailable={active.unavailable}
+            evaluatedAt={scannerStatus.data?.lastRunAt}
+          />
         ) : tab === 'technicals' ? (
-          <TechnicalsTab snapshot={indicators.data} pending={indicators.isPending} failed={indicators.isError} onRetry={() => void indicators.refetch()} />
+          <TechnicalsTab
+            snapshot={indicators.data}
+            pending={indicators.isPending}
+            failed={indicators.isError}
+            onRetry={() => void indicators.refetch()}
+          />
         ) : tab === 'fundamentals' ? (
           <FundamentalsTab symbol={symbol} />
         ) : (
@@ -242,7 +275,11 @@ export default function StockScreen() {
           {(['rsi', 'macd'] as const).map((key) => (
             <View key={key} style={styles.sheetRow}>
               <Text.Body>{key === 'rsi' ? 'RSI (14)' : 'MACD (12, 26, 9)'}</Text.Body>
-              <Switch value={panes[key]} onValueChange={(on) => setPanes((p) => ({ ...p, [key]: on }))} accessibilityLabel={key === 'rsi' ? 'RSI pane' : 'MACD pane'} />
+              <Switch
+                value={panes[key]}
+                onValueChange={(on) => setPanes((p) => ({ ...p, [key]: on }))}
+                accessibilityLabel={key === 'rsi' ? 'RSI pane' : 'MACD pane'}
+              />
             </View>
           ))}
         </View>
@@ -266,7 +303,17 @@ function PriceBlock({ quote, sector, pending }: { quote: Quote | undefined; sect
   const tone = direction === 'up' ? 'gain' : direction === 'down' ? 'loss' : 'secondary';
   const change = `${formatPrice(quote.change, { signed: true })} (${formatPct(quote.changePct, { signed: true })}) today`;
   return (
-    <View style={styles.price} accessible accessibilityLabel={[`${formatPrice(quote.last)}, ${direction} ${formatPct(quote.changePct.replace('-', ''))} today`, sector, `as of ${formatEtTime(quote.asOf)}`].filter(Boolean).join(', ')}>
+    <View
+      style={styles.price}
+      accessible
+      accessibilityLabel={[
+        `${formatPrice(quote.last)}, ${direction} ${formatPct(quote.changePct.replace('-', ''))} today`,
+        sector,
+        `as of ${formatEtTime(quote.asOf)}`,
+      ]
+        .filter(Boolean)
+        .join(', ')}
+    >
       <View>
         <Text variant="priceXl" testID="stock-price">
           {formatPrice(quote.last)}
@@ -294,7 +341,12 @@ function Readout({ bar, intraday }: { bar: Bar | null; intraday: boolean }) {
     ['V', formatVolume(bar.v), 'primary'],
   ];
   return (
-    <View style={styles.readout} testID="ohlcv-readout" accessible accessibilityLabel={`${when}: open ${bar.o}, high ${bar.h}, low ${bar.l}, close ${bar.c}, volume ${formatVolume(bar.v)}`}>
+    <View
+      style={styles.readout}
+      testID="ohlcv-readout"
+      accessible
+      accessibilityLabel={`${when}: open ${bar.o}, high ${bar.h}, low ${bar.l}, close ${bar.c}, volume ${formatVolume(bar.v)}`}
+    >
       <Text.DataSm tone="secondary" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
         {when}
         {fields.map(([label, value, tone]) => (

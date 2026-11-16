@@ -1,5 +1,5 @@
-using Astryx.Infrastructure.Jobs;
 using Astryx.Contracts.Events.Identity;
+using Astryx.Infrastructure.Jobs;
 using Astryx.Infrastructure.Outbox;
 using Astryx.Infrastructure.Persistence;
 using Astryx.Modules.Portfolio.Application;

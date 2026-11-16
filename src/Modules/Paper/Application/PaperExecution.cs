@@ -42,8 +42,18 @@ public sealed class PaperExecution(PaperDbContext db, IPortfolioLedger ledger, I
         var fee = Costs.Fee;
         var fill = new Fill
         {
-            Id = Ids.New(), OrderId = order.Id, PortfolioId = order.PortfolioId, InstrumentId = order.InstrumentId, Side = "buy", Quantity = order.Quantity,
-            Price = simulated.Price, ReferencePrice = simulated.ReferencePrice, SlippagePerShare = simulated.SlippagePerShare, Fee = fee, QuoteAsOf = quoteAsOf, FilledAt = now,
+            Id = Ids.New(),
+            OrderId = order.Id,
+            PortfolioId = order.PortfolioId,
+            InstrumentId = order.InstrumentId,
+            Side = "buy",
+            Quantity = order.Quantity,
+            Price = simulated.Price,
+            ReferencePrice = simulated.ReferencePrice,
+            SlippagePerShare = simulated.SlippagePerShare,
+            Fee = fee,
+            QuoteAsOf = quoteAsOf,
+            FilledAt = now,
         };
         db.Fills.Add(fill);
         await db.SaveChangesAsync(cancellationToken); // the order and fill rows exist before the ledger points at them
@@ -92,8 +102,18 @@ public sealed class PaperExecution(PaperDbContext db, IPortfolioLedger ledger, I
         var fee = Costs.Fee;
         var fill = new Fill
         {
-            Id = Ids.New(), OrderId = exit.Id, PortfolioId = exit.PortfolioId, InstrumentId = exit.InstrumentId, Side = "sell", Quantity = exit.Quantity,
-            Price = price, ReferencePrice = reference, SlippagePerShare = slippagePerShare, Fee = fee, QuoteAsOf = quoteAsOf, FilledAt = now,
+            Id = Ids.New(),
+            OrderId = exit.Id,
+            PortfolioId = exit.PortfolioId,
+            InstrumentId = exit.InstrumentId,
+            Side = "sell",
+            Quantity = exit.Quantity,
+            Price = price,
+            ReferencePrice = reference,
+            SlippagePerShare = slippagePerShare,
+            Fee = fee,
+            QuoteAsOf = quoteAsOf,
+            FilledAt = now,
         };
         exit.Status = OrderStatus.Filled;
         exit.FilledQuantity = exit.Quantity;
@@ -162,10 +182,24 @@ public sealed class PaperExecution(PaperDbContext db, IPortfolioLedger ledger, I
         var group = Ids.New();
         Order Exit(string purpose, string type, decimal? stopPrice, decimal? limit) => new()
         {
-            Id = Ids.New(), UserId = entry.UserId, PortfolioId = entry.PortfolioId, InstrumentId = entry.InstrumentId, Symbol = entry.Symbol,
-            PositionId = positionId, ClientOrderId = $"exit:{positionId}:{purpose}", BrokerOrderId = NewBrokerOrderId(), Purpose = purpose, Side = "sell",
-            OrderType = type, TimeInForce = "gtc", Quantity = entry.Quantity, StopPrice = stopPrice, LimitPrice = limit, OcoGroupId = group,
-            Status = OrderStatus.Working, SubmittedAt = now,
+            Id = Ids.New(),
+            UserId = entry.UserId,
+            PortfolioId = entry.PortfolioId,
+            InstrumentId = entry.InstrumentId,
+            Symbol = entry.Symbol,
+            PositionId = positionId,
+            ClientOrderId = $"exit:{positionId}:{purpose}",
+            BrokerOrderId = NewBrokerOrderId(),
+            Purpose = purpose,
+            Side = "sell",
+            OrderType = type,
+            TimeInForce = "gtc",
+            Quantity = entry.Quantity,
+            StopPrice = stopPrice,
+            LimitPrice = limit,
+            OcoGroupId = group,
+            Status = OrderStatus.Working,
+            SubmittedAt = now,
         };
         return [Exit(OrderPurpose.ExitStop, "sell_stop", stop, null), Exit(OrderPurpose.ExitTarget, "limit", null, target)];
     }

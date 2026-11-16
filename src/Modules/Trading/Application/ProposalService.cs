@@ -61,54 +61,54 @@ public sealed class ProposalService(
         switch (request)
         {
             case { Source: ProposalSource.Signal, SignalId: { } signalId, AnalysisId: null }:
-            {
-                if (await signals.GetAsync(signalId, cancellationToken) is not { } signal)
                 {
-                    return SignalNotFound;
-                }
+                    if (await signals.GetAsync(signalId, cancellationToken) is not { } signal)
+                    {
+                        return SignalNotFound;
+                    }
 
-                if (signal.Status != "active")
-                {
-                    return SignalNotActive;
-                }
+                    if (signal.Status != "active")
+                    {
+                        return SignalNotActive;
+                    }
 
-                var (headline, summary, evidence, invalidation) = ProposalCopy.FromSignal(signal);
-                draft = Draft(userId, signal.InstrumentId, signal.Symbol, ProposalSource.Signal, signal.OrderType, signal.Entry, signal.Stop, signal.Target, headline, summary, evidence, invalidation, "template");
-                draft.SignalId = signal.Id;
-                draft.StrategyId = signal.StrategyId;
-                draft.StrategyVersionId = signal.StrategyVersionId;
-                draft.StrategyName = signal.StrategyName;
-                draft.SourceAt = signal.EvaluatedAt;
-                draft.Score = signal.Score;
-                break;
-            }
+                    var (headline, summary, evidence, invalidation) = ProposalCopy.FromSignal(signal);
+                    draft = Draft(userId, signal.InstrumentId, signal.Symbol, ProposalSource.Signal, signal.OrderType, signal.Entry, signal.Stop, signal.Target, headline, summary, evidence, invalidation, "template");
+                    draft.SignalId = signal.Id;
+                    draft.StrategyId = signal.StrategyId;
+                    draft.StrategyVersionId = signal.StrategyVersionId;
+                    draft.StrategyName = signal.StrategyName;
+                    draft.SourceAt = signal.EvaluatedAt;
+                    draft.Score = signal.Score;
+                    break;
+                }
 
             case { Source: ProposalSource.Analysis, AnalysisId: { } analysisId, SignalId: null }:
-            {
-                if (await analyses.GetAsync(userId, analysisId, cancellationToken) is not { } analysis)
                 {
-                    return AnalysisNotFound;
-                }
+                    if (await analyses.GetAsync(userId, analysisId, cancellationToken) is not { } analysis)
+                    {
+                        return AnalysisNotFound;
+                    }
 
-                if (analysis.Stale)
-                {
-                    return AnalysisStale;
-                }
+                    if (analysis.Stale)
+                    {
+                        return AnalysisStale;
+                    }
 
-                if (!analysis.LevelsAccepted || analysis.EntryHigh is not { } entry || analysis.Stop is not { } stop || analysis.Target is not { } target)
-                {
-                    return LevelsRejected;
-                }
+                    if (!analysis.LevelsAccepted || analysis.EntryHigh is not { } entry || analysis.Stop is not { } stop || analysis.Target is not { } target)
+                    {
+                        return LevelsRejected;
+                    }
 
-                var quote = await research.GetQuoteAsync(analysis.Symbol, cancellationToken);
-                // The top of the entry zone, the worst fill for a long (as LevelValidator assumed): a buy stop above the market, else a limit.
-                var orderType = quote is not null && entry > quote.Last ? "buy_stop" : "limit";
-                var (headline, summary, evidence, invalidation) = ProposalCopy.FromAnalysis(analysis);
-                draft = Draft(userId, analysis.InstrumentId, analysis.Symbol, ProposalSource.Analysis, orderType, entry, stop, target, headline, summary, evidence, invalidation, "ai");
-                draft.AnalysisResultId = analysis.Id;
-                draft.SourceAt = analysis.AnalysisAt;
-                break;
-            }
+                    var quote = await research.GetQuoteAsync(analysis.Symbol, cancellationToken);
+                    // The top of the entry zone, the worst fill for a long (as LevelValidator assumed): a buy stop above the market, else a limit.
+                    var orderType = quote is not null && entry > quote.Last ? "buy_stop" : "limit";
+                    var (headline, summary, evidence, invalidation) = ProposalCopy.FromAnalysis(analysis);
+                    draft = Draft(userId, analysis.InstrumentId, analysis.Symbol, ProposalSource.Analysis, orderType, entry, stop, target, headline, summary, evidence, invalidation, "ai");
+                    draft.AnalysisResultId = analysis.Id;
+                    draft.SourceAt = analysis.AnalysisAt;
+                    break;
+                }
 
             default:
                 return BadSource;
@@ -258,7 +258,8 @@ public sealed class ProposalService(
 
     private async Task<ProposalDto> ToDtoAsync(Proposal p, CancellationToken cancellationToken) =>
         ToDto(p, (await NamesAsync([p.InstrumentId], cancellationToken)).GetValueOrDefault(p.InstrumentId, p.Symbol))
-            with { Assessment = await assessments.LatestAsync(p, cancellationToken) };
+            with
+        { Assessment = await assessments.LatestAsync(p, cancellationToken) };
 
     private async Task<Dictionary<Guid, string>> NamesAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken) =>
         (await instruments.GetAsync(ids.Distinct().ToList(), cancellationToken)).ToDictionary(i => i.Id, i => i.Name);

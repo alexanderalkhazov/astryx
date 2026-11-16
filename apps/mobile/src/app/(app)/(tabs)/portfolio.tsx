@@ -32,7 +32,11 @@ export default function PortfolioScreen() {
   if (summary.isError) {
     return (
       <Screen header={header}>
-        <EmptyState title="Couldn't load your portfolio" body="Check your connection and try again." action={{ label: 'Retry', onPress: () => void summary.refetch() }} />
+        <EmptyState
+          title="Couldn't load your portfolio"
+          body="Check your connection and try again."
+          action={{ label: 'Retry', onPress: () => void summary.refetch() }}
+        />
       </Screen>
     );
   }
@@ -40,13 +44,23 @@ export default function PortfolioScreen() {
   const s = summary.data;
   return (
     <Screen header={header}>
-      {s?.stale ? <StatusBanner tone="error" title="Prices may be out of date" body={`Valued at quotes from ${formatEtTime(s.asOf)}. Values refresh when the feed recovers.`} /> : null}
+      {s?.stale ? (
+        <StatusBanner
+          tone="error"
+          title="Prices may be out of date"
+          body={`Valued at quotes from ${formatEtTime(s.asOf)}. Values refresh when the feed recovers.`}
+        />
+      ) : null}
       {s ? (
         <View style={styles.hero}>
           <MetricHero label="Portfolio value" value={s.equity}>
             <View style={styles.heroLine}>
-              <Text.DataSm tone={tone(s.dayPnl)}>{`${formatPnl(s.dayPnl)}${s.dayPnlPct ? ` (${formatPct(s.dayPnlPct, { signed: true })})` : ''} today`}</Text.DataSm>
-              <Text.DataSm tone={tone(s.allTimePnl)}>{`${formatPnl(s.allTimePnl)} (${formatPct(s.allTimeReturnPct, { signed: true })}) all time`}</Text.DataSm>
+              <Text.DataSm
+                tone={tone(s.dayPnl)}
+              >{`${formatPnl(s.dayPnl)}${s.dayPnlPct ? ` (${formatPct(s.dayPnlPct, { signed: true })})` : ''} today`}</Text.DataSm>
+              <Text.DataSm
+                tone={tone(s.allTimePnl)}
+              >{`${formatPnl(s.allTimePnl)} (${formatPct(s.allTimeReturnPct, { signed: true })}) all time`}</Text.DataSm>
             </View>
           </MetricHero>
           {s.halted ? (
@@ -96,7 +110,11 @@ function PositionsTab() {
         />
       ) : null}
       {items.length === 0 ? (
-        <EmptyState title="No open positions" body="Approved proposals that fill appear here." action={{ label: 'Find a setup', onPress: () => router.push('/discover') }} />
+        <EmptyState
+          title="No open positions"
+          body="Approved proposals that fill appear here."
+          action={{ label: 'Find a setup', onPress: () => router.push('/discover') }}
+        />
       ) : (
         <View>
           <View style={styles.listHeader}>
@@ -104,7 +122,11 @@ function PositionsTab() {
             <Text.Overline tone="tertiary">VALUE · P&L</Text.Overline>
           </View>
           {items.map((p) => (
-            <PositionRow key={p.id} position={p} onPress={() => router.push({ pathname: '/position/[ticker]', params: { ticker: p.symbol } })} />
+            <PositionRow
+              key={p.id}
+              position={p}
+              onPress={() => router.push({ pathname: '/position/[ticker]', params: { ticker: p.symbol } })}
+            />
           ))}
         </View>
       )}
@@ -120,7 +142,11 @@ function AllocationTab() {
   return (
     <View style={styles.tab} testID="allocation-tab">
       <Text.Overline tone="tertiary">Sectors</Text.Overline>
-      {allocation.data.sectors.length ? <SectorAllocation allocation={allocation.data} /> : <Text.Body tone="secondary">No open positions, so everything is in cash.</Text.Body>}
+      {allocation.data.sectors.length ? (
+        <SectorAllocation allocation={allocation.data} />
+      ) : (
+        <Text.Body tone="secondary">No open positions, so everything is in cash.</Text.Body>
+      )}
       <Text.Overline tone="tertiary">Assets</Text.Overline>
       <AssetDonut assets={allocation.data.assets} />
       <Text.Overline tone="tertiary">Exposure</Text.Overline>
@@ -131,7 +157,11 @@ function AllocationTab() {
           { label: 'Open risk to stops', value: formatMoney(e.openRiskToStops) },
         ]}
       />
-      {e.betaWeightedPct === null ? <Text.Caption tone="tertiary">Beta-weighted exposure needs a beta for every holding, which the data source doesn't provide for all.</Text.Caption> : null}
+      {e.betaWeightedPct === null ? (
+        <Text.Caption tone="tertiary">
+          Beta-weighted exposure needs a beta for every holding, which the data source doesn't provide for all.
+        </Text.Caption>
+      ) : null}
       {e.concentrationWarnings.map((w) => (
         <StatusBanner key={`${w.kind}-${w.subject}`} tone="error" title="Concentration" body={w.message} />
       ))}
@@ -141,12 +171,20 @@ function AllocationTab() {
 
 function PerformanceTab() {
   const [range, setRange] = useState<PerformanceRange>('1M');
-  const performance = useQuery({ queryKey: ['portfolio', 'performance', range], queryFn: async () => (await portfolio.performance(range)).data });
+  const performance = useQuery({
+    queryKey: ['portfolio', 'performance', range],
+    queryFn: async () => (await portfolio.performance(range)).data,
+  });
   const trades = useQuery({ queryKey: ['portfolio', 'trades'], queryFn: async () => (await portfolio.trades()).data });
   const p = performance.data;
   return (
     <View style={styles.tab} testID="performance-tab">
-      <Segmented accessibilityLabel="Performance range" options={RANGES.map((r) => ({ value: r, label: r }))} value={range} onChange={setRange} />
+      <Segmented
+        accessibilityLabel="Performance range"
+        options={RANGES.map((r) => ({ value: r, label: r }))}
+        value={range}
+        onChange={setRange}
+      />
       {p ? (
         <>
           <LineChart
@@ -177,7 +215,12 @@ function PerformanceTab() {
         <Text.Body tone="secondary">No closed trades yet.</Text.Body>
       ) : (
         trades.data!.items.map((t) => (
-          <View key={t.positionId} style={styles.trade} accessible accessibilityLabel={`${t.symbol} ${t.exitReason}, ${formatPnl(t.realizedPnl)}`}>
+          <View
+            key={t.positionId}
+            style={styles.trade}
+            accessible
+            accessibilityLabel={`${t.symbol} ${t.exitReason}, ${formatPnl(t.realizedPnl)}`}
+          >
             <View style={styles.flex}>
               <Text.Section>{t.symbol}</Text.Section>
               <Text.Caption tone="secondary">{`${t.exitReason === 'stop' ? 'Stop' : t.exitReason === 'target' ? 'Target' : 'Closed'} · ${t.holdingDays} d · ${formatRatio(t.quantity, 0)} sh`}</Text.Caption>

@@ -40,7 +40,11 @@ describe('Text', () => {
   });
 
   it('maps tones to semantic colours', async () => {
-    await render(<Text.Overline tone="pending" testID="band">Not executed</Text.Overline>);
+    await render(
+      <Text.Overline tone="pending" testID="band">
+        Not executed
+      </Text.Overline>,
+    );
 
     const style = StyleSheet.flatten(screen.getByTestId('band').props.style);
     expect(style.color).toBe(color.pending);

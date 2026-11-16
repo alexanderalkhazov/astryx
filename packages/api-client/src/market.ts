@@ -162,10 +162,13 @@ export function marketApi(client: ApiClient) {
   return {
     instrument: (symbol: string) => client.request(`/api/v1/instruments/${symbolPath(symbol)}`, { schema: Instrument }),
     quote: (symbol: string) => client.request(`/api/v1/market/${symbolPath(symbol)}/quote`, { schema: Quote }),
-    bars: (symbol: string, request: BarsRequest) => client.request(`/api/v1/market/${symbolPath(symbol)}/bars${query(request)}`, { schema: Bars }),
-    indicators: (symbol: string) => client.request(`/api/v1/market/${symbolPath(symbol)}/indicators?interval=1d`, { schema: IndicatorSnapshot }),
+    bars: (symbol: string, request: BarsRequest) =>
+      client.request(`/api/v1/market/${symbolPath(symbol)}/bars${query(request)}`, { schema: Bars }),
+    indicators: (symbol: string) =>
+      client.request(`/api/v1/market/${symbolPath(symbol)}/indicators?interval=1d`, { schema: IndicatorSnapshot }),
     fundamentals: (symbol: string) => client.request(`/api/v1/instruments/${symbolPath(symbol)}/fundamentals`, { schema: Fundamentals }),
-    news: (symbol: string, limit = 10) => client.request(`/api/v1/instruments/${symbolPath(symbol)}/news${query({ limit })}`, { schema: NewsList }),
+    news: (symbol: string, limit = 10) =>
+      client.request(`/api/v1/instruments/${symbolPath(symbol)}/news${query({ limit })}`, { schema: NewsList }),
     breadth: () => client.request('/api/v1/market/breadth', { schema: Breadth }),
     session: () => client.request('/api/v1/market/session', { schema: MarketSession }),
   };

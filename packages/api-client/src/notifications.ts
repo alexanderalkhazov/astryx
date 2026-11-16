@@ -28,11 +28,15 @@ export type ActivityPage = z.infer<typeof ActivityPage>;
 export function notificationsApi(client: ApiClient) {
   return {
     list: (category: NotificationCategory | 'all' = 'all', cursor?: string) =>
-      client.request(`/api/v1/notifications?category=${category}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`, { schema: ActivityPage }),
+      client.request(`/api/v1/notifications?category=${category}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`, {
+        schema: ActivityPage,
+      }),
     markRead: (id: string) => client.request(`/api/v1/notifications/${encodeURIComponent(id)}/read`, { method: 'POST' }),
-    markAllRead: (category?: NotificationCategory) => client.request('/api/v1/notifications/read-all', { method: 'POST', body: category ? { category } : {} }),
+    markAllRead: (category?: NotificationCategory) =>
+      client.request('/api/v1/notifications/read-all', { method: 'POST', body: category ? { category } : {} }),
     /** N4: upserts this device's Expo push token. */
-    registerDevice: (body: { deviceId: string; pushToken: string; platform: 'ios' | 'android' }) => client.request('/api/v1/devices', { method: 'POST', body }),
+    registerDevice: (body: { deviceId: string; pushToken: string; platform: 'ios' | 'android' }) =>
+      client.request('/api/v1/devices', { method: 'POST', body }),
     /** N5: stops pushes to this device (idempotent). */
     unregisterDevice: (deviceId: string) => client.request(`/api/v1/devices/${encodeURIComponent(deviceId)}`, { method: 'DELETE' }),
   };

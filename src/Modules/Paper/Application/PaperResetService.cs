@@ -114,7 +114,10 @@ public sealed class PaperResetService(
         db.Publish(new PaperAccountReset(userId, portfolioId, state.OpenPositions.Count, open.Count, epoch.Value.StartingCash, now));
         db.Audit(new AuditEntry("paper.account_reset", AuditActor.User, userId, "portfolio", portfolioId.ToString(), Metadata: new
         {
-            closedPositions = state.OpenPositions.Count, cancelledOrders = open.Count, deposit = epoch.Value.Deposit, resetCount = epoch.Value.ResetCount,
+            closedPositions = state.OpenPositions.Count,
+            cancelledOrders = open.Count,
+            deposit = epoch.Value.Deposit,
+            resetCount = epoch.Value.ResetCount,
         }));
         await db.SaveChangesAsync(cancellationToken);
         return new PaperResetDto(portfolioId, epoch.Value.CashBalance, epoch.Value.StartingCash, state.OpenPositions.Count, open.Count, epoch.Value.ResetCount, epoch.Value.EpochStartedAt);

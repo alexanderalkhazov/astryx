@@ -25,7 +25,10 @@ export default function ResetPasswordScreen() {
   const [failure, setFailure] = useState<{ message: string; badLink: boolean } | null>(
     userId && token ? null : { message: 'This reset link is incomplete. Request a new one.', badLink: true },
   );
-  const { control, handleSubmit, setError, formState } = useForm<Values>({ resolver: zodResolver(schema), defaultValues: { password: '', confirm: '' } });
+  const { control, handleSubmit, setError, formState } = useForm<Values>({
+    resolver: zodResolver(schema),
+    defaultValues: { password: '', confirm: '' },
+  });
 
   const submit = handleSubmit(async ({ password }) => {
     if (!userId || !token) return;
@@ -57,7 +60,14 @@ export default function ResetPasswordScreen() {
           testID="reset-error"
         />
       ) : null}
-      <FormField control={control} name="password" label="New password" secureTextEntry autoComplete="new-password" textContentType="newPassword" />
+      <FormField
+        control={control}
+        name="password"
+        label="New password"
+        secureTextEntry
+        autoComplete="new-password"
+        textContentType="newPassword"
+      />
       <FormField
         control={control}
         name="confirm"

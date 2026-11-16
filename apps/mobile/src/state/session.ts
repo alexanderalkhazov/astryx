@@ -25,5 +25,6 @@ export const useSession = create<SessionState>((set) => ({
   signedOutByUser: false,
   signIn: (accessToken, expiresAt) => set({ status: 'signedIn', accessToken, accessTokenExpiresAt: expiresAt, signedOutByUser: false }),
   setUser: (user) => set({ user }),
-  signOut: (byUser = false) => set({ status: 'signedOut', accessToken: null, accessTokenExpiresAt: null, user: null, signedOutByUser: byUser }),
+  signOut: (byUser = false) =>
+    set({ status: 'signedOut', accessToken: null, accessTokenExpiresAt: null, user: null, signedOutByUser: byUser }),
 }));

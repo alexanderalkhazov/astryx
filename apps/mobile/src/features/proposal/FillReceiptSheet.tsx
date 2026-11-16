@@ -38,21 +38,45 @@ export function FillReceiptSheet({
               <Text.Headline accessibilityRole="header">{`Bought ${formatQuantity(order.quantity)} ${order.symbol} at ${formatMoney(fill.price)}`}</Text.Headline>
               <Row label="Order ID" value={order.brokerOrderId} />
               <Row label="Filled" value={`${formatEtTime(fill.filledAt)} · paper account`} />
-              <Row label="Slippage" value={`+${formatMoney(fill.slippagePerShare)} vs entry ${formatPrice(order.stopPrice ?? order.limitPrice ?? fill.referencePrice)}`} />
-              {order.attached ? <Row label="Stop / target" value={`OCO attached · ${formatPrice(order.attached.stop)} / ${formatPrice(order.attached.target)}`} /> : null}
+              <Row
+                label="Slippage"
+                value={`+${formatMoney(fill.slippagePerShare)} vs entry ${formatPrice(order.stopPrice ?? order.limitPrice ?? fill.referencePrice)}`}
+              />
+              {order.attached ? (
+                <Row
+                  label="Stop / target"
+                  value={`OCO attached · ${formatPrice(order.attached.stop)} / ${formatPrice(order.attached.target)}`}
+                />
+              ) : null}
               <Row label="Commission" value={formatMoney(fill.fee)} />
               <View style={styles.buttons}>
                 <Button variant="secondary" label="Done" block={false} onPress={onDone} style={styles.flex} />
-                <Button label="View in portfolio" block={false} onPress={() => onView('portfolio')} style={styles.flex} testID="receipt-view-portfolio" />
+                <Button
+                  label="View in portfolio"
+                  block={false}
+                  onPress={() => onView('portfolio')}
+                  style={styles.flex}
+                  testID="receipt-view-portfolio"
+                />
               </View>
             </>
           ) : (
             <>
-              <StatusBanner tone="pending" title="ORDER WORKING · NOT FILLED" body={`${order.brokerOrderId} · triggers at ${formatPrice(order.stopPrice ?? order.limitPrice ?? '0')}. It expires at the close if not triggered.`} />
+              <StatusBanner
+                tone="pending"
+                title="ORDER WORKING · NOT FILLED"
+                body={`${order.brokerOrderId} · triggers at ${formatPrice(order.stopPrice ?? order.limitPrice ?? '0')}. It expires at the close if not triggered.`}
+              />
               <Text.Headline accessibilityRole="header">{`Buy ${formatQuantity(order.quantity)} ${order.symbol} is working`}</Text.Headline>
               <View style={styles.buttons}>
                 <Button variant="secondary" label="Done" block={false} onPress={onDone} style={styles.flex} />
-                <Button label="View in Activity" block={false} onPress={() => onView('activity')} style={styles.flex} testID="receipt-view-activity" />
+                <Button
+                  label="View in Activity"
+                  block={false}
+                  onPress={() => onView('activity')}
+                  style={styles.flex}
+                  testID="receipt-view-activity"
+                />
               </View>
             </>
           )}

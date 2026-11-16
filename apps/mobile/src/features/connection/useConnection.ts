@@ -36,7 +36,15 @@ export function useConnection(pollMs = STATUS_POLL_MS): ConnectionState {
 
   const market = status.data?.marketData;
   const problem: ConnectionProblem | null =
-    net.isConnected === false ? 'offline' : status.isError ? 'unreachable' : market?.feedDown ? 'feed_down' : market?.quotesStale ? 'stale' : null;
+    net.isConnected === false
+      ? 'offline'
+      : status.isError
+        ? 'unreachable'
+        : market?.feedDown
+          ? 'feed_down'
+          : market?.quotesStale
+            ? 'stale'
+            : null;
 
   return {
     problem,

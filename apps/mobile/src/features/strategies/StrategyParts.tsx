@@ -10,7 +10,8 @@ import { Text } from '@/components/Text';
 import { formatPct, formatRatio } from '@/lib/format';
 
 /** Backtests are history replayed by rules, never a forecast (SYSTEM_DESIGN.md §7.8). Shown wherever results are. */
-export const ILLUSTRATIVE_COPY = 'Backtests replay history with fixed rules. Results are historical and illustrative, not a forecast of future returns.';
+export const ILLUSTRATIVE_COPY =
+  'Backtests replay history with fixed rules. Results are historical and illustrative, not a forecast of future returns.';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -65,7 +66,13 @@ export function GuardLine({ strategy }: { strategy: StrategySummary }) {
 export function StrategyCard({ strategy, onPress }: { strategy: StrategySummary; onPress: () => void }) {
   const s = strategy;
   return (
-    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={`${s.name}, ${STATUS[s.status].label}`} style={({ pressed }) => [styles.card, { opacity: pressed ? 0.8 : 1 }]} testID={`strategy-${s.code}`}>
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`${s.name}, ${STATUS[s.status].label}`}
+      style={({ pressed }) => [styles.card, { opacity: pressed ? 0.8 : 1 }]}
+      testID={`strategy-${s.code}`}
+    >
       <View style={styles.cardHead}>
         <View style={styles.flex}>
           <Text.Section>{s.name}</Text.Section>
@@ -131,7 +138,12 @@ export function MetricsTable({ columns, testID }: { columns: readonly MetricsTab
             {r.label}
           </Text.Caption>
           {columns.map((c) => (
-            <View key={c.key} style={styles.valueCell} accessible accessibilityLabel={`${c.name} ${r.label}: ${r.value(c.metrics) ?? 'not available'}`}>
+            <View
+              key={c.key}
+              style={styles.valueCell}
+              accessible
+              accessibilityLabel={`${c.name} ${r.label}: ${r.value(c.metrics) ?? 'not available'}`}
+            >
               <Text.DataSm style={styles.right}>{r.value(c.metrics) ?? '—'}</Text.DataSm>
             </View>
           ))}
@@ -188,7 +200,14 @@ function heatColor(value: string): string {
 }
 
 const styles = StyleSheet.create({
-  card: { gap: space[3], padding: space[4], borderRadius: radius.card, backgroundColor: color.surface1, borderWidth: 1, borderColor: color.line },
+  card: {
+    gap: space[3],
+    padding: space[4],
+    borderRadius: radius.card,
+    backgroundColor: color.surface1,
+    borderWidth: 1,
+    borderColor: color.line,
+  },
   cardHead: { flexDirection: 'row', gap: space[3], alignItems: 'flex-start' },
   flex: { flex: 1, gap: 2 },
   table: { gap: 0 },

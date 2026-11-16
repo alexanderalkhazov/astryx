@@ -15,7 +15,11 @@ export function WeightBar({ weight, cap, over }: { weight: string; cap: string; 
   // The track spans 1.5 × the cap so drift past it stays visible.
   const span = new Decimal(cap).times(1.5).toString();
   return (
-    <View style={styles.weightTrack} accessible accessibilityLabel={`Weight ${formatPct(weight)} of a ${formatPct(cap, { dp: 0 })} cap${over ? ', over the cap' : ''}`}>
+    <View
+      style={styles.weightTrack}
+      accessible
+      accessibilityLabel={`Weight ${formatPct(weight)} of a ${formatPct(cap, { dp: 0 })} cap${over ? ', over the cap' : ''}`}
+    >
       <View style={[styles.weightFill, { width: `${share(weight, span) * 100}%`, backgroundColor: over ? color.pending : color.signal }]} />
       <View style={[styles.capMark, { left: `${(2 / 3) * 100}%` }]} />
     </View>
@@ -26,7 +30,13 @@ export function WeightBar({ weight, cap, over }: { weight: string; cap: string; 
 export function PositionRow({ position, onPress }: { position: PortfolioPosition; onPress: () => void }) {
   const p = position;
   return (
-    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={`${p.symbol}${p.isNew ? ', new' : ''}, ${formatQuantity(p.quantity)} shares, value ${p.marketValue ? formatMoney(p.marketValue) : 'unknown'}`} style={({ pressed }) => [styles.row, { opacity: pressed ? 0.7 : 1 }]} testID={`position-${p.symbol}`}>
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`${p.symbol}${p.isNew ? ', new' : ''}, ${formatQuantity(p.quantity)} shares, value ${p.marketValue ? formatMoney(p.marketValue) : 'unknown'}`}
+      style={({ pressed }) => [styles.row, { opacity: pressed ? 0.7 : 1 }]}
+      testID={`position-${p.symbol}`}
+    >
       <View style={styles.rowTop}>
         <View style={styles.left}>
           <View style={styles.symbolLine}>
@@ -39,14 +49,18 @@ export function PositionRow({ position, onPress }: { position: PortfolioPosition
         <View style={styles.right}>
           <Text.Data>{p.marketValue ? formatMoney(p.marketValue) : '—'}</Text.Data>
           {p.unrealizedPnl ? (
-            <Text.DataSm tone={new Decimal(p.unrealizedPnl).isNegative() ? 'loss' : 'gain'}>{`${formatPnl(p.unrealizedPnl)} (${formatPct(p.unrealizedPct ?? '0', { signed: true })})`}</Text.DataSm>
+            <Text.DataSm
+              tone={new Decimal(p.unrealizedPnl).isNegative() ? 'loss' : 'gain'}
+            >{`${formatPnl(p.unrealizedPnl)} (${formatPct(p.unrealizedPct ?? '0', { signed: true })})`}</Text.DataSm>
           ) : null}
         </View>
       </View>
       {p.weightPct ? (
         <View style={styles.weightLine}>
           <WeightBar weight={p.weightPct} cap={p.weightCapPct} over={p.overCap} />
-          <Text.DataSm tone={p.overCap ? 'pending' : 'tertiary'}>{`${formatPct(p.weightPct, { dp: 1 })} / ${formatPct(p.weightCapPct, { dp: 0 })}`}</Text.DataSm>
+          <Text.DataSm
+            tone={p.overCap ? 'pending' : 'tertiary'}
+          >{`${formatPct(p.weightPct, { dp: 1 })} / ${formatPct(p.weightCapPct, { dp: 0 })}`}</Text.DataSm>
         </View>
       ) : null}
     </Pressable>
@@ -59,16 +73,33 @@ const SECTOR_COLORS = color.series;
 export function SectorAllocation({ allocation }: { allocation: Allocation }) {
   return (
     <View style={styles.gap}>
-      <View style={styles.stacked} accessible accessibilityLabel={allocation.sectors.map((s) => `${s.sector} ${formatPct(s.pct, { dp: 1 })}`).join(', ')}>
+      <View
+        style={styles.stacked}
+        accessible
+        accessibilityLabel={allocation.sectors.map((s) => `${s.sector} ${formatPct(s.pct, { dp: 1 })}`).join(', ')}
+      >
         {allocation.sectors.map((s, i) => (
-          <View key={s.sector} style={{ flex: Math.max(share(s.pct, '1'), 0.0001), backgroundColor: SECTOR_COLORS[i % SECTOR_COLORS.length] }} />
+          <View
+            key={s.sector}
+            style={{ flex: Math.max(share(s.pct, '1'), 0.0001), backgroundColor: SECTOR_COLORS[i % SECTOR_COLORS.length] }}
+          />
         ))}
       </View>
       {allocation.sectors.map((s, i) => (
-        <View key={s.sector} style={styles.sectorRow} accessible accessibilityLabel={`${s.sector}: ${formatPct(s.pct, { dp: 1 })}, ${formatMoney(s.value)}${s.warning ? `, near the ${formatPct(allocation.maxSectorExposurePct, { dp: 0 })} limit` : ''}`}>
+        <View
+          key={s.sector}
+          style={styles.sectorRow}
+          accessible
+          accessibilityLabel={`${s.sector}: ${formatPct(s.pct, { dp: 1 })}, ${formatMoney(s.value)}${s.warning ? `, near the ${formatPct(allocation.maxSectorExposurePct, { dp: 0 })} limit` : ''}`}
+        >
           <View style={[styles.dot, { backgroundColor: SECTOR_COLORS[i % SECTOR_COLORS.length] }]} />
           <Text.Body style={styles.flex}>{s.sector}</Text.Body>
-          {s.warning ? <Badge label={s.overLimit ? 'Over limit' : `Near limit ${formatPct(allocation.maxSectorExposurePct, { dp: 0 })}`} tone="pending" /> : null}
+          {s.warning ? (
+            <Badge
+              label={s.overLimit ? 'Over limit' : `Near limit ${formatPct(allocation.maxSectorExposurePct, { dp: 0 })}`}
+              tone="pending"
+            />
+          ) : null}
           <Text.Data>{formatPct(s.pct, { dp: 1 })}</Text.Data>
           <Text.DataSm tone="tertiary">{formatMoney(s.value)}</Text.DataSm>
         </View>
@@ -84,12 +115,19 @@ export function AssetDonut({ assets, size = 120 }: { assets: Allocation['assets'
   let start = -90;
   const arcs = assets.map((a, i) => {
     const sweep = share(a.pct, '1') * 360;
-    const path = Skia.PathBuilder.Make().addArc({ x: stroke / 2, y: stroke / 2, width: r * 2, height: r * 2 }, start, Math.max(sweep - 1, 0)).build();
+    const path = Skia.PathBuilder.Make()
+      .addArc({ x: stroke / 2, y: stroke / 2, width: r * 2, height: r * 2 }, start, Math.max(sweep - 1, 0))
+      .build();
     start += sweep;
     return { key: a.asset, path, color: a.asset === 'cash' ? color.lineStrong : SECTOR_COLORS[i % SECTOR_COLORS.length] };
   });
   return (
-    <View style={styles.donutRow} accessible accessibilityLabel={assets.map((a) => `${a.asset === 'cash' ? 'Cash' : 'US equities'} ${formatPct(a.pct, { dp: 1 })}`).join(', ')} testID="asset-donut">
+    <View
+      style={styles.donutRow}
+      accessible
+      accessibilityLabel={assets.map((a) => `${a.asset === 'cash' ? 'Cash' : 'US equities'} ${formatPct(a.pct, { dp: 1 })}`).join(', ')}
+      testID="asset-donut"
+    >
       <Canvas style={{ width: size, height: size }}>
         {arcs.map((a) => (
           <Path key={a.key} path={a.path} color={a.color} style="stroke" strokeWidth={stroke} />

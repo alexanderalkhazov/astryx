@@ -15,7 +15,13 @@ export function FundamentalsTab({ symbol }: { symbol: string }) {
   const fundamentals = useFundamentals(symbol, true);
   if (fundamentals.isPending) return <SkeletonRow />;
   if (fundamentals.isError || !fundamentals.data) {
-    return <EmptyState title="Fundamentals unavailable" body="The data source didn't answer. Try again shortly." action={{ label: 'Retry', onPress: () => void fundamentals.refetch() }} />;
+    return (
+      <EmptyState
+        title="Fundamentals unavailable"
+        body="The data source didn't answer. Try again shortly."
+        action={{ label: 'Retry', onPress: () => void fundamentals.refetch() }}
+      />
+    );
   }
 
   const f: Fundamentals = fundamentals.data;
@@ -33,13 +39,24 @@ export function FundamentalsTab({ symbol }: { symbol: string }) {
   return (
     <View testID="fundamentals-tab">
       {rows.map(([label, value], index) => (
-        <View key={label} style={[styles.row, index > 0 && styles.divider]} accessible accessibilityLabel={`${label}, ${value ?? 'not provided'}`}>
+        <View
+          key={label}
+          style={[styles.row, index > 0 && styles.divider]}
+          accessible
+          accessibilityLabel={`${label}, ${value ?? 'not provided'}`}
+        >
           <Text.Body tone="secondary">{label}</Text.Body>
           <Text.Data tone={value === null ? 'tertiary' : 'primary'}>{value ?? MISSING}</Text.Data>
         </View>
       ))}
       <Text.Caption tone="tertiary" style={styles.note}>
-        {[anyMissing ? '— Not provided by data source' : null, f.asOf ? `As of ${formatEtTime(f.asOf)}` : null, 'Sector comparison arrives with the scanner'].filter(Boolean).join(' · ')}
+        {[
+          anyMissing ? '— Not provided by data source' : null,
+          f.asOf ? `As of ${formatEtTime(f.asOf)}` : null,
+          'Sector comparison arrives with the scanner',
+        ]
+          .filter(Boolean)
+          .join(' · ')}
       </Text.Caption>
     </View>
   );

@@ -82,7 +82,11 @@ public sealed class MarketQueries(
 
     private static readonly Dictionary<string, BarInterval> Intervals = new(StringComparer.OrdinalIgnoreCase)
     {
-        ["1m"] = BarInterval.OneMinute, ["5m"] = BarInterval.FiveMinutes, ["15m"] = BarInterval.FifteenMinutes, ["1h"] = BarInterval.OneHour, ["1d"] = BarInterval.OneDay,
+        ["1m"] = BarInterval.OneMinute,
+        ["5m"] = BarInterval.FiveMinutes,
+        ["15m"] = BarInterval.FifteenMinutes,
+        ["1h"] = BarInterval.OneHour,
+        ["1d"] = BarInterval.OneDay,
     };
 
     public async Task<Result<InstrumentDto>> InstrumentAsync(string symbol, CancellationToken cancellationToken) =>
@@ -105,8 +109,18 @@ public sealed class MarketQueries(
                 ?? throw new MarketDataUnavailableException(provider.Code, $"no quote for {instrument.Symbol}");
             stored = new Quote
             {
-                InstrumentId = instrument.Id, Last = live.Last, Bid = live.Bid, Ask = live.Ask, Open = live.Open, High = live.High, Low = live.Low,
-                PrevClose = live.PrevClose, Volume = live.Volume, AsOf = live.AsOf, Source = provider.Code, Quality = live.Quality,
+                InstrumentId = instrument.Id,
+                Last = live.Last,
+                Bid = live.Bid,
+                Ask = live.Ask,
+                Open = live.Open,
+                High = live.High,
+                Low = live.Low,
+                PrevClose = live.PrevClose,
+                Volume = live.Volume,
+                AsOf = live.AsOf,
+                Source = provider.Code,
+                Quality = live.Quality,
             };
         }
 

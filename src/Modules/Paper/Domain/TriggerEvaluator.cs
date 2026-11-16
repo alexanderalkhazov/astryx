@@ -23,16 +23,16 @@ public static class TriggerEvaluator
         switch (orderType)
         {
             case "buy_stop" when w.High >= entry:
-            {
-                var reference = w.Open is { } open ? Math.Max(open, entry) : Math.Max(entry, w.Last);
-                return new SimulatedFill(reference + slippagePerShare, reference, slippagePerShare);
-            }
+                {
+                    var reference = w.Open is { } open ? Math.Max(open, entry) : Math.Max(entry, w.Last);
+                    return new SimulatedFill(reference + slippagePerShare, reference, slippagePerShare);
+                }
 
             case "limit" when w.Low <= entry:
-            {
-                var reference = w.Open is { } open ? Math.Min(open, entry) : Math.Min(entry, w.Last);
-                return new SimulatedFill(reference, reference, 0m);
-            }
+                {
+                    var reference = w.Open is { } open ? Math.Min(open, entry) : Math.Min(entry, w.Last);
+                    return new SimulatedFill(reference, reference, 0m);
+                }
 
             default:
                 return null;

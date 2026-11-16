@@ -55,9 +55,17 @@ export default function VerifyEmailScreen() {
             ? `We sent a verification link to ${email}. Open it on this phone to finish setting up your account.`
             : 'Open the verification link we emailed you on this phone to finish setting up your account.'
       }
-      footer={<Button variant="link" label="Back to sign in" onPress={() => router.replace({ pathname: '/sign-in', params: email ? { email } : {} })} />}
+      footer={
+        <Button
+          variant="link"
+          label="Back to sign in"
+          onPress={() => router.replace({ pathname: '/sign-in', params: email ? { email } : {} })}
+        />
+      }
     >
-      {verification.state === 'failed' ? <StatusBanner tone="error" title="Couldn't verify your email" body={verification.message} testID="verify-error" /> : null}
+      {verification.state === 'failed' ? (
+        <StatusBanner tone="error" title="Couldn't verify your email" body={verification.message} testID="verify-error" />
+      ) : null}
       <ResendForm email={email ?? ''} />
     </AuthScaffold>
   );
@@ -76,7 +84,10 @@ const resendSchema = z.object({ email: emailField });
 
 function ResendForm({ email }: { email: string }) {
   const [failure, setFailure] = useState<string | null>(null);
-  const { control, handleSubmit, setError, formState } = useForm<z.infer<typeof resendSchema>>({ resolver: zodResolver(resendSchema), defaultValues: { email } });
+  const { control, handleSubmit, setError, formState } = useForm<z.infer<typeof resendSchema>>({
+    resolver: zodResolver(resendSchema),
+    defaultValues: { email },
+  });
 
   const submit = handleSubmit(async (values) => {
     setFailure(null);

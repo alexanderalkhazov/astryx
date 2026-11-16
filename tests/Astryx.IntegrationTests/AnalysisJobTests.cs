@@ -164,8 +164,15 @@ public class AnalysisJobTests(FakeAiApiFactory factory) : IClassFixture<FakeAiAp
             {
                 db.Jobs.Add(new AnalysisJob
                 {
-                    Id = Guid.NewGuid(), UserId = userId, InstrumentId = Guid.NewGuid(), Symbol = "OLD", Status = AnalysisJobStatus.Completed,
-                    IdempotencyKey = $"old-{i}", RequestHash = $"old-{i}", CreatedAt = DateTimeOffset.UtcNow.AddHours(-1), RunAfter = DateTimeOffset.UtcNow,
+                    Id = Guid.NewGuid(),
+                    UserId = userId,
+                    InstrumentId = Guid.NewGuid(),
+                    Symbol = "OLD",
+                    Status = AnalysisJobStatus.Completed,
+                    IdempotencyKey = $"old-{i}",
+                    RequestHash = $"old-{i}",
+                    CreatedAt = DateTimeOffset.UtcNow.AddHours(-1),
+                    RunAfter = DateTimeOffset.UtcNow,
                 });
             }
 

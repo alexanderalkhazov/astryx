@@ -44,7 +44,16 @@ export function buttonStyle(variant: ButtonVariant, state: { pressed: boolean; d
 }
 
 /** One component for every text button in the app (design 03 · Buttons). */
-export function Button({ variant = 'primary', label, loading = false, disabled = false, block, style, accessibilityLabel, ...rest }: ButtonProps) {
+export function Button({
+  variant = 'primary',
+  label,
+  loading = false,
+  disabled = false,
+  block,
+  style,
+  accessibilityLabel,
+  ...rest
+}: ButtonProps) {
   const isDisabled = disabled || loading;
   const stretch = block ?? variant !== 'link';
   return (
@@ -85,14 +94,28 @@ export interface IconButtonProps extends Omit<PressableProps, 'children' | 'styl
 }
 
 /** 44 pt square icon control (design: "44 pt icon button"). */
-export function IconButton({ icon: Icon, accessibilityLabel, tone = 'default', variant = 'filled', disabled, badge, style, ...rest }: IconButtonProps) {
+export function IconButton({
+  icon: Icon,
+  accessibilityLabel,
+  tone = 'default',
+  variant = 'filled',
+  disabled,
+  badge,
+  style,
+  ...rest
+}: IconButtonProps) {
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       accessibilityState={{ disabled: !!disabled }}
       disabled={disabled}
-      style={({ pressed }) => [styles.icon, variant === 'plain' ? styles.iconPlain : null, { opacity: disabled ? 0.4 : pressed ? 0.6 : 1 }, style]}
+      style={({ pressed }) => [
+        styles.icon,
+        variant === 'plain' ? styles.iconPlain : null,
+        { opacity: disabled ? 0.4 : pressed ? 0.6 : 1 },
+        style,
+      ]}
       {...rest}
     >
       <Icon size={variant === 'plain' ? 22 : 20} strokeWidth={1.7} color={tone === 'signal' ? color.signal : color.text} />

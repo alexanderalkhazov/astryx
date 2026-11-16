@@ -8,18 +8,40 @@ import { ANALYSIS_FAILED, AnalysisCard, CONFIDENCE_NOTE } from '../AnalysisCard'
 import { useAnalysisJobs } from '../useAnalysis';
 
 jest.mock('expo-crypto', () => ({ randomUUID: () => 'tap-key-0001' }));
-jest.mock('expo-secure-store', () => ({ WHEN_UNLOCKED_THIS_DEVICE_ONLY: 'x', getItemAsync: jest.fn(), setItemAsync: jest.fn(), deleteItemAsync: jest.fn() }));
+jest.mock('expo-secure-store', () => ({
+  WHEN_UNLOCKED_THIS_DEVICE_ONLY: 'x',
+  getItemAsync: jest.fn(),
+  setItemAsync: jest.fn(),
+  deleteItemAsync: jest.fn(),
+}));
 jest.mock('@/lib/api', () => ({ analyses: { create: jest.fn(), job: jest.fn(), cancel: jest.fn(), get: jest.fn(), list: jest.fn() } }));
 const api = (jest.requireMock('@/lib/api') as { analyses: Record<'create' | 'job' | 'cancel' | 'get' | 'list', jest.Mock> }).analyses;
 
 const job = (over: Partial<AnalysisJob> = {}): AnalysisJob => ({
-  id: 'job-1', symbol: 'NVDA', kind: 'stock_analysis', status: 'pending', attempt: 0, createdAt: '2026-11-09T19:32:10Z',
-  startedAt: null, completedAt: null, resultId: null, errorCode: null, errorDetail: null, pollAfterMs: 20, ...over,
+  id: 'job-1',
+  symbol: 'NVDA',
+  kind: 'stock_analysis',
+  status: 'pending',
+  attempt: 0,
+  createdAt: '2026-11-09T19:32:10Z',
+  startedAt: null,
+  completedAt: null,
+  resultId: null,
+  errorCode: null,
+  errorDetail: null,
+  pollAfterMs: 20,
+  ...over,
 });
 
 const RESULT: AnalysisResult = {
-  id: 'res-1', jobId: 'job-1', schemaVersion: 'analysis.v1', symbol: 'NVDA', analysisTimestamp: '2026-11-09T19:32:41Z', dataTimestamp: '2026-11-09T19:32:00Z',
-  dataQuality: { status: 'ok', notes: [] }, overallSentiment: 'bullish',
+  id: 'res-1',
+  jobId: 'job-1',
+  schemaVersion: 'analysis.v1',
+  symbol: 'NVDA',
+  analysisTimestamp: '2026-11-09T19:32:41Z',
+  dataTimestamp: '2026-11-09T19:32:00Z',
+  dataQuality: { status: 'ok', notes: [] },
+  overallSentiment: 'bullish',
   scenarios: {
     bullish: { summary: 'Breakout holds above $185.90.', conditions: ['Closes above 185.90 for 2 sessions'] },
     bearish: { summary: 'Breakout fails back into the base.', conditions: ['Daily close below 182.00'] },
@@ -31,10 +53,23 @@ const RESULT: AnalysisResult = {
   relevantIndicators: [{ name: 'rsi14', value: '64.2', interpretation: 'Strong' }],
   catalysts: [{ type: 'earnings', date: '2026-11-19', note: 'Scheduled earnings report' }],
   confidence: { value: '0.55', explanation: 'Evidence mostly lines up.' },
-  suggestedLevels: { justified: true, entryZone: { low: '186.00', high: '187.50' }, stopLoss: '178.20', takeProfit: '204.00', rationale: 'Base midpoint.', accepted: true },
-  explanation: 'NVDA has broken out of a six-week base on heavy volume.', insufficientData: false, rewardRisk: '1.77',
-  levelValidation: { accepted: true, reasons: [] }, stale: false, model: 'qwen3.5:0.8b', promptVersion: 'stock_analysis/2026-11-09.1',
-  disclaimer: 'AI-generated research for information only. Not investment advice.', validationStatus: 'valid',
+  suggestedLevels: {
+    justified: true,
+    entryZone: { low: '186.00', high: '187.50' },
+    stopLoss: '178.20',
+    takeProfit: '204.00',
+    rationale: 'Base midpoint.',
+    accepted: true,
+  },
+  explanation: 'NVDA has broken out of a six-week base on heavy volume.',
+  insufficientData: false,
+  rewardRisk: '1.77',
+  levelValidation: { accepted: true, reasons: [] },
+  stale: false,
+  model: 'qwen3.5:0.8b',
+  promptVersion: 'stock_analysis/2026-11-09.1',
+  disclaimer: 'AI-generated research for information only. Not investment advice.',
+  validationStatus: 'valid',
 };
 
 const ok = <T,>(data: T) => ({ data });
@@ -45,7 +80,9 @@ let queryClient: QueryClient;
 
 function renderCard() {
   // No garbage-collection timers, so Jest can exit when the tests finish.
-  queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity }, mutations: { retry: false, gcTime: Infinity } } });
+  queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false, gcTime: Infinity }, mutations: { retry: false, gcTime: Infinity } },
+  });
   return render(
     <QueryClientProvider client={queryClient}>
       <AnalysisCard symbol="NVDA" />
@@ -66,7 +103,9 @@ afterEach(() => queryClient?.clear());
 describe('AnalysisCard', () => {
   it('requests an analysis, follows the job and renders the result (design: experimental, not a probability)', async () => {
     api.create.mockResolvedValue(ok(job()));
-    api.job.mockResolvedValueOnce(ok(job({ status: 'processing', attempt: 1 }))).mockResolvedValue(ok(job({ status: 'completed', attempt: 1, resultId: 'res-1', pollAfterMs: null })));
+    api.job
+      .mockResolvedValueOnce(ok(job({ status: 'processing', attempt: 1 })))
+      .mockResolvedValue(ok(job({ status: 'completed', attempt: 1, resultId: 'res-1', pollAfterMs: null })));
     await renderCard();
 
     expect(screen.getByText('Experimental AI model')).toBeOnTheScreen();
@@ -94,7 +133,9 @@ describe('AnalysisCard', () => {
 
   it('shows the reliability message when the output was invalid, and lets the user try again', async () => {
     useAnalysisJobs.setState({ bySymbol: { NVDA: 'job-1' } });
-    api.job.mockResolvedValue(ok(job({ status: 'failed', attempt: 1, errorCode: 'ai_output_invalid', errorDetail: 'x', pollAfterMs: null })));
+    api.job.mockResolvedValue(
+      ok(job({ status: 'failed', attempt: 1, errorCode: 'ai_output_invalid', errorDetail: 'x', pollAfterMs: null })),
+    );
     api.create.mockResolvedValue(ok(job({ id: 'job-2' })));
     await renderCard();
 
@@ -106,7 +147,14 @@ describe('AnalysisCard', () => {
   });
 
   it('follows the job already running when the request is a duplicate', async () => {
-    api.create.mockRejectedValue(new ApiError({ status: 409, code: 'duplicate', detail: 'An analysis for this symbol is already running.', extensions: { jobId: 'job-9' } }));
+    api.create.mockRejectedValue(
+      new ApiError({
+        status: 409,
+        code: 'duplicate',
+        detail: 'An analysis for this symbol is already running.',
+        extensions: { jobId: 'job-9' },
+      }),
+    );
     api.job.mockResolvedValue(ok(job({ id: 'job-9', status: 'processing', attempt: 2 })));
     await renderCard();
 
@@ -130,7 +178,15 @@ describe('AnalysisCard', () => {
 
   it('explains rejected levels and marks stale analyses', async () => {
     api.list.mockResolvedValue(page(RESULT));
-    api.get.mockResolvedValue(ok({ ...RESULT, stale: true, rewardRisk: null, levelValidation: { accepted: false, reasons: ['Stop is too close (0.27× ATR). Minimum 0.5× ATR.'] }, suggestedLevels: { ...RESULT.suggestedLevels, accepted: false } }));
+    api.get.mockResolvedValue(
+      ok({
+        ...RESULT,
+        stale: true,
+        rewardRisk: null,
+        levelValidation: { accepted: false, reasons: ['Stop is too close (0.27× ATR). Minimum 0.5× ATR.'] },
+        suggestedLevels: { ...RESULT.suggestedLevels, accepted: false },
+      }),
+    );
     await renderCard();
 
     expect(await screen.findByTestId('levels-rejected')).toBeOnTheScreen();
@@ -140,7 +196,9 @@ describe('AnalysisCard', () => {
   });
 
   it('says when the daily quota is used up', async () => {
-    api.create.mockRejectedValue(new ApiError({ status: 429, code: 'ai_quota_exceeded', detail: "You've used today's AI analyses. Indicators are still available." }));
+    api.create.mockRejectedValue(
+      new ApiError({ status: 429, code: 'ai_quota_exceeded', detail: "You've used today's AI analyses. Indicators are still available." }),
+    );
     await renderCard();
 
     await fireEvent.press(await screen.findByRole('button', { name: 'Analyze with AI' }));

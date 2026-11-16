@@ -11,14 +11,37 @@ import WatchlistScreen from '../(app)/settings/watchlist';
 import StockScreen from '../(app)/stock/[ticker]';
 
 jest.mock('expo-crypto', () => ({ randomUUID: () => '00000000-0000-4000-8000-000000000001' }));
-jest.mock('expo-secure-store', () => ({ WHEN_UNLOCKED_THIS_DEVICE_ONLY: 'x', getItemAsync: jest.fn(), setItemAsync: jest.fn(), deleteItemAsync: jest.fn() }));
-jest.mock('@/lib/api', () => ({ watchlists: { list: jest.fn(), star: jest.fn(), unstar: jest.fn(), removeItem: jest.fn(), reorder: jest.fn() } }));
-const mockApi = (jest.requireMock('@/lib/api') as { watchlists: Record<'list' | 'star' | 'unstar' | 'removeItem' | 'reorder', jest.Mock> }).watchlists;
+jest.mock('expo-secure-store', () => ({
+  WHEN_UNLOCKED_THIS_DEVICE_ONLY: 'x',
+  getItemAsync: jest.fn(),
+  setItemAsync: jest.fn(),
+  deleteItemAsync: jest.fn(),
+}));
+jest.mock('@/lib/api', () => ({
+  watchlists: { list: jest.fn(), star: jest.fn(), unstar: jest.fn(), removeItem: jest.fn(), reorder: jest.fn() },
+}));
+const mockApi = (jest.requireMock('@/lib/api') as { watchlists: Record<'list' | 'star' | 'unstar' | 'removeItem' | 'reorder', jest.Mock> })
+  .watchlists;
 
 const item = (symbol: string, name: string, last: string, changePct: string) => ({
-  symbol, name, sector: null, last, changePct, hasActiveSignal: false, held: false, note: null, addedAt: '2026-11-02T15:00:00Z',
+  symbol,
+  name,
+  sector: null,
+  last,
+  changePct,
+  hasActiveSignal: false,
+  held: false,
+  note: null,
+  addedAt: '2026-11-02T15:00:00Z',
 });
-const list = (symbols: ReturnType<typeof item>[], version = 3) => ({ id: 'list-1', name: 'Watchlist', isDefault: true, sortOrder: 0, version, items: symbols });
+const list = (symbols: ReturnType<typeof item>[], version = 3) => ({
+  id: 'list-1',
+  name: 'Watchlist',
+  isDefault: true,
+  sortOrder: 0,
+  version,
+  items: symbols,
+});
 
 const NVDA = item('NVDA', 'NVIDIA Corp.', '186.40', '0.0342');
 const AMD = item('AMD', 'Advanced Micro Devices', '168.25', '0.0218');
@@ -49,7 +72,7 @@ function renderAt(initialUrl: string) {
       'stock/[ticker]': StockScreen,
       'settings/index': SettingsScreen,
       'settings/watchlist': WatchlistScreen,
-      'search': () => <Text>Search screen</Text>,
+      search: () => <Text>Search screen</Text>,
     },
     { initialUrl },
   );
@@ -142,7 +165,9 @@ describe('Settings › Watchlist', () => {
     expect(screen.getByLabelText('Move NVDA up')).toBeDisabled();
     await fireEvent.press(screen.getByLabelText('Move NVDA down'));
 
-    await waitFor(() => expect(mockApi.reorder).toHaveBeenCalledWith(expect.objectContaining({ id: 'list-1', version: 3 }), ['AMD', 'NVDA', 'COST']));
+    await waitFor(() =>
+      expect(mockApi.reorder).toHaveBeenCalledWith(expect.objectContaining({ id: 'list-1', version: 3 }), ['AMD', 'NVDA', 'COST']),
+    );
 
     mockApi.list.mockResolvedValue({ data: { items: [list([AMD, NVDA], 5)] } });
     await fireEvent.press(screen.getByLabelText('Remove COST'));
@@ -161,7 +186,10 @@ describe('Settings › Watchlist', () => {
     await fireEvent.press(screen.getByLabelText('Remove AMD'));
 
     expect(await screen.findByTestId('watchlist-row-AMD')).toBeOnTheScreen();
-    expect(useToasts.getState().toasts[0]).toMatchObject({ title: "Couldn't remove from watchlist", body: 'Your watchlist changed elsewhere. It has been reloaded.' });
+    expect(useToasts.getState().toasts[0]).toMatchObject({
+      title: "Couldn't remove from watchlist",
+      body: 'Your watchlist changed elsewhere. It has been reloaded.',
+    });
   });
 
   it('leaves edit mode when the last stock is removed', async () => {

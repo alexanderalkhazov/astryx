@@ -44,7 +44,11 @@ export function ConfirmOrderSheet({
     onSuccess: onPlaced,
     onError: (error) => {
       setAttempt((n) => n + 1); // a fresh hold control: the user can hold again (same key)
-      toast({ tone: 'error', title: "The order wasn't placed", body: isApiError(error) ? (error.detail ?? error.message) : 'Check your connection and try again.' });
+      toast({
+        tone: 'error',
+        title: "The order wasn't placed",
+        body: isApiError(error) ? (error.detail ?? error.message) : 'Check your connection and try again.',
+      });
     },
   });
   const sending = place.isPending;
@@ -72,7 +76,8 @@ export function ConfirmOrderSheet({
           ))}
         </View>
         <Text.Caption tone="secondary">
-          The order is simulated against our quotes in your paper account. A buy stop waits until the price reaches its entry. The stop and target are attached as a one-cancels-the-other pair.
+          The order is simulated against our quotes in your paper account. A buy stop waits until the price reaches its entry. The stop and
+          target are attached as a one-cancels-the-other pair.
         </Text.Caption>
         <HoldToConfirm
           key={attempt}

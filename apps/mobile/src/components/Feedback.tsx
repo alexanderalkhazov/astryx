@@ -1,7 +1,15 @@
 import { color, motion, radius, space, type as typeScale } from '@astryx/design-tokens';
 import { useEffect } from 'react';
 import { ActivityIndicator, StyleSheet, Text, type TextStyle, View, type ViewStyle } from 'react-native';
-import Animated, { Easing, ReduceMotion, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withTiming } from 'react-native-reanimated';
+import Animated, {
+  Easing,
+  ReduceMotion,
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withRepeat,
+  withTiming,
+} from 'react-native-reanimated';
 
 import { Button } from './Button';
 
@@ -19,11 +27,21 @@ export function Skeleton({ width = '100%', height = 12, index = 0, style }: Skel
   useEffect(() => {
     opacity.value = withDelay(
       index * motion.skeletonStagger,
-      withRepeat(withTiming(1, { duration: motion.skeleton / 2, easing: Easing.inOut(Easing.ease), reduceMotion: ReduceMotion.System }), -1, true),
+      withRepeat(
+        withTiming(1, { duration: motion.skeleton / 2, easing: Easing.inOut(Easing.ease), reduceMotion: ReduceMotion.System }),
+        -1,
+        true,
+      ),
     );
   }, [index, opacity]);
   const animated = useAnimatedStyle(() => ({ opacity: opacity.value }));
-  return <Animated.View accessibilityElementsHidden importantForAccessibility="no" style={[styles.skeleton, { width, height }, animated, style]} />;
+  return (
+    <Animated.View
+      accessibilityElementsHidden
+      importantForAccessibility="no"
+      style={[styles.skeleton, { width, height }, animated, style]}
+    />
+  );
 }
 
 /** One skeleton list row in the shape of an opportunity row. */
@@ -60,7 +78,9 @@ export function EmptyState({ title, body, action }: EmptyStateProps) {
         {title}
       </Text>
       <Text style={styles.body}>{body}</Text>
-      {action ? <Button label={action.label} onPress={action.onPress} block={false} style={{ marginTop: space[2], paddingHorizontal: space[5] }} /> : null}
+      {action ? (
+        <Button label={action.label} onPress={action.onPress} block={false} style={{ marginTop: space[2], paddingHorizontal: space[5] }} />
+      ) : null}
     </View>
   );
 }

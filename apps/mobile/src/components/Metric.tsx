@@ -59,7 +59,12 @@ export function MetricGrid({ items }: MetricGridProps) {
   return (
     <View style={styles.grid}>
       {items.map((item, index) => (
-        <View key={item.label} style={[styles.cell, index > 0 ? styles.cellDivider : null]} accessible accessibilityLabel={`${item.label}: ${item.value}`}>
+        <View
+          key={item.label}
+          style={[styles.cell, index > 0 ? styles.cellDivider : null]}
+          accessible
+          accessibilityLabel={`${item.label}: ${item.value}`}
+        >
           <Text style={styles.label}>{item.label}</Text>
           <Text style={[styles.gridValue, { color: toneColor[item.tone ?? 'default'] }]}>{item.value}</Text>
         </View>

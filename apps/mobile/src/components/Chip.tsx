@@ -18,7 +18,11 @@ export function Chip({ label, count, selected = false, disabled, ...rest }: Chip
       accessibilityLabel={count === undefined ? label : `${label}, ${count}`}
       disabled={disabled}
       hitSlop={{ top: 4, bottom: 4 }}
-      style={({ pressed }) => [styles.chip, selected ? styles.selected : styles.unselected, { opacity: disabled ? 0.4 : pressed ? 0.7 : 1 }]}
+      style={({ pressed }) => [
+        styles.chip,
+        selected ? styles.selected : styles.unselected,
+        { opacity: disabled ? 0.4 : pressed ? 0.7 : 1 },
+      ]}
       {...rest}
     >
       <Text style={[styles.label, { color: selected ? color.bg : color.text }]}>

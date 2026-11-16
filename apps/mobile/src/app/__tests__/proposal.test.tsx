@@ -7,8 +7,16 @@ import { Alert, Text } from 'react-native';
 import ProposalScreen from '../(app)/proposal/[id]';
 
 jest.mock('expo-crypto', () => ({ randomUUID: () => '00000000-0000-4000-8000-000000000001' }));
-jest.mock('expo-secure-store', () => ({ WHEN_UNLOCKED_THIS_DEVICE_ONLY: 'x', getItemAsync: jest.fn(), setItemAsync: jest.fn(), deleteItemAsync: jest.fn() }));
-jest.mock('@/lib/api', () => ({ proposals: { get: jest.fn(), assess: jest.fn(), reject: jest.fn(), riskLimits: jest.fn() }, paper: { place: jest.fn() } }));
+jest.mock('expo-secure-store', () => ({
+  WHEN_UNLOCKED_THIS_DEVICE_ONLY: 'x',
+  getItemAsync: jest.fn(),
+  setItemAsync: jest.fn(),
+  deleteItemAsync: jest.fn(),
+}));
+jest.mock('@/lib/api', () => ({
+  proposals: { get: jest.fn(), assess: jest.fn(), reject: jest.fn(), riskLimits: jest.fn() },
+  paper: { place: jest.fn() },
+}));
 const api = (jest.requireMock('@/lib/api') as { proposals: Record<'get' | 'assess' | 'reject' | 'riskLimits', jest.Mock> }).proposals;
 const paper = (jest.requireMock('@/lib/api') as { paper: { place: jest.Mock } }).paper;
 
@@ -18,10 +26,30 @@ const check = (code: string, status: 'pass' | 'warn' | 'fail', message: string) 
 
 /** The §11.7 example assessment (design 06). */
 const ASSESSMENT = (): RiskAssessment => ({
-  id: 'a1', proposalId: 'p1', inputsHash: 'h', quantity: '76', sizedBy: 'weight_cap', limits: { byRisk: '106', byWeightCap: '76', byCash: '117' },
-  riskPerTradePct: '0.0075', quote: { last: '186.40', asOf: new Date().toISOString() }, equity: '118181.30', cashAvailable: '21840.55',
-  capitalRequired: '14174.00', maxLoss: '630.80', maxLossInclCosts: '633.84', potentialProfit: '1330.00', rewardRisk: '2.11', estFees: '0.00', estSlippage: '1.52',
-  impact: { newWeightPct: '0.1199', sector: 'Semiconductors', sectorExposureAfterPct: '0.2410', cashAfter: '7665.03', openPositionsAfter: 6 },
+  id: 'a1',
+  proposalId: 'p1',
+  inputsHash: 'h',
+  quantity: '76',
+  sizedBy: 'weight_cap',
+  limits: { byRisk: '106', byWeightCap: '76', byCash: '117' },
+  riskPerTradePct: '0.0075',
+  quote: { last: '186.40', asOf: new Date().toISOString() },
+  equity: '118181.30',
+  cashAvailable: '21840.55',
+  capitalRequired: '14174.00',
+  maxLoss: '630.80',
+  maxLossInclCosts: '633.84',
+  potentialProfit: '1330.00',
+  rewardRisk: '2.11',
+  estFees: '0.00',
+  estSlippage: '1.52',
+  impact: {
+    newWeightPct: '0.1199',
+    sector: 'Semiconductors',
+    sectorExposureAfterPct: '0.2410',
+    cashAfter: '7665.03',
+    openPositionsAfter: 6,
+  },
   checks: [
     check('risk_per_trade', 'pass', 'Risk 0.54% ≤ 0.75% limit'),
     check('position_weight', 'warn', 'Weight 11.99%, close to 12% cap'),
@@ -32,15 +60,42 @@ const ASSESSMENT = (): RiskAssessment => ({
     check('levels_valid', 'pass', 'Stop 1.50× ATR'),
     check('reward_risk', 'pass', 'Reward:risk 2.11 ≥ 1.50'),
   ],
-  approvable: true, createdAt: new Date().toISOString(), expiresAt: inAMinute(), stale: false,
+  approvable: true,
+  createdAt: new Date().toISOString(),
+  expiresAt: inAMinute(),
+  stale: false,
 });
 
 const PROPOSAL = (over: Partial<Proposal> = {}): Proposal => ({
-  id: 'p1', status: 'pending', label: 'RESEARCH PROPOSAL · NOT EXECUTED', symbol: 'NVDA', name: 'NVIDIA Corp.', side: 'buy', direction: 'long', orderType: 'buy_stop', timeInForce: 'day',
-  entry: '186.50', stop: '178.20', target: '204.00', stopPct: '-0.0445', targetPct: '0.0938',
-  source: { type: 'signal', signalId: 's1', analysisId: null, strategyId: 'st', strategyName: 'Base Breakout v3', signalAt: '2026-11-09T19:32:00Z' },
+  id: 'p1',
+  status: 'pending',
+  label: 'RESEARCH PROPOSAL · NOT EXECUTED',
+  symbol: 'NVDA',
+  name: 'NVIDIA Corp.',
+  side: 'buy',
+  direction: 'long',
+  orderType: 'buy_stop',
+  timeInForce: 'day',
+  entry: '186.50',
+  stop: '178.20',
+  target: '204.00',
+  stopPct: '-0.0445',
+  targetPct: '0.0938',
+  source: {
+    type: 'signal',
+    signalId: 's1',
+    analysisId: null,
+    strategyId: 'st',
+    strategyName: 'Base Breakout v3',
+    signalAt: '2026-11-09T19:32:00Z',
+  },
   analysis: { headline: 'Breaking out of its base', summary: 's', evidence: [], invalidation: [], score: '87', copySource: 'template' },
-  createdAt: '2026-11-09T19:32:05Z', expiresAt: new Date(Date.now() + 3_600_000).toISOString(), decidedAt: null, rejectReason: null, assessment: ASSESSMENT(), ...over,
+  createdAt: '2026-11-09T19:32:05Z',
+  expiresAt: new Date(Date.now() + 3_600_000).toISOString(),
+  decidedAt: null,
+  rejectReason: null,
+  assessment: ASSESSMENT(),
+  ...over,
 });
 
 const ok = <T,>(data: T) => ({ data });
@@ -103,9 +158,19 @@ describe('Trade proposal (design 06)', () => {
     expect(screen.getByTestId('proposal-approve')).toBeDisabled();
     expect(screen.getByTestId('approve-disabled-reason')).toHaveTextContent('Checking the latest numbers…');
     await waitFor(() => expect(api.assess).toHaveBeenCalledWith('p1', { riskPerTradePct: '0.0075', quantity: '77' }, expect.anything()));
-    resolve(ok({ ...ASSESSMENT(), quantity: '77', sizedBy: 'user', approvable: false, checks: [check('position_weight', 'fail', 'Position weight 12.15% exceeds 12% cap. Max 76 shares.')] }));
+    resolve(
+      ok({
+        ...ASSESSMENT(),
+        quantity: '77',
+        sizedBy: 'user',
+        approvable: false,
+        checks: [check('position_weight', 'fail', 'Position weight 12.15% exceeds 12% cap. Max 76 shares.')],
+      }),
+    );
 
-    await waitFor(() => expect(screen.getByTestId('approve-disabled-reason')).toHaveTextContent('Position weight 12.15% exceeds 12% cap. Max 76 shares.'));
+    await waitFor(() =>
+      expect(screen.getByTestId('approve-disabled-reason')).toHaveTextContent('Position weight 12.15% exceeds 12% cap. Max 76 shares.'),
+    );
     expect(screen.getByTestId('proposal-approve')).toBeDisabled();
   });
 
@@ -165,10 +230,31 @@ describe('Trade proposal (design 06)', () => {
 
   describe('approving (designs 07 and 08, T-088)', () => {
     const FILLED = {
-      id: 'o1', brokerOrderId: 'SIM-4G3AC2', mode: 'paper', broker: 'mock', status: 'filled', purpose: 'entry', symbol: 'NVDA', side: 'buy', orderType: 'buy_stop',
-      quantity: '76', stopPrice: '186.50', limitPrice: null,
-      fill: { price: '186.52', referencePrice: '186.50', slippagePerShare: '0.02', slippage: '1.52', fee: '0.00', filledAt: '2026-11-09T19:36:08Z' },
-      attached: { ocoGroupId: 'g', stop: '178.20', target: '204.00' }, positionId: 'pos1', proposalId: 'p1', submittedAt: '2026-11-09T19:36:08Z', expiresAt: null,
+      id: 'o1',
+      brokerOrderId: 'SIM-4G3AC2',
+      mode: 'paper',
+      broker: 'mock',
+      status: 'filled',
+      purpose: 'entry',
+      symbol: 'NVDA',
+      side: 'buy',
+      orderType: 'buy_stop',
+      quantity: '76',
+      stopPrice: '186.50',
+      limitPrice: null,
+      fill: {
+        price: '186.52',
+        referencePrice: '186.50',
+        slippagePerShare: '0.02',
+        slippage: '1.52',
+        fee: '0.00',
+        filledAt: '2026-11-09T19:36:08Z',
+      },
+      attached: { ocoGroupId: 'g', stop: '178.20', target: '204.00' },
+      positionId: 'pos1',
+      proposalId: 'p1',
+      submittedAt: '2026-11-09T19:36:08Z',
+      expiresAt: null,
     };
 
     /** The screen-reader path of HoldToConfirm: the Approve action, then the native confirm's Approve. */
@@ -214,7 +300,11 @@ describe('Trade proposal (design 06)', () => {
     });
 
     it('unlocks with the reason on error and retries with the same key', async () => {
-      paper.place.mockRejectedValueOnce(new ApiError({ status: 409, code: 'assessment_stale', detail: 'The numbers changed since this assessment.' })).mockResolvedValue(ok(FILLED));
+      paper.place
+        .mockRejectedValueOnce(
+          new ApiError({ status: 409, code: 'assessment_stale', detail: 'The numbers changed since this assessment.' }),
+        )
+        .mockResolvedValue(ok(FILLED));
       const { useToasts } = jest.requireActual('@/state/toasts') as typeof import('@/state/toasts');
       await renderProposal();
       await waitFor(() => expect(screen.getByTestId('proposal-approve')).toBeEnabled());
@@ -230,4 +320,3 @@ describe('Trade proposal (design 06)', () => {
     });
   });
 });
-

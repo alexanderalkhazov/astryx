@@ -63,14 +63,21 @@ export function settingsApi(client: ApiClient) {
     updateRisk: (current: Pick<RiskSettings, 'version'>, body: RiskSettingsUpdate) =>
       client.request('/api/v1/me/settings/risk', { method: 'PUT', body, ifMatch: riskSettingsETag(current), schema: RiskSettings }),
     notifications: () => client.request('/api/v1/me/settings/notifications', { schema: NotificationPreferences }),
-    updateNotifications: (body: NotificationPreferences) => client.request('/api/v1/me/settings/notifications', { method: 'PUT', body, schema: NotificationPreferences }),
+    updateNotifications: (body: NotificationPreferences) =>
+      client.request('/api/v1/me/settings/notifications', { method: 'PUT', body, schema: NotificationPreferences }),
     scanner: () => client.request('/api/v1/me/settings/scanner', { schema: ScannerSettings }),
     /** S5. `live` is always refused in the MVP: 403 `live_trading_disabled`. */
     setTradingMode: (mode: 'paper' | 'live', confirmation?: 'LIVE') =>
-      client.request('/api/v1/me/settings/trading-mode', { method: 'PUT', body: { mode, confirmation: confirmation ?? null }, schema: z.object({ mode: z.literal('paper') }) }),
-    changePassword: (body: { currentPassword: string; newPassword: string }) => client.request('/api/v1/me/change-password', { method: 'POST', body }),
+      client.request('/api/v1/me/settings/trading-mode', {
+        method: 'PUT',
+        body: { mode, confirmation: confirmation ?? null },
+        schema: z.object({ mode: z.literal('paper') }),
+      }),
+    changePassword: (body: { currentPassword: string; newPassword: string }) =>
+      client.request('/api/v1/me/change-password', { method: 'POST', body }),
     logoutAll: () => client.request('/api/v1/auth/logout-all', { method: 'POST' }),
     devFaults: () => client.request('/dev/faults', { schema: DevFaults }),
-    setDevFaults: (marketData: DevFaults['marketData']) => client.request('/dev/faults', { method: 'POST', body: { marketData }, schema: DevFaults }),
+    setDevFaults: (marketData: DevFaults['marketData']) =>
+      client.request('/dev/faults', { method: 'POST', body: { marketData }, schema: DevFaults }),
   };
 }

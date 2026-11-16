@@ -51,7 +51,13 @@ describe('createApiClient', () => {
   it('sends auth, correlation, idempotency and If-Match headers', async () => {
     const { client, calls } = setup(() => res(201, { id: 'o1' }));
 
-    await client.request('/api/v1/paper/orders', { method: 'POST', body: { proposalId: 'p1' }, schema: Me, idempotencyKey: 'key-123', ifMatch: '"v1"' });
+    await client.request('/api/v1/paper/orders', {
+      method: 'POST',
+      body: { proposalId: 'p1' },
+      schema: Me,
+      idempotencyKey: 'key-123',
+      ifMatch: '"v1"',
+    });
 
     const headers = calls[0]!.init.headers;
     expect(calls[0]!.url).toBe('http://api.test/api/v1/paper/orders');
@@ -73,19 +79,38 @@ describe('createApiClient', () => {
 
   it('turns problem details into a typed ApiError', async () => {
     const { client } = setup(() =>
-      res(422, { code: 'validation_failed', title: 'Unprocessable', detail: 'Check the fields.', errors: { email: ['Enter a valid email address.'] }, traceId: 't-1', correlationId: 'corr-1' }),
+      res(422, {
+        code: 'validation_failed',
+        title: 'Unprocessable',
+        detail: 'Check the fields.',
+        errors: { email: ['Enter a valid email address.'] },
+        traceId: 't-1',
+        correlationId: 'corr-1',
+      }),
     );
 
     const error = await client.request('/api/v1/auth/register', { method: 'POST', body: {}, auth: false }).catch((e: unknown) => e);
 
     expect(error).toBeInstanceOf(ApiError);
-    expect(error).toMatchObject({ status: 422, code: 'validation_failed', detail: 'Check the fields.', traceId: 't-1', errors: { email: ['Enter a valid email address.'] } });
+    expect(error).toMatchObject({
+      status: 422,
+      code: 'validation_failed',
+      detail: 'Check the fields.',
+      traceId: 't-1',
+      errors: { email: ['Enter a valid email address.'] },
+    });
   });
 
   it('runs exactly one refresh for concurrent 401s and retries every request with the new token', async () => {
-    const { client, calls, refresh } = setup(({ init }) => (init.headers.Authorization === 'Bearer old-token' ? res(401, { code: 'token_expired' }) : res(200, { id: 'me' })));
+    const { client, calls, refresh } = setup(({ init }) =>
+      init.headers.Authorization === 'Bearer old-token' ? res(401, { code: 'token_expired' }) : res(200, { id: 'me' }),
+    );
 
-    const results = await Promise.all([client.request('/a', { schema: Me }), client.request('/b', { schema: Me }), client.request('/c', { schema: Me })]);
+    const results = await Promise.all([
+      client.request('/a', { schema: Me }),
+      client.request('/b', { schema: Me }),
+      client.request('/c', { schema: Me }),
+    ]);
 
     expect(refresh).toHaveBeenCalledTimes(1);
     expect(results.map((r) => r.data.id)).toEqual(['me', 'me', 'me']);

@@ -75,7 +75,14 @@ export function IndicatorPane({ kind, bars, warmup = 0, readout, accessibilityLa
         <Text.Caption tone="secondary">{kind === 'rsi' ? 'RSI (14)' : 'MACD (12, 26, 9)'}</Text.Caption>
         {readout}
       </View>
-      <View onLayout={onLayout} style={{ height }} accessible accessibilityRole="image" accessibilityLabel={accessibilityLabel} testID={`pane-${kind}`}>
+      <View
+        onLayout={onLayout}
+        style={{ height }}
+        accessible
+        accessibilityRole="image"
+        accessibilityLabel={accessibilityLabel}
+        testID={`pane-${kind}`}
+      >
         {width > 0 ? (
           <Canvas style={{ width, height }}>
             {drawing.kind === 'rsi' ? (
@@ -121,5 +128,13 @@ function GutterLabel({ y, label }: { y: number; label: string }) {
 const styles = StyleSheet.create({
   wrap: { gap: space[1] },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
-  gutter: { position: 'absolute', right: 0, width: chart.axisGutter - 4, textAlign: 'right', fontFamily: font.mono.medium, fontSize: 11, color: color.text3 },
+  gutter: {
+    position: 'absolute',
+    right: 0,
+    width: chart.axisGutter - 4,
+    textAlign: 'right',
+    fontFamily: font.mono.medium,
+    fontSize: 11,
+    color: color.text3,
+  },
 });

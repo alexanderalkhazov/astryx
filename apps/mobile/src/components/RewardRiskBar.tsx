@@ -15,7 +15,12 @@ export function RewardRiskBar({ maxLoss, potentialProfit, rewardRisk }: { maxLos
   const total = loss.plus(gain);
   const lossShare = total.isZero() ? 0.5 : loss.div(total).toNumber(); // layout only
   return (
-    <View style={styles.wrap} accessible accessibilityLabel={`Loss at stop ${formatMoney(maxLoss)}, gain at target ${formatMoney(potentialProfit)}, risk to reward 1 to ${formatRatio(rewardRisk)}`} testID="rr-bar">
+    <View
+      style={styles.wrap}
+      accessible
+      accessibilityLabel={`Loss at stop ${formatMoney(maxLoss)}, gain at target ${formatMoney(potentialProfit)}, risk to reward 1 to ${formatRatio(rewardRisk)}`}
+      testID="rr-bar"
+    >
       <View style={styles.track}>
         <View style={[styles.loss, { flex: lossShare }]} />
         <View style={[styles.gain, { flex: 1 - lossShare }]} />

@@ -111,7 +111,13 @@ export function HomeHeader({ unreadAlerts = false }: { unreadAlerts?: boolean })
       chip={<PaperChip />}
       actions={
         <>
-          <IconButton icon={Search} variant="plain" accessibilityLabel="Search" testID="header-search" onPress={() => router.push('/search')} />
+          <IconButton
+            icon={Search}
+            variant="plain"
+            accessibilityLabel="Search"
+            testID="header-search"
+            onPress={() => router.push('/search')}
+          />
           <IconButton
             icon={Bell}
             variant="plain"
@@ -120,7 +126,13 @@ export function HomeHeader({ unreadAlerts = false }: { unreadAlerts?: boolean })
             onPress={() => router.navigate({ pathname: '/activity', params: { filter: 'alerts' } })}
             badge={unreadAlerts ? <View style={styles.alertDot} testID="alerts-unread" /> : undefined}
           />
-          <IconButton icon={SlidersHorizontal} variant="plain" accessibilityLabel="Settings" testID="header-settings" onPress={() => router.push('/settings')} />
+          <IconButton
+            icon={SlidersHorizontal}
+            variant="plain"
+            accessibilityLabel="Settings"
+            testID="header-settings"
+            onPress={() => router.push('/settings')}
+          />
         </>
       }
     />

@@ -37,10 +37,26 @@ const QUALITY: Record<IndicatorSnapshot['dataQuality'], { label: string; tone: '
 };
 
 /** Technicals tab (design 05, SYSTEM_DESIGN.md §8.4.3): the M7 snapshot as a table, with the bar it is as of. */
-export function TechnicalsTab({ snapshot, pending, failed, onRetry }: { snapshot: IndicatorSnapshot | undefined; pending: boolean; failed: boolean; onRetry: () => void }) {
+export function TechnicalsTab({
+  snapshot,
+  pending,
+  failed,
+  onRetry,
+}: {
+  snapshot: IndicatorSnapshot | undefined;
+  pending: boolean;
+  failed: boolean;
+  onRetry: () => void;
+}) {
   if (pending) return <SkeletonRow />;
   if (failed || !snapshot) {
-    return <EmptyState title="Indicators unavailable" body="They couldn't be computed right now. Try again shortly." action={{ label: 'Retry', onPress: onRetry }} />;
+    return (
+      <EmptyState
+        title="Indicators unavailable"
+        body="They couldn't be computed right now. Try again shortly."
+        action={{ label: 'Retry', onPress: onRetry }}
+      />
+    );
   }
 
   const quality = QUALITY[snapshot.dataQuality];
@@ -53,7 +69,12 @@ export function TechnicalsTab({ snapshot, pending, failed, onRetry }: { snapshot
       {ROWS.map((row, index) => {
         const value = row.value(snapshot);
         return (
-          <View key={row.label} style={[styles.row, index > 0 && styles.divider]} accessible accessibilityLabel={`${row.label}, ${value ?? 'not enough history'}`}>
+          <View
+            key={row.label}
+            style={[styles.row, index > 0 && styles.divider]}
+            accessible
+            accessibilityLabel={`${row.label}, ${value ?? 'not enough history'}`}
+          >
             <Text.Body tone="secondary">{row.label}</Text.Body>
             <Text.Data tone={value === null ? 'tertiary' : 'primary'}>{value ?? MISSING}</Text.Data>
           </View>

@@ -6,15 +6,27 @@ import { currentHref } from '@/state/pendingLink';
 describe('applyServerErrors', () => {
   it('maps 422 field errors onto form fields, whatever the server casing', () => {
     const setError = jest.fn();
-    const error = new ApiError({ status: 422, code: 'validation_failed', errors: { NewPassword: ['Password must be 12–128 characters.'] } });
+    const error = new ApiError({
+      status: 422,
+      code: 'validation_failed',
+      errors: { NewPassword: ['Password must be 12–128 characters.'] },
+    });
 
     expect(applyServerErrors(error, setError, { newPassword: 'password' })).toBeNull();
-    expect(setError).toHaveBeenCalledWith('password', { type: 'server', message: 'Password must be 12–128 characters.' }, { shouldFocus: true });
+    expect(setError).toHaveBeenCalledWith(
+      'password',
+      { type: 'server', message: 'Password must be 12–128 characters.' },
+      { shouldFocus: true },
+    );
   });
 
   it('returns errors with no matching field as a form message', () => {
     const setError = jest.fn();
-    const error = new ApiError({ status: 422, code: 'validation_failed', errors: { userId: ['Malformed id.'], email: ['Enter a valid email address.'] } });
+    const error = new ApiError({
+      status: 422,
+      code: 'validation_failed',
+      errors: { userId: ['Malformed id.'], email: ['Enter a valid email address.'] },
+    });
 
     expect(applyServerErrors(error, setError, { email: 'email' })).toBe('Malformed id.');
     expect(setError).toHaveBeenCalledTimes(1);
@@ -22,9 +34,13 @@ describe('applyServerErrors', () => {
 
   it('describes non-field failures', () => {
     const setError = jest.fn();
-    expect(applyServerErrors(new ApiError({ status: 422, code: 'invalid_or_expired_token', detail: 'This reset link is invalid or has expired.' }), setError, {})).toBe(
-      'This reset link is invalid or has expired.',
-    );
+    expect(
+      applyServerErrors(
+        new ApiError({ status: 422, code: 'invalid_or_expired_token', detail: 'This reset link is invalid or has expired.' }),
+        setError,
+        {},
+      ),
+    ).toBe('This reset link is invalid or has expired.');
     expect(describeError(new ApiError({ status: 0, code: 'network_error' }))).toMatch(/Can't reach Astryx/);
     expect(describeError(new ApiError({ status: 429, code: 'rate_limited', detail: 'Too Many Requests' }))).toMatch(/Too many attempts/);
     expect(describeError(new ApiError({ status: 503, code: 'unavailable' }))).toMatch(/having trouble/);

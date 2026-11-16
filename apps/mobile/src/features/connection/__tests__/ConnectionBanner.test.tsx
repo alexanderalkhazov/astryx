@@ -4,14 +4,25 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react-nativ
 import { ConnectionBanner } from '../ConnectionBanner';
 
 jest.mock('@astryx/api-client', () => ({ ...jest.requireActual('@astryx/api-client'), getSystemStatus: jest.fn() }));
-jest.mock('@react-native-community/netinfo', () => ({ useNetInfo: jest.fn(() => ({ isConnected: true })), addEventListener: jest.fn(() => jest.fn()) }));
+jest.mock('@react-native-community/netinfo', () => ({
+  useNetInfo: jest.fn(() => ({ isConnected: true })),
+  addEventListener: jest.fn(() => jest.fn()),
+}));
 const mockStatus = (jest.requireMock('@astryx/api-client') as { getSystemStatus: jest.Mock }).getSystemStatus;
 const mockNetInfo = (jest.requireMock('@react-native-community/netinfo') as { useNetInfo: jest.Mock }).useNetInfo;
 
 const status = (market: Partial<{ quotesStale: boolean; feedDown: boolean; quotesAsOf: string | null }> = {}) => ({
   database: 'healthy',
   ai: { status: 'healthy', model: null },
-  marketData: { provider: 'Fake', quotesAsOf: '2026-11-09T19:12:00Z', quotesStale: false, dailyBarsThrough: '2026-11-06', dailyBarsStale: false, feedDown: false, ...market },
+  marketData: {
+    provider: 'Fake',
+    quotesAsOf: '2026-11-09T19:12:00Z',
+    quotesStale: false,
+    dailyBarsThrough: '2026-11-06',
+    dailyBarsStale: false,
+    feedDown: false,
+    ...market,
+  },
   broker: { adapter: 'Mock', mode: 'paper' },
   features: { liveTrading: false },
 });
@@ -44,7 +55,11 @@ describe('ConnectionBanner', () => {
     await renderBanner();
 
     expect(await screen.findByText('Market data connection lost')).toBeOnTheScreen();
-    expect(screen.getByText('Values below are from the last sync at 14:12 ET and may be stale. Approvals are disabled until the connection returns.')).toBeOnTheScreen();
+    expect(
+      screen.getByText(
+        'Values below are from the last sync at 14:12 ET and may be stale. Approvals are disabled until the connection returns.',
+      ),
+    ).toBeOnTheScreen();
   });
 
   it.each([

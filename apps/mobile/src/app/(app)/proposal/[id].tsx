@@ -21,7 +21,16 @@ import { Stepper } from '@/components/Stepper';
 import { Text } from '@/components/Text';
 import { ConfirmOrderSheet } from '@/features/proposal/ConfirmOrderSheet';
 import { FillReceiptSheet } from '@/features/proposal/FillReceiptSheet';
-import { approveGate, isNotFound, proposalKey, useNow, useProposal, useRejectProposal, useRiskLimits, useSizing } from '@/features/proposal/useProposal';
+import {
+  approveGate,
+  isNotFound,
+  proposalKey,
+  useNow,
+  useProposal,
+  useRejectProposal,
+  useRiskLimits,
+  useSizing,
+} from '@/features/proposal/useProposal';
 import { formatEtTime, formatMoney, formatPct, formatPrice } from '@/lib/format';
 
 const ORDER_LABEL: Record<Proposal['orderType'], string> = { buy_stop: 'BUY STOP', limit: 'LIMIT', market: 'MARKET' };
@@ -59,9 +68,17 @@ export default function ProposalScreen() {
     return (
       <Screen header={header}>
         {isNotFound(proposal.error) ? (
-          <EmptyState title="Proposal not found" body="It may have been for another account, or it no longer exists." action={{ label: 'Back to Discover', onPress: () => router.replace('/discover') }} />
+          <EmptyState
+            title="Proposal not found"
+            body="It may have been for another account, or it no longer exists."
+            action={{ label: 'Back to Discover', onPress: () => router.replace('/discover') }}
+          />
         ) : (
-          <EmptyState title="Couldn't load the proposal" body="Check your connection and try again." action={{ label: 'Retry', onPress: () => void proposal.refetch() }} />
+          <EmptyState
+            title="Couldn't load the proposal"
+            body="Check your connection and try again."
+            action={{ label: 'Retry', onPress: () => void proposal.refetch() }}
+          />
         )}
       </Screen>
     );
@@ -98,8 +115,22 @@ export default function ProposalScreen() {
         </View>
       ) : null}
       <View style={styles.buttons}>
-        <Button variant="secondary" label="Reject" block={false} onPress={() => setRejectOpen(true)} style={styles.reject} testID="proposal-reject" />
-        <Button label="Approve simulated trade" block={false} disabled={!gate.enabled} onPress={() => setConfirmOpen(true)} style={styles.flex} testID="proposal-approve" />
+        <Button
+          variant="secondary"
+          label="Reject"
+          block={false}
+          onPress={() => setRejectOpen(true)}
+          style={styles.reject}
+          testID="proposal-reject"
+        />
+        <Button
+          label="Approve simulated trade"
+          block={false}
+          disabled={!gate.enabled}
+          onPress={() => setConfirmOpen(true)}
+          style={styles.flex}
+          testID="proposal-approve"
+        />
       </View>
     </View>
   ) : undefined;
@@ -108,9 +139,20 @@ export default function ProposalScreen() {
     <>
       <Screen header={header} footer={footer}>
         {pending ? (
-          <StatusBanner tone="pending" title={p.label} body={`Nothing is sent until you hold to approve. Paper account · expires ${formatEtTime(p.expiresAt)}`} testID="proposal-banner" />
+          <StatusBanner
+            tone="pending"
+            title={p.label}
+            body={`Nothing is sent until you hold to approve. Paper account · expires ${formatEtTime(p.expiresAt)}`}
+            testID="proposal-banner"
+          />
         ) : (
-          <StatusBanner tone="rejected" title={p.status === 'approved' ? 'APPROVED' : p.status === 'rejected' ? 'REJECTED · NO ORDER CREATED' : 'EXPIRED · NO ORDER CREATED'} testID="proposal-banner" />
+          <StatusBanner
+            tone="rejected"
+            title={
+              p.status === 'approved' ? 'APPROVED' : p.status === 'rejected' ? 'REJECTED · NO ORDER CREATED' : 'EXPIRED · NO ORDER CREATED'
+            }
+            testID="proposal-banner"
+          />
         )}
 
         <View style={styles.instrument}>
@@ -157,11 +199,17 @@ export default function ProposalScreen() {
           <Text.Caption tone="secondary">Risk per trade</Text.Caption>
           <Segmented
             accessibilityLabel="Risk per trade"
-            options={RISK_CHOICES.map((value) => ({ value, label: formatPct(value), disabled: maxRisk !== undefined && new Decimal(value).gt(maxRisk) }))}
-            value={(RISK_CHOICES.find((c) => sizing.inputs && new Decimal(c).eq(sizing.inputs.riskPerTradePct)) ?? RISK_CHOICES[1])}
+            options={RISK_CHOICES.map((value) => ({
+              value,
+              label: formatPct(value),
+              disabled: maxRisk !== undefined && new Decimal(value).gt(maxRisk),
+            }))}
+            value={RISK_CHOICES.find((c) => sizing.inputs && new Decimal(c).eq(sizing.inputs.riskPerTradePct)) ?? RISK_CHOICES[1]}
             onChange={(r) => sizing.setRisk(r)}
           />
-          {maxRisk !== undefined && RISK_CHOICES.some((c) => new Decimal(c).gt(maxRisk)) ? <Text.Caption tone="tertiary">{`Choices above your ${formatPct(maxRisk)} limit are disabled.`}</Text.Caption> : null}
+          {maxRisk !== undefined && RISK_CHOICES.some((c) => new Decimal(c).gt(maxRisk)) ? (
+            <Text.Caption tone="tertiary">{`Choices above your ${formatPct(maxRisk)} limit are disabled.`}</Text.Caption>
+          ) : null}
           {a ? (
             <View style={[styles.gap, dim]}>
               <Text.Caption tone="secondary">{SIZED_BY[a.sizedBy](a)}</Text.Caption>
@@ -194,13 +242,23 @@ export default function ProposalScreen() {
 
         <Section title="Pre-trade checks">
           <View style={styles.checks} testID="proposal-checks">
-            {a && !sizing.error
-              ? a.checks
-                  .filter((c) => c.code in DESIGN_CHECKS || c.status !== 'pass') // engine checks show only when they warn or fail
-                  .map((c, i) => <CheckRow key={c.code} first={i === 0} status={sizing.assessing ? 'pending' : c.status} label={DESIGN_CHECKS[c.code] ?? c.message} detail={c.code in DESIGN_CHECKS ? c.message : undefined} />)
-              : sizing.error
-                ? <CheckRow first status="fail" label="Couldn't verify — approval disabled" detail="Tap Recheck to try again." />
-                : Object.values(DESIGN_CHECKS).map((label, i) => <CheckRow key={label} first={i === 0} status="pending" label={label} />)}
+            {a && !sizing.error ? (
+              a.checks
+                .filter((c) => c.code in DESIGN_CHECKS || c.status !== 'pass') // engine checks show only when they warn or fail
+                .map((c, i) => (
+                  <CheckRow
+                    key={c.code}
+                    first={i === 0}
+                    status={sizing.assessing ? 'pending' : c.status}
+                    label={DESIGN_CHECKS[c.code] ?? c.message}
+                    detail={c.code in DESIGN_CHECKS ? c.message : undefined}
+                  />
+                ))
+            ) : sizing.error ? (
+              <CheckRow first status="fail" label="Couldn't verify — approval disabled" detail="Tap Recheck to try again." />
+            ) : (
+              Object.values(DESIGN_CHECKS).map((label, i) => <CheckRow key={label} first={i === 0} status="pending" label={label} />)
+            )}
           </View>
         </Section>
       </Screen>

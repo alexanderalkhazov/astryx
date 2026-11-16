@@ -33,7 +33,12 @@ export const Signal = z.object({
   price: Decimal.nullable(),
   changePct: Decimal.nullable(),
   score: z.string(),
-  metrics: z.object({ relVolume: Decimal.nullable(), relStrength: z.string().nullable(), rewardRisk: Decimal.nullable(), rsi14: Decimal.nullable() }),
+  metrics: z.object({
+    relVolume: Decimal.nullable(),
+    relStrength: z.string().nullable(),
+    rewardRisk: Decimal.nullable(),
+    rsi14: Decimal.nullable(),
+  }),
   reason: z.string(),
   levels: z.object({ orderType: z.enum(['buy_stop', 'limit', 'market']), entry: Decimal, stop: Decimal, target: Decimal }),
   strategy: z.object({ id: z.string(), name: z.string(), version: z.number().int() }),
@@ -55,7 +60,14 @@ export type Signal = z.infer<typeof Signal>;
 export const SignalPage = z.object({
   items: z.array(Signal),
   nextCursor: z.string().nullable(),
-  counts: z.object({ all: z.number().int(), momentum: z.number().int(), breakout: z.number().int(), pullback: z.number().int(), unusualVolume: z.number().int(), earnings: z.number().int() }),
+  counts: z.object({
+    all: z.number().int(),
+    momentum: z.number().int(),
+    breakout: z.number().int(),
+    pullback: z.number().int(),
+    unusualVolume: z.number().int(),
+    earnings: z.number().int(),
+  }),
   scanner: z.object({ lastRunAt: z.string().nullable(), dataAsOf: z.string().nullable() }),
 });
 export type SignalPage = z.infer<typeof SignalPage>;

@@ -46,7 +46,9 @@ export default function SettingsScreen() {
           value="paper"
           onChange={(mode) => mode === 'live' && setGuardOpen(true)}
         />
-        <Text.Caption tone="tertiary">Paper mode simulates fills at the proposal entry plus slippage. Every approval still requires hold-to-confirm.</Text.Caption>
+        <Text.Caption tone="tertiary">
+          Paper mode simulates fills at the proposal entry plus slippage. Every approval still requires hold-to-confirm.
+        </Text.Caption>
       </Section>
       <LiveTradingGuardDialog visible={guardOpen} limits={risk.data} onClose={() => setGuardOpen(false)} />
 
@@ -89,7 +91,9 @@ function BrokerSection() {
         <View style={styles.row}>
           <View style={styles.flex}>
             <Text.Section>Paper account (simulated)</Text.Section>
-            <Text.Caption tone="secondary">{summary.data ? `Connected · synced ${formatEtTime(summary.data.asOf)}` : 'Connected'}</Text.Caption>
+            <Text.Caption tone="secondary">
+              {summary.data ? `Connected · synced ${formatEtTime(summary.data.asOf)}` : 'Connected'}
+            </Text.Caption>
           </View>
           <Badge label="PAPER" tone="pending" mono />
         </View>
@@ -98,9 +102,15 @@ function BrokerSection() {
         <Text.Overline tone="tertiary">Permissions</Text.Overline>
         <Row label="Read portfolio & balances" value={<Text.DataSm tone="gain">Allowed</Text.DataSm>} />
         <Row label="Place & close orders" value={<Text.DataSm tone="pending">Paper only</Text.DataSm>} />
-        <Row label="Deposits & withdrawals" value={<Text.DataSm tone="secondary">Never requested</Text.DataSm>} testID="permission-transfers" />
+        <Row
+          label="Deposits & withdrawals"
+          value={<Text.DataSm tone="secondary">Never requested</Text.DataSm>}
+          testID="permission-transfers"
+        />
         <Button variant="secondary" label="Connect eToro" disabled />
-        <Text.Caption tone="tertiary">Connecting an eToro Demo account comes in a later release. Astryx never moves money in or out of an account.</Text.Caption>
+        <Text.Caption tone="tertiary">
+          Connecting an eToro Demo account comes in a later release. Astryx never moves money in or out of an account.
+        </Text.Caption>
       </View>
     </Section>
   );
@@ -131,9 +141,12 @@ function RiskLimits({ current }: { current: RiskSettings }) {
     minRewardRisk: current.minRewardRisk,
   });
   const [draft, setDraft] = useState<RiskSettingsUpdate>(initial);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- reset the draft only when the saved settings change version
   useEffect(() => setDraft(initial()), [current.version]);
 
-  const dirty = RISK_FIELDS.some((f) => !new Decimal(draft[f.key]).equals(new Decimal(current[f.key]))) || draft.maxOpenPositions !== current.maxOpenPositions;
+  const dirty =
+    RISK_FIELDS.some((f) => !new Decimal(draft[f.key]).equals(new Decimal(current[f.key]))) ||
+    draft.maxOpenPositions !== current.maxOpenPositions;
   // The sector warning must stay below the sector cap (S2); keep the design's 5-point gap when the cap moves.
   const sectorWarning = (cap: string) => {
     const warning = new Decimal(current.sectorWarningPct);
@@ -141,7 +154,8 @@ function RiskLimits({ current }: { current: RiskSettings }) {
   };
 
   const save = useMutation({
-    mutationFn: async () => (await settings.updateRisk(current, { ...draft, sectorWarningPct: sectorWarning(draft.maxSectorExposurePct) })).data,
+    mutationFn: async () =>
+      (await settings.updateRisk(current, { ...draft, sectorWarningPct: sectorWarning(draft.maxSectorExposurePct) })).data,
     onSuccess: (data) => {
       queryClient.setQueryData(['settings', 'risk'], data);
       toast({ tone: 'success', title: 'Risk limits saved', body: 'New assessments use them from now on.' });
@@ -151,7 +165,11 @@ function RiskLimits({ current }: { current: RiskSettings }) {
         void queryClient.invalidateQueries({ queryKey: ['settings', 'risk'] });
         toast({ tone: 'error', title: 'Limits changed elsewhere', body: 'We reloaded the latest values. Make your change again.' });
       } else {
-        toast({ tone: 'error', title: "Limits weren't saved", body: isApiError(error) ? (error.detail ?? error.message) : 'Try again in a moment.' });
+        toast({
+          tone: 'error',
+          title: "Limits weren't saved",
+          body: isApiError(error) ? (error.detail ?? error.message) : 'Try again in a moment.',
+        });
       }
     },
   });
@@ -194,7 +212,13 @@ function RiskLimits({ current }: { current: RiskSettings }) {
       </View>
       <Text.Caption tone="tertiary">The risk engine enforces these on every assessment. AI suggestions never override them.</Text.Caption>
       <View style={styles.actionsRow}>
-        <Button variant="secondary" label="Reset" disabled={!dirty || save.isPending} onPress={() => setDraft(initial())} style={styles.flex} />
+        <Button
+          variant="secondary"
+          label="Reset"
+          disabled={!dirty || save.isPending}
+          onPress={() => setDraft(initial())}
+          style={styles.flex}
+        />
         <Button label="Save limits" disabled={!dirty} loading={save.isPending} onPress={() => save.mutate()} style={styles.flex} />
       </View>
     </View>
@@ -209,7 +233,10 @@ function ScannerSection() {
       {s ? (
         <View style={styles.card} testID="scanner-settings">
           <Row label="Universe" value={s.universes.find((u) => u.code === s.universe)?.label ?? s.universe} />
-          <Row label="Min price · avg $ volume" value={`${formatMoney(s.minPrice, { dp: 0 })} · ${formatCompactMoney(s.minAvgDollarVolume).replace(/\.00(?=[KMBT])/, '')}`} />
+          <Row
+            label="Min price · avg $ volume"
+            value={`${formatMoney(s.minPrice, { dp: 0 })} · ${formatCompactMoney(s.minAvgDollarVolume).replace(/\.00(?=[KMBT])/, '')}`}
+          />
           <Row label="Min score" value={s.minScore ? `${s.minScore}+` : 'Any'} />
           <Row label="Signal types" value={`All ${s.signalTypes.length}`} />
           <Text.Caption tone="tertiary">The scanner is shared by every account. Narrow what you see with Discover's filters.</Text.Caption>
@@ -299,9 +326,15 @@ function NotificationsSection() {
             testID="push-master"
           />
           {NOTIFICATION_ROWS.map((r) => (
-            <Row key={r.key} label={r.label} value={<Switch value={p[r.key]} accessibilityLabel={r.label} onValueChange={(v) => update.mutate({ ...p, [r.key]: v })} />} />
+            <Row
+              key={r.key}
+              label={r.label}
+              value={<Switch value={p[r.key]} accessibilityLabel={r.label} onValueChange={(v) => update.mutate({ ...p, [r.key]: v })} />}
+            />
           ))}
-          <Text.Caption tone="tertiary">The categories choose what reaches this device as a push. Activity always lists everything.</Text.Caption>
+          <Text.Caption tone="tertiary">
+            The categories choose what reaches this device as a push. Activity always lists everything.
+          </Text.Caption>
         </View>
       ) : (
         <SkeletonRow />
@@ -324,7 +357,11 @@ function SecuritySection() {
   return (
     <Section title="Security">
       <View style={styles.card}>
-        <Pressable accessibilityRole="button" onPress={() => router.push('/settings/change-password')} style={({ pressed }) => [styles.row, styles.link, { opacity: pressed ? 0.7 : 1 }]}>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.push('/settings/change-password')}
+          style={({ pressed }) => [styles.row, styles.link, { opacity: pressed ? 0.7 : 1 }]}
+        >
           <Text.Body style={styles.flex}>Change password</Text.Body>
           <ChevronRight size={18} strokeWidth={1.7} color={color.text3} />
         </Pressable>
@@ -351,7 +388,9 @@ function PaperAccountSection() {
   return (
     <Section title="Paper account">
       <View style={styles.card}>
-        <Text.Body tone="secondary">Start over with the starting cash. Open positions close at their last price and performance starts a new period.</Text.Body>
+        <Text.Body tone="secondary">
+          Start over with the starting cash. Open positions close at their last price and performance starts a new period.
+        </Text.Body>
         <Button variant="danger" label="Reset paper account" onPress={() => setOpen(true)} />
       </View>
       <ResetPaperAccountDialog visible={open} onClose={() => setOpen(false)} />
@@ -367,13 +406,19 @@ function PrototypeControls() {
   const set = useMutation({
     mutationFn: async (mode: (typeof FAULTS)[number]) => (await settings.setDevFaults(mode)).data,
     onSuccess: () => void faults.refetch(),
-    onError: () => toast({ tone: 'error', title: 'Fault switch unavailable', body: 'The API needs Development with Features:DevFaultInjection=true.' }),
+    onError: () =>
+      toast({ tone: 'error', title: 'Fault switch unavailable', body: 'The API needs Development with Features:DevFaultInjection=true.' }),
   });
   return (
     <Section title="Prototype controls (dev)">
       <View style={[styles.card, styles.devCard]} testID="prototype-controls">
         <Text.Body tone="secondary">Market data feed</Text.Body>
-        <Segmented accessibilityLabel="Market data fault" options={FAULTS.map((f) => ({ value: f, label: f }))} value={faults.data?.marketData ?? 'ok'} onChange={(mode) => set.mutate(mode)} />
+        <Segmented
+          accessibilityLabel="Market data fault"
+          options={FAULTS.map((f) => ({ value: f, label: f }))}
+          value={faults.data?.marketData ?? 'ok'}
+          onChange={(mode) => set.mutate(mode)}
+        />
         {faults.isError ? <Text.Caption tone="pending">Fault injection is off on this API.</Text.Caption> : null}
       </View>
     </Section>
@@ -382,7 +427,14 @@ function PrototypeControls() {
 
 const styles = StyleSheet.create({
   section: { gap: space[2] },
-  card: { gap: space[3], padding: space[4], borderRadius: radius.card, backgroundColor: color.surface1, borderWidth: 1, borderColor: color.line },
+  card: {
+    gap: space[3],
+    padding: space[4],
+    borderRadius: radius.card,
+    backgroundColor: color.surface1,
+    borderWidth: 1,
+    borderColor: color.line,
+  },
   devCard: { borderStyle: 'dashed', borderColor: color.pending },
   row: { flexDirection: 'row', alignItems: 'center', gap: space[3], minHeight: 36 },
   link: { minHeight: 44 },

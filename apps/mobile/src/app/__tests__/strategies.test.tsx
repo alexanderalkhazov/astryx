@@ -7,44 +7,115 @@ import { Text } from 'react-native';
 import StrategiesScreen from '../(app)/(tabs)/strategies';
 import StrategyScreen from '../(app)/strategy/[id]';
 
-jest.mock('expo-secure-store', () => ({ WHEN_UNLOCKED_THIS_DEVICE_ONLY: 'x', getItemAsync: jest.fn(), setItemAsync: jest.fn(), deleteItemAsync: jest.fn() }));
+jest.mock('expo-secure-store', () => ({
+  WHEN_UNLOCKED_THIS_DEVICE_ONLY: 'x',
+  getItemAsync: jest.fn(),
+  setItemAsync: jest.fn(),
+  deleteItemAsync: jest.fn(),
+}));
 jest.mock('@/lib/api', () => ({ strategies: { list: jest.fn(), compare: jest.fn(), get: jest.fn(), run: jest.fn() } }));
 const mocks = jest.requireMock('@/lib/api') as { strategies: Record<'list' | 'compare' | 'get' | 'run', jest.Mock> };
 const ok = <T,>(data: T) => ({ data });
 
-const FULL = { cagr: '0.169', sharpe: '1.31', maxDrawdown: '-0.148', winRate: '0.46', trades: 412, profitFactor: '1.86', avgTradePct: '0.0190', expectancyR: '0.42', multiple: '6.02' };
+const FULL = {
+  cagr: '0.169',
+  sharpe: '1.31',
+  maxDrawdown: '-0.148',
+  winRate: '0.46',
+  trades: 412,
+  profitFactor: '1.86',
+  avgTradePct: '0.0190',
+  expectancyR: '0.42',
+  multiple: '6.02',
+};
 const IS = { cagr: '0.184', sharpe: '1.42', maxDrawdown: '-0.148', winRate: '0.47' };
 const OOS = { cagr: '0.141', sharpe: '1.11', maxDrawdown: '-0.123', winRate: '0.44' };
 
 const SUMMARY = (over: Partial<StrategySummary> = {}): StrategySummary => ({
-  id: 'st1', code: 'base_breakout', name: 'Base Breakout v3', description: 'Buys breakouts from tight multi-week bases on heavy volume.', status: 'active', displayOrder: 1, version: 3,
-  liveSince: '2025-03-03', live: { sinceInceptionPct: '0.114', mtdPct: '0.028', mtdPnl: '1330.00', mtdTrades: 3, illustrative: true },
-  metrics: { cagr: '0.169', sharpe: '1.31', maxDrawdown: '-0.148', winRate: '0.46' }, sparkline: ['1.00', '2.00', '6.02'], backtestStart: '2015-01-01', backtestEnd: '2026-06-30',
-  guard: { drawdown: '-0.0120', warnAt: '-0.0540', pauseAt: '-0.0600', windowDays: 30, asOf: '2026-11-09' }, ...over,
+  id: 'st1',
+  code: 'base_breakout',
+  name: 'Base Breakout v3',
+  description: 'Buys breakouts from tight multi-week bases on heavy volume.',
+  status: 'active',
+  displayOrder: 1,
+  version: 3,
+  liveSince: '2025-03-03',
+  live: { sinceInceptionPct: '0.114', mtdPct: '0.028', mtdPnl: '1330.00', mtdTrades: 3, illustrative: true },
+  metrics: { cagr: '0.169', sharpe: '1.31', maxDrawdown: '-0.148', winRate: '0.46' },
+  sparkline: ['1.00', '2.00', '6.02'],
+  backtestStart: '2015-01-01',
+  backtestEnd: '2026-06-30',
+  guard: { drawdown: '-0.0120', warnAt: '-0.0540', pauseAt: '-0.0600', windowDays: 30, asOf: '2026-11-09' },
+  ...over,
 });
 
-const PULLBACK = SUMMARY({ id: 'st3', code: 'trend_pullback', name: 'Trend Pullback', status: 'active_guarded', guard: { drawdown: '-0.0540', warnAt: '-0.0540', pauseAt: '-0.0600', windowDays: 30, asOf: '2026-11-09' }, live: { sinceInceptionPct: '0.02', mtdPct: '-0.011', mtdPnl: '-712.40', mtdTrades: 2, illustrative: true } });
+const PULLBACK = SUMMARY({
+  id: 'st3',
+  code: 'trend_pullback',
+  name: 'Trend Pullback',
+  status: 'active_guarded',
+  guard: { drawdown: '-0.0540', warnAt: '-0.0540', pauseAt: '-0.0600', windowDays: 30, asOf: '2026-11-09' },
+  live: { sinceInceptionPct: '0.02', mtdPct: '-0.011', mtdPnl: '-712.40', mtdTrades: 2, illustrative: true },
+});
 
 const DETAIL = (over: Partial<StrategyDetail> = {}): StrategyDetail => ({
   summary: SUMMARY(),
   rules: ['Price forms a base of 4–10 weeks.', 'Breaks out on 1.8× average volume.'],
   version: {
-    id: 'v3', number: 3, state: 'published', codeVersion: 'base_breakout@1',
+    id: 'v3',
+    number: 3,
+    state: 'published',
+    codeVersion: 'base_breakout@1',
     parameters: [{ key: 'baseWeeks', label: 'Base length', unit: 'wk', default: 6, min: 4, max: 10, step: 1, value: 6 }],
   },
-  latestRun: { id: 'run1', runNumber: 1, status: 'succeeded', periodStart: '2015-01-01', periodEnd: '2026-06-30', oosStart: '2023-01-01', finishedAt: '2026-06-30T22:00:00Z', metrics: { full: FULL, inSample: IS, outOfSample: OOS } },
+  latestRun: {
+    id: 'run1',
+    runNumber: 1,
+    status: 'succeeded',
+    periodStart: '2015-01-01',
+    periodEnd: '2026-06-30',
+    oosStart: '2023-01-01',
+    finishedAt: '2026-06-30T22:00:00Z',
+    metrics: { full: FULL, inSample: IS, outOfSample: OOS },
+  },
   todaysSignals: [{ id: 'sig1', symbol: 'NVDA', type: 'breakout', score: '87', entry: '186.50', evaluatedAt: '2026-11-09T19:32:00Z' }],
   ...over,
 });
 
 const RUN: BacktestRun = {
-  id: 'run1', strategyId: 'st1', runNumber: 1, version: 3, status: 'succeeded', periodStart: '2015-01-01', periodEnd: '2026-06-30', oosStart: '2023-01-01', initialCapital: '100000.00',
-  assumptions: { fees: '0.00 per order', slippageBps: 5, universe: 'Current US large caps (illustrative)', survivorship: "Uses today's universe: results are biased upward.", benchmark: { name: 'S&P 500', multiple: '3.72' } },
+  id: 'run1',
+  strategyId: 'st1',
+  runNumber: 1,
+  version: 3,
+  status: 'succeeded',
+  periodStart: '2015-01-01',
+  periodEnd: '2026-06-30',
+  oosStart: '2023-01-01',
+  initialCapital: '100000.00',
+  assumptions: {
+    fees: '0.00 per order',
+    slippageBps: 5,
+    universe: 'Current US large caps (illustrative)',
+    survivorship: "Uses today's universe: results are biased upward.",
+    benchmark: { name: 'S&P 500', multiple: '3.72' },
+  },
   metrics: { full: FULL, inSample: IS, outOfSample: OOS },
-  equityCurve: [['2015-01-01', '100000.00'], ['2023-01-01', '400000.00'], ['2026-06-01', '602000.00']],
-  drawdownCurve: [['2015-01-01', '0.0000'], ['2023-01-01', '-0.1480'], ['2026-06-01', '0.0000']],
-  monthlyReturns: [['2015-02', '-0.0420'], ['2015-03', '0.0190']],
-  finishedAt: '2026-06-30T22:00:00Z', errorCode: null,
+  equityCurve: [
+    ['2015-01-01', '100000.00'],
+    ['2023-01-01', '400000.00'],
+    ['2026-06-01', '602000.00'],
+  ],
+  drawdownCurve: [
+    ['2015-01-01', '0.0000'],
+    ['2023-01-01', '-0.1480'],
+    ['2026-06-01', '0.0000'],
+  ],
+  monthlyReturns: [
+    ['2015-02', '-0.0420'],
+    ['2015-03', '0.0190'],
+  ],
+  finishedAt: '2026-06-30T22:00:00Z',
+  errorCode: null,
 };
 
 async function renderAt(initialUrl: string) {
@@ -69,7 +140,16 @@ beforeEach(() => {
   mocks.strategies.list.mockResolvedValue(ok({ items: [SUMMARY(), PULLBACK] }));
   mocks.strategies.compare.mockResolvedValue(
     ok({
-      series: [{ strategyId: 'st1', name: 'Base Breakout v3', points: [{ d: '2015-01-01', growth: '1.0000' }, { d: '2026-06-01', growth: '6.0200' }] }],
+      series: [
+        {
+          strategyId: 'st1',
+          name: 'Base Breakout v3',
+          points: [
+            { d: '2015-01-01', growth: '1.0000' },
+            { d: '2026-06-01', growth: '6.0200' },
+          ],
+        },
+      ],
       metrics: [{ strategyId: 'st1', name: 'Base Breakout v3', metrics: FULL }],
     }),
   );
@@ -147,7 +227,16 @@ describe('Strategy detail (designs 11 and 12)', () => {
     expect(screen.getByText('Run #1 · 2026-06-30 · v3')).toBeOnTheScreen();
     expect(screen.getByText('Shaded: out of sample from Jan 2023')).toBeOnTheScreen();
     expect(screen.getByLabelText('Drawdown, deepest −14.8%')).toBeOnTheScreen();
-    for (const label of ['CAGR: 16.9%', 'Sharpe: 1.31', 'Max DD: −14.8%', 'Win rate: 46%', 'Profit factor: 1.86', 'Avg trade: +1.90%', 'Trades: 412', 'Expectancy: 0.42R']) {
+    for (const label of [
+      'CAGR: 16.9%',
+      'Sharpe: 1.31',
+      'Max DD: −14.8%',
+      'Win rate: 46%',
+      'Profit factor: 1.86',
+      'Avg trade: +1.90%',
+      'Trades: 412',
+      'Expectancy: 0.42R',
+    ]) {
       expect(screen.getByLabelText(label)).toBeOnTheScreen();
     }
     expect(screen.getByLabelText('Out of sample · 2023–2026 CAGR: 14.1%')).toBeOnTheScreen();
@@ -170,7 +259,16 @@ describe('Strategy detail (designs 11 and 12)', () => {
   });
 
   it('says a paused strategy produces no new signals', async () => {
-    mocks.strategies.get.mockResolvedValue(ok(DETAIL({ summary: SUMMARY({ status: 'paused', guard: { drawdown: '-0.0620', warnAt: '-0.0540', pauseAt: '-0.0600', windowDays: 30, asOf: '2026-11-10' } }) })));
+    mocks.strategies.get.mockResolvedValue(
+      ok(
+        DETAIL({
+          summary: SUMMARY({
+            status: 'paused',
+            guard: { drawdown: '-0.0620', warnAt: '-0.0540', pauseAt: '-0.0600', windowDays: 30, asOf: '2026-11-10' },
+          }),
+        }),
+      ),
+    );
     await renderAt('/strategy/base_breakout');
 
     expect(await screen.findByText('Paused by the drawdown guard · 30-day drawdown −6.2%. No new signals.')).toBeOnTheScreen();

@@ -107,9 +107,21 @@ public sealed class PositionActions(
         var slip = execution.Costs.Slip(quote.Last);
         var exit = new Order
         {
-            Id = Ids.New(), UserId = userId, PortfolioId = position.PortfolioId, InstrumentId = position.InstrumentId, Symbol = position.Symbol, PositionId = position.Id,
-            ClientOrderId = idempotencyKey, BrokerOrderId = PaperExecution.NewBrokerOrderId(), Purpose = OrderPurpose.ExitManual, Side = "sell", OrderType = "market",
-            TimeInForce = "day", Quantity = position.Quantity, Status = OrderStatus.Accepted, SubmittedAt = now,
+            Id = Ids.New(),
+            UserId = userId,
+            PortfolioId = position.PortfolioId,
+            InstrumentId = position.InstrumentId,
+            Symbol = position.Symbol,
+            PositionId = position.Id,
+            ClientOrderId = idempotencyKey,
+            BrokerOrderId = PaperExecution.NewBrokerOrderId(),
+            Purpose = OrderPurpose.ExitManual,
+            Side = "sell",
+            OrderType = "market",
+            TimeInForce = "day",
+            Quantity = position.Quantity,
+            Status = OrderStatus.Accepted,
+            SubmittedAt = now,
         };
         db.Orders.Add(exit);
         var siblings = await db.Orders.IgnoreQueryFilters().Where(o => o.PositionId == position.Id && o.OcoGroupId != null && o.Status == OrderStatus.Working).ToListAsync(cancellationToken);

@@ -45,7 +45,12 @@ const tokens = (n: number) => ({
   tokenType: 'Bearer',
 });
 
-const res = (status: number, body?: unknown) => ({ ok: status < 300, status, headers: { get: () => null }, text: async () => (body === undefined ? '' : JSON.stringify(body)) });
+const res = (status: number, body?: unknown) => ({
+  ok: status < 300,
+  status,
+  headers: { get: () => null },
+  text: async () => (body === undefined ? '' : JSON.stringify(body)),
+});
 
 type Route = (url: string, init: { headers: Record<string, string>; body?: string }) => ReturnType<typeof res>;
 let route: Route;
@@ -73,7 +78,9 @@ describe('signIn', () => {
 
     expect(mockKeychain.get('astryx.refreshToken')).toBe('refresh-1');
     expect([...mockKeychain.values()]).not.toContain('access-1');
-    expect(mockKeychainOptions.every((o) => (o as { keychainAccessible: string }).keychainAccessible === 'WHEN_UNLOCKED_THIS_DEVICE_ONLY')).toBe(true);
+    expect(
+      mockKeychainOptions.every((o) => (o as { keychainAccessible: string }).keychainAccessible === 'WHEN_UNLOCKED_THIS_DEVICE_ONLY'),
+    ).toBe(true);
     expect(useSession.getState()).toMatchObject({ status: 'signedIn', accessToken: 'access-1', user: { email: 'trader@example.com' } });
     const loginBody = JSON.parse(fetchMock.mock.calls[0]![1].body!) as { deviceId: string };
     expect(loginBody.deviceId).toBe(mockKeychain.get('astryx.deviceId'));
@@ -113,7 +120,11 @@ describe('session expiry', () => {
     mockKeychain.set('astryx.deviceId', 'device-0001');
     route = (url) => (url.endsWith('/auth/refresh') ? res(401, { code: 'session_revoked' }) : res(401, { code: 'token_expired' }));
 
-    const results = await Promise.allSettled([api.request('/api/v1/me'), api.request('/api/v1/me/settings/risk'), api.request('/api/v1/portfolio')]);
+    const results = await Promise.allSettled([
+      api.request('/api/v1/me'),
+      api.request('/api/v1/me/settings/risk'),
+      api.request('/api/v1/portfolio'),
+    ]);
     await new Promise((r) => setTimeout(r, 0));
 
     expect(results.every((r) => r.status === 'rejected')).toBe(true);
@@ -130,7 +141,11 @@ describe('session expiry', () => {
     mockKeychain.set('astryx.refreshToken', 'refresh-1');
     mockKeychain.set('astryx.deviceId', 'device-0001');
     route = (url, init) =>
-      url.endsWith('/auth/refresh') ? res(200, tokens(2)) : init.headers.Authorization === 'Bearer access-2' ? res(200, ME) : res(401, { code: 'token_expired' });
+      url.endsWith('/auth/refresh')
+        ? res(200, tokens(2))
+        : init.headers.Authorization === 'Bearer access-2'
+          ? res(200, ME)
+          : res(401, { code: 'token_expired' });
 
     await api.request('/api/v1/me');
 

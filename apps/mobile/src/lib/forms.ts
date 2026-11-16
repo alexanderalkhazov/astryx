@@ -24,7 +24,11 @@ export function describeError(error: unknown): string {
  * Maps a 422's field errors onto the form (SYSTEM_DESIGN.md §8.10). `fields` maps server field names to form fields,
  * matched case-insensitively. Returns the message for the form as a whole, or null when every error found a field.
  */
-export function applyServerErrors<T extends FieldValues>(error: unknown, setError: UseFormSetError<T>, fields: Record<string, Path<T>>): string | null {
+export function applyServerErrors<T extends FieldValues>(
+  error: unknown,
+  setError: UseFormSetError<T>,
+  fields: Record<string, Path<T>>,
+): string | null {
   if (!isApiError(error) || error.status !== 422 || !error.errors) return describeError(error);
 
   const byLowerName = new Map(Object.entries(fields).map(([server, form]) => [server.toLowerCase(), form]));

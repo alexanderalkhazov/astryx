@@ -64,7 +64,11 @@ export function AnalysisCard({ symbol }: { symbol: string }) {
       </View>
 
       {running ? (
-        <Progress job={current} onCancel={() => cancel.mutate(current.id)} cancelling={cancel.isPending || (current.status === 'processing' && cancel.isSuccess)} />
+        <Progress
+          job={current}
+          onCancel={() => cancel.mutate(current.id)}
+          cancelling={cancel.isPending || (current.status === 'processing' && cancel.isSuccess)}
+        />
       ) : failed ? (
         <View style={styles.block} testID="analysis-failed">
           <Text.Body>{current.errorCode === 'ai_output_invalid' || !current.errorDetail ? ANALYSIS_FAILED : current.errorDetail}</Text.Body>
@@ -77,7 +81,8 @@ export function AnalysisCard({ symbol }: { symbol: string }) {
       {!running && !latest.isPending && !result && !failed ? (
         <View style={styles.block}>
           <Text.Body tone="secondary">
-            Scenarios, evidence for and against, risks and catalysts, written by a local model from this stock's data. It usually takes a minute or two.
+            Scenarios, evidence for and against, risks and catalysts, written by a local model from this stock's data. It usually takes a
+            minute or two.
           </Text.Body>
           <Button label="Analyze with AI" onPress={() => request.mutate()} loading={request.isPending} testID="analyze-with-ai" />
         </View>
@@ -91,7 +96,9 @@ export function AnalysisCard({ symbol }: { symbol: string }) {
 
       {result ? <Result result={result} /> : null}
 
-      {result && !running ? <Button variant="link" label="Run a new analysis" onPress={() => request.mutate()} disabled={request.isPending} /> : null}
+      {result && !running ? (
+        <Button variant="link" label="Run a new analysis" onPress={() => request.mutate()} disabled={request.isPending} />
+      ) : null}
 
       <Text.Caption tone="tertiary">
         {result?.disclaimer ?? 'AI-generated research for information only. Not investment advice. Not a guarantee of any outcome.'}
@@ -115,7 +122,12 @@ function Progress({ job, onCancel, cancelling }: { job: AnalysisJob; onCancel: (
         ? `Waiting to retry · attempt ${job.attempt + 1} of 3`
         : 'Queued';
   return (
-    <View style={styles.progress} testID="analysis-progress" accessible accessibilityLabel={`${label}. You can leave this screen; the analysis keeps running.`}>
+    <View
+      style={styles.progress}
+      testID="analysis-progress"
+      accessible
+      accessibilityLabel={`${label}. You can leave this screen; the analysis keeps running.`}
+    >
       <Spinner label={label} />
       <View style={styles.progressText}>
         <Text.Body>{label}</Text.Body>
@@ -173,7 +185,9 @@ function Result({ result }: { result: AnalysisResult }) {
           />
         ) : null}
         {result.levelValidation.accepted ? (
-          <Text.Caption tone="secondary">Passed the deterministic level checks. A proposal would still go through the risk engine.</Text.Caption>
+          <Text.Caption tone="secondary">
+            Passed the deterministic level checks. A proposal would still go through the risk engine.
+          </Text.Caption>
         ) : levels.justified ? (
           <View style={styles.block} testID="levels-rejected">
             <Text.Caption tone="secondary">Rejected by the deterministic level checks, so these levels can't seed a proposal:</Text.Caption>
@@ -203,7 +217,14 @@ function List({ title, items }: { title: string; items: readonly string[] }) {
 }
 
 const styles = StyleSheet.create({
-  card: { gap: space[4], padding: space[4], borderRadius: radius.card, borderWidth: 1, borderStyle: 'dashed', borderColor: color.lineStrong },
+  card: {
+    gap: space[4],
+    padding: space[4],
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: color.lineStrong,
+  },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space[2], flexWrap: 'wrap' },
   title: { flexDirection: 'row', alignItems: 'center', gap: space[2] },
   block: { gap: space[3] },

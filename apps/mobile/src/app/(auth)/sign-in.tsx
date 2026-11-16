@@ -41,7 +41,11 @@ export default function SignInScreen() {
       subtitle="Paper trading only. No real money moves."
       footer={
         <>
-          <Button variant="link" label="Forgot password?" onPress={() => router.push({ pathname: '/forgot-password', params: { email: getValues('email') } })} />
+          <Button
+            variant="link"
+            label="Forgot password?"
+            onPress={() => router.push({ pathname: '/forgot-password', params: { email: getValues('email') } })}
+          />
           <Button variant="link" label="Create account" onPress={() => router.push('/sign-up')} />
         </>
       }
@@ -53,7 +57,10 @@ export default function SignInScreen() {
           body={failure.message}
           action={
             failure.unverified
-              ? { label: 'Resend verification email', onPress: () => router.push({ pathname: '/verify-email', params: { email: getValues('email') } }) }
+              ? {
+                  label: 'Resend verification email',
+                  onPress: () => router.push({ pathname: '/verify-email', params: { email: getValues('email') } }),
+                }
               : undefined
           }
           testID="sign-in-error"

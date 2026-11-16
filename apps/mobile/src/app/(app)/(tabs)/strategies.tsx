@@ -27,7 +27,11 @@ export default function StrategiesScreen() {
   if (list.isError) {
     return (
       <Screen header={header}>
-        <EmptyState title="Couldn't load strategies" body="Check your connection and try again." action={{ label: 'Retry', onPress: () => void list.refetch() }} />
+        <EmptyState
+          title="Couldn't load strategies"
+          body="Check your connection and try again."
+          action={{ label: 'Retry', onPress: () => void list.refetch() }}
+        />
       </Screen>
     );
   }
@@ -79,7 +83,8 @@ function CompareView({ ids }: { ids: readonly { id: string; name: string }[] }) 
     queryFn: async () => (await strategiesApi.compare(selected)).data,
     enabled: selected.length > 0,
   });
-  const toggle = (id: string) => setSelected((current) => (current.includes(id) ? current.filter((x) => x !== id) : [...current, id].slice(-5)));
+  const toggle = (id: string) =>
+    setSelected((current) => (current.includes(id) ? current.filter((x) => x !== id) : [...current, id].slice(-5)));
   // Colours follow the catalog order so a strategy keeps its colour as others are toggled.
   const colorOf = (id: string) => color.series[ids.findIndex((s) => s.id === id) % color.series.length]!;
 
@@ -93,7 +98,11 @@ function CompareView({ ids }: { ids: readonly { id: string; name: string }[] }) 
       {selected.length === 0 ? (
         <Text.Body tone="secondary">Pick at least one strategy to compare.</Text.Body>
       ) : compare.isError ? (
-        <EmptyState title="Couldn't load the comparison" body="Try again in a moment." action={{ label: 'Retry', onPress: () => void compare.refetch() }} />
+        <EmptyState
+          title="Couldn't load the comparison"
+          body="Try again in a moment."
+          action={{ label: 'Retry', onPress: () => void compare.refetch() }}
+        />
       ) : !compare.data ? (
         <SkeletonRow />
       ) : (
@@ -101,12 +110,18 @@ function CompareView({ ids }: { ids: readonly { id: string; name: string }[] }) 
           <Text.Overline tone="tertiary">Growth of $1</Text.Overline>
           <LineChart
             height={180}
-            series={compare.data.series.map((s) => ({ key: s.strategyId, color: colorOf(s.strategyId), points: s.points.map((p) => ({ t: p.d, v: p.growth })) }))}
+            series={compare.data.series.map((s) => ({
+              key: s.strategyId,
+              color: colorOf(s.strategyId),
+              points: s.points.map((p) => ({ t: p.d, v: p.growth })),
+            }))}
             accessibilityLabel={`Growth of one dollar: ${compare.data.series.map((s) => `${s.name} ${formatRatio(s.points[s.points.length - 1]?.growth ?? '1')} times`).join(', ')}`}
           />
           <MetricsTable
             testID="compare-metrics"
-            columns={compare.data.metrics.flatMap((m) => (m.metrics ? [{ key: m.strategyId, name: m.name, color: colorOf(m.strategyId), metrics: m.metrics }] : []))}
+            columns={compare.data.metrics.flatMap((m) =>
+              m.metrics ? [{ key: m.strategyId, name: m.name, color: colorOf(m.strategyId), metrics: m.metrics }] : [],
+            )}
           />
         </>
       )}

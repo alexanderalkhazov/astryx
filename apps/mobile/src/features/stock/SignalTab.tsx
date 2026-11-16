@@ -104,13 +104,20 @@ export function SignalTab({
 
       <Section title={`Score ${signal.score} · how it adds up`}>
         {(signal.scoreBreakdown ?? []).map((c) => (
-          <ScoreBreakdownBar key={c.component} label={COMPONENTS[c.component] ?? c.component} value={formatRatio(c.contribution, 1)} max={formatRatio(c.weight, 0)} />
+          <ScoreBreakdownBar
+            key={c.component}
+            label={COMPONENTS[c.component] ?? c.component}
+            value={formatRatio(c.contribution, 1)}
+            max={formatRatio(c.weight, 0)}
+          />
         ))}
       </Section>
 
       <Section title="What would invalidate it">
         <Bullet text={`A close below the stop at ${formatPrice(stop)}.`} />
-        <Bullet text={`The ${signal.levels.orderType === 'buy_stop' ? 'buy stop' : 'entry'} at ${formatPrice(entry)} lapses if it isn't triggered by ${when(signal.expiresAt)}, unless a newer scan confirms it.`} />
+        <Bullet
+          text={`The ${signal.levels.orderType === 'buy_stop' ? 'buy stop' : 'entry'} at ${formatPrice(entry)} lapses if it isn't triggered by ${when(signal.expiresAt)}, unless a newer scan confirms it.`}
+        />
         <Bullet text="A newer scan that no longer finds the setup retires the signal." />
       </Section>
 

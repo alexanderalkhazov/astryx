@@ -137,7 +137,12 @@ public sealed class ValuationService(PortfolioDbContext db, ICurrentUser user, I
         var now = sessions.Now;
         DateTimeOffset? from = r switch
         {
-            "1D" => now.AddDays(-1), "1W" => now.AddDays(-7), "1M" => now.AddMonths(-1), "3M" => now.AddMonths(-3), "1Y" => now.AddYears(-1), "ALL" => null,
+            "1D" => now.AddDays(-1),
+            "1W" => now.AddDays(-7),
+            "1M" => now.AddMonths(-1),
+            "3M" => now.AddMonths(-3),
+            "1Y" => now.AddYears(-1),
+            "ALL" => null,
             _ => DateTimeOffset.MaxValue,
         };
         if (from == DateTimeOffset.MaxValue)

@@ -34,7 +34,9 @@ export const StrategySummary = z.object({
   displayOrder: z.number().int(),
   version: z.number().int(),
   liveSince: z.string().nullable(),
-  live: z.object({ sinceInceptionPct: Decimal, mtdPct: Decimal, mtdPnl: Decimal, mtdTrades: z.number().int(), illustrative: z.boolean() }).nullable(),
+  live: z
+    .object({ sinceInceptionPct: Decimal, mtdPct: Decimal, mtdPnl: Decimal, mtdTrades: z.number().int(), illustrative: z.boolean() })
+    .nullable(),
   metrics: HeadlineMetrics.nullable(),
   sparkline: z.array(Decimal),
   backtestStart: z.string().nullable(),
@@ -62,11 +64,28 @@ export type StrategyParameter = z.infer<typeof StrategyParameter>;
 export const StrategyDetail = z.object({
   summary: StrategySummary,
   rules: z.array(z.string()),
-  version: z.object({ id: z.string(), number: z.number().int(), state: z.string(), codeVersion: z.string(), parameters: z.array(StrategyParameter) }),
+  version: z.object({
+    id: z.string(),
+    number: z.number().int(),
+    state: z.string(),
+    codeVersion: z.string(),
+    parameters: z.array(StrategyParameter),
+  }),
   latestRun: z
-    .object({ id: z.string(), runNumber: z.number().int(), status: z.string(), periodStart: z.string(), periodEnd: z.string(), oosStart: z.string(), finishedAt: z.string().nullable(), metrics: RunMetrics })
+    .object({
+      id: z.string(),
+      runNumber: z.number().int(),
+      status: z.string(),
+      periodStart: z.string(),
+      periodEnd: z.string(),
+      oosStart: z.string(),
+      finishedAt: z.string().nullable(),
+      metrics: RunMetrics,
+    })
     .nullable(),
-  todaysSignals: z.array(z.object({ id: z.string(), symbol: z.string(), type: z.string(), score: Decimal, entry: Decimal, evaluatedAt: z.string() })),
+  todaysSignals: z.array(
+    z.object({ id: z.string(), symbol: z.string(), type: z.string(), score: Decimal, entry: Decimal, evaluatedAt: z.string() }),
+  ),
 });
 export type StrategyDetail = z.infer<typeof StrategyDetail>;
 
@@ -83,7 +102,15 @@ export const BacktestRun = z.object({
   periodEnd: z.string(),
   oosStart: z.string(),
   initialCapital: Decimal,
-  assumptions: z.object({ fees: z.string(), slippageBps: z.number(), universe: z.string(), survivorship: z.string(), benchmark: z.object({ name: z.string(), multiple: Decimal }).optional() }).passthrough(),
+  assumptions: z
+    .object({
+      fees: z.string(),
+      slippageBps: z.number(),
+      universe: z.string(),
+      survivorship: z.string(),
+      benchmark: z.object({ name: z.string(), multiple: Decimal }).optional(),
+    })
+    .passthrough(),
   metrics: RunMetrics,
   equityCurve: z.array(DatedValue),
   drawdownCurve: z.array(DatedValue),
@@ -104,8 +131,10 @@ export type StrategyComparison = z.infer<typeof StrategyComparison>;
 export function strategiesApi(client: ApiClient) {
   return {
     list: () => client.request('/api/v1/strategies', { schema: z.object({ items: z.array(StrategySummary) }) }),
-    compare: (ids: readonly string[]) => client.request(`/api/v1/strategies/compare?ids=${ids.map(encodeURIComponent).join(',')}`, { schema: StrategyComparison }),
+    compare: (ids: readonly string[]) =>
+      client.request(`/api/v1/strategies/compare?ids=${ids.map(encodeURIComponent).join(',')}`, { schema: StrategyComparison }),
     get: (idOrCode: string) => client.request(`/api/v1/strategies/${encodeURIComponent(idOrCode)}`, { schema: StrategyDetail }),
-    run: (idOrCode: string, runId = 'latest') => client.request(`/api/v1/strategies/${encodeURIComponent(idOrCode)}/runs/${encodeURIComponent(runId)}`, { schema: BacktestRun }),
+    run: (idOrCode: string, runId = 'latest') =>
+      client.request(`/api/v1/strategies/${encodeURIComponent(idOrCode)}/runs/${encodeURIComponent(runId)}`, { schema: BacktestRun }),
   };
 }

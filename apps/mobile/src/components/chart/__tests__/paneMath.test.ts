@@ -7,8 +7,16 @@ describe('pane math (display only, §13.3 formulas)', () => {
 
   it('gives RSI 100 on all gains, 50 when flat, and nothing before n + 1 bars', () => {
     const rising = Array.from({ length: 20 }, (_, i) => i + 1);
-    expect(rsiLine(rising).slice(14).every((v) => v === 100)).toBe(true);
-    expect(rsiLine(new Array(20).fill(5)).slice(14).every((v) => v === 50)).toBe(true);
+    expect(
+      rsiLine(rising)
+        .slice(14)
+        .every((v) => v === 100),
+    ).toBe(true);
+    expect(
+      rsiLine(new Array(20).fill(5))
+        .slice(14)
+        .every((v) => v === 50),
+    ).toBe(true);
     expect(rsiLine(rising.slice(0, 14)).every((v) => v === null)).toBe(true);
   });
 

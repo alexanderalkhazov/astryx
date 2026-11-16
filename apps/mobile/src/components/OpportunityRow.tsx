@@ -60,7 +60,9 @@ export function OpportunityRow({ signal, onPress }: { signal: Signal; onPress: (
           <View style={styles.price}>
             {signal.price ? <Text.Data>{formatPrice(signal.price)}</Text.Data> : null}
             {signal.changePct ? (
-              <Text.DataSm tone={direction === 'up' ? 'gain' : direction === 'down' ? 'loss' : 'secondary'}>{formatPct(signal.changePct, { signed: true })}</Text.DataSm>
+              <Text.DataSm tone={direction === 'up' ? 'gain' : direction === 'down' ? 'loss' : 'secondary'}>
+                {formatPct(signal.changePct, { signed: true })}
+              </Text.DataSm>
             ) : null}
           </View>
         </View>
@@ -73,7 +75,11 @@ export function OpportunityRow({ signal, onPress }: { signal: Signal; onPress: (
               <View style={[styles.fill, { width: `${Math.min(score, 100)}%`, backgroundColor: strong ? color.signal : color.text }]} />
             </View>
           </View>
-          <Metric label="Volume" value={signal.metrics.relVolume ? `${formatRatio(signal.metrics.relVolume, 1)}×` : '—'} caption={signal.volume ? formatVolume(signal.volume) : undefined} />
+          <Metric
+            label="Volume"
+            value={signal.metrics.relVolume ? `${formatRatio(signal.metrics.relVolume, 1)}×` : '—'}
+            caption={signal.volume ? formatVolume(signal.volume) : undefined}
+          />
           <Metric label="Rel str" value={signal.metrics.relStrength ?? '—'} />
           <Metric label="R:R" value={signal.metrics.rewardRisk ? formatRatio(signal.metrics.rewardRisk, 1) : '—'} />
           <Metric label="RSI 14" value={rsi ?? '—'} />

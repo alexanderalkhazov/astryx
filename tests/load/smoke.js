@@ -64,7 +64,9 @@ function prepareUser(index) {
   if (login.status !== 200) throw new Error(`login ${email}: ${login.status} (run tests/load/create-users.mjs first)`);
   sleep(1.1); // stay under 60 auth calls a minute
   const token = json(login).accessToken;
-  const reset = post('/api/v1/portfolio/reset', { confirm: 'RESET' }, token, { headers: { 'Idempotency-Key': `k6-reset-${index}-${Date.now()}` } });
+  const reset = post('/api/v1/portfolio/reset', { confirm: 'RESET' }, token, {
+    headers: { 'Idempotency-Key': `k6-reset-${index}-${Date.now()}` },
+  });
   if (reset.status !== 200) throw new Error(`reset ${email}: ${reset.status}`);
   return token;
 }
@@ -91,7 +93,8 @@ export function trade(data) {
   const signalsResponse = http.get(`${API}/api/v1/signals?symbol=NVDA`, auth({ kind: 'read', name: 'signals' }));
   const signals = json(signalsResponse);
   const signalId = signals && signals.items && signals.items[0] && signals.items[0].id;
-  if (!signalId) console.warn(`VU ${exec.vu.idInTest}: signals ${signalsResponse.status} ${signalsResponse.body && signalsResponse.body.slice(0, 120)}`);
+  if (!signalId)
+    console.warn(`VU ${exec.vu.idInTest}: signals ${signalsResponse.status} ${signalsResponse.body && signalsResponse.body.slice(0, 120)}`);
   check(signalId, { 'NVDA signal': (id) => !!id }, { phase: 'trade' });
 
   const proposal = json(post('/api/v1/proposals', { source: 'signal', signalId }, token, { tags: { kind: 'proposal' } }));
@@ -112,7 +115,14 @@ export function trade(data) {
     ['POST', `${API}/api/v1/paper/orders`, body, params],
     ['POST', `${API}/api/v1/paper/orders`, body, params],
   ]);
-  check([a, b], { 'order accepted (replay or in progress allowed)': (rs) => rs.some((r) => r.status === 201) && rs.every((r) => [200, 201, 409].includes(r.status)) }, { phase: 'trade' });
+  check(
+    [a, b],
+    {
+      'order accepted (replay or in progress allowed)': (rs) =>
+        rs.some((r) => r.status === 201) && rs.every((r) => [200, 201, 409].includes(r.status)),
+    },
+    { phase: 'trade' },
+  );
 }
 
 export function reads(data) {
@@ -124,7 +134,6 @@ export function reads(data) {
     ['GET', `${API}/api/v1/portfolio/positions?status=open`, null, params('positions')],
   ]);
   sleep(2); // ~90 requests a minute per account, under the 120/min per-user limit the traders share
-
 }
 
 export function teardown(data) {
@@ -132,7 +141,11 @@ export function teardown(data) {
     const params = { headers: { Authorization: `Bearer ${token}` } };
     const positions = json(http.get(`${API}/api/v1/portfolio/positions?status=open`, params));
     const summary = json(http.get(`${API}/api/v1/portfolio`, params));
-    check(positions, { 'exactly one position': (p) => !!(p && p.items && p.items.length === 1 && p.items[0].quantity === '64') }, { phase: 'verify' });
+    check(
+      positions,
+      { 'exactly one position': (p) => !!(p && p.items && p.items.length === 1 && p.items[0].quantity === '64') },
+      { phase: 'verify' },
+    );
     // 100,000 − 64 × 186.62 (one fill at the 186.50 stop plus a cent of slippage).
     check(summary, { 'one fill of cash spent': (s) => s && s.cash === '88056.32' }, { phase: 'verify' });
   }

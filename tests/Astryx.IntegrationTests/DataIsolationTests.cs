@@ -8,10 +8,10 @@ using Astryx.Modules.Ai.Infrastructure.Persistence;
 using Astryx.Modules.Identity.Infrastructure.Persistence;
 using Astryx.Modules.Paper.Domain;
 using Astryx.Modules.Paper.Infrastructure.Persistence;
-using Astryx.Modules.Trading.Domain;
-using Astryx.Modules.Trading.Infrastructure.Persistence;
 using Astryx.Modules.Portfolio.Infrastructure.Persistence;
 using Astryx.Modules.Profiles.Infrastructure.Persistence;
+using Astryx.Modules.Trading.Domain;
+using Astryx.Modules.Trading.Infrastructure.Persistence;
 using Astryx.Modules.Watchlists.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Routing;
@@ -139,9 +139,23 @@ public partial class DataIsolationTests(ApiFactory factory) : IClassFixture<ApiF
             db.Jobs.Add(new AnalysisJob { Id = ids.JobId, UserId = aliceId, InstrumentId = Guid.NewGuid(), Symbol = "NVDA", IdempotencyKey = "isolation", RequestHash = "isolation", CreatedAt = now, RunAfter = now.AddDays(1) });
             db.Results.Add(new AnalysisResult
             {
-                Id = ids.ResultId, JobId = ids.JobId, UserId = aliceId, InstrumentId = Guid.NewGuid(), Symbol = "NVDA", Provider = "fake", Model = "m", PromptId = "stock_analysis",
-                PromptVersion = "v", OutputSchemaVersion = "analysis.v1", Context = "{}", RawOutput = "{}", Parsed = "{}", ValidationStatus = "valid", ValidationIssues = "[]",
-                DataAsOf = now, AnalysisAt = now,
+                Id = ids.ResultId,
+                JobId = ids.JobId,
+                UserId = aliceId,
+                InstrumentId = Guid.NewGuid(),
+                Symbol = "NVDA",
+                Provider = "fake",
+                Model = "m",
+                PromptId = "stock_analysis",
+                PromptVersion = "v",
+                OutputSchemaVersion = "analysis.v1",
+                Context = "{}",
+                RawOutput = "{}",
+                Parsed = "{}",
+                ValidationStatus = "valid",
+                ValidationIssues = "[]",
+                DataAsOf = now,
+                AnalysisAt = now,
             });
             await db.SaveChangesAsync();
         }
@@ -199,9 +213,23 @@ public partial class DataIsolationTests(ApiFactory factory) : IClassFixture<ApiF
             var db = scope.ServiceProvider.GetRequiredService<PaperDbContext>();
             db.Orders.Add(new Order
             {
-                Id = id, UserId = aliceId, PortfolioId = Guid.NewGuid(), InstrumentId = Guid.NewGuid(), Symbol = "NVDA", ProposalId = Guid.NewGuid(), AssessmentId = Guid.NewGuid(),
-                ClientOrderId = $"isolation-{id:N}", BrokerOrderId = $"SIM-{id:N}"[..10], Purpose = "entry", Side = "buy", OrderType = "buy_stop", TimeInForce = "day",
-                Quantity = 1, StopPrice = 186.5m, Status = "working", SubmittedAt = DateTimeOffset.UtcNow,
+                Id = id,
+                UserId = aliceId,
+                PortfolioId = Guid.NewGuid(),
+                InstrumentId = Guid.NewGuid(),
+                Symbol = "NVDA",
+                ProposalId = Guid.NewGuid(),
+                AssessmentId = Guid.NewGuid(),
+                ClientOrderId = $"isolation-{id:N}",
+                BrokerOrderId = $"SIM-{id:N}"[..10],
+                Purpose = "entry",
+                Side = "buy",
+                OrderType = "buy_stop",
+                TimeInForce = "day",
+                Quantity = 1,
+                StopPrice = 186.5m,
+                Status = "working",
+                SubmittedAt = DateTimeOffset.UtcNow,
             });
             await db.SaveChangesAsync();
         }
@@ -230,9 +258,24 @@ public partial class DataIsolationTests(ApiFactory factory) : IClassFixture<ApiF
             var db = scope.ServiceProvider.GetRequiredService<TradingDbContext>();
             db.Proposals.Add(new Proposal
             {
-                Id = id, UserId = aliceId, PortfolioId = Guid.NewGuid(), InstrumentId = Guid.NewGuid(), Symbol = "NVDA", Source = "signal", SignalId = Guid.NewGuid(),
-                OrderType = "buy_stop", EntryPrice = 186.5m, StopPrice = 178.2m, TargetPrice = 204m, Headline = "h", Summary = "s", CopySource = "template",
-                Evidence = "[]", Invalidation = "[]", CreatedAt = DateTimeOffset.UtcNow, ExpiresAt = DateTimeOffset.UtcNow.AddHours(1),
+                Id = id,
+                UserId = aliceId,
+                PortfolioId = Guid.NewGuid(),
+                InstrumentId = Guid.NewGuid(),
+                Symbol = "NVDA",
+                Source = "signal",
+                SignalId = Guid.NewGuid(),
+                OrderType = "buy_stop",
+                EntryPrice = 186.5m,
+                StopPrice = 178.2m,
+                TargetPrice = 204m,
+                Headline = "h",
+                Summary = "s",
+                CopySource = "template",
+                Evidence = "[]",
+                Invalidation = "[]",
+                CreatedAt = DateTimeOffset.UtcNow,
+                ExpiresAt = DateTimeOffset.UtcNow.AddHours(1),
             });
             await db.SaveChangesAsync();
         }

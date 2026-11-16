@@ -23,7 +23,8 @@ export async function registerForPush(): Promise<PushRegistration> {
   const current = await Notifications.getPermissionsAsync();
   const granted = current.granted || (await Notifications.requestPermissionsAsync()).granted;
   if (!granted) return { ok: false, reason: 'denied' };
-  const projectId = (Constants.expoConfig?.extra as { eas?: { projectId?: string } } | undefined)?.eas?.projectId ?? Constants.easConfig?.projectId;
+  const projectId =
+    (Constants.expoConfig?.extra as { eas?: { projectId?: string } } | undefined)?.eas?.projectId ?? Constants.easConfig?.projectId;
   if (!projectId && process.env.NODE_ENV !== 'test') return { ok: false, reason: 'no_project' };
   try {
     if (Platform.OS === 'android') {

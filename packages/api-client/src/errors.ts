@@ -67,8 +67,7 @@ export async function toApiError(response: Response, correlationId: string): Pro
     body = {};
   }
 
-  const errors =
-    body.errors && typeof body.errors === 'object' ? (body.errors as Record<string, string[]>) : undefined;
+  const errors = body.errors && typeof body.errors === 'object' ? (body.errors as Record<string, string[]>) : undefined;
   return new ApiError({
     status: response.status,
     code: str(body.code) ?? `http_${response.status}`,

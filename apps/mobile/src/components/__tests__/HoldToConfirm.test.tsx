@@ -41,7 +41,9 @@ describe('HoldToConfirm (design 07)', () => {
 
   it('gives screen readers an Approve action behind a native confirmation', async () => {
     const onConfirm = jest.fn();
-    const alert = jest.spyOn(Alert, 'alert').mockImplementation((_t, _b, buttons) => buttons?.find((b) => b.text === 'Approve')?.onPress?.());
+    const alert = jest
+      .spyOn(Alert, 'alert')
+      .mockImplementation((_t, _b, buttons) => buttons?.find((b) => b.text === 'Approve')?.onPress?.());
     await render(<HoldToConfirm {...props} onConfirm={onConfirm} />);
 
     await fireEvent(screen.getByRole('button'), 'accessibilityAction', { nativeEvent: { actionName: 'activate' } });

@@ -33,7 +33,8 @@ for (let i = 0; i < count; i++) {
   for (let attempt = 0; attempt < 50 && !link; attempt++) {
     const search = await (await fetch(`${mailpit}/api/v1/search?query=${encodeURIComponent(`to:${email}`)}`)).json();
     const id = search.messages?.[0]?.ID;
-    if (id) link = (await (await fetch(`${mailpit}/api/v1/message/${id}`)).json()).Text.match(/userId=([0-9a-f-]{36})&token=([A-Za-z0-9_-]{43})/);
+    if (id)
+      link = (await (await fetch(`${mailpit}/api/v1/message/${id}`)).json()).Text.match(/userId=([0-9a-f-]{36})&token=([A-Za-z0-9_-]{43})/);
     if (!link) await sleep(200);
   }
   if (!link) throw new Error(`no verification email for ${email}`);

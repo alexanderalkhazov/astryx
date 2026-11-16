@@ -1,0 +1,13 @@
+# Generated or vendored: formatted by their tools, not Prettier.
+pnpm-lock.yaml
+**/node_modules
+**/dist
+**/coverage
+apps/mobile/ios
+apps/mobile/android
+apps/mobile/.expo
+packages/api-client/src/generated
+**/*.md
+**/*.yml
+**/*.yaml
+**/*.json

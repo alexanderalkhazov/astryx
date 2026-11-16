@@ -19,7 +19,10 @@ export default function ForgotPasswordScreen() {
   const params = useLocalSearchParams<{ email?: string }>();
   const [sentTo, setSentTo] = useState<string | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
-  const { control, handleSubmit, setError, formState } = useForm<Values>({ resolver: zodResolver(schema), defaultValues: { email: params.email ?? '' } });
+  const { control, handleSubmit, setError, formState } = useForm<Values>({
+    resolver: zodResolver(schema),
+    defaultValues: { email: params.email ?? '' },
+  });
 
   const submit = handleSubmit(async ({ email }) => {
     setFailure(null);
@@ -31,7 +34,13 @@ export default function ForgotPasswordScreen() {
     }
   });
 
-  const back = <Button variant="link" label="Back to sign in" onPress={() => router.replace({ pathname: '/sign-in', params: sentTo ? { email: sentTo } : {} })} />;
+  const back = (
+    <Button
+      variant="link"
+      label="Back to sign in"
+      onPress={() => router.replace({ pathname: '/sign-in', params: sentTo ? { email: sentTo } : {} })}
+    />
+  );
 
   if (sentTo) {
     return (

@@ -15,7 +15,17 @@ import { useSignalCount } from './useSignals';
  * Filter scanner (design 03): sector, market cap, timeframe, minimum score and sort as single-choice chip groups.
  * Changes are a draft with a live "Show N setups" count (D3); applying sets the screen's filters.
  */
-export function FiltersSheet({ open, filters, onApply, onClose }: { open: boolean; filters: DiscoverFilters; onApply: (f: DiscoverFilters) => void; onClose: () => void }) {
+export function FiltersSheet({
+  open,
+  filters,
+  onApply,
+  onClose,
+}: {
+  open: boolean;
+  filters: DiscoverFilters;
+  onApply: (f: DiscoverFilters) => void;
+  onClose: () => void;
+}) {
   const [draft, setDraft] = useState(filters);
   useEffect(() => {
     if (open) setDraft(filters);

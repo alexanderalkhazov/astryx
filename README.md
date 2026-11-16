@@ -42,6 +42,8 @@ pnpm stack:up                 # postgres:17, mailpit, api → http://localhost:5
 curl localhost:5080/health/deps
 pnpm api:test                 # .NET unit + architecture + integration tests (needs Docker)
 pnpm typecheck
+pnpm lint                     # ESLint (zero warnings); `pnpm format` / `pnpm format:check` run Prettier
+dotnet format Astryx.slnx     # C# formatting; CI runs it with --verify-no-changes
 pnpm mobile                   # Metro; press i for the iOS simulator
 ```
 

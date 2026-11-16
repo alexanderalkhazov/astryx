@@ -6,7 +6,13 @@ const Decimal = z.string().regex(/^-?\d+(\.\d+)?$/, 'Expected a decimal string')
 
 export const CheckStatus = z.enum(['pass', 'warn', 'fail']);
 
-export const RiskCheck = z.object({ code: z.string(), status: CheckStatus, message: z.string(), actual: Decimal.nullable(), limit: Decimal.nullable() });
+export const RiskCheck = z.object({
+  code: z.string(),
+  status: CheckStatus,
+  message: z.string(),
+  actual: Decimal.nullable(),
+  limit: Decimal.nullable(),
+});
 export type RiskCheck = z.infer<typeof RiskCheck>;
 
 /** T4 (SYSTEM_DESIGN.md §11.7). `stale` means re-assess before approving (expired, or the inputs changed on the server). */
@@ -28,7 +34,13 @@ export const RiskAssessment = z.object({
   rewardRisk: Decimal,
   estFees: Decimal,
   estSlippage: Decimal,
-  impact: z.object({ newWeightPct: Decimal, sector: z.string().nullable(), sectorExposureAfterPct: Decimal, cashAfter: Decimal, openPositionsAfter: z.number().int() }),
+  impact: z.object({
+    newWeightPct: Decimal,
+    sector: z.string().nullable(),
+    sectorExposureAfterPct: Decimal,
+    cashAfter: Decimal,
+    openPositionsAfter: z.number().int(),
+  }),
   checks: z.array(RiskCheck),
   approvable: z.boolean(),
   createdAt: z.string(),
@@ -85,13 +97,24 @@ export const RiskLimits = z.object({ maxRiskPerTradePct: Decimal });
 /** Trade proposals T1–T5. */
 export function proposalsApi(client: ApiClient) {
   return {
-    fromSignal: (signalId: string) => client.request('/api/v1/proposals', { method: 'POST', body: { source: 'signal', signalId }, schema: Proposal }),
-    fromAnalysis: (analysisId: string) => client.request('/api/v1/proposals', { method: 'POST', body: { source: 'analysis', analysisId }, schema: Proposal }),
+    fromSignal: (signalId: string) =>
+      client.request('/api/v1/proposals', { method: 'POST', body: { source: 'signal', signalId }, schema: Proposal }),
+    fromAnalysis: (analysisId: string) =>
+      client.request('/api/v1/proposals', { method: 'POST', body: { source: 'analysis', analysisId }, schema: Proposal }),
     get: (id: string, signal?: AbortSignal) => client.request(`/api/v1/proposals/${encodeURIComponent(id)}`, { schema: Proposal, signal }),
     assess: (id: string, input: { quantity?: string; riskPerTradePct: string }, signal?: AbortSignal) =>
-      client.request(`/api/v1/proposals/${encodeURIComponent(id)}/assessments`, { method: 'POST', body: input, schema: RiskAssessment, signal }),
+      client.request(`/api/v1/proposals/${encodeURIComponent(id)}/assessments`, {
+        method: 'POST',
+        body: input,
+        schema: RiskAssessment,
+        signal,
+      }),
     riskLimits: () => client.request('/api/v1/me/settings/risk', { schema: RiskLimits }),
     reject: (id: string, reason?: string) =>
-      client.request(`/api/v1/proposals/${encodeURIComponent(id)}/reject`, { method: 'POST', body: reason ? { reason } : {}, schema: Proposal }),
+      client.request(`/api/v1/proposals/${encodeURIComponent(id)}/reject`, {
+        method: 'POST',
+        body: reason ? { reason } : {},
+        schema: Proposal,
+      }),
   };
 }

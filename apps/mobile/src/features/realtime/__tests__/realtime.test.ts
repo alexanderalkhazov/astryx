@@ -78,10 +78,24 @@ describe('realtime', () => {
     const { stop } = start(queryClient);
     await flush();
 
-    mockHub.handlers['analysis.updated']!({ jobId: 'j1', symbol: 'NVDA', status: 'processing', attempt: 1, resultId: null, errorCode: null });
+    mockHub.handlers['analysis.updated']!({
+      jobId: 'j1',
+      symbol: 'NVDA',
+      status: 'processing',
+      attempt: 1,
+      resultId: null,
+      errorCode: null,
+    });
     expect(invalidate).toHaveBeenLastCalledWith({ queryKey: analysisKeys.job('j1') });
 
-    mockHub.handlers['analysis.updated']!({ jobId: 'j1', symbol: 'NVDA', status: 'completed', attempt: 1, resultId: 'r1', errorCode: null });
+    mockHub.handlers['analysis.updated']!({
+      jobId: 'j1',
+      symbol: 'NVDA',
+      status: 'completed',
+      attempt: 1,
+      resultId: 'r1',
+      errorCode: null,
+    });
     expect(invalidate).toHaveBeenCalledWith({ queryKey: analysisKeys.list('NVDA') });
     stop();
   });
@@ -142,11 +156,23 @@ describe('order and position events (T-089)', () => {
     const { stop } = start(queryClient);
     await flush();
 
-    mockHub.handlers['order.updated']!({ orderId: 'o1', proposalId: 'p1', symbol: 'NVDA', status: 'filled', purpose: 'entry', quantity: '64', price: '186.62' });
+    mockHub.handlers['order.updated']!({
+      orderId: 'o1',
+      proposalId: 'p1',
+      symbol: 'NVDA',
+      status: 'filled',
+      purpose: 'entry',
+      quantity: '64',
+      price: '186.62',
+    });
 
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['portfolio'] });
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['proposal'] });
-    expect(useToasts.getState().toasts.at(-1)).toMatchObject({ tone: 'success', title: 'Filled (simulated)', body: 'Bought 64 NVDA at $186.62' });
+    expect(useToasts.getState().toasts.at(-1)).toMatchObject({
+      tone: 'success',
+      title: 'Filled (simulated)',
+      body: 'Bought 64 NVDA at $186.62',
+    });
     stop();
   });
 
@@ -154,16 +180,48 @@ describe('order and position events (T-089)', () => {
     const { stop } = start();
     await flush();
 
-    mockHub.handlers['position.updated']!({ positionId: 'x', symbol: 'NVDA', status: 'closed', exitReason: 'stop', price: '174.98', realizedPnl: '-744.96', gappedThroughStop: true });
+    mockHub.handlers['position.updated']!({
+      positionId: 'x',
+      symbol: 'NVDA',
+      status: 'closed',
+      exitReason: 'stop',
+      price: '174.98',
+      realizedPnl: '-744.96',
+      gappedThroughStop: true,
+    });
     expect(useToasts.getState().toasts.at(-1)).toMatchObject({ tone: 'warning', title: 'Stop hit · NVDA' });
     expect(useToasts.getState().toasts.at(-1)!.body).toContain('Stop filled below plan (gap).');
 
-    mockHub.handlers['position.updated']!({ positionId: 'y', symbol: 'NVDA', status: 'closed', exitReason: 'target', price: '204.00', realizedPnl: '1112.32', gappedThroughStop: false });
+    mockHub.handlers['position.updated']!({
+      positionId: 'y',
+      symbol: 'NVDA',
+      status: 'closed',
+      exitReason: 'target',
+      price: '204.00',
+      realizedPnl: '1112.32',
+      gappedThroughStop: false,
+    });
     expect(useToasts.getState().toasts.at(-1)).toMatchObject({ tone: 'success', title: 'Target hit · NVDA' });
 
     const before = useToasts.getState().toasts.length;
-    mockHub.handlers['position.updated']!({ positionId: 'z', symbol: 'NVDA', status: 'open', exitReason: null, price: '186.62', realizedPnl: null, gappedThroughStop: false });
-    mockHub.handlers['order.updated']!({ orderId: 'o2', proposalId: null, symbol: 'NVDA', status: 'filled', purpose: 'entry', quantity: null, price: null }); // the accepted echo: no toast
+    mockHub.handlers['position.updated']!({
+      positionId: 'z',
+      symbol: 'NVDA',
+      status: 'open',
+      exitReason: null,
+      price: '186.62',
+      realizedPnl: null,
+      gappedThroughStop: false,
+    });
+    mockHub.handlers['order.updated']!({
+      orderId: 'o2',
+      proposalId: null,
+      symbol: 'NVDA',
+      status: 'filled',
+      purpose: 'entry',
+      quantity: null,
+      price: null,
+    }); // the accepted echo: no toast
     expect(useToasts.getState().toasts.length).toBe(before);
     stop();
   });

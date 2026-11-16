@@ -40,23 +40,49 @@ export function ResetPaperAccountDialog({ visible, onClose }: { visible: boolean
       });
       close();
     },
-    onError: (error) => toast({ tone: 'error', title: "The account wasn't reset", body: isApiError(error) ? (error.detail ?? error.message) : 'Try again in a moment.' }),
+    onError: (error) =>
+      toast({
+        tone: 'error',
+        title: "The account wasn't reset",
+        body: isApiError(error) ? (error.detail ?? error.message) : 'Try again in a moment.',
+      }),
   });
 
   return (
-    <Modal visible={visible} transparent animationType="fade" statusBarTranslucent onRequestClose={() => {
-      if (!reset.isPending) close();
-    }}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      statusBarTranslucent
+      onRequestClose={() => {
+        if (!reset.isPending) close();
+      }}
+    >
       <View style={styles.backdrop}>
         <View style={styles.card} accessibilityViewIsModal testID="reset-dialog">
           <Text.Headline accessibilityRole="header">Reset paper account?</Text.Headline>
           <Text.Body tone="secondary">
-            Every open position closes at its last price, working orders are cancelled and cash returns to the starting balance. Performance and trade history start fresh. This can't be undone.
+            Every open position closes at its last price, working orders are cancelled and cash returns to the starting balance. Performance
+            and trade history start fresh. This can't be undone.
           </Text.Body>
-          <Input value={typed} onChangeText={setTyped} autoCapitalize="characters" autoCorrect={false} accessibilityLabel="Type RESET to confirm" placeholder="RESET" />
+          <Input
+            value={typed}
+            onChangeText={setTyped}
+            autoCapitalize="characters"
+            autoCorrect={false}
+            accessibilityLabel="Type RESET to confirm"
+            placeholder="RESET"
+          />
           <View style={styles.actions}>
             <Button variant="secondary" label="Cancel" onPress={close} disabled={reset.isPending} style={styles.action} />
-            <Button variant="danger" label="Reset" disabled={typed.trim() !== 'RESET'} loading={reset.isPending} onPress={() => reset.mutate()} style={styles.action} />
+            <Button
+              variant="danger"
+              label="Reset"
+              disabled={typed.trim() !== 'RESET'}
+              loading={reset.isPending}
+              onPress={() => reset.mutate()}
+              style={styles.action}
+            />
           </View>
         </View>
       </View>
@@ -66,7 +92,15 @@ export function ResetPaperAccountDialog({ visible, onClose }: { visible: boolean
 
 const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', padding: space[4] },
-  card: { backgroundColor: color.surface2, borderRadius: radius.dialog, borderWidth: 1, borderColor: color.lineStrong, padding: space[5], gap: space[3], ...elevation.e2 },
+  card: {
+    backgroundColor: color.surface2,
+    borderRadius: radius.dialog,
+    borderWidth: 1,
+    borderColor: color.lineStrong,
+    padding: space[5],
+    gap: space[3],
+    ...elevation.e2,
+  },
   actions: { flexDirection: 'row', gap: space[3], marginTop: space[2] },
   action: { flex: 1 },
 });

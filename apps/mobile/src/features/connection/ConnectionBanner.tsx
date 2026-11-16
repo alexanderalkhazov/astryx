@@ -17,7 +17,9 @@ const TITLES: Record<ConnectionProblem, string> = {
 export function ConnectionBanner({ pollMs }: { pollMs?: number }) {
   const { problem, lastSyncAt, retry } = useConnection(pollMs);
   if (!problem) return null;
-  const since = lastSyncAt ? `Values below are from the last sync at ${formatEtTime(lastSyncAt)} and may be stale.` : 'Values below may be stale.';
+  const since = lastSyncAt
+    ? `Values below are from the last sync at ${formatEtTime(lastSyncAt)} and may be stale.`
+    : 'Values below may be stale.';
   return (
     <StatusBanner
       tone="error"

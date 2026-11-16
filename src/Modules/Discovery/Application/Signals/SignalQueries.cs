@@ -48,8 +48,12 @@ public sealed class SignalQueries(
 
     private static readonly Dictionary<string, string> Types = new(StringComparer.OrdinalIgnoreCase)
     {
-        ["momentum"] = "momentum", ["breakout"] = "breakout", ["pullback"] = "pullback",
-        ["unusual_volume"] = "unusual_volume", ["unusualVolume"] = "unusual_volume", ["earnings"] = "earnings",
+        ["momentum"] = "momentum",
+        ["breakout"] = "breakout",
+        ["pullback"] = "pullback",
+        ["unusual_volume"] = "unusual_volume",
+        ["unusualVolume"] = "unusual_volume",
+        ["earnings"] = "earnings",
     };
 
     private static readonly string[] Sorts = ["score", "rr", "relStrength", "change"];

@@ -27,7 +27,11 @@ jest.mock('@/lib/api', () => ({
   ...jest.requireActual('@/lib/api'),
   auth: { register: jest.fn(), verifyEmail: jest.fn(), resendVerification: jest.fn(), forgotPassword: jest.fn(), resetPassword: jest.fn() },
 }));
-const mockAuth = (jest.requireMock('@/lib/api') as { auth: Record<'register' | 'verifyEmail' | 'resendVerification' | 'forgotPassword' | 'resetPassword', jest.Mock> }).auth;
+const mockAuth = (
+  jest.requireMock('@/lib/api') as {
+    auth: Record<'register' | 'verifyEmail' | 'resendVerification' | 'forgotPassword' | 'resetPassword', jest.Mock>;
+  }
+).auth;
 
 const routes = {
   '(app)/_layout': AppLayout,
@@ -138,7 +142,11 @@ describe('sign in', () => {
 describe('sign up', () => {
   it('maps 422 field errors from the server onto the form', async () => {
     mockAuth.register.mockRejectedValue(
-      new ApiError({ status: 422, code: 'validation_failed', errors: { password: ['This password appeared in a data breach. Choose another.'] } }),
+      new ApiError({
+        status: 422,
+        code: 'validation_failed',
+        errors: { password: ['This password appeared in a data breach. Choose another.'] },
+      }),
     );
     await renderRouter(routes, { initialUrl: '/sign-up' });
 
@@ -159,7 +167,11 @@ describe('sign up', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Create account' }));
 
     await waitFor(() => expect(screen).toHavePathname('/verify-email'));
-    expect(mockAuth.register).toHaveBeenCalledWith({ email: 'new@example.com', password: 'correct horse battery staple', displayName: undefined });
+    expect(mockAuth.register).toHaveBeenCalledWith({
+      email: 'new@example.com',
+      password: 'correct horse battery staple',
+      displayName: undefined,
+    });
   });
 });
 
@@ -187,7 +199,11 @@ describe('email links', () => {
 
   it('offers a new reset link when the token is no longer valid', async () => {
     mockAuth.resetPassword.mockRejectedValue(
-      new ApiError({ status: 422, code: 'invalid_or_expired_token', detail: 'This reset link is invalid or has expired. Request a new one.' }),
+      new ApiError({
+        status: 422,
+        code: 'invalid_or_expired_token',
+        detail: 'This reset link is invalid or has expired. Request a new one.',
+      }),
     );
     await renderRouter(routes, { initialUrl: `/reset-password?userId=u1&token=${ME_TOKEN}` });
 

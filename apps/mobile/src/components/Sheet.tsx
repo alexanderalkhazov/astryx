@@ -78,7 +78,13 @@ export function Sheet({ open, onClose, children, dismissible = true, accessibili
 
   const renderBackdrop = useCallback(
     (props: BottomSheetBackdropProps) => (
-      <BottomSheetBackdrop {...props} appearsOnIndex={0} disappearsOnIndex={-1} opacity={0.6} pressBehavior={behaviour.backdropPressBehavior} />
+      <BottomSheetBackdrop
+        {...props}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        opacity={0.6}
+        pressBehavior={behaviour.backdropPressBehavior}
+      />
     ),
     [behaviour.backdropPressBehavior],
   );

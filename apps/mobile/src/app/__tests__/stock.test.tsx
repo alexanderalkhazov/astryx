@@ -7,12 +7,23 @@ import { Text } from 'react-native';
 import StockScreen from '../(app)/stock/[ticker]';
 
 jest.mock('expo-crypto', () => ({ randomUUID: () => '00000000-0000-4000-8000-000000000001' }));
-jest.mock('expo-secure-store', () => ({ WHEN_UNLOCKED_THIS_DEVICE_ONLY: 'x', getItemAsync: jest.fn(), setItemAsync: jest.fn(), deleteItemAsync: jest.fn() }));
+jest.mock('expo-secure-store', () => ({
+  WHEN_UNLOCKED_THIS_DEVICE_ONLY: 'x',
+  getItemAsync: jest.fn(),
+  setItemAsync: jest.fn(),
+  deleteItemAsync: jest.fn(),
+}));
 jest.mock('@/lib/api', () => ({
   market: { instrument: jest.fn(), quote: jest.fn(), bars: jest.fn(), fundamentals: jest.fn(), news: jest.fn(), indicators: jest.fn() },
   watchlists: { list: jest.fn(), star: jest.fn(), unstar: jest.fn() },
   scanner: { list: jest.fn(), get: jest.fn(), status: jest.fn(), count: jest.fn() },
-  analyses: { list: jest.fn(async () => ({ data: { items: [], nextCursor: null } })), get: jest.fn(), job: jest.fn(), create: jest.fn(), cancel: jest.fn() },
+  analyses: {
+    list: jest.fn(async () => ({ data: { items: [], nextCursor: null } })),
+    get: jest.fn(),
+    job: jest.fn(),
+    create: jest.fn(),
+    cancel: jest.fn(),
+  },
   proposals: { fromSignal: jest.fn() },
 }));
 const api = jest.requireMock('@/lib/api') as {
@@ -21,10 +32,34 @@ const api = jest.requireMock('@/lib/api') as {
   scanner: Record<'list' | 'get' | 'status' | 'count', jest.Mock>;
 };
 
-const NVDA = { symbol: 'NVDA', exchange: 'XNAS', name: 'NVIDIA Corp.', assetType: 'stock', currency: 'USD', sector: 'Information Technology', industry: 'Semiconductors', marketCap: '4550000000000', isActive: true };
+const NVDA = {
+  symbol: 'NVDA',
+  exchange: 'XNAS',
+  name: 'NVIDIA Corp.',
+  assetType: 'stock',
+  currency: 'USD',
+  sector: 'Information Technology',
+  industry: 'Semiconductors',
+  marketCap: '4550000000000',
+  isActive: true,
+};
 const quote = (extra: Partial<{ stale: boolean }> = {}) => ({
-  symbol: 'NVDA', last: '186.40', change: '6.16', changePct: '0.0342', open: '180.60', high: '186.77', low: '180.05', prevClose: '180.24',
-  bid: null, ask: null, volume: 412883000, asOf: '2026-11-09T19:32:00Z', quality: 'ok', stale: false, source: 'fake', ...extra,
+  symbol: 'NVDA',
+  last: '186.40',
+  change: '6.16',
+  changePct: '0.0342',
+  open: '180.60',
+  high: '186.77',
+  low: '180.05',
+  prevClose: '180.24',
+  bid: null,
+  ask: null,
+  volume: 412883000,
+  asOf: '2026-11-09T19:32:00Z',
+  quality: 'ok',
+  stale: false,
+  source: 'fake',
+  ...extra,
 });
 
 /** Daily bars from Jun 1: 160 sessions, so a 3M view has warm-up bars before its cut-off. */
@@ -33,23 +68,57 @@ const dailyBars = Array.from({ length: 160 }, (_, i) => {
   const d = date.toISOString().slice(0, 10);
   return { t: `${d}T13:30:00Z`, d, o: '180.60', h: '186.77', l: '180.05', c: '186.40', v: 412883000 };
 });
-const barsResponse = (bars = dailyBars) => ({ data: { symbol: 'NVDA', interval: '1d', adjusted: false, asOf: null, stale: false, bars, levels: null } });
+const barsResponse = (bars = dailyBars) => ({
+  data: { symbol: 'NVDA', interval: '1d', adjusted: false, asOf: null, stale: false, bars, levels: null },
+});
 
 const SNAPSHOT = {
-  symbol: 'NVDA', interval: '1d', asOfBar: '2026-11-11', barCount: 300, dataQuality: 'ok', insufficient: [],
+  symbol: 'NVDA',
+  interval: '1d',
+  asOfBar: '2026-11-11',
+  barCount: 300,
+  dataQuality: 'ok',
+  insufficient: [],
   values: {
-    sma20: '182.4545', sma50: '172.0114', ema20: '180.8699', rsi14: '64.2', macd: '1.8760', macdSignal: '2.7341', macdHist: '-0.8581',
-    atr14: '3.4226', relVolume20: '2.34', momentum20Pct: '0.0292', changePct1d: '0.0342', volatility20Ann: '0.1968', relStrength: '99', trend: 'uptrend',
+    sma20: '182.4545',
+    sma50: '172.0114',
+    ema20: '180.8699',
+    rsi14: '64.2',
+    macd: '1.8760',
+    macdSignal: '2.7341',
+    macdHist: '-0.8581',
+    atr14: '3.4226',
+    relVolume20: '2.34',
+    momentum20Pct: '0.0292',
+    changePct1d: '0.0342',
+    volatility20Ann: '0.1968',
+    relStrength: '99',
+    trend: 'uptrend',
   },
 };
 
 const SIGNAL = {
-  id: 'sig-1', rank: 1, symbol: 'NVDA', name: 'NVIDIA Corp.', sector: 'Semiconductors', type: 'breakout', horizon: 'swing', price: '186.40', changePct: '0.0342', score: '87',
+  id: 'sig-1',
+  rank: 1,
+  symbol: 'NVDA',
+  name: 'NVIDIA Corp.',
+  sector: 'Semiconductors',
+  type: 'breakout',
+  horizon: 'swing',
+  price: '186.40',
+  changePct: '0.0342',
+  score: '87',
   metrics: { relVolume: '2.40', relStrength: '94', rewardRisk: '2.11', rsi14: '64.2' },
   reason: 'Cleared a 6-week base at $185.90 on 2.4× average volume.',
   levels: { orderType: 'buy_stop', entry: '186.50', stop: '178.20', target: '204.00' },
   strategy: { id: 'strat-1', name: 'Base Breakout v3', version: 3 },
-  evaluatedAt: '2026-11-09T19:32:00Z', dataAsOf: '2026-11-09T19:31:00Z', status: 'active', proposalId: null, sparkline: [], volume: 412800000, expiresAt: '2026-11-10T19:32:00Z',
+  evaluatedAt: '2026-11-09T19:32:00Z',
+  dataAsOf: '2026-11-09T19:31:00Z',
+  status: 'active',
+  proposalId: null,
+  sparkline: [],
+  volume: 412800000,
+  expiresAt: '2026-11-10T19:32:00Z',
   scoreBreakdown: [
     { component: 'setup', weight: '30', value: '0.8617', contribution: '25.85' },
     { component: 'relativeStrength', weight: '20', value: '0.9495', contribution: '18.99' },
@@ -83,13 +152,40 @@ beforeEach(() => {
   api.market.quote.mockResolvedValue({ data: quote() });
   api.market.bars.mockResolvedValue(barsResponse());
   api.market.fundamentals.mockResolvedValue({
-    data: { symbol: 'NVDA', asOf: null, beta: '1.72', peRatio: '48.60', epsTtm: null, nextEarningsDate: '2026-11-25', marketCap: '4550000000000', sector: 'Information Technology', industry: 'Semiconductors' },
+    data: {
+      symbol: 'NVDA',
+      asOf: null,
+      beta: '1.72',
+      peRatio: '48.60',
+      epsTtm: null,
+      nextEarningsDate: '2026-11-25',
+      marketCap: '4550000000000',
+      sector: 'Information Technology',
+      industry: 'Semiconductors',
+    },
   });
-  api.market.news.mockResolvedValue({ data: { items: [{ id: 'n1', headline: 'NVIDIA shares climb', source: 'Sample Wire', url: 'https://example.com/n1', publishedAt: '2026-11-12T12:05:00Z', summary: null }] } });
+  api.market.news.mockResolvedValue({
+    data: {
+      items: [
+        {
+          id: 'n1',
+          headline: 'NVIDIA shares climb',
+          source: 'Sample Wire',
+          url: 'https://example.com/n1',
+          publishedAt: '2026-11-12T12:05:00Z',
+          summary: null,
+        },
+      ],
+    },
+  });
   api.market.indicators.mockResolvedValue({ data: SNAPSHOT });
   api.scanner.list.mockResolvedValue({ data: { items: [], nextCursor: null, counts: {}, scanner: {} } });
-  api.scanner.status.mockResolvedValue({ data: { status: 'live', symbolsTotal: 1031, lastRunAt: '2026-11-09T19:32:00Z', dataAsOf: null, errorCode: null } });
-  api.watchlists.list.mockResolvedValue({ data: { items: [{ id: 'list-1', name: 'Watchlist', isDefault: true, sortOrder: 0, version: 1, items: [] }] } });
+  api.scanner.status.mockResolvedValue({
+    data: { status: 'live', symbolsTotal: 1031, lastRunAt: '2026-11-09T19:32:00Z', dataAsOf: null, errorCode: null },
+  });
+  api.watchlists.list.mockResolvedValue({
+    data: { items: [{ id: 'list-1', name: 'Watchlist', isDefault: true, sortOrder: 0, version: 1, items: [] }] },
+  });
   api.watchlists.star.mockResolvedValue({ data: undefined });
 });
 
@@ -110,7 +206,10 @@ describe('Stock screen', () => {
 
     // The last bar is Nov 7, so 3M starts Aug 7: earlier bars only feed the moving averages.
     expect(await screen.findByLabelText(/^Price chart, 93 bars from Aug 7 to Nov 7\./)).toBeOnTheScreen();
-    expect(api.market.bars).toHaveBeenCalledWith('NVDA', expect.objectContaining({ interval: '1d', from: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/) }));
+    expect(api.market.bars).toHaveBeenCalledWith(
+      'NVDA',
+      expect.objectContaining({ interval: '1d', from: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/) }),
+    );
   });
 
   it('switches timeframe; intraday ranges use the server range', async () => {
@@ -160,8 +259,20 @@ describe('Stock screen', () => {
     await renderStock();
     const button = await screen.findByTestId('stock-watchlist-button');
     await waitFor(() => expect(button).toBeEnabled());
-    const nvdaItem = { symbol: 'NVDA', name: 'NVIDIA Corp.', sector: null, last: '186.40', changePct: '0.0342', hasActiveSignal: false, held: false, note: null, addedAt: '2026-11-12T15:00:00Z' };
-    api.watchlists.list.mockResolvedValue({ data: { items: [{ id: 'list-1', name: 'Watchlist', isDefault: true, sortOrder: 0, version: 2, items: [nvdaItem] }] } });
+    const nvdaItem = {
+      symbol: 'NVDA',
+      name: 'NVIDIA Corp.',
+      sector: null,
+      last: '186.40',
+      changePct: '0.0342',
+      hasActiveSignal: false,
+      held: false,
+      note: null,
+      addedAt: '2026-11-12T15:00:00Z',
+    };
+    api.watchlists.list.mockResolvedValue({
+      data: { items: [{ id: 'list-1', name: 'Watchlist', isDefault: true, sortOrder: 0, version: 2, items: [nvdaItem] }] },
+    });
 
     await fireEvent.press(button);
 
@@ -209,7 +320,9 @@ describe('Stock screen', () => {
   });
 
   it('shows the signal ribbon, the entry and R:R in the bar, and the Signal tab (design 04, T-068)', async () => {
-    api.scanner.list.mockResolvedValue({ data: { items: [{ ...SIGNAL, scoreBreakdown: null }], nextCursor: null, counts: {}, scanner: {} } });
+    api.scanner.list.mockResolvedValue({
+      data: { items: [{ ...SIGNAL, scoreBreakdown: null }], nextCursor: null, counts: {}, scanner: {} },
+    });
     api.scanner.get.mockResolvedValue({ data: SIGNAL });
     await renderStock();
 
@@ -233,9 +346,13 @@ describe('Stock screen', () => {
   });
 
   it('opens a proposal from the active signal (T-087)', async () => {
-    api.scanner.list.mockResolvedValue({ data: { items: [{ ...SIGNAL, scoreBreakdown: null }], nextCursor: null, counts: {}, scanner: {} } });
+    api.scanner.list.mockResolvedValue({
+      data: { items: [{ ...SIGNAL, scoreBreakdown: null }], nextCursor: null, counts: {}, scanner: {} },
+    });
     api.scanner.get.mockResolvedValue({ data: SIGNAL });
-    (jest.requireMock('@/lib/api') as { proposals: { fromSignal: jest.Mock } }).proposals.fromSignal.mockResolvedValue({ data: { id: 'p-9' } });
+    (jest.requireMock('@/lib/api') as { proposals: { fromSignal: jest.Mock } }).proposals.fromSignal.mockResolvedValue({
+      data: { id: 'p-9' },
+    });
     await renderStock();
 
     await fireEvent.press(await screen.findByTestId('stock-review-proposal'));
@@ -246,7 +363,9 @@ describe('Stock screen', () => {
   it('retries with the current signal when the scanner re-issued it meanwhile', async () => {
     api.scanner.list
       .mockResolvedValueOnce({ data: { items: [{ ...SIGNAL, scoreBreakdown: null }], nextCursor: null, counts: {}, scanner: {} } })
-      .mockResolvedValue({ data: { items: [{ ...SIGNAL, id: 'sig-new', scoreBreakdown: null }], nextCursor: null, counts: {}, scanner: {} } });
+      .mockResolvedValue({
+        data: { items: [{ ...SIGNAL, id: 'sig-new', scoreBreakdown: null }], nextCursor: null, counts: {}, scanner: {} },
+      });
     api.scanner.get.mockResolvedValue({ data: SIGNAL });
     const fromSignal = (jest.requireMock('@/lib/api') as { proposals: { fromSignal: jest.Mock } }).proposals.fromSignal;
     fromSignal

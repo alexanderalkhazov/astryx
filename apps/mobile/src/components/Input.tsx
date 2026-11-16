@@ -11,7 +11,10 @@ export interface InputProps extends TextInputProps {
 }
 
 /** Text field (design 03 · Inputs): surface-2 fill, hairline border, signal border when focused, red when invalid. */
-export const Input = forwardRef<ComponentRef<typeof TextInput>, InputProps>(function Input({ label, error, leadingIcon, style, onFocus, onBlur, ...rest }, ref) {
+export const Input = forwardRef<ComponentRef<typeof TextInput>, InputProps>(function Input(
+  { label, error, leadingIcon, style, onFocus, onBlur, ...rest },
+  ref,
+) {
   const [focused, setFocused] = useState(false);
   const borderColor = error ? color.loss : focused ? color.signal : color.line;
   return (
@@ -118,6 +121,12 @@ const styles = StyleSheet.create({
   value: { ...(typeScale.body as TextStyle), lineHeight: undefined, color: color.text },
   error: { ...(typeScale.caption as TextStyle), color: color.loss },
   list: { borderRadius: radius.button, borderWidth: 1, borderColor: color.line, backgroundColor: color.surface2, overflow: 'hidden' },
-  option: { minHeight: size.touch, paddingHorizontal: space[3], flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  option: {
+    minHeight: size.touch,
+    paddingHorizontal: space[3],
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   optionDivider: { borderTopWidth: 1, borderTopColor: color.line },
 });

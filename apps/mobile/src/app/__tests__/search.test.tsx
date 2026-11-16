@@ -7,12 +7,30 @@ import { Text } from 'react-native';
 import SearchScreen from '../(app)/search';
 
 jest.mock('expo-crypto', () => ({ randomUUID: () => '00000000-0000-4000-8000-000000000001' }));
-jest.mock('expo-secure-store', () => ({ WHEN_UNLOCKED_THIS_DEVICE_ONLY: 'x', getItemAsync: jest.fn(), setItemAsync: jest.fn(), deleteItemAsync: jest.fn() }));
+jest.mock('expo-secure-store', () => ({
+  WHEN_UNLOCKED_THIS_DEVICE_ONLY: 'x',
+  getItemAsync: jest.fn(),
+  setItemAsync: jest.fn(),
+  deleteItemAsync: jest.fn(),
+}));
 jest.mock('@/lib/api', () => ({ search: { search: jest.fn(), recent: jest.fn(), addRecent: jest.fn() } }));
 const mockSearch = (jest.requireMock('@/lib/api') as { search: Record<'search' | 'recent' | 'addRecent', jest.Mock> }).search;
 
-const item = (symbol: string, name: string, last: string, changePct: string, extra: Partial<{ held: boolean; signalType: string }> = {}) => ({
-  symbol, name, sector: null, last, changePct, held: false, signalType: null, ...extra,
+const item = (
+  symbol: string,
+  name: string,
+  last: string,
+  changePct: string,
+  extra: Partial<{ held: boolean; signalType: string }> = {},
+) => ({
+  symbol,
+  name,
+  sector: null,
+  last,
+  changePct,
+  held: false,
+  signalType: null,
+  ...extra,
 });
 
 function renderSearch() {
@@ -24,7 +42,7 @@ function renderSearch() {
           <Slot />
         </QueryClientProvider>
       ),
-      'search': SearchScreen,
+      search: SearchScreen,
       'stock/[ticker]': () => <Text>Stock screen</Text>,
     },
     { initialUrl: '/search' },
@@ -33,7 +51,9 @@ function renderSearch() {
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockSearch.recent.mockResolvedValue({ data: { items: [item('NVDA', 'NVIDIA Corp.', '186.40', '0.0342'), item('AMD', 'Advanced Micro Devices', '168.25', '0.0218')] } });
+  mockSearch.recent.mockResolvedValue({
+    data: { items: [item('NVDA', 'NVIDIA Corp.', '186.40', '0.0342'), item('AMD', 'Advanced Micro Devices', '168.25', '0.0218')] },
+  });
   mockSearch.addRecent.mockResolvedValue({ data: undefined });
 });
 
@@ -49,7 +69,12 @@ describe('Search', () => {
 
   it('debounces typing, lists results with tags and signed change, and records the pick', async () => {
     mockSearch.search.mockResolvedValue({
-      data: { items: [item('AMZN', 'Amazon.com Inc.', '191.35', '0.0122', { held: true }), item('AMD', 'Advanced Micro Devices', '168.25', '0.0218', { signalType: 'momentum' })] },
+      data: {
+        items: [
+          item('AMZN', 'Amazon.com Inc.', '191.35', '0.0122', { held: true }),
+          item('AMD', 'Advanced Micro Devices', '168.25', '0.0218', { signalType: 'momentum' }),
+        ],
+      },
     });
     await renderSearch();
 

@@ -7,22 +7,75 @@ import { Text } from 'react-native';
 import PortfolioScreen from '../(app)/(tabs)/portfolio';
 
 jest.mock('expo-crypto', () => ({ randomUUID: () => '00000000-0000-4000-8000-000000000001' }));
-jest.mock('expo-secure-store', () => ({ WHEN_UNLOCKED_THIS_DEVICE_ONLY: 'x', getItemAsync: jest.fn(), setItemAsync: jest.fn(), deleteItemAsync: jest.fn() }));
-jest.mock('@/lib/api', () => ({ portfolio: { summary: jest.fn(), positions: jest.fn(), allocation: jest.fn(), exposure: jest.fn(), performance: jest.fn(), trades: jest.fn() } }));
-const api = (jest.requireMock('@/lib/api') as { portfolio: Record<'summary' | 'positions' | 'allocation' | 'exposure' | 'performance' | 'trades', jest.Mock> }).portfolio;
+jest.mock('expo-secure-store', () => ({
+  WHEN_UNLOCKED_THIS_DEVICE_ONLY: 'x',
+  getItemAsync: jest.fn(),
+  setItemAsync: jest.fn(),
+  deleteItemAsync: jest.fn(),
+}));
+jest.mock('@/lib/api', () => ({
+  portfolio: {
+    summary: jest.fn(),
+    positions: jest.fn(),
+    allocation: jest.fn(),
+    exposure: jest.fn(),
+    performance: jest.fn(),
+    trades: jest.fn(),
+  },
+}));
+const api = (
+  jest.requireMock('@/lib/api') as {
+    portfolio: Record<'summary' | 'positions' | 'allocation' | 'exposure' | 'performance' | 'trades', jest.Mock>;
+  }
+).portfolio;
 const ok = <T,>(data: T) => ({ data });
 
 /** Design 01/09 values. */
 const SUMMARY = {
-  id: 'pf', mode: 'paper', currency: 'USD', equity: '118172.18', cash: '7665.03', cashAvailable: '7665.03', invested: '110507.15', unrealizedPnl: '8460.13',
-  dayPnl: '484.13', dayPnlPct: '0.0041', allTimePnl: '10672.93', allTimeReturnPct: '0.0993', realizedPnl: '2212.80', openPositions: 2, halted: false,
-  asOf: '2026-11-09T19:36:10Z', stale: false,
+  id: 'pf',
+  mode: 'paper',
+  currency: 'USD',
+  equity: '118172.18',
+  cash: '7665.03',
+  cashAvailable: '7665.03',
+  invested: '110507.15',
+  unrealizedPnl: '8460.13',
+  dayPnl: '484.13',
+  dayPnlPct: '0.0041',
+  allTimePnl: '10672.93',
+  allTimeReturnPct: '0.0993',
+  realizedPnl: '2212.80',
+  openPositions: 2,
+  halted: false,
+  asOf: '2026-11-09T19:36:10Z',
+  stale: false,
 };
 
 const position = (over: Partial<PortfolioPosition>): PortfolioPosition => ({
-  id: 'x', symbol: 'NVDA', name: 'NVIDIA Corp.', status: 'open', quantity: '76', avgEntryPrice: '186.52', last: '186.40', marketValue: '14166.40', unrealizedPnl: '-9.12', unrealizedPct: '-0.0006',
-  weightPct: '0.1199', weightCapPct: '0.1200', overCap: false, stopPrice: '178.20', targetPrice: '204.00', stopDistancePct: '0.0440', nearStop: false, isNew: true,
-  openedAt: '2026-11-09T19:36:08Z', exitPrice: null, exitReason: null, realizedPnl: null, closedAt: null, ...over,
+  id: 'x',
+  symbol: 'NVDA',
+  name: 'NVIDIA Corp.',
+  status: 'open',
+  quantity: '76',
+  avgEntryPrice: '186.52',
+  last: '186.40',
+  marketValue: '14166.40',
+  unrealizedPnl: '-9.12',
+  unrealizedPct: '-0.0006',
+  weightPct: '0.1199',
+  weightCapPct: '0.1200',
+  overCap: false,
+  stopPrice: '178.20',
+  targetPrice: '204.00',
+  stopDistancePct: '0.0440',
+  nearStop: false,
+  isNew: true,
+  openedAt: '2026-11-09T19:36:08Z',
+  exitPrice: null,
+  exitReason: null,
+  realizedPnl: null,
+  closedAt: null,
+  ...over,
 });
 
 async function renderPortfolio() {
@@ -45,11 +98,95 @@ async function renderPortfolio() {
 beforeEach(() => {
   jest.clearAllMocks();
   api.summary.mockResolvedValue(ok(SUMMARY));
-  api.positions.mockResolvedValue(ok({ items: [position({}), position({ id: 'y', symbol: 'JPM', name: 'JPMorgan', weightPct: '0.1500', overCap: true, isNew: false, nearStop: true, stopDistancePct: '0.0120', unrealizedPnl: '2100.00', unrealizedPct: '0.1200' })], nextCursor: null }));
-  api.allocation.mockResolvedValue(ok({ sectors: [{ sector: 'Semiconductors', value: '28480.00', pct: '0.2410', warning: false, overLimit: false }, { sector: 'Banks', value: '38000.00', pct: '0.3216', warning: true, overLimit: false }], assets: [{ asset: 'stocks', value: '110507.15', pct: '0.9351' }, { asset: 'cash', value: '7665.03', pct: '0.0649' }], sectorWarningPct: '0.3000', maxSectorExposurePct: '0.3500' }));
-  api.exposure.mockResolvedValue(ok({ grossPct: '0.9351', betaWeightedPct: null, openRiskToStops: '4210.40', concentrationWarnings: [{ kind: 'position_weight', subject: 'JPM', pct: '0.1500', limit: '0.1200', message: 'JPM is 15.0% of the portfolio, above the 12.0% cap. It is not sold automatically.' }] }));
-  api.performance.mockResolvedValue(ok({ range: '1M', benchmark: 'SPY', series: [{ t: '2026-10-10', equity: '112410.22', benchmark: '112410.22' }, { t: '2026-11-09', equity: '118172.18', benchmark: '114770.83' }], metrics: { twrPct: '0.0512', benchmarkPct: '0.0210', maxDrawdownPct: '-0.0340', winRate: '0.58', avgWin: '812.20', avgLoss: '-402.75', trades: 19 } }));
-  api.trades.mockResolvedValue(ok({ items: [{ positionId: 't1', symbol: 'AMD', quantity: '50', entryPrice: '150.00', exitPrice: '160.00', exitReason: 'target', realizedPnl: '500.00', returnPct: '0.0667', openedAt: '2026-10-01T15:00:00Z', closedAt: '2026-10-08T15:00:00Z', holdingDays: 7 }], nextCursor: null }));
+  api.positions.mockResolvedValue(
+    ok({
+      items: [
+        position({}),
+        position({
+          id: 'y',
+          symbol: 'JPM',
+          name: 'JPMorgan',
+          weightPct: '0.1500',
+          overCap: true,
+          isNew: false,
+          nearStop: true,
+          stopDistancePct: '0.0120',
+          unrealizedPnl: '2100.00',
+          unrealizedPct: '0.1200',
+        }),
+      ],
+      nextCursor: null,
+    }),
+  );
+  api.allocation.mockResolvedValue(
+    ok({
+      sectors: [
+        { sector: 'Semiconductors', value: '28480.00', pct: '0.2410', warning: false, overLimit: false },
+        { sector: 'Banks', value: '38000.00', pct: '0.3216', warning: true, overLimit: false },
+      ],
+      assets: [
+        { asset: 'stocks', value: '110507.15', pct: '0.9351' },
+        { asset: 'cash', value: '7665.03', pct: '0.0649' },
+      ],
+      sectorWarningPct: '0.3000',
+      maxSectorExposurePct: '0.3500',
+    }),
+  );
+  api.exposure.mockResolvedValue(
+    ok({
+      grossPct: '0.9351',
+      betaWeightedPct: null,
+      openRiskToStops: '4210.40',
+      concentrationWarnings: [
+        {
+          kind: 'position_weight',
+          subject: 'JPM',
+          pct: '0.1500',
+          limit: '0.1200',
+          message: 'JPM is 15.0% of the portfolio, above the 12.0% cap. It is not sold automatically.',
+        },
+      ],
+    }),
+  );
+  api.performance.mockResolvedValue(
+    ok({
+      range: '1M',
+      benchmark: 'SPY',
+      series: [
+        { t: '2026-10-10', equity: '112410.22', benchmark: '112410.22' },
+        { t: '2026-11-09', equity: '118172.18', benchmark: '114770.83' },
+      ],
+      metrics: {
+        twrPct: '0.0512',
+        benchmarkPct: '0.0210',
+        maxDrawdownPct: '-0.0340',
+        winRate: '0.58',
+        avgWin: '812.20',
+        avgLoss: '-402.75',
+        trades: 19,
+      },
+    }),
+  );
+  api.trades.mockResolvedValue(
+    ok({
+      items: [
+        {
+          positionId: 't1',
+          symbol: 'AMD',
+          quantity: '50',
+          entryPrice: '150.00',
+          exitPrice: '160.00',
+          exitReason: 'target',
+          realizedPnl: '500.00',
+          returnPct: '0.0667',
+          openedAt: '2026-10-01T15:00:00Z',
+          closedAt: '2026-10-08T15:00:00Z',
+          holdingDays: 7,
+        },
+      ],
+      nextCursor: null,
+    }),
+  );
 });
 
 describe('Portfolio (designs 09 and 15)', () => {

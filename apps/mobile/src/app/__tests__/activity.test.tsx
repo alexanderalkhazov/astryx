@@ -7,25 +7,68 @@ import { Text } from 'react-native';
 import ActivityScreen from '../(app)/(tabs)/activity';
 
 jest.mock('expo-crypto', () => ({ randomUUID: () => 'cancel-key-0001' }));
-jest.mock('expo-secure-store', () => ({ WHEN_UNLOCKED_THIS_DEVICE_ONLY: 'x', getItemAsync: jest.fn(), setItemAsync: jest.fn(), deleteItemAsync: jest.fn() }));
+jest.mock('expo-secure-store', () => ({
+  WHEN_UNLOCKED_THIS_DEVICE_ONLY: 'x',
+  getItemAsync: jest.fn(),
+  setItemAsync: jest.fn(),
+  deleteItemAsync: jest.fn(),
+}));
 jest.mock('@astryx/api-client', () => ({
   ...jest.requireActual('@astryx/api-client'),
-  getSystemStatus: jest.fn(async () => ({ database: 'ok', ai: { status: 'ok', model: 'qwen3.5:0.8b' }, marketData: { provider: 'Fake', quotesStale: false, feedDown: false }, broker: { adapter: 'mock', mode: 'paper' }, features: { liveTrading: false } })),
+  getSystemStatus: jest.fn(async () => ({
+    database: 'ok',
+    ai: { status: 'ok', model: 'qwen3.5:0.8b' },
+    marketData: { provider: 'Fake', quotesStale: false, feedDown: false },
+    broker: { adapter: 'mock', mode: 'paper' },
+    features: { liveTrading: false },
+  })),
 }));
 jest.mock('@/lib/api', () => ({
   notifications: { list: jest.fn(), markRead: jest.fn(async () => ({})), markAllRead: jest.fn(async () => ({})) },
   paper: { working: jest.fn(), cancel: jest.fn() },
   scanner: { status: jest.fn(async () => ({ data: { status: 'live' } })) },
 }));
-const api = jest.requireMock('@/lib/api') as { notifications: Record<'list' | 'markRead' | 'markAllRead', jest.Mock>; paper: Record<'working' | 'cancel', jest.Mock> };
+const api = jest.requireMock('@/lib/api') as {
+  notifications: Record<'list' | 'markRead' | 'markAllRead', jest.Mock>;
+  paper: Record<'working' | 'cancel', jest.Mock>;
+};
 const ok = <T,>(data: T) => ({ data });
 
 const item = (over: Partial<ActivityItem>): ActivityItem => ({
-  id: 'n1', category: 'orders', type: 'order_filled', title: 'Filled (simulated) · NVDA', body: 'Bought 76 NVDA at $186.52 in your paper account.', severity: 'success',
-  deepLink: '/position/NVDA', entityType: 'order', entityId: 'o1', createdAt: new Date().toISOString(), read: false, ...over,
+  id: 'n1',
+  category: 'orders',
+  type: 'order_filled',
+  title: 'Filled (simulated) · NVDA',
+  body: 'Bought 76 NVDA at $186.52 in your paper account.',
+  severity: 'success',
+  deepLink: '/position/NVDA',
+  entityType: 'order',
+  entityId: 'o1',
+  createdAt: new Date().toISOString(),
+  read: false,
+  ...over,
 });
 
-const WORKING = { id: 'o2', brokerOrderId: 'SIM-AAAAAA', mode: 'paper', broker: 'mock', status: 'working', purpose: 'entry', symbol: 'AMD', side: 'buy', orderType: 'buy_stop', quantity: '50', stopPrice: '160.00', limitPrice: null, fill: null, attached: null, positionId: null, proposalId: 'p2', submittedAt: new Date().toISOString(), expiresAt: null };
+const WORKING = {
+  id: 'o2',
+  brokerOrderId: 'SIM-AAAAAA',
+  mode: 'paper',
+  broker: 'mock',
+  status: 'working',
+  purpose: 'entry',
+  symbol: 'AMD',
+  side: 'buy',
+  orderType: 'buy_stop',
+  quantity: '50',
+  stopPrice: '160.00',
+  limitPrice: null,
+  fill: null,
+  attached: null,
+  positionId: null,
+  proposalId: 'p2',
+  submittedAt: new Date().toISOString(),
+  expiresAt: null,
+};
 
 async function renderActivity(url = '/activity') {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
@@ -45,7 +88,25 @@ async function renderActivity(url = '/activity') {
 
 beforeEach(() => {
   jest.clearAllMocks();
-  api.notifications.list.mockResolvedValue(ok({ items: [item({}), item({ id: 'n2', category: 'alerts', type: 'stop_proximity', title: 'TSLA near its stop', body: 'TSLA is 1.2% above its stop at $236.00.', severity: 'warning', deepLink: '/position/TSLA', read: true })], nextCursor: null, unreadCount: 1 }));
+  api.notifications.list.mockResolvedValue(
+    ok({
+      items: [
+        item({}),
+        item({
+          id: 'n2',
+          category: 'alerts',
+          type: 'stop_proximity',
+          title: 'TSLA near its stop',
+          body: 'TSLA is 1.2% above its stop at $236.00.',
+          severity: 'warning',
+          deepLink: '/position/TSLA',
+          read: true,
+        }),
+      ],
+      nextCursor: null,
+      unreadCount: 1,
+    }),
+  );
   api.paper.working.mockResolvedValue(ok({ items: [WORKING, { ...WORKING, id: 'exit', purpose: 'exit_stop' }] }));
 });
 

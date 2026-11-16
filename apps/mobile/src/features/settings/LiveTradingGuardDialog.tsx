@@ -16,7 +16,15 @@ type Step = 'limits' | 'confirm' | 'unavailable';
  * server. In the MVP the server always refuses (403 `live_trading_disabled`), so the last step explains that the
  * account stays in paper mode. Biometric confirmation joins when live trading exists (§17.9).
  */
-export function LiveTradingGuardDialog({ visible, limits, onClose }: { visible: boolean; limits: RiskSettings | undefined; onClose: () => void }) {
+export function LiveTradingGuardDialog({
+  visible,
+  limits,
+  onClose,
+}: {
+  visible: boolean;
+  limits: RiskSettings | undefined;
+  onClose: () => void;
+}) {
   const [step, setStep] = useState<Step>('limits');
   const [typed, setTyped] = useState('');
   const [busy, setBusy] = useState(false);
@@ -41,9 +49,15 @@ export function LiveTradingGuardDialog({ visible, limits, onClose }: { visible: 
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" statusBarTranslucent onRequestClose={() => {
-      if (!busy) close();
-    }}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      statusBarTranslucent
+      onRequestClose={() => {
+        if (!busy) close();
+      }}
+    >
       <View style={styles.backdrop}>
         <View style={styles.card} accessibilityViewIsModal testID="live-guard">
           {step === 'limits' ? (
@@ -69,10 +83,24 @@ export function LiveTradingGuardDialog({ visible, limits, onClose }: { visible: 
             <>
               <Text.Headline accessibilityRole="header">Type LIVE to confirm</Text.Headline>
               <Text.Body tone="secondary">Every approval would still need hold-to-confirm.</Text.Body>
-              <Input value={typed} onChangeText={setTyped} autoCapitalize="characters" autoCorrect={false} accessibilityLabel="Type LIVE to confirm" placeholder="LIVE" />
+              <Input
+                value={typed}
+                onChangeText={setTyped}
+                autoCapitalize="characters"
+                autoCorrect={false}
+                accessibilityLabel="Type LIVE to confirm"
+                placeholder="LIVE"
+              />
               <View style={styles.actions}>
                 <Button variant="secondary" label="Stay in paper mode" onPress={close} disabled={busy} style={styles.action} />
-                <Button variant="danger" label="Switch to live" disabled={typed.trim() !== 'LIVE'} loading={busy} onPress={() => void request()} style={styles.action} />
+                <Button
+                  variant="danger"
+                  label="Switch to live"
+                  disabled={typed.trim() !== 'LIVE'}
+                  loading={busy}
+                  onPress={() => void request()}
+                  style={styles.action}
+                />
               </View>
             </>
           ) : (
@@ -99,7 +127,15 @@ function Limit({ label, value }: { label: string; value: string }) {
 
 const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', padding: space[4] },
-  card: { backgroundColor: color.surface2, borderRadius: radius.dialog, borderWidth: 1, borderColor: color.lineStrong, padding: space[5], gap: space[3], ...elevation.e2 },
+  card: {
+    backgroundColor: color.surface2,
+    borderRadius: radius.dialog,
+    borderWidth: 1,
+    borderColor: color.lineStrong,
+    padding: space[5],
+    gap: space[3],
+    ...elevation.e2,
+  },
   limits: { gap: space[1] },
   limit: { flexDirection: 'row', justifyContent: 'space-between', minHeight: 28, alignItems: 'center' },
   actions: { flexDirection: 'row', gap: space[3], marginTop: space[2] },

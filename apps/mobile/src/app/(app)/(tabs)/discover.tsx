@@ -13,7 +13,7 @@ import { OpportunityRow } from '@/components/OpportunityRow';
 import { Screen, ScreenHeader } from '@/components/Shell';
 import { Text } from '@/components/Text';
 import { FiltersSheet } from '@/features/discover/FiltersSheet';
-import { activeFilterChips, type DiscoverFilters, SORTS, useDiscoverFilters } from '@/features/discover/filters';
+import { activeFilterChips, type DiscoverFilters, useDiscoverFilters } from '@/features/discover/filters';
 import { isScannerUnavailable, SIGNALS_REFRESH_MS, useScannerStatus, useSignals } from '@/features/discover/useSignals';
 import { formatEtTime } from '@/lib/format';
 import { useSession } from '@/state/session';
@@ -27,7 +27,12 @@ const TYPE_CHIPS: readonly { type: SignalType | undefined; label: string; count:
   { type: 'earnings', label: 'Earnings', count: 'earnings' },
 ];
 
-const SORT_LABEL: Record<DiscoverFilters['sort'], string> = { score: 'opportunity score', rr: 'risk/reward', relStrength: 'relative strength', change: 'day change' };
+const SORT_LABEL: Record<DiscoverFilters['sort'], string> = {
+  score: 'opportunity score',
+  rr: 'risk/reward',
+  relStrength: 'relative strength',
+  change: 'day change',
+};
 
 // Designs 02 (list), 03 (filters), 20 (loading), 21 (empty), 23 (scanner error) · SYSTEM_DESIGN.md §8.4.2.
 export default function DiscoverScreen() {
@@ -85,7 +90,11 @@ export default function DiscoverScreen() {
       ) : null}
       {!unavailable ? (
         <View style={styles.listHeader}>
-          <Text.Overline tone="tertiary" numberOfLines={1} style={styles.listTitle}>{`${items.length}${signals.hasNextPage ? '+' : ''} ${items.length === 1 && !signals.hasNextPage ? 'setup' : 'setups'} · ranked by ${SORT_LABEL[filters.sort]}`}</Text.Overline>
+          <Text.Overline
+            tone="tertiary"
+            numberOfLines={1}
+            style={styles.listTitle}
+          >{`${items.length}${signals.hasNextPage ? '+' : ''} ${items.length === 1 && !signals.hasNextPage ? 'setup' : 'setups'} · ranked by ${SORT_LABEL[filters.sort]}`}</Text.Overline>
           <Text.Overline tone="tertiary">Illustrative</Text.Overline>
         </View>
       ) : null}
@@ -106,7 +115,14 @@ export default function DiscoverScreen() {
   } else if (signals.isError) {
     body = <ScannerUnavailable onRetry={() => void signals.refetch()} />;
   } else if (items.length === 0) {
-    body = <NoSetups filtered={chips.length > 0 || filters.type !== undefined} filters={filters} onReset={() => reset()} onAdjust={() => setSheetOpen(true)} />;
+    body = (
+      <NoSetups
+        filtered={chips.length > 0 || filters.type !== undefined}
+        filters={filters}
+        onReset={() => reset()}
+        onAdjust={() => setSheetOpen(true)}
+      />
+    );
   } else {
     body = (
       <FlashList
@@ -118,7 +134,13 @@ export default function DiscoverScreen() {
         onEndReached={() => {
           if (signals.hasNextPage && !signals.isFetchingNextPage) void signals.fetchNextPage();
         }}
-        refreshControl={<RefreshControl refreshing={signals.isRefetching && !signals.isFetchingNextPage} onRefresh={() => void signals.refetch()} tintColor={color.text3} />}
+        refreshControl={
+          <RefreshControl
+            refreshing={signals.isRefetching && !signals.isFetchingNextPage}
+            onRefresh={() => void signals.refetch()}
+            tintColor={color.text3}
+          />
+        }
         testID="discover-list"
       />
     );
@@ -154,9 +176,14 @@ function ScannerLine() {
   const status = useScannerStatus();
   if (!status.data) return <View style={styles.statusLine} />;
   const s = status.data;
+  // eslint-disable-next-line no-restricted-syntax -- the design's green "● Scanner live" health dot (design 02)
   const tone = s.status === 'live' ? color.gain : s.status === 'degraded' ? color.pending : color.loss;
   const label = s.status === 'live' ? 'Scanner live' : s.status === 'degraded' ? 'Scanner degraded' : 'Scanner unavailable';
-  const parts = [label, `${s.symbolsTotal.toLocaleString('en-US')} symbols`, s.lastRunAt ? `Updated ${formatEtTime(s.lastRunAt)}` : null].filter(Boolean);
+  const parts = [
+    label,
+    `${s.symbolsTotal.toLocaleString('en-US')} symbols`,
+    s.lastRunAt ? `Updated ${formatEtTime(s.lastRunAt)}` : null,
+  ].filter(Boolean);
   return (
     <View style={styles.statusLine} accessible accessibilityLabel={parts.join(', ')} testID="scanner-status">
       <View style={[styles.dot, { backgroundColor: tone }]} />
@@ -179,7 +206,12 @@ function ScannerUnavailable({ onRetry }: { onRetry: () => void }) {
       <Text.Body tone="secondary" style={styles.center}>
         {`The scanner has no current results${since}. Signals are hidden rather than shown stale. Open positions and their stops are unaffected.`}
       </Text.Body>
-      <Pressable onPress={onRetry} accessibilityRole="button" accessibilityLabel="Retry now" style={({ pressed }) => [styles.retry, { opacity: pressed ? 0.7 : 1 }]}>
+      <Pressable
+        onPress={onRetry}
+        accessibilityRole="button"
+        accessibilityLabel="Retry now"
+        style={({ pressed }) => [styles.retry, { opacity: pressed ? 0.7 : 1 }]}
+      >
         <RotateCw size={18} strokeWidth={1.7} color={color.text} />
         <Text.Body>Retry now</Text.Body>
       </Pressable>
@@ -189,8 +221,20 @@ function ScannerUnavailable({ onRetry }: { onRetry: () => void }) {
 }
 
 /** Design 21: nothing matches, with one way back and one way forward. */
-function NoSetups({ filtered, filters, onReset, onAdjust }: { filtered: boolean; filters: DiscoverFilters; onReset: () => void; onAdjust: () => void }) {
-  const fits = [TYPE_CHIPS.find((c) => c.type === filters.type && c.type)?.label, ...activeFilterChips(filters).map((c) => c.label)].filter(Boolean).join(' · ');
+function NoSetups({
+  filtered,
+  filters,
+  onReset,
+  onAdjust,
+}: {
+  filtered: boolean;
+  filters: DiscoverFilters;
+  onReset: () => void;
+  onAdjust: () => void;
+}) {
+  const fits = [TYPE_CHIPS.find((c) => c.type === filters.type && c.type)?.label, ...activeFilterChips(filters).map((c) => c.label)]
+    .filter(Boolean)
+    .join(' · ');
   return (
     <View style={styles.state} testID="discover-empty">
       <View style={styles.stateIcon}>
@@ -216,17 +260,52 @@ const styles = StyleSheet.create({
   header: { gap: space[3] },
   chips: { gap: space[2] },
   activeRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: space[2] },
-  listHeader: { flexDirection: 'row', justifyContent: 'space-between', gap: space[3], paddingVertical: space[2], borderTopWidth: 1, borderBottomWidth: 1, borderColor: color.line },
+  listHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: space[3],
+    paddingVertical: space[2],
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: color.line,
+  },
   listTitle: { flex: 1 },
   body: { flex: 1 },
   statusLine: { flexDirection: 'row', alignItems: 'center', gap: space[2], minHeight: 18 },
   dot: { width: 8, height: 8, borderRadius: 4 },
-  badge: { position: 'absolute', top: 4, right: 2, minWidth: 18, height: 18, borderRadius: 9, backgroundColor: color.signal, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
+  badge: {
+    position: 'absolute',
+    top: 4,
+    right: 2,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: color.signal,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
   badgeText: { color: color.bg, fontSize: 11 },
   state: { alignItems: 'center', gap: space[3], paddingTop: space[6], paddingHorizontal: space[4] },
-  stateIcon: { width: 56, height: 56, borderRadius: radius.card, backgroundColor: color.surface2, alignItems: 'center', justifyContent: 'center' },
+  stateIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: radius.card,
+    backgroundColor: color.surface2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   stateActions: { flexDirection: 'row', gap: space[3] },
   stateButton: { paddingHorizontal: space[5] },
   center: { textAlign: 'center' },
-  retry: { flexDirection: 'row', alignItems: 'center', gap: space[2], minHeight: 48, paddingHorizontal: space[5], borderRadius: radius.button, borderWidth: 1, borderColor: color.lineStrong },
+  retry: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space[2],
+    minHeight: 48,
+    paddingHorizontal: space[5],
+    borderRadius: radius.button,
+    borderWidth: 1,
+    borderColor: color.lineStrong,
+  },
 });

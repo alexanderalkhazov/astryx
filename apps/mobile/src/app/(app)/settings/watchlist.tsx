@@ -30,14 +30,21 @@ export default function WatchlistScreen() {
     <StackHeader
       title="Watchlist"
       sideWidth={64}
-      right={items.length > 0 ? <Button variant="link" label={editing ? 'Done' : 'Edit'} onPress={() => setEditing((e) => !e)} /> : undefined}
+      right={
+        items.length > 0 ? <Button variant="link" label={editing ? 'Done' : 'Edit'} onPress={() => setEditing((e) => !e)} /> : undefined
+      }
     />
   );
 
   return (
     <Screen header={header}>
       {list.isError ? (
-        <StatusBanner tone="error" title="Couldn't load your watchlist" body="Check your connection and try again." action={{ label: 'Retry', onPress: () => void list.refetch() }} />
+        <StatusBanner
+          tone="error"
+          title="Couldn't load your watchlist"
+          body="Check your connection and try again."
+          action={{ label: 'Retry', onPress: () => void list.refetch() }}
+        />
       ) : list.isPending ? (
         <View testID="watchlist-loading">
           <SkeletonRow index={0} />
@@ -111,16 +118,35 @@ function Row({ list, item, index, editing, editor }: RowProps) {
           <View style={styles.price}>
             {item.last ? <Text.Data>{formatPrice(item.last)}</Text.Data> : null}
             {item.changePct ? (
-              <Text.DataSm tone={direction === 'up' ? 'gain' : direction === 'down' ? 'loss' : 'secondary'}>{formatPct(item.changePct, { signed: true })}</Text.DataSm>
+              <Text.DataSm tone={direction === 'up' ? 'gain' : direction === 'down' ? 'loss' : 'secondary'}>
+                {formatPct(item.changePct, { signed: true })}
+              </Text.DataSm>
             ) : null}
           </View>
         )}
       </Pressable>
       {editing ? (
         <View style={styles.controls}>
-          <IconButton icon={ArrowUp} variant="plain" accessibilityLabel={`Move ${item.symbol} up`} disabled={index === 0} onPress={() => editor.move(list, index, index - 1)} />
-          <IconButton icon={ArrowDown} variant="plain" accessibilityLabel={`Move ${item.symbol} down`} disabled={index === last} onPress={() => editor.move(list, index, index + 1)} />
-          <IconButton icon={Trash2} variant="plain" accessibilityLabel={`Remove ${item.symbol}`} onPress={() => editor.remove(list, item.symbol)} />
+          <IconButton
+            icon={ArrowUp}
+            variant="plain"
+            accessibilityLabel={`Move ${item.symbol} up`}
+            disabled={index === 0}
+            onPress={() => editor.move(list, index, index - 1)}
+          />
+          <IconButton
+            icon={ArrowDown}
+            variant="plain"
+            accessibilityLabel={`Move ${item.symbol} down`}
+            disabled={index === last}
+            onPress={() => editor.move(list, index, index + 1)}
+          />
+          <IconButton
+            icon={Trash2}
+            variant="plain"
+            accessibilityLabel={`Remove ${item.symbol}`}
+            onPress={() => editor.remove(list, item.symbol)}
+          />
         </View>
       ) : null}
     </View>

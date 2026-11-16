@@ -34,6 +34,9 @@ jobs:
       - name: Restore (locked)
         run: dotnet restore Astryx.slnx --locked-mode
 
+      - name: Format (dotnet format --verify-no-changes)
+        run: dotnet format Astryx.slnx --no-restore --verify-no-changes
+
       - name: Build (warnings as errors)
         run: dotnet build Astryx.slnx -c Release --no-restore
 
@@ -49,7 +52,7 @@ jobs:
           path: TestResults
 
   mobile:
-    name: Mobile & packages (typecheck + expo-doctor)
+    name: Mobile & packages (typecheck, lint, format, expo-doctor)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -67,6 +70,12 @@ jobs:
 
       - name: Typecheck
         run: pnpm typecheck
+
+      - name: Lint (ESLint, zero warnings)
+        run: pnpm lint
+
+      - name: Format (Prettier)
+        run: pnpm format:check
 
       - name: Expo doctor
         working-directory: apps/mobile

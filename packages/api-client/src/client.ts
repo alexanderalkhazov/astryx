@@ -71,7 +71,12 @@ export function createApiClient(options: ApiClientOptions) {
       });
     } catch (error) {
       if (init.signal?.aborted) throw error;
-      throw new ApiError({ status: 0, code: 'network_error', detail: 'The API could not be reached. Check your connection.', correlationId });
+      throw new ApiError({
+        status: 0,
+        code: 'network_error',
+        detail: 'The API could not be reached. Check your connection.',
+        correlationId,
+      });
     }
   }
 
@@ -115,7 +120,12 @@ async function parse<T>(response: Response, schema: z.ZodType<T> | undefined, co
 
   const result = schema.safeParse(json);
   if (!result.success) {
-    throw new ApiError({ status: response.status, code: 'invalid_response', detail: `Unexpected response shape: ${result.error.message}`, correlationId });
+    throw new ApiError({
+      status: response.status,
+      code: 'invalid_response',
+      detail: `Unexpected response shape: ${result.error.message}`,
+      correlationId,
+    });
   }
 
   return result.data;

@@ -24,8 +24,16 @@ import { stackTransition, tabTransition } from '@/lib/motion';
 import { useSession } from '@/state/session';
 
 jest.mock('expo-crypto', () => ({ randomUUID: () => '00000000-0000-4000-8000-000000000001' }));
-jest.mock('expo-secure-store', () => ({ WHEN_UNLOCKED_THIS_DEVICE_ONLY: 'x', getItemAsync: jest.fn(), setItemAsync: jest.fn(), deleteItemAsync: jest.fn() }));
-jest.mock('@astryx/api-client', () => ({ ...jest.requireActual('@astryx/api-client'), getSystemStatus: jest.fn(() => new Promise(() => {})) }));
+jest.mock('expo-secure-store', () => ({
+  WHEN_UNLOCKED_THIS_DEVICE_ONLY: 'x',
+  getItemAsync: jest.fn(),
+  setItemAsync: jest.fn(),
+  deleteItemAsync: jest.fn(),
+}));
+jest.mock('@astryx/api-client', () => ({
+  ...jest.requireActual('@astryx/api-client'),
+  getSystemStatus: jest.fn(() => new Promise(() => {})),
+}));
 
 /** A stock screen with a sheet open on top of it, to check Android back order. */
 function StockWithSheet() {
@@ -156,7 +164,8 @@ describe('Android back', () => {
       listeners.push(handler);
       return { remove: () => listeners.splice(listeners.indexOf(handler), 1) };
     });
-    const pressBack = () => act(() => void [...listeners].reverse().some((handler) => handler({ type: 'hardwareBackPress', timeStamp: Date.now() }) === true));
+    const pressBack = () =>
+      act(() => void [...listeners].reverse().some((handler) => handler({ type: 'hardwareBackPress', timeStamp: Date.now() }) === true));
 
     await renderRouter(routes, { initialUrl: '/' });
     await fireEvent.press(screen.getByText('Stock · NVDA'));

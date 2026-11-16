@@ -4,7 +4,15 @@ import { CandleChart, summarize } from '../CandleChart';
 
 const bars = Array.from({ length: 12 }, (_, i) => {
   const day = String(i + 1).padStart(2, '0');
-  return { t: `2026-10-${day}T13:30:00Z`, d: `2026-10-${day}`, o: '100.00', h: `${110 + i}.00`, l: `${90 - i}.00`, c: `${100 + i}.50`, v: 1_000_000 };
+  return {
+    t: `2026-10-${day}T13:30:00Z`,
+    d: `2026-10-${day}`,
+    o: '100.00',
+    h: `${110 + i}.00`,
+    l: `${90 - i}.00`,
+    c: `${100 + i}.50`,
+    v: 1_000_000,
+  };
 });
 
 describe('CandleChart', () => {

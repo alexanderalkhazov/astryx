@@ -66,9 +66,17 @@ export function handleAnalysisUpdated(queryClient: QueryClient, message: Analysi
 export function handleOrderUpdated(queryClient: QueryClient, message: OrderUpdatedMessage): void {
   for (const key of MONEY_QUERY_KEYS) void queryClient.invalidateQueries({ queryKey: key });
   if (message.status === 'filled' && message.price && message.quantity && message.purpose === 'entry') {
-    toast({ tone: 'success', title: 'Filled (simulated)', body: `Bought ${formatQuantity(message.quantity)} ${message.symbol} at ${formatMoney(message.price)}` });
+    toast({
+      tone: 'success',
+      title: 'Filled (simulated)',
+      body: `Bought ${formatQuantity(message.quantity)} ${message.symbol} at ${formatMoney(message.price)}`,
+    });
   } else if (message.status === 'expired') {
-    toast({ tone: 'info', title: `Order expired · ${message.symbol}`, body: 'The buy stop was not triggered before the close. Its cash is released.' });
+    toast({
+      tone: 'info',
+      title: `Order expired · ${message.symbol}`,
+      body: 'The buy stop was not triggered before the close. Its cash is released.',
+    });
   }
 }
 

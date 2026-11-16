@@ -11,21 +11,43 @@ import { useSession } from '@/state/session';
 import DiscoverScreen from '../(app)/(tabs)/discover';
 
 jest.mock('expo-crypto', () => ({ randomUUID: () => '00000000-0000-4000-8000-000000000001' }));
-jest.mock('expo-secure-store', () => ({ WHEN_UNLOCKED_THIS_DEVICE_ONLY: 'x', getItemAsync: jest.fn(), setItemAsync: jest.fn(), deleteItemAsync: jest.fn() }));
+jest.mock('expo-secure-store', () => ({
+  WHEN_UNLOCKED_THIS_DEVICE_ONLY: 'x',
+  getItemAsync: jest.fn(),
+  setItemAsync: jest.fn(),
+  deleteItemAsync: jest.fn(),
+}));
 jest.mock('@/lib/api', () => ({ scanner: { status: jest.fn(), list: jest.fn(), count: jest.fn() } }));
 const api = (jest.requireMock('@/lib/api') as { scanner: Record<'status' | 'list' | 'count', jest.Mock> }).scanner;
 
 const NVDA = {
-  id: 's1', rank: 1, symbol: 'NVDA', name: 'NVIDIA Corp.', sector: 'Semiconductors', type: 'breakout', horizon: 'swing', price: '186.40', changePct: '0.0342', score: '87',
+  id: 's1',
+  rank: 1,
+  symbol: 'NVDA',
+  name: 'NVIDIA Corp.',
+  sector: 'Semiconductors',
+  type: 'breakout',
+  horizon: 'swing',
+  price: '186.40',
+  changePct: '0.0342',
+  score: '87',
   metrics: { relVolume: '2.40', relStrength: '94', rewardRisk: '2.11', rsi14: '64.2' },
   reason: 'Cleared a 6-week base at $185.90 on 2.4× average volume.',
   levels: { orderType: 'buy_stop', entry: '186.50', stop: '178.20', target: '204.00' },
   strategy: { id: 'st', name: 'Base Breakout v3', version: 3 },
-  evaluatedAt: '2026-11-09T19:32:00Z', dataAsOf: '2026-11-09T19:31:00Z', status: 'active', scoreBreakdown: null, proposalId: null,
-  sparkline: ['180.24', '186.40'], volume: 412800000, expiresAt: '2026-11-10T19:32:00Z',
+  evaluatedAt: '2026-11-09T19:32:00Z',
+  dataAsOf: '2026-11-09T19:31:00Z',
+  status: 'active',
+  scoreBreakdown: null,
+  proposalId: null,
+  sparkline: ['180.24', '186.40'],
+  volume: 412800000,
+  expiresAt: '2026-11-10T19:32:00Z',
 };
 const counts = (all: number) => ({ all, momentum: 0, breakout: all, pullback: 0, unusualVolume: 0, earnings: 0 });
-const page = (items: unknown[], all = items.length) => ({ data: { items, nextCursor: null, counts: counts(all), scanner: { lastRunAt: '2026-11-09T19:32:00Z', dataAsOf: null } } });
+const page = (items: unknown[], all = items.length) => ({
+  data: { items, nextCursor: null, counts: counts(all), scanner: { lastRunAt: '2026-11-09T19:32:00Z', dataAsOf: null } },
+});
 const STATUS = { status: 'live', symbolsTotal: 1031, lastRunAt: '2026-11-09T19:32:00Z', dataAsOf: '2026-11-09T19:31:00Z', errorCode: null };
 
 function renderDiscover() {
@@ -114,7 +136,9 @@ describe('Discover', () => {
 
     await waitFor(() => expect(api.list).toHaveBeenLastCalledWith(expect.objectContaining({ marketCap: 'mega' }), expect.anything()));
     expect(screen.getByRole('button', { name: 'Remove filter Mega' })).toBeOnTheScreen();
-    await waitFor(async () => expect(JSON.parse((await AsyncStorage.getItem('discover-filters:user-1'))!)).toMatchObject({ marketCap: 'mega' }));
+    await waitFor(async () =>
+      expect(JSON.parse((await AsyncStorage.getItem('discover-filters:user-1'))!)).toMatchObject({ marketCap: 'mega' }),
+    );
 
     await fireEvent.press(screen.getByRole('button', { name: 'Clear all' }));
     await waitFor(() => expect(screen.queryByRole('button', { name: 'Remove filter Mega' })).not.toBeOnTheScreen());
@@ -125,7 +149,9 @@ describe('Discover', () => {
 
     await renderDiscover();
 
-    await waitFor(() => expect(api.list).toHaveBeenLastCalledWith(expect.objectContaining({ sort: 'rr', minScore: 80 }), expect.anything()));
+    await waitFor(() =>
+      expect(api.list).toHaveBeenLastCalledWith(expect.objectContaining({ sort: 'rr', minScore: 80 }), expect.anything()),
+    );
     expect(await screen.findByRole('button', { name: 'Remove filter Score 80+' })).toBeOnTheScreen();
   });
 

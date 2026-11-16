@@ -135,7 +135,11 @@ describe('Chips', () => {
 });
 
 describe('Segmented', () => {
-  const options = [{ value: '3M', label: '3M' }, { value: '1Y', label: '1Y' }, { value: '5D', label: '5D', disabled: true }] as const;
+  const options = [
+    { value: '3M', label: '3M' },
+    { value: '1Y', label: '1Y' },
+    { value: '5D', label: '5D', disabled: true },
+  ] as const;
 
   it('changes value, ignores the current one and skips disabled options', async () => {
     const onChange = jest.fn();
@@ -155,7 +159,16 @@ describe('Segmented', () => {
 describe('Tabs', () => {
   it('selects a tab', async () => {
     const onChange = jest.fn();
-    await render(<Tabs tabs={[{ value: 'signal', label: 'Signal' }, { value: 'news', label: 'News' }]} value="signal" onChange={onChange} />);
+    await render(
+      <Tabs
+        tabs={[
+          { value: 'signal', label: 'Signal' },
+          { value: 'news', label: 'News' },
+        ]}
+        value="signal"
+        onChange={onChange}
+      />,
+    );
 
     await fireEvent.press(screen.getByRole('tab', { name: 'News' }));
 
@@ -231,7 +244,10 @@ describe('Input and Select', () => {
 
   it('opens, selects an option and closes', async () => {
     const onChange = jest.fn();
-    const options = [{ value: 'buy_stop', label: 'Buy stop · day' }, { value: 'market', label: 'Market' }] as const;
+    const options = [
+      { value: 'buy_stop', label: 'Buy stop · day' },
+      { value: 'market', label: 'Market' },
+    ] as const;
     await render(<Select label="Order type" options={options} value="buy_stop" onChange={onChange} />);
 
     await fireEvent.press(screen.getByRole('button', { name: 'Order type: Buy stop · day' }));
@@ -245,7 +261,9 @@ describe('Input and Select', () => {
 describe('EmptyState', () => {
   it('explains the emptiness and offers one action', async () => {
     const onPress = jest.fn();
-    await render(<EmptyState title="No setups match these filters" body="Reset to see all setups." action={{ label: 'Reset filters', onPress }} />);
+    await render(
+      <EmptyState title="No setups match these filters" body="Reset to see all setups." action={{ label: 'Reset filters', onPress }} />,
+    );
 
     await fireEvent.press(screen.getByRole('button', { name: 'Reset filters' }));
 
@@ -269,14 +287,26 @@ describe('StackHeader', () => {
 describe('TabBar', () => {
   function props(overrides: Partial<{ index: number; defaultPrevented: boolean }> = {}) {
     const routes = ['index', 'discover', 'portfolio', 'strategies', 'activity'].map((name) => ({ key: `${name}-key`, name }));
-    const titles: Record<string, string> = { index: 'Home', discover: 'Discover', portfolio: 'Portfolio', strategies: 'Strategies', activity: 'Activity' };
+    const titles: Record<string, string> = {
+      index: 'Home',
+      discover: 'Discover',
+      portfolio: 'Portfolio',
+      strategies: 'Strategies',
+      activity: 'Activity',
+    };
     const descriptors = Object.fromEntries(
       routes.map((r) => [r.key, { options: { title: titles[r.name], tabBarBadge: r.name === 'discover' ? 7 : undefined } }]),
     );
     const emitter = { emit: jest.fn(() => ({ defaultPrevented: overrides.defaultPrevented ?? false })) };
     const navigateToTab = jest.fn();
     return {
-      value: { state: { index: overrides.index ?? 0, routes }, descriptors, emitter, navigateToTab, insets: { top: 0, bottom: 34, left: 0, right: 0 } } as unknown as TabBarProps,
+      value: {
+        state: { index: overrides.index ?? 0, routes },
+        descriptors,
+        emitter,
+        navigateToTab,
+        insets: { top: 0, bottom: 34, left: 0, right: 0 },
+      } as unknown as TabBarProps,
       emitter,
       navigateToTab,
     };

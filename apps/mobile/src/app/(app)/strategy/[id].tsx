@@ -16,7 +16,14 @@ import { StatusBanner } from '@/components/StatusBanner';
 import { Stepper } from '@/components/Stepper';
 import { Tabs } from '@/components/Tabs';
 import { Text } from '@/components/Text';
-import { formatMonthYear, GuardLine, ILLUSTRATIVE_COPY, MetricsTable, MonthlyHeatmap, StrategyStatusBadge } from '@/features/strategies/StrategyParts';
+import {
+  formatMonthYear,
+  GuardLine,
+  ILLUSTRATIVE_COPY,
+  MetricsTable,
+  MonthlyHeatmap,
+  StrategyStatusBadge,
+} from '@/features/strategies/StrategyParts';
 import { strategies } from '@/lib/api';
 import { formatEtTime, formatMoney, formatPct, formatPnl, formatPrice, formatRatio } from '@/lib/format';
 
@@ -37,9 +44,17 @@ export default function StrategyScreen() {
     return (
       <Screen header={header}>
         {missing ? (
-          <EmptyState title="Strategy not found" body="It may have been retired from the catalog." action={{ label: 'Strategy lab', onPress: () => router.replace('/strategies') }} />
+          <EmptyState
+            title="Strategy not found"
+            body="It may have been retired from the catalog."
+            action={{ label: 'Strategy lab', onPress: () => router.replace('/strategies') }}
+          />
         ) : (
-          <EmptyState title="Couldn't load this strategy" body="Check your connection and try again." action={{ label: 'Retry', onPress: () => void detail.refetch() }} />
+          <EmptyState
+            title="Couldn't load this strategy"
+            body="Check your connection and try again."
+            action={{ label: 'Retry', onPress: () => void detail.refetch() }}
+          />
         )}
       </Screen>
     );
@@ -94,7 +109,11 @@ function OverviewTab({ detail }: { detail: StrategyDetail }) {
             items={[
               { label: 'Month to date', value: formatPct(live.mtdPct, { signed: true, dp: 1 }), tone: tone(live.mtdPct) },
               { label: 'MTD P&L', value: formatPnl(live.mtdPnl), tone: tone(live.mtdPnl) },
-              { label: 'Since inception', value: formatPct(live.sinceInceptionPct, { signed: true, dp: 1 }), tone: tone(live.sinceInceptionPct) },
+              {
+                label: 'Since inception',
+                value: formatPct(live.sinceInceptionPct, { signed: true, dp: 1 }),
+                tone: tone(live.sinceInceptionPct),
+              },
             ]}
           />
           <Text.Caption tone="tertiary">
@@ -134,9 +153,20 @@ function OverviewTab({ detail }: { detail: StrategyDetail }) {
 
 function BacktestTab({ detail }: { detail: StrategyDetail }) {
   const runId = detail.latestRun?.id;
-  const run = useQuery({ queryKey: ['strategies', detail.summary.id, 'runs', runId], queryFn: async () => (await strategies.run(detail.summary.id, runId)).data, enabled: !!runId });
+  const run = useQuery({
+    queryKey: ['strategies', detail.summary.id, 'runs', runId],
+    queryFn: async () => (await strategies.run(detail.summary.id, runId)).data,
+    enabled: !!runId,
+  });
   if (!runId) return <EmptyState title="No backtest yet" body="This strategy hasn't been backtested." />;
-  if (run.isError) return <EmptyState title="Couldn't load the backtest" body="Try again in a moment." action={{ label: 'Retry', onPress: () => void run.refetch() }} />;
+  if (run.isError)
+    return (
+      <EmptyState
+        title="Couldn't load the backtest"
+        body="Try again in a moment."
+        action={{ label: 'Retry', onPress: () => void run.refetch() }}
+      />
+    );
   if (!run.data) return <SkeletonRow />;
   return <BacktestBody run={run.data} />;
 }
@@ -187,8 +217,16 @@ function BacktestBody({ run }: { run: BacktestRun }) {
       <MetricsTable
         testID="is-oos-table"
         columns={[
-          { key: 'is', name: `In sample · ${run.periodStart.slice(0, 4)}–${String(Number(run.oosStart.slice(0, 4)) - 1)}`, metrics: run.metrics.inSample },
-          { key: 'oos', name: `Out of sample · ${run.oosStart.slice(0, 4)}–${run.periodEnd.slice(0, 4)}`, metrics: run.metrics.outOfSample },
+          {
+            key: 'is',
+            name: `In sample · ${run.periodStart.slice(0, 4)}–${String(Number(run.oosStart.slice(0, 4)) - 1)}`,
+            metrics: run.metrics.inSample,
+          },
+          {
+            key: 'oos',
+            name: `Out of sample · ${run.oosStart.slice(0, 4)}–${run.periodEnd.slice(0, 4)}`,
+            metrics: run.metrics.outOfSample,
+          },
         ]}
       />
 
@@ -197,7 +235,9 @@ function BacktestBody({ run }: { run: BacktestRun }) {
 
       <Text.Overline tone="tertiary">Assumptions</Text.Overline>
       <Text.Caption tone="secondary">{`Fees ${run.assumptions.fees} · slippage ${run.assumptions.slippageBps} bps · ${run.assumptions.universe}`}</Text.Caption>
-      {benchmark ? <Text.Caption tone="secondary">{`Growth of $1: ${formatRatio(m.multiple)}× vs ${benchmark.name} ${formatRatio(benchmark.multiple)}×`}</Text.Caption> : null}
+      {benchmark ? (
+        <Text.Caption tone="secondary">{`Growth of $1: ${formatRatio(m.multiple)}× vs ${benchmark.name} ${formatRatio(benchmark.multiple)}×`}</Text.Caption>
+      ) : null}
       <Text.Caption tone="pending">{run.assumptions.survivorship}</Text.Caption>
       <Text.Caption tone="tertiary">{ILLUSTRATIVE_COPY}</Text.Caption>
     </View>
@@ -207,17 +247,32 @@ function BacktestBody({ run }: { run: BacktestRun }) {
 function ConfigureTab({ detail }: { detail: StrategyDetail }) {
   return (
     <View style={styles.tab} testID="configure-tab">
-      <StatusBanner tone="rejected" title="Coming soon" body="Editing parameters and re-running backtests arrive in a later release. These are the published values." />
+      <StatusBanner
+        tone="rejected"
+        title="Coming soon"
+        body="Editing parameters and re-running backtests arrive in a later release. These are the published values."
+      />
       {detail.version.parameters.map((p) => (
         <View key={p.key} style={styles.param}>
           <View style={styles.flex}>
             <Text.Section>{p.label}</Text.Section>
             <Text.Caption tone="tertiary">{`Default ${String(p.default ?? '—')}${p.unit ? ` ${p.unit}` : ''} · range ${String(p.min ?? '—')}–${String(p.max ?? '—')}`}</Text.Caption>
           </View>
-          <Stepper value={String(p.value ?? p.default ?? '0')} min={p.min !== null ? String(p.min) : undefined} max={p.max !== null ? String(p.max) : undefined} step={p.step !== null ? String(p.step) : undefined} unit={p.unit} onChange={() => {}} disabled />
+          <Stepper
+            value={String(p.value ?? p.default ?? '0')}
+            min={p.min !== null ? String(p.min) : undefined}
+            max={p.max !== null ? String(p.max) : undefined}
+            step={p.step !== null ? String(p.step) : undefined}
+            unit={p.unit}
+            onChange={() => {}}
+            disabled
+          />
         </View>
       ))}
-      <Button label={`Run backtest · ${detail.latestRun ? `${detail.latestRun.periodStart.slice(0, 4)}–${detail.latestRun.periodEnd.slice(0, 4)}` : '2015–2026'}`} disabled />
+      <Button
+        label={`Run backtest · ${detail.latestRun ? `${detail.latestRun.periodStart.slice(0, 4)}–${detail.latestRun.periodEnd.slice(0, 4)}` : '2015–2026'}`}
+        disabled
+      />
       <Text.Caption tone="tertiary">{`Version ${detail.version.number} · ${detail.version.state} · ${detail.version.codeVersion}`}</Text.Caption>
     </View>
   );

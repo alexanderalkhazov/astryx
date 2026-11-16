@@ -6,10 +6,22 @@ import { Text } from 'react-native';
 import HomeScreen from '../(app)/(tabs)/index';
 
 jest.mock('expo-crypto', () => ({ randomUUID: () => '00000000-0000-4000-8000-000000000001' }));
-jest.mock('expo-secure-store', () => ({ WHEN_UNLOCKED_THIS_DEVICE_ONLY: 'x', getItemAsync: jest.fn(), setItemAsync: jest.fn(), deleteItemAsync: jest.fn() }));
+jest.mock('expo-secure-store', () => ({
+  WHEN_UNLOCKED_THIS_DEVICE_ONLY: 'x',
+  getItemAsync: jest.fn(),
+  setItemAsync: jest.fn(),
+  deleteItemAsync: jest.fn(),
+}));
 jest.mock('@/features/connection/ConnectionBanner', () => ({ ConnectionBanner: () => null }));
 jest.mock('@/lib/api', () => ({
-  portfolio: { summary: jest.fn(), performance: jest.fn(), attention: jest.fn(), positions: jest.fn(), sync: jest.fn(), strategyMtd: jest.fn() },
+  portfolio: {
+    summary: jest.fn(),
+    performance: jest.fn(),
+    attention: jest.fn(),
+    positions: jest.fn(),
+    sync: jest.fn(),
+    strategyMtd: jest.fn(),
+  },
   scanner: { list: jest.fn() },
   market: { breadth: jest.fn() },
 }));
@@ -21,8 +33,23 @@ const api = jest.requireMock('@/lib/api') as {
 const ok = <T,>(data: T) => ({ data });
 
 const SUMMARY = {
-  id: 'pf', mode: 'paper', currency: 'USD', equity: '118172.18', cash: '7665.03', cashAvailable: '7665.03', invested: '110507.15', unrealizedPnl: '8460.13',
-  dayPnl: '484.13', dayPnlPct: '0.0041', allTimePnl: '10672.93', allTimeReturnPct: '0.0993', realizedPnl: '0', openPositions: 1, halted: false, asOf: '2026-11-09T19:36:10Z', stale: false,
+  id: 'pf',
+  mode: 'paper',
+  currency: 'USD',
+  equity: '118172.18',
+  cash: '7665.03',
+  cashAvailable: '7665.03',
+  invested: '110507.15',
+  unrealizedPnl: '8460.13',
+  dayPnl: '484.13',
+  dayPnlPct: '0.0041',
+  allTimePnl: '10672.93',
+  allTimeReturnPct: '0.0993',
+  realizedPnl: '0',
+  openPositions: 1,
+  halted: false,
+  asOf: '2026-11-09T19:36:10Z',
+  stale: false,
 };
 
 async function renderHome() {
@@ -48,12 +75,57 @@ async function renderHome() {
 beforeEach(() => {
   jest.clearAllMocks();
   api.portfolio.summary.mockResolvedValue(ok(SUMMARY));
-  api.portfolio.performance.mockResolvedValue(ok({ range: '1M', benchmark: 'SPY', series: [{ t: '2026-10-10T20:00:00Z', equity: '112410.22', benchmark: '112410.22' }, { t: '2026-11-09T19:36:10Z', equity: '118172.18', benchmark: '114770.83' }], metrics: { twrPct: '0.05', benchmarkPct: '0.02', maxDrawdownPct: '-0.03', winRate: null, avgWin: null, avgLoss: null, trades: 0 } }));
-  api.portfolio.attention.mockResolvedValue(ok({ items: [{ kind: 'pending_proposal', title: 'NVDA proposal waiting', body: 'Review it before it expires.', deepLink: '/proposal/p1', severity: 'info' }] }));
-  api.portfolio.positions.mockResolvedValue(ok({ items: [{ id: 'x', symbol: 'NVDA', marketValue: '14166.40', unrealizedPnl: '-9.12' }], nextCursor: null }));
-  api.portfolio.strategyMtd.mockResolvedValue(ok({ period: 'mtd', items: [{ strategyId: 's1', name: 'Base Breakout v3', pnl: '1330.00', pnlPct: '0.0124', trades: 3, illustrative: true }] }));
-  api.scanner.list.mockResolvedValue(ok({ items: [{ id: 'sig1', symbol: 'NVDA', type: 'breakout', score: '87', reason: 'Cleared a 6-week base at $185.90 on 2.4× average volume.', levels: { entry: '186.50' }, metrics: { rewardRisk: '2.11' } }] }));
-  api.market.breadth.mockResolvedValue(ok({ advancers: 612, decliners: 401, pctAbove50dma: '0.58', sentiment: 'risk_on', asOf: '2026-11-09T19:32:00Z', stale: false }));
+  api.portfolio.performance.mockResolvedValue(
+    ok({
+      range: '1M',
+      benchmark: 'SPY',
+      series: [
+        { t: '2026-10-10T20:00:00Z', equity: '112410.22', benchmark: '112410.22' },
+        { t: '2026-11-09T19:36:10Z', equity: '118172.18', benchmark: '114770.83' },
+      ],
+      metrics: { twrPct: '0.05', benchmarkPct: '0.02', maxDrawdownPct: '-0.03', winRate: null, avgWin: null, avgLoss: null, trades: 0 },
+    }),
+  );
+  api.portfolio.attention.mockResolvedValue(
+    ok({
+      items: [
+        {
+          kind: 'pending_proposal',
+          title: 'NVDA proposal waiting',
+          body: 'Review it before it expires.',
+          deepLink: '/proposal/p1',
+          severity: 'info',
+        },
+      ],
+    }),
+  );
+  api.portfolio.positions.mockResolvedValue(
+    ok({ items: [{ id: 'x', symbol: 'NVDA', marketValue: '14166.40', unrealizedPnl: '-9.12' }], nextCursor: null }),
+  );
+  api.portfolio.strategyMtd.mockResolvedValue(
+    ok({
+      period: 'mtd',
+      items: [{ strategyId: 's1', name: 'Base Breakout v3', pnl: '1330.00', pnlPct: '0.0124', trades: 3, illustrative: true }],
+    }),
+  );
+  api.scanner.list.mockResolvedValue(
+    ok({
+      items: [
+        {
+          id: 'sig1',
+          symbol: 'NVDA',
+          type: 'breakout',
+          score: '87',
+          reason: 'Cleared a 6-week base at $185.90 on 2.4× average volume.',
+          levels: { entry: '186.50' },
+          metrics: { rewardRisk: '2.11' },
+        },
+      ],
+    }),
+  );
+  api.market.breadth.mockResolvedValue(
+    ok({ advancers: 612, decliners: 401, pctAbove50dma: '0.58', sentiment: 'risk_on', asOf: '2026-11-09T19:32:00Z', stale: false }),
+  );
 });
 
 describe('Home (design 01)', () => {

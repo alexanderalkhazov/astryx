@@ -4,7 +4,10 @@ import { Platform } from 'react-native';
 
 import { useScreenProtection } from '../useScreenProtection';
 
-const sc = ScreenCapture as unknown as Record<'enableAppSwitcherProtectionAsync' | 'disableAppSwitcherProtectionAsync' | 'preventScreenCaptureAsync' | 'allowScreenCaptureAsync', jest.Mock>;
+const sc = ScreenCapture as unknown as Record<
+  'enableAppSwitcherProtectionAsync' | 'disableAppSwitcherProtectionAsync' | 'preventScreenCaptureAsync' | 'allowScreenCaptureAsync',
+  jest.Mock
+>;
 
 beforeEach(() => jest.clearAllMocks());
 

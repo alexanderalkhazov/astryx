@@ -25,7 +25,13 @@ const FILTERS: readonly { value: Filter; label: string }[] = [
   { value: 'strategy', label: 'Strategy' },
   { value: 'system', label: 'System' },
 ];
-const SEVERITY: Record<ActivityItem['severity'], string> = { info: color.signal, success: color.gain, warning: color.pending, error: color.loss };
+const SEVERITY: Record<ActivityItem['severity'], string> = {
+  info: color.signal,
+  // eslint-disable-next-line no-restricted-syntax -- success items are fills and closes: executed states
+  success: color.gain,
+  warning: color.pending,
+  error: color.loss,
+};
 
 const etDate = (instant: string) => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date(instant)); // YYYY-MM-DD
 
@@ -38,7 +44,10 @@ export default function ActivityScreen() {
   const [filter, setFilter] = useState<Filter>(initial);
   const queryClient = useQueryClient();
   const feed = useQuery({ queryKey: activityKey(filter), queryFn: async () => (await notifications.list(filter)).data });
-  const working = useQuery({ queryKey: ['portfolio', 'working-orders'], queryFn: async () => (await paper.working()).data.items.filter((o) => o.purpose === 'entry') });
+  const working = useQuery({
+    queryKey: ['portfolio', 'working-orders'],
+    queryFn: async () => (await paper.working()).data.items.filter((o) => o.purpose === 'entry'),
+  });
   const [cancelling, setCancelling] = useState<PaperOrder | null>(null);
   const [cancelKey, setCancelKey] = useState(() => randomUUID());
   const cancel = useMutation({
@@ -47,7 +56,12 @@ export default function ActivityScreen() {
       setCancelling(null);
       void queryClient.invalidateQueries({ queryKey: ['portfolio'] });
     },
-    onError: (error) => toast({ tone: 'error', title: "The order wasn't cancelled", body: isApiError(error) ? (error.detail ?? error.message) : 'Try again in a moment.' }),
+    onError: (error) =>
+      toast({
+        tone: 'error',
+        title: "The order wasn't cancelled",
+        body: isApiError(error) ? (error.detail ?? error.message) : 'Try again in a moment.',
+      }),
   });
   const read = useMutation({
     mutationFn: async (item: ActivityItem) => notifications.markRead(item.id),
@@ -70,7 +84,18 @@ export default function ActivityScreen() {
 
   return (
     <>
-      <Screen header={<ScreenHeader title="Activity" actions={(feed.data?.unreadCount ?? 0) > 0 ? <Button variant="link" label="Mark all read" onPress={() => readAll.mutate()} /> : undefined} />}>
+      <Screen
+        header={
+          <ScreenHeader
+            title="Activity"
+            actions={
+              (feed.data?.unreadCount ?? 0) > 0 ? (
+                <Button variant="link" label="Mark all read" onPress={() => readAll.mutate()} />
+              ) : undefined
+            }
+          />
+        }
+      >
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
           {FILTERS.map((f) => (
             <Chip key={f.value} label={f.label} selected={filter === f.value} onPress={() => setFilter(f.value)} />
@@ -82,7 +107,9 @@ export default function ActivityScreen() {
             <Text.Overline tone="tertiary">Pending orders</Text.Overline>
             {(working.data ?? []).length === 0 ? (
               <View style={styles.emptyCard} testID="pending-empty">
-                <Text.Body tone="secondary">No pending orders — approved buy-stop orders wait here until triggered. Paper fills are immediate.</Text.Body>
+                <Text.Body tone="secondary">
+                  No pending orders — approved buy-stop orders wait here until triggered. Paper fills are immediate.
+                </Text.Body>
               </View>
             ) : (
               working.data!.map((o) => (
@@ -91,7 +118,15 @@ export default function ActivityScreen() {
                     <Text.Section>{`${o.symbol} · buy stop`}</Text.Section>
                     <Text.Caption tone="secondary">{`${formatQuantity(o.quantity)} sh · triggers at ${formatPrice(o.stopPrice ?? o.limitPrice ?? '0')} · ${o.brokerOrderId}`}</Text.Caption>
                   </View>
-                  <Button variant="link" label="Cancel" onPress={() => { setCancelKey(randomUUID()); setCancelling(o); }} accessibilityLabel={`Cancel ${o.symbol} order`} />
+                  <Button
+                    variant="link"
+                    label="Cancel"
+                    onPress={() => {
+                      setCancelKey(randomUUID());
+                      setCancelling(o);
+                    }}
+                    accessibilityLabel={`Cancel ${o.symbol} order`}
+                  />
                 </View>
               ))
             )}
@@ -154,9 +189,21 @@ function SystemStatusCard() {
   const s = status.data;
   const rows: [string, string, boolean][] = s
     ? [
-        ['Data feed', s.marketData.feedDown ? 'Unavailable' : s.marketData.quotesStale ? 'Delayed' : 'Live', !s.marketData.feedDown && !s.marketData.quotesStale],
-        ['Scanner', scan.data ? (scan.data.status === 'live' ? 'Live' : scan.data.status === 'degraded' ? 'Degraded' : 'Unavailable') : '—', scan.data?.status === 'live'],
-        ['AI model', s.ai.status === 'ok' || s.ai.status === 'healthy' ? `Ready · ${s.ai.model ?? ''}` : s.ai.status, s.ai.status === 'ok' || s.ai.status === 'healthy'],
+        [
+          'Data feed',
+          s.marketData.feedDown ? 'Unavailable' : s.marketData.quotesStale ? 'Delayed' : 'Live',
+          !s.marketData.feedDown && !s.marketData.quotesStale,
+        ],
+        [
+          'Scanner',
+          scan.data ? (scan.data.status === 'live' ? 'Live' : scan.data.status === 'degraded' ? 'Degraded' : 'Unavailable') : '—',
+          scan.data?.status === 'live',
+        ],
+        [
+          'AI model',
+          s.ai.status === 'ok' || s.ai.status === 'healthy' ? `Ready · ${s.ai.model ?? ''}` : s.ai.status,
+          s.ai.status === 'ok' || s.ai.status === 'healthy',
+        ],
         ['Broker', `Paper · ${s.broker.adapter ?? 'mock'}`, true],
       ]
     : [];
@@ -165,6 +212,7 @@ function SystemStatusCard() {
       <Text.Overline tone="tertiary">System status</Text.Overline>
       {rows.map(([label, value, okay]) => (
         <View key={label} style={styles.statusRow} accessible accessibilityLabel={`${label}: ${value}`}>
+          {/* eslint-disable-next-line no-restricted-syntax -- health dot, as the scanner line on Discover */}
           <View style={[styles.dot, { backgroundColor: okay ? color.gain : color.pending }]} />
           <Text.Body style={styles.flex}>{label}</Text.Body>
           <Text.DataSm tone="secondary">{value}</Text.DataSm>
@@ -180,7 +228,14 @@ const styles = StyleSheet.create({
   section: { gap: space[2] },
   flex: { flex: 1 },
   emptyCard: { padding: space[4], borderRadius: radius.card, borderWidth: 1, borderStyle: 'dashed', borderColor: color.lineStrong },
-  pending: { flexDirection: 'row', alignItems: 'center', gap: space[3], padding: space[3], borderRadius: radius.card, backgroundColor: color.surface1 },
+  pending: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space[3],
+    padding: space[3],
+    borderRadius: radius.card,
+    backgroundColor: color.surface1,
+  },
   event: { flexDirection: 'row', alignItems: 'flex-start', gap: space[3], paddingVertical: space[2] },
   dot: { width: 8, height: 8, borderRadius: 4, marginTop: 7 },
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: space[3], minHeight: 36 },

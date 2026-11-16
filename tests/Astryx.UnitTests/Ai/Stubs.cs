@@ -59,8 +59,16 @@ internal sealed class Stubs : IInstrumentDirectory, IPriceHistoryProvider, IIndi
     Task<IndicatorReadout?> IIndicatorSnapshots.GetDailyAsync(string symbol, CancellationToken cancellationToken) =>
         Task.FromResult<IndicatorReadout?>(new IndicatorReadout(symbol, new DateOnly(2026, 11, 9), 300, Quality, Missing, new Dictionary<string, string?>
         {
-            ["sma20"] = "176.8412", ["sma50"] = "171.2210", ["ema20"] = "177.0000", ["rsi14"] = "64.2", ["macdHist"] = "0.8093", ["atr14"] = "5.5337",
-            ["relVolume20"] = "2.40", ["trend"] = "uptrend", ["volatility20Ann"] = "0.4118", ["relStrength"] = "94",
+            ["sma20"] = "176.8412",
+            ["sma50"] = "171.2210",
+            ["ema20"] = "177.0000",
+            ["rsi14"] = "64.2",
+            ["macdHist"] = "0.8093",
+            ["atr14"] = "5.5337",
+            ["relVolume20"] = "2.40",
+            ["trend"] = "uptrend",
+            ["volatility20Ann"] = "0.4118",
+            ["relStrength"] = "94",
         }));
 
     public Task<ResearchQuote?> GetQuoteAsync(string symbol, CancellationToken cancellationToken) => Task.FromResult(Quote);

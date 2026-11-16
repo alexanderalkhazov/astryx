@@ -2,7 +2,9 @@
   "name": "astryx",
   "private": true,
   "packageManager": "pnpm@12.18.0",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "mobile": "pnpm --filter @astryx/mobile start",
     "typecheck": "turbo run typecheck",
@@ -13,9 +15,12 @@
     "api:gen": "node scripts/api-gen.mjs",
     "stack:up": "docker compose -f infra/docker/docker-compose.yml --env-file .env up -d --build",
     "stack:down": "docker compose -f infra/docker/docker-compose.yml --env-file .env down",
-    "stack:logs": "docker compose -f infra/docker/docker-compose.yml --env-file .env logs -f api"
+    "stack:logs": "docker compose -f infra/docker/docker-compose.yml --env-file .env logs -f api",
+    "format": "prettier --write 'apps/mobile/**/*.{ts,tsx,js,mjs}' 'packages/**/*.{ts,tsx}' 'tests/load/*.{js,mjs}'",
+    "format:check": "prettier --check 'apps/mobile/**/*.{ts,tsx,js,mjs}' 'packages/**/*.{ts,tsx}' 'tests/load/*.{js,mjs}'"
   },
   "devDependencies": {
+    "prettier": "3.9.10",
     "turbo": "2.11.10",
     "typescript": "~6.0.3"
   }

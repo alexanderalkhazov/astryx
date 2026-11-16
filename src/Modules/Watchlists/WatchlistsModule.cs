@@ -5,8 +5,8 @@ using Astryx.Infrastructure.Persistence;
 using Astryx.Modules.Watchlists.Api;
 using Astryx.Modules.Watchlists.Application;
 using Astryx.Modules.Watchlists.Infrastructure.Persistence;
-using Microsoft.Extensions.Configuration;
 using FluentValidation;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 

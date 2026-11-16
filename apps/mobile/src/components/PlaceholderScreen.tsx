@@ -28,7 +28,10 @@ export function PlaceholderScreen({ title, design, section, presentation = 'push
       <StackHeader title={title} />
     ) : presentation === 'modal' ? (
       <View style={{ paddingHorizontal: space[4] }}>
-        <ScreenHeader title={title} actions={<IconButton icon={X} variant="plain" accessibilityLabel="Close" onPress={() => router.back()} />} />
+        <ScreenHeader
+          title={title}
+          actions={<IconButton icon={X} variant="plain" accessibilityLabel="Close" onPress={() => router.back()} />}
+        />
       </View>
     ) : undefined;
 

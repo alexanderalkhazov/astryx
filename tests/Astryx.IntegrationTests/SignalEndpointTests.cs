@@ -206,10 +206,28 @@ public class SignalEndpointTests(SyncedMarketApiFactory factory) : IClassFixture
             ids.Add(id);
             db.Signals.Add(new Signal
             {
-                Id = id, ScannerRunId = template.ScannerRunId, InstrumentId = instrument.Id, Symbol = instrument.Symbol, StrategyVersionId = Guid.NewGuid(), StrategyId = template.StrategyId,
-                StrategyName = template.StrategyName, StrategyVersion = 3, SignalType = "breakout", Horizon = "swing", Score = baseScore + i, ScoreBreakdown = "[]", Reason = "test",
-                OrderType = "buy_stop", EntryPrice = 100m, StopPrice = 95m, TargetPrice = 110m + i, Metrics = $$"""{"rewardRisk":"{{(2m + i * 0.1m).ToString(System.Globalization.CultureInfo.InvariantCulture)}}"}""",
-                Status = SignalStatus.Active, EvaluatedAt = template.EvaluatedAt, DataAsOf = template.DataAsOf, ExpiresAt = template.ExpiresAt,
+                Id = id,
+                ScannerRunId = template.ScannerRunId,
+                InstrumentId = instrument.Id,
+                Symbol = instrument.Symbol,
+                StrategyVersionId = Guid.NewGuid(),
+                StrategyId = template.StrategyId,
+                StrategyName = template.StrategyName,
+                StrategyVersion = 3,
+                SignalType = "breakout",
+                Horizon = "swing",
+                Score = baseScore + i,
+                ScoreBreakdown = "[]",
+                Reason = "test",
+                OrderType = "buy_stop",
+                EntryPrice = 100m,
+                StopPrice = 95m,
+                TargetPrice = 110m + i,
+                Metrics = $$"""{"rewardRisk":"{{(2m + i * 0.1m).ToString(System.Globalization.CultureInfo.InvariantCulture)}}"}""",
+                Status = SignalStatus.Active,
+                EvaluatedAt = template.EvaluatedAt,
+                DataAsOf = template.DataAsOf,
+                ExpiresAt = template.ExpiresAt,
             });
         }
 

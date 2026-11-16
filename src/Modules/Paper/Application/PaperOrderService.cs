@@ -131,8 +131,12 @@ public sealed class PaperOrderService(
         AstryxTelemetry.Orders.Add(1, new("purpose", "entry"), new("outcome", order.Status));
         db.Audit(new AuditEntry("paper.order_placed", AuditActor.User, userId, "order", order.Id.ToString(), Metadata: new
         {
-            proposalId = ticket.ProposalId, assessmentId = ticket.AssessmentId, status = order.Status, quantity = ticket.Quantity,
-            fillPrice = fill?.Price, reserved = order.ReservedAmount,
+            proposalId = ticket.ProposalId,
+            assessmentId = ticket.AssessmentId,
+            status = order.Status,
+            quantity = ticket.Quantity,
+            fillPrice = fill?.Price,
+            reserved = order.ReservedAmount,
         }));
         try
         {

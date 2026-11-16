@@ -89,7 +89,10 @@ export function StackHeader({ title, subtitle, onBack, right, sideWidth = size.t
         accessibilityLabel="Back"
         onPress={onBack ?? (() => router.back())}
         hitSlop={8}
-        style={({ pressed }) => [styles.side, { width: sideWidth, alignItems: sideWidth > size.touch ? 'flex-start' : 'center', opacity: pressed ? 0.6 : 1 }]}
+        style={({ pressed }) => [
+          styles.side,
+          { width: sideWidth, alignItems: sideWidth > size.touch ? 'flex-start' : 'center', opacity: pressed ? 0.6 : 1 },
+        ]}
       >
         <ChevronLeft size={24} strokeWidth={1.7} color={color.text} />
       </Pressable>
