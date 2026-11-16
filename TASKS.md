@@ -249,7 +249,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [x] **T-043** Freshness and market session service — `4571583`
   - **Acceptance:** freshness budgets (§20.5) are applied. `asOf`/`stale` appear on every market response. NodaTime calendar handles DST and half days. `GET /market/session` exists. Tests use `FakeTimeProvider` across the DST switch and a half day.
   - **Refs:** §20.3–20.5 · **Depends:** T-042 · **P0**
-- [ ] **T-044** Corporate action adjustments
+- [x] **T-044** Corporate action adjustments
   - **Acceptance:** split-only and total-return adjustment modes over unadjusted storage. Indicator cache is invalidated on a new action. Tests cover a 4:1 split and a dividend.
   - **Refs:** §20.7 · **Depends:** T-040 · **P1**
 - [x] **T-045** Market endpoints — `12eb01e`
