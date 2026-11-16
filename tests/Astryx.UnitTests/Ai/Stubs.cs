@@ -48,7 +48,7 @@ internal sealed class Stubs : IInstrumentDirectory, IPriceHistoryProvider, IIndi
 
     public Task<IReadOnlyList<InstrumentSummary>> ListActiveEquitiesAsync(CancellationToken cancellationToken) => throw new NotSupportedException();
 
-    public Task<DailyHistory?> GetDailyAsync(string symbol, int maxBars, CancellationToken cancellationToken)
+    public Task<DailyHistory?> GetDailyAsync(string symbol, int maxBars, CancellationToken cancellationToken, AdjustmentMode mode = AdjustmentMode.SplitOnly)
     {
         var bars = Enumerable.Range(0, 30).Select(i => new DailyBar(new DateOnly(2026, 9, 28).AddDays(i), 170m + i, 172m + i, 169m + i, 171.456m + i, 200_000_000 + i, i < 29)).TakeLast(maxBars).ToList();
         return Task.FromResult<DailyHistory?>(new DailyHistory(Guid.Empty, symbol, bars, QuoteAt, false, []));

@@ -112,7 +112,7 @@ public class MarketEndpointTests(SyncedMarketApiFactory factory) : IClassFixture
         var body = await _client.GetFromJsonAsync<JsonElement>("/api/v1/market/NVDA/bars?timeframe=3M");
 
         body.GetProperty("interval").GetString().ShouldBe("1d");
-        body.GetProperty("adjusted").GetBoolean().ShouldBeFalse();
+        body.GetProperty("adjusted").GetBoolean().ShouldBeTrue(); // daily bars are split-adjusted on read (T-044)
         body.GetProperty("levels").ValueKind.ShouldBe(JsonValueKind.Null); // no signals until M3
         var bars = body.GetProperty("bars").EnumerateArray().ToList();
         bars.Count.ShouldBeInRange(55, 70);

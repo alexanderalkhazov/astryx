@@ -17,9 +17,25 @@ public sealed record CloseLadder(DateOnly? Through, IReadOnlyDictionary<string, 
 /// <summary>Price history owned by MarketData, read by Quant through Contracts (SYSTEM_DESIGN.md §7.6).</summary>
 public interface IPriceHistoryProvider
 {
-    /// <summary>The latest <paramref name="maxBars"/> daily bars, including the forming session; null for an unknown symbol.</summary>
-    Task<DailyHistory?> GetDailyAsync(string symbol, int maxBars, CancellationToken cancellationToken);
+    /// <summary>
+    /// The latest <paramref name="maxBars"/> daily bars, including the forming session, adjusted per <paramref name="mode"/>;
+    /// null for an unknown symbol.
+    /// </summary>
+    Task<DailyHistory?> GetDailyAsync(string symbol, int maxBars, CancellationToken cancellationToken, AdjustmentMode mode = AdjustmentMode.SplitOnly);
 
-    /// <summary>For every active instrument, the final close <c>n</c> sessions back for each <c>n</c> in <paramref name="sessionsBack"/> (0 = latest).</summary>
+    /// <summary>
+    /// For every active instrument, the split-adjusted final close <c>n</c> sessions back for each <c>n</c> in
+    /// <paramref name="sessionsBack"/> (0 = latest).
+    /// </summary>
     Task<CloseLadder> GetCloseLadderAsync(IReadOnlyList<int> sessionsBack, CancellationToken cancellationToken);
+}
+
+/// <summary>How stored (unadjusted) bars are adjusted for corporate actions (SYSTEM_DESIGN.md §20.7).</summary>
+public enum AdjustmentMode
+{
+    /// <summary>Splits only: the default for indicators and charts.</summary>
+    SplitOnly,
+
+    /// <summary>Splits and cash dividends: for backtests.</summary>
+    TotalReturn,
 }

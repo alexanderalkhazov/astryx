@@ -4130,6 +4130,18 @@ Never interpolate, forward-fill or reuse another symbol's data. Missing quotes l
 - `AdjustmentMode.SplitOnly` (the default for indicators and charts) and `TotalReturn` (backtests) are both supported.
 - **Open positions on a split:** quantity is multiplied by the ratio, and avg entry, stop and target are divided by it, via a `corporate_action` ledger-neutral adjustment job with an audit entry. P&L is unchanged. Dividends on paper positions are credited as a `dividend` transaction (`ASSUMPTION`; type to be added) on the pay date.
 
+**Implemented (T-044).**
+
+- **Adjustment:** `PriceAdjustment` (MarketData domain, pure) turns actions into factors that multiply every earlier bar:
+  - split or reverse split of ratio r: prices × 1/r, volume × r;
+  - cash dividend D in `TotalReturn`: prices × (1 − D / C), with C the unadjusted close of the stored session before the ex-date; skipped when that close is unknown.
+- **Where it applies:** on read only (storage stays unadjusted), in `MarketQueries.DailyBarsAsync`. That covers the chart endpoint (`adjusted: true` for daily bars) and `IPriceHistoryProvider.GetDailyAsync(…, AdjustmentMode mode = SplitOnly)` for Quant.
+  - Actions with a future ex-date are ignored.
+  - `GetCloseLadderAsync` (universe rankings) is split-adjusted.
+  - `AdjustmentMode` lives in Contracts; backtests will ask for `TotalReturn`.
+- **Cache invalidation:** the EOD sync publishes `CorporateActionRecorded` when an action is new or its ratio or amount changed. Quant's `IndicatorCacheInvalidation` then deletes that instrument's cached indicator snapshots, which are keyed only by the last bar and parameters.
+- **Not implemented yet:** the open-position split adjustment job and paper dividend credits.
+
 ### 20.8 Transaction consistency
 
 - Each money movement is one DB transaction (§15.3): order, fill, position, ledger, portfolio cache, outbox and idempotency record either commit together or not at all.

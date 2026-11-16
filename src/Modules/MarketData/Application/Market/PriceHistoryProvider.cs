@@ -9,7 +9,7 @@ namespace Astryx.Modules.MarketData.Application.Market;
 /// <summary>Daily history for the quant engine from stored bars (SYSTEM_DESIGN.md §13.2), never gap-filled.</summary>
 public sealed class PriceHistoryProvider(MarketDataDbContext db, MarketQueries queries, FreshnessPolicy freshness, MarketClock clock) : IPriceHistoryProvider
 {
-    public async Task<DailyHistory?> GetDailyAsync(string symbol, int maxBars, CancellationToken cancellationToken)
+    public async Task<DailyHistory?> GetDailyAsync(string symbol, int maxBars, CancellationToken cancellationToken, AdjustmentMode mode = AdjustmentMode.SplitOnly)
     {
         if (await queries.FindAsync(symbol, cancellationToken) is not { } instrument)
         {
@@ -19,7 +19,7 @@ public sealed class PriceHistoryProvider(MarketDataDbContext db, MarketQueries q
         // Enough calendar days for maxBars sessions with weekends and holidays to spare.
         var to = clock.Today;
         var from = to.AddDays(-(maxBars * 3 / 2 + 30));
-        var bars = (await queries.DailyBarsAsync(instrument, from, to, cancellationToken)).TakeLast(maxBars).ToList();
+        var bars = (await queries.DailyBarsAsync(instrument, from, to, cancellationToken, mode)).TakeLast(maxBars).ToList();
         if (bars.Count == 0)
         {
             return new DailyHistory(instrument.Id, instrument.Symbol, [], null, Stale: true, []);
@@ -63,6 +63,18 @@ public sealed class PriceHistoryProvider(MarketDataDbContext db, MarketQueries q
                 WHERE r.n = ANY({offsets})
                 """)
             .ToListAsync(cancellationToken);
+
+        // Split-adjusted, so a return across a split isn't a 75 % crash (§20.7).
+        var today = clock.Today;
+        var splits = (await (
+                from a in db.CorporateActions.AsNoTracking()
+                join i in db.Instruments.AsNoTracking() on a.InstrumentId equals i.Id
+                where (a.ActionType == CorporateActionType.Split || a.ActionType == CorporateActionType.ReverseSplit) && a.ExDate <= today
+                select new { i.Symbol, Action = a })
+            .ToListAsync(cancellationToken))
+            .GroupBy(x => x.Symbol)
+            .ToDictionary(g => g.Key, g => PriceAdjustment.Factors(g.Select(x => x.Action), AdjustmentMode.SplitOnly, _ => null), StringComparer.Ordinal);
+        rows = rows.Select(r => splits.TryGetValue(r.Symbol, out var f) ? r with { Close = r.Close * PriceAdjustment.At(r.SessionDate, f).Price } : r).ToList();
 
         var index = sessionsBack.Select((n, i) => (n, i)).ToLookup(x => x.n, x => x.i);
         var closes = new Dictionary<string, decimal?[]>(StringComparer.Ordinal);

@@ -154,8 +154,8 @@ public sealed class MarketQueries(
             }
         }
 
-        // Stored history is unadjusted until corporate-action adjustment lands (T-044).
-        return new BarsDto(instrument.Symbol, request.Interval.ToTimeframe(), Adjusted: false, quote, stale, bars, levels);
+        // Daily bars are split-adjusted on read (§20.7); intraday bars come straight from the provider.
+        return new BarsDto(instrument.Symbol, request.Interval.ToTimeframe(), Adjusted: request.Interval == BarInterval.OneDay, quote, stale, bars, levels);
     }
 
     public async Task<Result<FundamentalsDto>> FundamentalsAsync(string symbol, CancellationToken cancellationToken)
@@ -231,14 +231,19 @@ public sealed class MarketQueries(
     /// Stored final daily bars, plus the current session's forming bar from the latest quote when the end-of-day sync
     /// has not stored that session yet.
     /// </summary>
-    internal async Task<List<BarDto>> DailyBarsAsync(Instrument instrument, DateOnly from, DateOnly to, CancellationToken cancellationToken)
+    internal async Task<List<BarDto>> DailyBarsAsync(Instrument instrument, DateOnly from, DateOnly to, CancellationToken cancellationToken, AdjustmentMode mode = AdjustmentMode.SplitOnly)
     {
         var bars = await db.PriceBars.AsNoTracking()
             .Where(b => b.InstrumentId == instrument.Id && b.Timeframe == Timeframe.OneDay && b.SessionDate >= from && b.SessionDate <= to)
             .OrderBy(b => b.BarStart)
             .Select(b => new BarDto(b.BarStart, b.SessionDate, b.Open, b.High, b.Low, b.Close, b.Volume, b.IsFinal ? null : false))
             .ToListAsync(cancellationToken);
-        bars = bars.Select(b => b with { O = Price(b.O), H = Price(b.H), L = Price(b.L), C = Price(b.C) }).ToList();
+        var factors = await AdjustmentFactorsAsync(instrument.Id, from, mode, cancellationToken);
+        bars = bars.Select(b =>
+        {
+            var (price, volume) = PriceAdjustment.At(b.D, factors);
+            return b with { O = Price(b.O * price), H = Price(b.H * price), L = Price(b.L * price), C = Price(b.C * price), V = (long)Math.Round(b.V * volume, MidpointRounding.ToEven) };
+        }).ToList();
 
         var quote = await db.Quotes.AsNoTracking().SingleOrDefaultAsync(q => q.InstrumentId == instrument.Id, cancellationToken);
         var session = await clock.CurrentSessionAsync(cancellationToken);
@@ -249,6 +254,32 @@ public sealed class MarketQueries(
         }
 
         return bars;
+    }
+
+    /// <summary>
+    /// Factors for actions that already happened (ex-date up to today) and touch bars from <paramref name="from"/> on.
+    /// Dividend factors use the unadjusted close of the session before the ex-date, stored or not in the window.
+    /// </summary>
+    private async Task<IReadOnlyList<AdjustmentFactor>> AdjustmentFactorsAsync(Guid instrumentId, DateOnly from, AdjustmentMode mode, CancellationToken cancellationToken)
+    {
+        var today = clock.Today;
+        var actions = await db.CorporateActions.AsNoTracking()
+            .Where(a => a.InstrumentId == instrumentId && a.ExDate > from && a.ExDate <= today)
+            .ToListAsync(cancellationToken);
+        if (actions.Count == 0)
+        {
+            return [];
+        }
+
+        var closes = new Dictionary<DateOnly, decimal?>();
+        foreach (var dividend in actions.Where(a => a.ActionType == CorporateActionType.CashDividend && mode == AdjustmentMode.TotalReturn))
+        {
+            closes[dividend.ExDate] = await db.PriceBars.AsNoTracking()
+                .Where(b => b.InstrumentId == instrumentId && b.Timeframe == Timeframe.OneDay && b.IsFinal && b.SessionDate < dividend.ExDate)
+                .OrderByDescending(b => b.SessionDate).Select(b => (decimal?)b.Close).FirstOrDefaultAsync(cancellationToken);
+        }
+
+        return PriceAdjustment.Factors(actions, mode, ex => closes.GetValueOrDefault(ex));
     }
 
     private (BarInterval Interval, DateOnly From, DateOnly To, int Limit)? Resolve(BarsQuery query)

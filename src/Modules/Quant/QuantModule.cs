@@ -1,3 +1,4 @@
+using Astryx.Infrastructure.Outbox;
 using Astryx.Infrastructure.Persistence;
 using Astryx.Modules.Quant.Application.Analysis;
 using Astryx.Modules.Quant.Application.Indicators;
@@ -20,6 +21,7 @@ public static class QuantModule
         services.TryAddSingleton(TimeProvider.System);
         services.AddScoped<RelativeStrengthRanks>();
         services.AddScoped<IndicatorSnapshotService>();
+        services.AddIntegrationEventHandler<Astryx.Contracts.Events.MarketData.CorporateActionRecorded, IndicatorCacheInvalidation>();
         services.AddScoped<Astryx.Contracts.Quant.IIndicatorSnapshots>(sp => sp.GetRequiredService<IndicatorSnapshotService>());
         services.AddScoped<Astryx.Contracts.Quant.IQuantFacts, QuantFactsService>();
         return services;

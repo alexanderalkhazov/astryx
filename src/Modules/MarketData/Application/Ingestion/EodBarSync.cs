@@ -1,3 +1,4 @@
+using Astryx.Contracts.Events.MarketData;
 using Astryx.Infrastructure.Jobs;
 using Astryx.Modules.MarketData.Application.Providers;
 using Astryx.Modules.MarketData.Domain;
@@ -78,7 +79,7 @@ public sealed class EodBarSyncHandler(MarketDataDbContext db, IMarketDataProvide
             {
                 meter.Take();
                 var actions = await provider.GetCorporateActionsAsync(instrument.Symbol, instrument.LastAction?.AddDays(1) ?? from.AddYears(-3), cancellationToken);
-                await UpsertCorporateActionsAsync(instrument.Id, actions, cancellationToken);
+                await UpsertCorporateActionsAsync(instrument.Id, instrument.Symbol, actions, cancellationToken);
             }
         }
     }
@@ -118,17 +119,30 @@ public sealed class EodBarSyncHandler(MarketDataDbContext db, IMarketDataProvide
             cancellationToken);
     }
 
-    private async Task UpsertCorporateActionsAsync(Guid instrumentId, IReadOnlyList<ProviderCorporateAction> actions, CancellationToken cancellationToken)
+    /// <summary>Upserts the actions; a new or changed one publishes <see cref="CorporateActionRecorded"/> so cached indicators are dropped.</summary>
+    private async Task UpsertCorporateActionsAsync(Guid instrumentId, string symbol, IReadOnlyList<ProviderCorporateAction> actions, CancellationToken cancellationToken)
     {
+        var changed = false;
         foreach (var action in actions)
         {
-            await db.Database.ExecuteSqlAsync(
+            var affected = await db.Database.ExecuteSqlAsync(
                 $"""
                 INSERT INTO market.corporate_actions (id, instrument_id, action_type, ex_date, ratio, cash_amount, source)
                 VALUES ({Guid.CreateVersion7(clock.Now)}, {instrumentId}, {action.ActionType}, {action.ExDate}, {action.Ratio}, {action.CashAmount}, {provider.Code})
                 ON CONFLICT (instrument_id, action_type, ex_date) DO UPDATE SET ratio = excluded.ratio, cash_amount = excluded.cash_amount, source = excluded.source
+                WHERE (market.corporate_actions.ratio, market.corporate_actions.cash_amount) IS DISTINCT FROM (excluded.ratio, excluded.cash_amount)
                 """,
                 cancellationToken);
+            if (affected > 0)
+            {
+                db.Publish(new CorporateActionRecorded(instrumentId, symbol, action.ActionType, action.ExDate));
+                changed = true;
+            }
+        }
+
+        if (changed)
+        {
+            await db.SaveChangesAsync(cancellationToken);
         }
     }
 }
