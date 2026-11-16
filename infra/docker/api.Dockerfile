@@ -10,7 +10,7 @@ COPY tests/fixtures/ tests/fixtures/
 RUN dotnet restore apps/api/Astryx.Api.csproj --locked-mode
 RUN dotnet publish apps/api/Astryx.Api.csproj -c Release -o /out --no-restore
 
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:11.0 AS runtime
 WORKDIR /app
 ENV ASPNETCORE_URLS=http://+:8080 \
     DOTNET_CLI_TELEMETRY_OPTOUT=1
