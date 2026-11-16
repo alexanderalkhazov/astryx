@@ -46,12 +46,14 @@ services:
       Email__Smtp__Host: mailpit
       Email__Smtp__Port: "1025"
       Features__DevFaultInjection: "true"
+      Serilog__MinimumLevel__Default: ${LOG_LEVEL:-Debug} # the load test measures at Information
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel:18889
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc
       Sentry__Dsn: ${SENTRY_DSN:-} # error tracking stays off unless set in .env
       # Every local client shares one IP: the simulator, Maestro's setup scripts and curl. Production keeps 10/min · 50/h.
-      RateLimits__AuthPerMinute: "60"
-      RateLimits__AuthPerHour: "1000"
+      # The load test raises them further for its run: AUTH_PER_MINUTE=100000 AUTH_PER_HOUR=1000000 pnpm stack:up.
+      RateLimits__AuthPerMinute: ${AUTH_PER_MINUTE:-60}
+      RateLimits__AuthPerHour: ${AUTH_PER_HOUR:-1000}
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
