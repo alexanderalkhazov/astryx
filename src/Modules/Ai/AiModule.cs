@@ -1,8 +1,8 @@
 using Astryx.Contracts.Events.Ai;
+using Astryx.Infrastructure.Observability;
 using Astryx.Infrastructure.Outbox;
 using Astryx.Infrastructure.Persistence;
 using Astryx.Modules.Ai.Api;
-using FluentValidation;
 using Astryx.Modules.Ai.Application.Analysis;
 using Astryx.Modules.Ai.Application.Context;
 using Astryx.Modules.Ai.Application.Jobs;
@@ -12,6 +12,7 @@ using Astryx.Modules.Ai.Application.Validation;
 using Astryx.Modules.Ai.Infrastructure.Fake;
 using Astryx.Modules.Ai.Infrastructure.Ollama;
 using Astryx.Modules.Ai.Infrastructure.Persistence;
+using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -61,7 +62,12 @@ public static class AiModule
         services.AddOptions<OllamaOptions>().Bind(configuration.GetSection(OllamaOptions.SectionName));
         services.AddSingleton<OllamaCapabilities>();
         services.AddSingleton<OllamaModelInfoCache>();
-        services.AddSingleton<CircuitBreaker>();
+        services.AddSingleton(sp =>
+        {
+            var breaker = new CircuitBreaker(sp.GetRequiredService<TimeProvider>());
+            AstryxTelemetry.ObserveAiCircuit(() => breaker.IsOpen); // the ai_circuit_open gauge (§23.8)
+            return breaker;
+        });
         services.AddHttpClient<OllamaAiProvider>((sp, client) =>
         {
             var options = sp.GetRequiredService<IOptions<OllamaOptions>>().Value;

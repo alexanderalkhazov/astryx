@@ -31,12 +31,21 @@ public static class AstryxTelemetry
 
     public static readonly Counter<long> JobsFailed = Meter.CreateCounter<long>("jobs_failed_total", description: "Job attempts that threw, by job type.");
 
+    public static readonly Counter<long> JobsDead = Meter.CreateCounter<long>("jobs_dead_total", description: "Jobs dead-lettered (out of attempts, unknown type or bad payload), by job type.");
+
+    public static readonly Counter<long> AuthLoginFailures = Meter.CreateCounter<long>("auth_login_failures_total", description: "Failed sign-ins by reason.");
+
+    public static readonly Counter<long> AuthRefreshReuse = Meter.CreateCounter<long>("auth_refresh_reuse_total", description: "Refresh-token reuse detections (family revoked), by reason.");
+
     public static readonly Counter<long> ReconciliationMismatches = Meter.CreateCounter<long>("reconciliation_mismatches_total", description: "Nightly reconciliation issues by check.");
 
     private static double _scannerLastSuccess;
     private static double _quoteAgeMax;
     private static double _monitorLag;
     private static double _outboxLag;
+    private static long _liveTrading;
+    private static long _sessionOpen;
+    private static Func<bool>? _aiCircuitOpen;
 
     static AstryxTelemetry()
     {
@@ -44,12 +53,21 @@ public static class AstryxTelemetry
         Meter.CreateObservableGauge("market_quote_age_seconds", () => Volatile.Read(ref _quoteAgeMax), "s", "Age of the oldest stored quote after the latest sync.");
         Meter.CreateObservableGauge("position_monitor_lag_seconds", () => Volatile.Read(ref _monitorLag), "s", "Quote time to position-monitor evaluation, latest batch.");
         Meter.CreateObservableGauge("outbox_lag_seconds", () => Volatile.Read(ref _outboxLag), "s", "Event occurrence to dispatch, latest message.");
+        Meter.CreateObservableGauge("market_session_open", () => Interlocked.Read(ref _sessionOpen), description: "1 during the regular session: alerts that only matter while trading key on it.");
+        Meter.CreateObservableGauge("live_trading_enabled", () => Interlocked.Read(ref _liveTrading), description: "1 when Features:LiveTrading is on: must stay 0 in the MVP.");
+        Meter.CreateObservableGauge("ai_circuit_open", () => _aiCircuitOpen?.Invoke() == true ? 1 : 0, description: "1 while the AI provider's circuit breaker is open.");
     }
 
     public static void AiInference(TimeSpan latency, string model, string promptVersion, string outcome) =>
         AiInferenceDuration.Record(latency.TotalSeconds, new("model", model), new("prompt_version", promptVersion), new("outcome", outcome));
 
     public static void ScannerRun(TimeSpan duration, string status) => ScannerRunDuration.Record(duration.TotalSeconds, new KeyValuePair<string, object?>("status", status));
+
+    public static void SessionOpen(bool open) => Interlocked.Exchange(ref _sessionOpen, open ? 1 : 0);
+
+    public static void LiveTrading(bool enabled) => Interlocked.Exchange(ref _liveTrading, enabled ? 1 : 0);
+
+    public static void ObserveAiCircuit(Func<bool> isOpen) => _aiCircuitOpen = isOpen;
 
     public static void ScannerSucceeded(DateTimeOffset at) => Volatile.Write(ref _scannerLastSuccess, at.ToUnixTimeMilliseconds() / 1000d);
 

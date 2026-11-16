@@ -54,6 +54,7 @@ public sealed class QuoteSyncHandler(
     private async Task<bool> IsDueAsync(CancellationToken cancellationToken)
     {
         var session = await clock.CurrentSessionAsync(cancellationToken);
+        AstryxTelemetry.SessionOpen(clock.Now >= session.OpenAt && clock.Now < session.CloseAt);
         if (clock.Now < session.CloseAt || faults.SessionForcedOpen) // the E2E session override keeps quotes live (T-110)
         {
             return true;

@@ -6,6 +6,7 @@ using Astryx.Api.TestSupport;
 using Astryx.Infrastructure;
 using Astryx.Infrastructure.Health;
 using Astryx.Infrastructure.Http;
+using Astryx.Infrastructure.Observability;
 using Astryx.Infrastructure.Persistence;
 using Astryx.Infrastructure.Realtime;
 using Astryx.Infrastructure.Security;
@@ -52,6 +53,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 StartupGuards.EnsureLiveTradingDisabled(builder.Configuration);
 builder.AddAstryxObservability();
+AstryxTelemetry.LiveTrading(builder.Configuration.GetValue<bool>("Features:LiveTrading")); // the startup guard already refused true
 
 builder.Services.AddSerilog((services, logger) => logger
     .ReadFrom.Configuration(builder.Configuration)

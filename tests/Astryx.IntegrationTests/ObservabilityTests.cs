@@ -69,4 +69,32 @@ public class ObservabilityTests(PushApiFactory factory) : IClassFixture<PushApiF
         measurements.ShouldContain(m => m.Instrument == "orders_total" && (string?)m.Tags["outcome"] == "filled");
         measurements.ShouldContain(m => m.Instrument == "risk_assessments_total" && (bool?)m.Tags["approvable"] == true);
     }
+
+    [Fact]
+    public async Task Alert_inputs_count_failed_sign_ins_by_reason_and_report_live_trading_off()
+    {
+        var measurements = new ConcurrentBag<(string Instrument, long Value, Dictionary<string, object?> Tags)>();
+        using var listener = new MeterListener
+        {
+            InstrumentPublished = (instrument, l) =>
+            {
+                if (instrument.Meter.Name == AstryxTelemetry.Name)
+                {
+                    l.EnableMeasurementEvents(instrument);
+                }
+            },
+        };
+        listener.SetMeasurementEventCallback<long>((instrument, value, tags, _) =>
+            measurements.Add((instrument.Name, value, tags.ToArray().ToDictionary(t => t.Key, t => t.Value))));
+        listener.SetMeasurementEventCallback<int>((instrument, value, tags, _) =>
+            measurements.Add((instrument.Name, value, tags.ToArray().ToDictionary(t => t.Key, t => t.Value))));
+        listener.Start();
+
+        var login = await factory.CreateClient().PostAsJsonAsync("/api/v1/auth/login", new { email = $"nobody-{Guid.NewGuid():N}@example.com", password = "not a real passphrase", deviceId = "observability-test" });
+        listener.RecordObservableInstruments();
+
+        login.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+        measurements.ShouldContain(m => m.Instrument == "auth_login_failures_total" && (string?)m.Tags["reason"] == "unknown_email");
+        measurements.ShouldContain(m => m.Instrument == "live_trading_enabled" && m.Value == 0);
+    }
 }

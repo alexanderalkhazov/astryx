@@ -1,5 +1,6 @@
 using Astryx.Contracts.Audit;
 using Astryx.Infrastructure.Audit;
+using Astryx.Infrastructure.Observability;
 using Astryx.Modules.Identity.Domain;
 using Astryx.Modules.Identity.Infrastructure.Persistence;
 using Astryx.SharedKernel;
@@ -43,6 +44,7 @@ public sealed class SessionService(
         {
             hasher.VerifyHashedPassword(null!, DummyHash.Value, password);
             await auditLog.RecordAsync(new AuditEntry("auth.login_failed", AuditActor.User, Metadata: new { email, reason = "unknown_email" }), cancellationToken);
+            AstryxTelemetry.AuthLoginFailures.Add(1, new KeyValuePair<string, object?>("reason", "unknown_email"));
             return InvalidCredentials;
         }
 
@@ -50,6 +52,7 @@ public sealed class SessionService(
         {
             hasher.VerifyHashedPassword(user, user.PasswordHash, password);
             await auditLog.RecordAsync(new AuditEntry("auth.login_failed", AuditActor.User, user.Id, "user", user.Id.ToString(), Metadata: new { reason = "locked" }), cancellationToken);
+            AstryxTelemetry.AuthLoginFailures.Add(1, new KeyValuePair<string, object?>("reason", "locked"));
             return InvalidCredentials;
         }
 
@@ -66,6 +69,7 @@ public sealed class SessionService(
 
             user.UpdatedAt = now;
             db.Audit(new AuditEntry(locked ? "auth.locked_out" : "auth.login_failed", AuditActor.User, user.Id, "user", user.Id.ToString(), Metadata: new { reason = "wrong_password" }));
+            AstryxTelemetry.AuthLoginFailures.Add(1, new KeyValuePair<string, object?>("reason", "wrong_password"));
             await db.SaveChangesAsync(cancellationToken);
             return InvalidCredentials;
         }
@@ -200,6 +204,7 @@ public sealed class SessionService(
 
     private async Task RevokeFamilyForReuseAsync(RefreshToken token, DateTimeOffset now, string reason, CancellationToken cancellationToken)
     {
+        AstryxTelemetry.AuthRefreshReuse.Add(1, new KeyValuePair<string, object?>("reason", reason));
         await db.RefreshTokens
             .Where(t => t.FamilyId == token.FamilyId && t.RevokedAt == null)
             .ExecuteUpdateAsync(s => s.SetProperty(t => t.RevokedAt, now).SetProperty(t => t.RevokedReason, RevokedReason.ReuseDetected), cancellationToken);

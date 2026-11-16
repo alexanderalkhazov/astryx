@@ -4585,6 +4585,8 @@ Sentry SDKs: `@sentry/react-native` (with source maps through EAS) and `Sentry.A
 | Job dead-letters | Any `dead` job | Medium |
 | Live trading flag | `Features:LiveTrading` true in any environment (MVP) | **Critical** |
 
+**Implemented (T-114):** the rules live in `infra/observability/alerts.yml` (Prometheus format over the OTLP metrics, checked with `promtool`). Each one links its page in `docs/runbooks/`. Supporting metrics added for them: `jobs_dead_total`, `auth_login_failures_total`, `auth_refresh_reuse_total`, `ai_circuit_open`, `live_trading_enabled` and `market_session_open` (the "during the session" condition). DB backup and disk alerts come from the managed Postgres provider (T-117).
+
 ---
 
 ## 24. Development Roadmap

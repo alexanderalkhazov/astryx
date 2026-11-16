@@ -1,0 +1,117 @@
+# Alert rules (SYSTEM_DESIGN.md §23.8, T-114) for a Prometheus-compatible backend fed by the API's OpenTelemetry
+# metrics (OTLP → Prometheus names: dots become underscores, seconds histograms get _seconds_bucket). Each alert links
+# its runbook in docs/runbooks/. Checked with:
+#   docker run --rm -v "$PWD/infra/observability:/r" --entrypoint promtool prom/prometheus:v3.15.1 check rules /r/alerts.yml
+groups:
+  - name: astryx-trading
+    rules:
+      - alert: PositionMonitorLag
+        expr: max(position_monitor_lag_seconds) > 30 and on() max(market_session_open) == 1
+        for: 2m
+        labels: { severity: critical }
+        annotations:
+          summary: Position monitor is {{ $value | humanizeDuration }} behind quotes; stops and targets may be missed
+          runbook: docs/runbooks/position-monitor-lag.md
+
+      - alert: ReconciliationMismatch
+        expr: increase(reconciliation_mismatches_total[15m]) > 0
+        labels: { severity: critical }
+        annotations:
+          summary: Nightly reconciliation found {{ $value }} mismatch(es); affected portfolios are halted for new entries
+          runbook: docs/runbooks/reconciliation-mismatch.md
+
+      - alert: LiveTradingEnabled
+        expr: max(live_trading_enabled) > 0
+        labels: { severity: critical }
+        annotations:
+          summary: Features:LiveTrading is on in an MVP environment
+          runbook: docs/runbooks/live-trading-enabled.md
+
+      - alert: OrderErrorRate
+        expr: |
+          sum(rate(http_server_request_duration_seconds_count{http_route=~"/api/v1/paper/orders.*|/api/v1/positions/.*/close", http_response_status_code=~"5.."}[10m]))
+            / sum(rate(http_server_request_duration_seconds_count{http_route=~"/api/v1/paper/orders.*|/api/v1/positions/.*/close"}[10m])) > 0.01
+        for: 10m
+        labels: { severity: high }
+        annotations:
+          summary: More than 1 % of order requests fail with 5xx
+          runbook: docs/runbooks/order-error-rate.md
+
+  - name: astryx-data
+    rules:
+      - alert: MarketDataStale
+        expr: max(market_quote_age_seconds) > 180 and on() max(market_session_open) == 1
+        for: 3m
+        labels: { severity: high }
+        annotations:
+          summary: Quotes are {{ $value | humanizeDuration }} old during the session; approvals are disabled
+          runbook: docs/runbooks/market-data-stale.md
+
+      - alert: ScannerFailing
+        expr: (time() - max(scanner_last_success_timestamp_seconds)) > 1800 and on() max(market_session_open) == 1
+        labels: { severity: medium }
+        annotations:
+          summary: No successful scanner run in two 15-minute intervals during the session
+          runbook: docs/runbooks/scanner-failing.md
+
+      - alert: AiUnavailable
+        expr: |
+          max(ai_circuit_open) > 0
+            or (sum(increase(ai_jobs_total{outcome="failed"}[15m])) / clamp_min(sum(increase(ai_jobs_total[15m])), 1) > 0.5)
+        for: 5m
+        labels: { severity: medium }
+        annotations:
+          summary: AI analysis failing (circuit open or more than 50 % of jobs failed); research only, trading unaffected
+          runbook: docs/runbooks/ai-unavailable.md
+
+  - name: astryx-platform
+    rules:
+      - alert: OutboxLag
+        expr: max(outbox_lag_seconds) > 60
+        for: 5m
+        labels: { severity: high }
+        annotations:
+          summary: Integration events are {{ $value | humanizeDuration }} late (notifications, realtime, push)
+          runbook: docs/runbooks/outbox-lag.md
+
+      - alert: ApiLatency
+        expr: histogram_quantile(0.95, sum by (le) (rate(http_server_request_duration_seconds_bucket{http_route!~"/hubs/.*"}[10m]))) > 1
+        for: 10m
+        labels: { severity: medium }
+        annotations:
+          summary: API p95 latency is {{ $value | humanizeDuration }}
+          runbook: docs/runbooks/api-latency.md
+
+      - alert: JobDeadLetters
+        expr: increase(jobs_dead_total[15m]) > 0
+        labels: { severity: medium }
+        annotations:
+          summary: "{{ $value }} job(s) dead-lettered ({{ $labels.type }})"
+          runbook: docs/runbooks/job-dead-letters.md
+
+      - alert: DatabasePoolSaturation
+        expr: |
+          sum(db_client_connection_count) / clamp_min(sum(db_client_connection_max), 1) > 0.8
+        for: 5m
+        labels: { severity: high }
+        annotations:
+          summary: Database connection pool above 80 %
+          runbook: docs/runbooks/database.md
+
+  - name: astryx-security
+    rules:
+      - alert: RefreshTokenReuse
+        expr: sum(increase(auth_refresh_reuse_total[1h])) > 5
+        labels: { severity: high }
+        annotations:
+          summary: "{{ $value }} refresh-token reuse detections in an hour (possible token theft)"
+          runbook: docs/runbooks/auth-anomalies.md
+
+      - alert: LoginFailureSpike
+        expr: |
+          sum(rate(auth_login_failures_total[10m])) > 10 * clamp_min(sum(rate(auth_login_failures_total[1d] offset 10m)), 0.001)
+            and sum(increase(auth_login_failures_total[10m])) > 20
+        labels: { severity: high }
+        annotations:
+          summary: Failed sign-ins are more than 10× their daily baseline (credential stuffing?)
+          runbook: docs/runbooks/auth-anomalies.md

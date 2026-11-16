@@ -67,6 +67,7 @@ public sealed class JobRunner(
         if (handler is null)
         {
             await SettleAsync(job, workerId, JobStatus.Dead, $"No handler registered for job type '{job.Type}'.", null, cancellationToken);
+            AstryxTelemetry.JobsDead.Add(1, new KeyValuePair<string, object?>("type", job.Type));
             logger.LogError("Job {JobId} has unknown type {JobType}; marked dead", job.Id, job.Type);
             return;
         }
@@ -95,6 +96,7 @@ public sealed class JobRunner(
         catch (JsonException ex)
         {
             await SettleAsync(job, workerId, JobStatus.Dead, $"Undeserialisable payload: {ex.Message}", null, CancellationToken.None);
+            AstryxTelemetry.JobsDead.Add(1, new KeyValuePair<string, object?>("type", job.Type));
             logger.LogError(ex, "Job {JobId} ({JobType}) has an undeserialisable payload; marked dead", job.Id, job.Type);
         }
         catch (Exception ex)
@@ -105,6 +107,7 @@ public sealed class JobRunner(
             if (job.Attempts >= job.MaxAttempts)
             {
                 await SettleAsync(job, workerId, JobStatus.Dead, error, null, CancellationToken.None);
+                AstryxTelemetry.JobsDead.Add(1, new KeyValuePair<string, object?>("type", job.Type));
                 logger.LogError(ex, "Job {JobId} ({JobType}) is dead after {Attempts} attempts", job.Id, job.Type, job.Attempts);
             }
             else
