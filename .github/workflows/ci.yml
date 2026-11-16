@@ -70,4 +70,8 @@ jobs:
 
       - name: Expo doctor
         working-directory: apps/mobile
+        # The SDK version check compares against Expo's live list, so every new patch release would fail CI, and the
+        # project only takes versions at least two weeks old. `npx expo install --check` reviews versions by hand.
+        env:
+          EXPO_DOCTOR_SKIP_DEPENDENCY_VERSION_CHECK: "1"
         run: npx --yes expo-doctor

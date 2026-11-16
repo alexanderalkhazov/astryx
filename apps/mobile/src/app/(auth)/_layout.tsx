@@ -12,7 +12,7 @@ const LINK_SCREENS = new Set(['verify-email', 'reset-password']);
 export default function AuthLayout() {
   const status = useSession((s) => s.status);
   const pendingLink = usePendingLink((s) => s.href);
-  const screen = useSegments()[1];
+  const screen = (useSegments() as string[])[1]; // the generated route types (.expo/types) are absent on a fresh clone
 
   if (status === 'unknown') return null;
   if (status === 'signedIn' && !(screen !== undefined && LINK_SCREENS.has(screen))) return <Redirect href={(pendingLink ?? '/') as Href} />;
