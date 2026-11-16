@@ -4000,7 +4000,7 @@ Serilog destructuring policies redact these fields: `password`, `token`, `refres
 - **Security headers:** `nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer` and `default-src 'none'` on every response, plus `Cache-Control: no-store` on `/api` (`HttpPipeline.SecurityHeaders`, `PipelineTests`).
 - **Screen protection:** while signed in, iOS blurs the app-switcher snapshot and Android sets FLAG_SECURE (`useScreenProtection`, `expo-screen-capture`; §18.6).
 - **Row-level security:** evaluated and deferred (ADR 022).
-- **Open:** a breached-password check (ASVS 2.1.7, owner decision) and dependency scanning in CI (T-002).
+- **Open:** a breached-password check (ASVS 2.1.7, owner decision). Dependency and secret scanning run in CI since T-002.
 
 ---
 

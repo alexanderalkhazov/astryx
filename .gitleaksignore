@@ -1,0 +1,4 @@
+# gitleaks findings reviewed and accepted (T-002). Each line is one finding's fingerprint; anything new still fails CI.
+# SYSTEM_DESIGN.md §11 TokenResponse example: illustrative access and refresh tokens, not real credentials.
+1b2a253b170d6fa7e53d360754539f8b120438ee:SYSTEM_DESIGN.md:generic-api-key:2123
+1b2a253b170d6fa7e53d360754539f8b120438ee:SYSTEM_DESIGN.md:generic-api-key:2125

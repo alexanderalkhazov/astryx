@@ -122,7 +122,7 @@ release gate.
 | 13.2.1 | HTTP methods enforced | Met | Minimal API route verbs |
 | 13.2.3 | CSRF for cookie auth | N/A | — |
 | 13.2.5 | Content-Type checked | Met | JSON body binding refuses other types (415) |
-| 14.2.1 | Dependencies up to date | Partial | Manual for now; scanning in CI is T-002 |
+| 14.2.1 | Dependencies up to date | Met | CI `security` job: vulnerable NuGet (any severity) and npm production dependencies (high and critical) fail; weekly Dependabot PRs with a 14-day cooldown (T-002) |
 | 14.3.2 | Debug features off in production | Met | `/dev/*` and the OpenAPI document are Development-only; the live-trading startup guard |
 | 14.4.1–14.4.7 | Security headers | Met | `nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, a restrictive CSP (`HttpPipeline.SecurityHeaders`, `PipelineTests`) |
 | 14.5.3 | CORS allow list | Met | No CORS policy: native client only |
@@ -130,5 +130,4 @@ release gate.
 ## Open items
 
 1. **2.1.7 breached passwords.** Choose HIBP k-anonymity or an offline list (owner decision, before T-119).
-2. **14.2.1 dependency scanning in CI.** T-002.
-3. **Postgres row-level security.** Evaluated and deferred (ADR 022, `docs/adr/022-postgres-row-level-security.md`).
+2. **Postgres row-level security.** Evaluated and deferred (ADR 022, `docs/adr/022-postgres-row-level-security.md`).

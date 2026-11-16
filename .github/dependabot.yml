@@ -1,0 +1,34 @@
+# Weekly dependency update PRs (TASKS.md T-002, SYSTEM_DESIGN.md §18.14). The cooldown keeps the project's rule that
+# versions are at least two weeks old; Expo SDK packages move together with `npx expo install`, so they are grouped.
+version: 2
+updates:
+  - package-ecosystem: nuget
+    directory: /
+    schedule: { interval: weekly, day: monday }
+    cooldown: { default-days: 14 }
+    open-pull-requests-limit: 5
+    groups:
+      opentelemetry: { patterns: ["OpenTelemetry*", "Npgsql.OpenTelemetry"] }
+      efcore: { patterns: ["Microsoft.EntityFrameworkCore*", "Npgsql", "Npgsql.EntityFrameworkCore*", "EFCore.NamingConventions"] }
+      aspnetcore: { patterns: ["Microsoft.AspNetCore*", "Microsoft.Extensions*"] }
+      test: { patterns: ["xunit*", "Microsoft.NET.Test.Sdk", "Shouldly", "Testcontainers*", "coverlet*", "FsCheck*"] }
+
+  - package-ecosystem: npm
+    directory: /
+    schedule: { interval: weekly, day: monday }
+    cooldown: { default-days: 14 }
+    open-pull-requests-limit: 5
+    groups:
+      expo-sdk:
+        patterns: ["expo", "expo-*", "@expo/*", "react-native", "react-native-*", "@react-native*/*", "react", "jest-expo"]
+      lint: { patterns: ["eslint*", "prettier"] }
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly, day: monday }
+    cooldown: { default-days: 14 }
+
+  - package-ecosystem: docker
+    directory: /infra/docker
+    schedule: { interval: weekly, day: monday }
+    cooldown: { default-days: 14 }

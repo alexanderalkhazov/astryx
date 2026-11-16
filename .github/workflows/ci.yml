@@ -84,3 +84,36 @@ jobs:
         env:
           EXPO_DOCTOR_SKIP_DEPENDENCY_VERSION_CHECK: "1"
         run: npx --yes expo-doctor
+
+  security:
+    name: Security (secrets + vulnerable dependencies)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # gitleaks scans every commit, not just the tip
+
+      - name: Secret scan (gitleaks)
+        run: docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:v8.30.1 git /repo --no-banner --redact --exit-code 1
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Vulnerable NuGet packages (any severity fails)
+        run: |
+          dotnet restore Astryx.slnx --locked-mode
+          dotnet list Astryx.slnx package --vulnerable --include-transitive | tee vulnerable.txt
+          ! grep -q "has the following vulnerable packages" vulnerable.txt
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      # Production dependencies only; high and critical fail. Moderate advisories in Expo's build tooling are tracked
+      # through Dependabot rather than blocking every build.
+      - name: Vulnerable npm packages (high or critical fails)
+        run: pnpm audit --prod --audit-level high

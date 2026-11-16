@@ -16,8 +16,6 @@
     "@shopify/flash-list": "2.3.2",
     "@shopify/react-native-skia": "~2.14.0",
     "@tanstack/react-query": "^5.107.1",
-    "@testing-library/react-native": "^14.1.0",
-    "@types/jest": "30.0.0",
     "decimal.js-light": "^2.5.1",
     "expo": "~58.0.23",
     "expo-constants": "~58.0.15",
@@ -34,8 +32,6 @@
     "expo-splash-screen": "~58.0.13",
     "expo-status-bar": "~58.0.4",
     "expo-system-ui": "~58.0.7",
-    "jest": "~30.5.2",
-    "jest-expo": "~58.0.14",
     "lucide-react-native": "^1.71.0",
     "react": "19.3.0",
     "react-hook-form": "^7.91.0",
@@ -51,11 +47,15 @@
   },
   "devDependencies": {
     "@astryx/tsconfig": "workspace:*",
+    "@testing-library/react-native": "^14.1.0",
+    "@types/jest": "30.0.0",
     "@types/node": "^26.6.6",
     "@types/react": "~19.3.0",
     "eslint": "9.39.5",
     "eslint-config-expo": "58.0.4",
     "eslint-config-prettier": "9.1.2",
+    "jest": "~30.5.2",
+    "jest-expo": "~58.0.14",
     "typescript": "~6.0.3"
   },
   "scripts": {
