@@ -41,10 +41,30 @@ public static class HttpPipeline
         return services;
     }
 
-    /// <summary>Correlation → exception handler → status-code problem details → body limit → idempotency buffering.</summary>
+    /// <summary>
+    /// Response headers for a JSON API used by a native app (SYSTEM_DESIGN.md §18.9, ASVS V14.4): no MIME sniffing, no
+    /// framing, no referrer, and personal data never cached by intermediaries. TLS and HSTS terminate at the edge.
+    /// </summary>
+    private static Task SecurityHeaders(HttpContext context, Func<Task> next)
+    {
+        var headers = context.Response.Headers;
+        headers.XContentTypeOptions = "nosniff";
+        headers.XFrameOptions = "DENY";
+        headers["Referrer-Policy"] = "no-referrer";
+        headers.ContentSecurityPolicy = "default-src 'none'; frame-ancestors 'none'";
+        if (context.Request.Path.StartsWithSegments("/api"))
+        {
+            headers.CacheControl = "no-store";
+        }
+
+        return next();
+    }
+
+    /// <summary>Correlation → security headers → exception handler → status-code problem details → body limit → idempotency buffering.</summary>
     public static WebApplication UseAstryxHttp(this WebApplication app)
     {
         app.UseMiddleware<CorrelationIdMiddleware>();
+        app.Use(SecurityHeaders);
         app.UseExceptionHandler(new ExceptionHandlerOptions
         {
             StatusCodeSelector = exception => exception is BadHttpRequestException bad ? bad.StatusCode : StatusCodes.Status500InternalServerError,

@@ -3988,6 +3988,20 @@ The Idempotency-Key and the DB uniqueness constraints (§15.9), plus assessment 
 
 Serilog destructuring policies redact these fields: `password`, `token`, `refreshToken`, `accessToken`, `authorization`, `apiKey`, `credentials`, `email` (masked `t***@example.com`). Request and response bodies are **not** logged by default. AI prompts and outputs are not logged (DB only). OTel HTTP instrumentation strips query strings on auth routes and the SignalR `access_token`.
 
+**Implemented (T-115).** The security review is `docs/security/asvs-l1.md` (OWASP ASVS 4.0.3 L1).
+
+- **Logs:** instead of destructuring policies, no log template may name a password, token, key, credential or email (`SensitiveLoggingTests`, architecture).
+  - `Microsoft.AspNetCore` logs at Warning, so request lines with the SignalR `?access_token=` never reach the log. None appear in the API logs.
+  - EF sensitive-data logging is never enabled, and OTel redacts query strings.
+- **Key rotation:** drilled in `JwtKeyRotationTests`:
+  1. add the new key first (it signs);
+  2. keep the old one until outstanding 15-minute tokens expire (they keep validating);
+  3. remove it, and old tokens fail.
+- **Security headers:** `nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer` and `default-src 'none'` on every response, plus `Cache-Control: no-store` on `/api` (`HttpPipeline.SecurityHeaders`, `PipelineTests`).
+- **Screen protection:** while signed in, iOS blurs the app-switcher snapshot and Android sets FLAG_SECURE (`useScreenProtection`, `expo-screen-capture`; §18.6).
+- **Row-level security:** evaluated and deferred (ADR 022).
+- **Open:** a breached-password check (ASVS 2.1.7, owner decision) and dependency scanning in CI (T-002).
+
 ---
 
 ## 19. Background Jobs and Reliability
@@ -4675,6 +4689,7 @@ Sentry SDKs: `@sentry/react-native` (with source maps through EAS) and `Sentry.A
 | 018 | SignalR scale-out via outbox + LISTEN/NOTIFY, no Redis | DECIDED | Keeps a single datastore | Redis backplane, Azure SignalR | Custom fan-out code |
 | 020 | eToro official public API as the execution venue; Demo in MVP, Real gated | DECIDED (2026-11-10) | Verified official API with separate Demo/Real environments, native SL/TP, async orders with `x-request-id` idempotency; matches the design's eToro flows | Internal simulator only; other brokers | Async order flow (§17.5), encrypted key storage, broker-authoritative fills and reconciliation; simulator kept for tests |
 | 021 | Broker is authoritative for fills, positions and cash in `etoro_*` portfolios; Astryx mirrors and reconciles | DECIDED (2026-11-10) | Avoids two sources of truth for real broker state | Astryx ledger authoritative | Mirror tables store broker ids; mismatches halt entries |
+| 022 | Postgres row-level security evaluated and deferred: application-level `IUserOwned` filters plus isolation tests for the MVP | DECIDED (2026-11-16) | One tested mechanism; RLS adds a per-transaction GUC, a role split for system jobs and fail-closed surprises | RLS now (`docs/adr/022-postgres-row-level-security.md`) | Revisit before eToro Real or any shared database access |
 | 019 | Minimal APIs with endpoint filters instead of MVC controllers (supersedes the v0.1 "controllers" choice) | DECIDED (2026-11-10, T-013) | .NET 10 OpenAPI generation works natively with minimal APIs and typed results; less ceremony; each module maps its own route group; validation and idempotency become reusable endpoint filters (`WithValidation<T>()`, `[Idempotent]`) | MVC controllers | OpenAPI metadata is declared per endpoint (`Produces…`, `WithName`); conventions live in `Astryx.Infrastructure.Http` |
 
 ---

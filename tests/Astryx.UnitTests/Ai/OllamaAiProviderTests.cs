@@ -155,7 +155,7 @@ public class OllamaAiProviderTests
     {
         var (provider, _, _, _, _) = Create(chat: (_, _) =>
         {
-            Thread.Sleep(300);
+            Thread.Sleep(1500); // far past the 50 ms timeout, so a timer firing late under a loaded test run still trips it
             return Json(Chat);
         });
 

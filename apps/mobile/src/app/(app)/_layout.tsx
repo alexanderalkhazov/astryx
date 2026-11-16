@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useReducedMotion } from 'react-native-reanimated';
 
 import { usePushNotifications } from '@/features/push/usePushNotifications';
+import { useScreenProtection } from '@/features/security/useScreenProtection';
 import { useRealtimeConnection } from '@/features/realtime/useRealtimeConnection';
 import { stackTransition } from '@/lib/motion';
 import { clearPendingLink, currentHref, stashPendingLink } from '@/state/pendingLink';
@@ -19,6 +20,7 @@ export default function AppLayout() {
   const reduceMotion = useReducedMotion();
   useRealtimeConnection();
   usePushNotifications();
+  useScreenProtection(status === 'signedIn');
 
   useEffect(() => {
     if (status === 'signedOut' && !signedOutByUser) stashPendingLink(currentHref(pathname, segments, params));

@@ -32,3 +32,11 @@ jest.mock('expo-device', () => ({ isDevice: true }));
 
 // Error tracking (T-113): no native Sentry in Jest.
 jest.mock('@sentry/react-native', () => ({ init: jest.fn(), wrap: (component: unknown) => component, captureException: jest.fn() }));
+
+// Screen protection (T-115): no native module in Jest.
+jest.mock('expo-screen-capture', () => ({
+  enableAppSwitcherProtectionAsync: jest.fn(() => Promise.resolve()),
+  disableAppSwitcherProtectionAsync: jest.fn(() => Promise.resolve()),
+  preventScreenCaptureAsync: jest.fn(() => Promise.resolve()),
+  allowScreenCaptureAsync: jest.fn(() => Promise.resolve()),
+}));

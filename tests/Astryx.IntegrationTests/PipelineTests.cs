@@ -30,6 +30,21 @@ public class PipelineTests(ApiFactory factory) : IClassFixture<ApiFactory>
         await ProblemAsync(await _client.GetAsync("/api/v1/does-not-exist"), HttpStatusCode.NotFound, "not_found");
 
     [Fact]
+    public async Task Responses_carry_security_headers_and_api_responses_are_never_cached()
+    {
+        var api = await _client.GetAsync("/api/v1/system/status");
+        var health = await _client.GetAsync("/health/live");
+
+        api.Headers.GetValues("X-Content-Type-Options").Single().ShouldBe("nosniff");
+        api.Headers.GetValues("X-Frame-Options").Single().ShouldBe("DENY");
+        api.Headers.GetValues("Referrer-Policy").Single().ShouldBe("no-referrer");
+        api.Headers.GetValues("Content-Security-Policy").Single().ShouldBe("default-src 'none'; frame-ancestors 'none'");
+        api.Headers.CacheControl!.NoStore.ShouldBeTrue();
+        health.Headers.GetValues("X-Content-Type-Options").Single().ShouldBe("nosniff");
+        (await _client.GetAsync("/api/v1/does-not-exist")).Headers.GetValues("X-Content-Type-Options").Single().ShouldBe("nosniff"); // errors too
+    }
+
+    [Fact]
     public async Task Valid_correlation_id_is_echoed()
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, "/health/live");
