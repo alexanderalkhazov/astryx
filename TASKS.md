@@ -470,7 +470,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [x] **T-112** Order-path safety proof test
   - **Acceptance:** an API test calls `POST /paper/orders` with every combination of missing, stale, foreign, failed, expired and mismatched-hash assessments, and also with `Features:LiveTrading=true`. Each one is rejected and no order or ledger row is created.
   - **Refs:** §21.10 items 4–5, A5 · **Depends:** T-084 · **P0**
-- [ ] **T-113** Observability
+- [x] **T-113** Observability
   - **Acceptance:** OpenTelemetry traces and metrics from §23.4 are exported to a local collector in compose (Grafana/Tempo or Aspire dashboard). Correlation IDs propagate through the outbox and jobs. Sentry is wired for API and mobile (DSN via env, disabled when unset).
   - **Refs:** §23 · **Depends:** T-085 · **P1**
 - [ ] **T-114** Alerts and runbooks
