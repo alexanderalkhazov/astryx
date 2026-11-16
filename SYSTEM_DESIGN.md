@@ -4512,6 +4512,28 @@ Serilog writes compact JSON to stdout. Standard properties: `timestamp`, `level`
 
 Sentry SDKs: `@sentry/react-native` (with source maps through EAS) and `Sentry.AspNetCore`. PII scrubbing is on, request bodies are not sent, and release health per build is tracked.
 
+**Implemented (T-113).**
+
+- **Telemetry export:** `apps/api/Observability.cs` adds OpenTelemetry when `OTEL_EXPORTER_OTLP_ENDPOINT` is set.
+  - Traces: ASP.NET Core (health probes filtered out), HttpClient, Npgsql, plus the `Astryx` activity source, which opens a span per outbox delivery (`outbox {type}`) and per job (`job {type}`), tagged with `astryx.correlation_id`.
+  - Metrics: ASP.NET Core and HttpClient (the semantic-convention names stand in for `http_server_request_duration_seconds`), Npgsql (`db.client.*`, in place of an EF histogram), and the `Astryx` meter.
+- **The `Astryx` meter** (`Astryx.Infrastructure.Observability.AstryxTelemetry`) carries the §23.4 domain metrics:
+  - `ai_inference_duration_seconds`, `ai_jobs_total`;
+  - `market_provider_requests_total`, `market_quote_age_seconds`;
+  - `scanner_run_duration_seconds`, `scanner_last_success_timestamp`;
+  - `orders_total`, `risk_assessments_total`;
+  - `position_monitor_lag_seconds`, `outbox_lag_seconds`;
+  - `jobs_failed_total`, `reconciliation_mismatches_total`.
+
+  Modules pass `TimeSpan`s and Infrastructure converts them, so the float ban holds in modules.
+- **Not yet implemented:** `ai_queue_*` and `queue_depth`, which need a polling probe.
+- **Local stack:** compose runs the Aspire dashboard (`otel`, UI on http://localhost:18888, OTLP gRPC inside the network). Tests and a bare `dotnet run` export nothing.
+- **Correlation IDs:** the request's `X-Correlation-Id` is stored on outbox messages and jobs, and restored when they run, so jobs enqueued by handlers inherit it. `ObservabilityTests` proves one order's id reaches its `paper.order_filled.v1` event and the `notifications.push.v1` job a handler enqueued.
+- **Sentry:**
+  - API: starts only with `Sentry:Dsn` (compose passes `SENTRY_DSN` from `.env`), with no PII and no Sentry tracing.
+  - Mobile: `src/lib/sentry.ts` starts only with `EXPO_PUBLIC_SENTRY_DSN`, with no PII and query strings stripped from breadcrumb URLs.
+  - `@sentry/cli`'s install script is skipped (`allowBuilds: false`); source-map upload belongs to the CI and EAS setup (T-001, T-117).
+
 ### 23.6 Database performance
 
 `pg_stat_statements` is enabled. Queries > 200 ms are logged (`log_min_duration_statement`). EF logging of slow commands > 100 ms happens at Warning level. Index review is part of every PR that adds a query on a hot table (`price_bars`, `signals`, `notifications`).

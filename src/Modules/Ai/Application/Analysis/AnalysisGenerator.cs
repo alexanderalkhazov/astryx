@@ -1,4 +1,5 @@
 using Astryx.Contracts.MarketData;
+using Astryx.Infrastructure.Observability;
 using Astryx.Modules.Ai.Application.Context;
 using Astryx.Modules.Ai.Application.Prompts;
 using Astryx.Modules.Ai.Application.Providers;
@@ -49,6 +50,7 @@ public sealed class AnalysisGenerator(IAiProvider provider, AiOutputValidator va
             var input = new ValidationInput(context, prompt, model.Name, timeProvider.GetUtcNow(), fresh, minRewardRisk);
             var validation = validator.Validate(completion.RawText, input);
             attempts.Add(new GenerationAttempt(completion, validation));
+            AstryxTelemetry.AiInference(completion.Latency, completion.Model, prompt.Version, validation.Status.ToString().ToLowerInvariant());
 
             if (validation.Status != ValidationStatus.Invalid || !validation.Repairable || attempts.Count >= MaxAttempts)
             {

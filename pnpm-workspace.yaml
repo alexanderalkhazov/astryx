@@ -4,5 +4,7 @@ packages:
 
 # Dependency build scripts are blocked unless reviewed here (pnpm allowBuilds).
 # @parcel/watcher ships prebuilt binaries, so its install script is deliberately not run.
+# @sentry/cli's script downloads the upload CLI, only needed to send source maps from CI; not run (T-113).
 allowBuilds:
   "@parcel/watcher": false
+  "@sentry/cli": false

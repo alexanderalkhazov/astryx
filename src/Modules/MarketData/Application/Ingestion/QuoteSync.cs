@@ -1,6 +1,7 @@
 using Astryx.Contracts.Events.MarketData;
 using Astryx.Contracts.MarketData;
 using Astryx.Infrastructure.Jobs;
+using Astryx.Infrastructure.Observability;
 using Astryx.Modules.MarketData.Application.Providers;
 using Astryx.Modules.MarketData.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -89,6 +90,10 @@ public sealed class QuoteSyncHandler(
         {
             // Store what arrived even when the budget ran out part-way.
             await StoreAsync(received, ids, cancellationToken);
+            if (await db.Quotes.MinAsync(q => (DateTimeOffset?)q.AsOf, CancellationToken.None) is { } oldest)
+            {
+                AstryxTelemetry.QuoteAge(clock.Now - oldest);
+            }
         }
     }
 

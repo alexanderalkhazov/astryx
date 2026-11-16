@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using System.Text.Json;
+using Astryx.Infrastructure.Observability;
 using Astryx.Infrastructure.Outbox;
 using Astryx.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -73,6 +75,9 @@ public sealed class JobRunner(
         timeout.CancelAfter(TimeSpan.FromSeconds(job.TimeoutSeconds));
         var previousCorrelation = CorrelationContext.Id;
         CorrelationContext.Id = job.CorrelationId;
+        using var activity = AstryxTelemetry.Source.StartActivity($"job {job.Type}", ActivityKind.Internal);
+        activity?.SetTag("astryx.correlation_id", job.CorrelationId);
+        activity?.SetTag("astryx.job_attempt", job.Attempts);
         var started = timeProvider.GetTimestamp();
         try
         {
@@ -94,6 +99,8 @@ public sealed class JobRunner(
         }
         catch (Exception ex)
         {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.GetType().Name);
+            AstryxTelemetry.JobsFailed.Add(1, new KeyValuePair<string, object?>("type", job.Type));
             var error = ex is OperationCanceledException ? $"Timed out after {job.TimeoutSeconds} s" : $"{ex.GetType().Name}: {ex.Message}";
             if (job.Attempts >= job.MaxAttempts)
             {

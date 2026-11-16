@@ -6,6 +6,7 @@ using Astryx.Contracts.MarketData;
 using Astryx.Contracts.Paper;
 using Astryx.Contracts.Portfolio;
 using Astryx.Contracts.Trading;
+using Astryx.Infrastructure.Observability;
 using Astryx.Infrastructure.Security;
 using Astryx.Modules.Paper.Domain;
 using Astryx.Modules.Paper.Infrastructure.Persistence;
@@ -67,6 +68,7 @@ public sealed class PaperOrderService(
         var prepared = await gate.PrepareAsync(userId, request.ProposalId, request.AssessmentId, cancellationToken);
         if (!prepared.IsSuccess)
         {
+            AstryxTelemetry.Orders.Add(1, new("purpose", "entry"), new("outcome", prepared.Error.Code));
             return prepared.Error;
         }
 
@@ -126,6 +128,7 @@ public sealed class PaperOrderService(
 
         await gate.MarkApprovedAsync(ticket.ProposalId, cancellationToken);
         db.Publish(new OrderAccepted(userId, order.Id, ticket.ProposalId, ticket.Symbol, order.Status));
+        AstryxTelemetry.Orders.Add(1, new("purpose", "entry"), new("outcome", order.Status));
         db.Audit(new AuditEntry("paper.order_placed", AuditActor.User, userId, "order", order.Id.ToString(), Metadata: new
         {
             proposalId = ticket.ProposalId, assessmentId = ticket.AssessmentId, status = order.Status, quantity = ticket.Quantity,

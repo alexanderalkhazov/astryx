@@ -9,6 +9,7 @@ using Astryx.Contracts.Paper;
 using Astryx.Contracts.Portfolio;
 using Astryx.Contracts.Profiles;
 using Astryx.Contracts.Quant;
+using Astryx.Infrastructure.Observability;
 using Astryx.Modules.Trading.Domain;
 using Astryx.Modules.Trading.Domain.Risk;
 using Astryx.Modules.Trading.Infrastructure.Persistence;
@@ -118,6 +119,8 @@ public sealed class AssessmentService(
 
         var (inputs, context) = gathered.Value;
         var result = RiskEngine.Assess(inputs);
+        AstryxTelemetry.RiskAssessments.Add(
+            1, new("approvable", result.Approvable), new("failing_check", result.Checks.FirstOrDefault(c => c.Status == CheckStatus.Fail)?.Code ?? "none"));
         var assessment = new RiskAssessment
         {
             Id = Ids.New(),

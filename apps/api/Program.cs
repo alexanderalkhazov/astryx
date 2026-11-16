@@ -1,9 +1,14 @@
 using System.Text.Json;
+using Astryx.Api;
 using Astryx.Api.Dev;
 using Astryx.Api.OpenApi;
+using Astryx.Api.TestSupport;
 using Astryx.Infrastructure;
 using Astryx.Infrastructure.Health;
+using Astryx.Infrastructure.Http;
+using Astryx.Infrastructure.Persistence;
 using Astryx.Infrastructure.Realtime;
+using Astryx.Infrastructure.Security;
 using Astryx.Modules.Ai;
 using Astryx.Modules.Ai.Api;
 using Astryx.Modules.Audit;
@@ -23,20 +28,16 @@ using Astryx.Modules.Portfolio.Api;
 using Astryx.Modules.Profiles;
 using Astryx.Modules.Profiles.Api;
 using Astryx.Modules.Quant;
+using Astryx.Modules.Quant.Api;
 using Astryx.Modules.Strategies;
+using Astryx.Modules.Strategies.Api;
 using Astryx.Modules.Trading;
 using Astryx.Modules.Trading.Api;
 using Astryx.Modules.Watchlists;
 using Astryx.Modules.Watchlists.Api;
-using Astryx.Modules.Quant.Api;
-using Astryx.Modules.Strategies.Api;
 using Astryx.Workers;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Astryx.Infrastructure.Http;
-using Astryx.Infrastructure.Persistence;
-using Astryx.Infrastructure.Security;
-using Astryx.Api.TestSupport;
 using Serilog;
 using Serilog.Formatting.Compact;
 
@@ -50,6 +51,7 @@ if (args.Contains("--generate-jwt-key", StringComparer.Ordinal))
 var builder = WebApplication.CreateBuilder(args);
 
 StartupGuards.EnsureLiveTradingDisabled(builder.Configuration);
+builder.AddAstryxObservability();
 
 builder.Services.AddSerilog((services, logger) => logger
     .ReadFrom.Configuration(builder.Configuration)

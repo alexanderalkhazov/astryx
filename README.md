@@ -71,6 +71,8 @@ If `pod install` fails with an encoding error, run `export LANG=en_US.UTF-8`.
 
 ## Notes
 
+- Traces, metrics and the API's spans per job and outbox event are in the Aspire dashboard at http://localhost:18888 (compose service `otel`). Sentry stays off unless `SENTRY_DSN` (API) or `EXPO_PUBLIC_SENTRY_DSN` (app) is set.
+
 - SDK 58 apps can't be opened in Expo Go on a physical device. Use the simulator, or build a dev client with `npx expo run:ios`.
 - `qwen3.5:0.8b` does not support Ollama structured output (`format`). The AI layer prompts for JSON and validates it (SYSTEM_DESIGN.md §12).
 - Add Expo packages with `npx expo install <pkg>` from `apps/mobile`, never with `pnpm add`. That keeps versions SDK-compatible.

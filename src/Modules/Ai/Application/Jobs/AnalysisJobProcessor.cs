@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.Json;
 using Astryx.Contracts.Events.Ai;
 using Astryx.Contracts.Profiles;
+using Astryx.Infrastructure.Observability;
 using Astryx.Modules.Ai.Application.Analysis;
 using Astryx.Modules.Ai.Application.Context;
 using Astryx.Modules.Ai.Application.Prompts;
@@ -283,6 +284,7 @@ public sealed class AnalysisJobProcessor(IServiceProvider services, IOptions<Ana
     private async Task SettleAsync(AiDbContext db, AnalysisJob job, string workerId, string status, string? errorCode, string? errorDetail, AnalysisResult? result, CancellationToken cancellationToken)
     {
         var now = timeProvider.GetUtcNow();
+        AstryxTelemetry.AiJobs.Add(1, new("outcome", status), new("error_code", errorCode ?? "none"));
         var linked = result is not null && status == AnalysisJobStatus.Completed ? result.Id : (Guid?)null;
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
         var settled = await db.Jobs.IgnoreQueryFilters()

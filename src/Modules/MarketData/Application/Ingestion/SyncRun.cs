@@ -1,3 +1,4 @@
+using Astryx.Infrastructure.Observability;
 using Astryx.Modules.MarketData.Application.Providers;
 using Microsoft.Extensions.Logging;
 
@@ -31,16 +32,19 @@ public sealed class SyncRunner(SyncStateStore state, IMarketDataProvider provide
         {
             await work(meter);
             await state.RecordSuccessAsync(provider.Code, dataset, meter.Count, cancellationToken);
+            AstryxTelemetry.MarketProviderRequests.Add(meter.Count, new("provider", provider.Code), new("dataset", dataset), new("outcome", "ok"));
         }
         catch (RateBudgetExhaustedException)
         {
             logger.LogInformation("{Dataset} sync paused after {Requests} requests: rate budget exhausted", dataset, meter.Count);
             await state.RecordFailureAsync(provider.Code, dataset, meter.Count, SyncErrors.RateBudget, cancellationToken);
+            AstryxTelemetry.MarketProviderRequests.Add(meter.Count, new("provider", provider.Code), new("dataset", dataset), new("outcome", "rate_budget"));
         }
         catch (MarketDataUnavailableException ex)
         {
             logger.LogWarning("{Dataset} sync failed: {Reason}", dataset, ex.Reason);
             await state.RecordFailureAsync(provider.Code, dataset, meter.Count, SyncErrors.ProviderUnavailable, cancellationToken);
+            AstryxTelemetry.MarketProviderRequests.Add(Math.Max(1, meter.Count), new("provider", provider.Code), new("dataset", dataset), new("outcome", "unavailable"));
             if (rethrowUnavailable)
             {
                 throw;

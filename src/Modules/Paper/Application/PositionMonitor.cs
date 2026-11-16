@@ -5,6 +5,7 @@ using Astryx.Contracts.MarketData;
 using Astryx.Contracts.Portfolio;
 using Astryx.Contracts.Trading;
 using Astryx.Infrastructure.Jobs;
+using Astryx.Infrastructure.Observability;
 using Astryx.Infrastructure.Persistence;
 using Astryx.Modules.Paper.Domain;
 using Astryx.Modules.Paper.Infrastructure.Persistence;
@@ -70,6 +71,7 @@ public sealed class PositionMonitor(IServiceProvider services, ILogger<PositionM
         var execution = sp.GetRequiredService<PaperExecution>();
         var sessions = sp.GetRequiredService<IMarketSessionClock>();
         var now = sessions.Now;
+        AstryxTelemetry.MonitorLag(now - quote.AsOf);
         var window = PriceWindow.Tick(quote.Last);
         var working = await db.Orders.IgnoreQueryFilters()
             .Where(o => o.PortfolioId == portfolioId && o.InstrumentId == quote.InstrumentId && o.Status == OrderStatus.Working)

@@ -1,5 +1,7 @@
+using System.Diagnostics;
 using System.Text.Json;
 using Astryx.Contracts.Events;
+using Astryx.Infrastructure.Observability;
 using Astryx.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -70,6 +72,10 @@ public sealed class OutboxDispatcher(
         var previousCorrelation = CorrelationContext.Id;
         CorrelationContext.Id = message.CorrelationId;
         using var logScope = logger.BeginScope(new Dictionary<string, object?> { ["CorrelationId"] = message.CorrelationId, ["OutboxMessageId"] = message.Id });
+        using var activity = AstryxTelemetry.Source.StartActivity($"outbox {message.Type}", ActivityKind.Consumer);
+        activity?.SetTag("astryx.correlation_id", message.CorrelationId);
+        activity?.SetTag("astryx.outbox_message_id", message.Id);
+        AstryxTelemetry.OutboxLag(timeProvider.GetUtcNow() - message.OccurredAt);
         try
         {
             foreach (var handler in registry.HandlersFor(message.Type))
@@ -88,6 +94,7 @@ public sealed class OutboxDispatcher(
         }
         catch (JsonException ex)
         {
+            activity?.SetStatus(ActivityStatusCode.Error, "poison");
             message.Attempts++;
             message.LastError = Truncate($"Undeserialisable payload: {ex.Message}");
             message.FailedAt = timeProvider.GetUtcNow();
@@ -95,6 +102,7 @@ public sealed class OutboxDispatcher(
         }
         catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
         {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.GetType().Name);
             message.Attempts++;
             message.LastError = Truncate($"{ex.GetType().Name}: {ex.Message}");
             if (message.Attempts >= settings.MaxAttempts)

@@ -20,6 +20,13 @@ services:
     image: axllent/mailpit:latest
     ports: ["1025:1025", "8025:8025"]
 
+  # OpenTelemetry collector and viewer for traces, metrics and logs (SYSTEM_DESIGN.md §23, T-113): http://localhost:18888
+  otel:
+    image: mcr.microsoft.com/dotnet/aspire-dashboard:13.5.2
+    environment:
+      ASPIRE_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS: "true"
+    ports: ["18888:18888"]
+
   api:
     build:
       context: ../..
@@ -39,6 +46,9 @@ services:
       Email__Smtp__Host: mailpit
       Email__Smtp__Port: "1025"
       Features__DevFaultInjection: "true"
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel:18889
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      Sentry__Dsn: ${SENTRY_DSN:-} # error tracking stays off unless set in .env
       # Every local client shares one IP: the simulator, Maestro's setup scripts and curl. Production keeps 10/min · 50/h.
       RateLimits__AuthPerMinute: "60"
       RateLimits__AuthPerHour: "1000"

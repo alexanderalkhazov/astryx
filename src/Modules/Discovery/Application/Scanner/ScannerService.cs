@@ -4,6 +4,7 @@ using Astryx.Contracts.Events.Discovery;
 using Astryx.Contracts.MarketData;
 using Astryx.Contracts.Quant;
 using Astryx.Contracts.Strategies;
+using Astryx.Infrastructure.Observability;
 using Astryx.Infrastructure.Outbox;
 using Astryx.Modules.Discovery.Domain;
 using Astryx.Modules.Discovery.Infrastructure.Persistence;
@@ -81,6 +82,12 @@ public sealed class ScannerService(
                 cancellationToken);
             run.Status = ScannerRunStatus.Failed;
             run.ErrorCode = Unexpected;
+        }
+
+        AstryxTelemetry.ScannerRun(timeProvider.GetUtcNow() - run.StartedAt, run.Status);
+        if (run.Status != ScannerRunStatus.Failed)
+        {
+            AstryxTelemetry.ScannerSucceeded(timeProvider.GetUtcNow());
         }
 
         logger.LogInformation(

@@ -29,3 +29,6 @@ jest.mock('@shopify/flash-list', () => {
 // Push (T-101): no native notification module or device info in Jest.
 jest.mock('expo-notifications', () => require('./jest/notifications'));
 jest.mock('expo-device', () => ({ isDevice: true }));
+
+// Error tracking (T-113): no native Sentry in Jest.
+jest.mock('@sentry/react-native', () => ({ init: jest.fn(), wrap: (component: unknown) => component, captureException: jest.fn() }));

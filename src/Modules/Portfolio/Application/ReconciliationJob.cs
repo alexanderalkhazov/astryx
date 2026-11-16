@@ -4,6 +4,7 @@ using Astryx.Contracts.Audit;
 using Astryx.Contracts.MarketData;
 using Astryx.Contracts.Paper;
 using Astryx.Infrastructure.Jobs;
+using Astryx.Infrastructure.Observability;
 using Astryx.Modules.Portfolio.Domain;
 using Astryx.Modules.Portfolio.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -116,6 +117,11 @@ public sealed class PortfolioReconciler(PortfolioDbContext db, IPaperReconciliat
             && Math.Abs(snapshot.Equity - (snapshot.Cash + snapshot.Invested)) > Tolerance)
         {
             issues.Add($"snapshot {snapshot.Kind} {snapshot.SnapshotAt:O}: equity {M(snapshot.Equity)} but cash + invested = {M(snapshot.Cash + snapshot.Invested)}");
+        }
+
+        foreach (var kind in issues.Select(i => i.Split(' ', 2)[0].TrimEnd(':')))
+        {
+            AstryxTelemetry.ReconciliationMismatches.Add(1, new KeyValuePair<string, object?>("kind", kind)); // ledger, position, portfolio, order, snapshot
         }
 
         await RecordAsync(portfolio, issues, now, cancellationToken);

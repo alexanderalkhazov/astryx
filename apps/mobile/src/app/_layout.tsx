@@ -17,9 +17,11 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { ToastHost } from '@/components/ToastHost';
 import { queryClient } from '@/lib/queryClient';
+import { initSentry } from '@/lib/sentry';
 import { restoreSession } from '@/lib/session';
 import { useSession } from '@/state/session';
 
+initSentry();
 void SplashScreen.preventAutoHideAsync();
 
 // Root: providers, auth gate (T-034), sheet portal and toast host (T-032), SignalR lifecycle (SYSTEM_DESIGN.md §8.3).
