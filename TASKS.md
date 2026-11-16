@@ -127,7 +127,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Scope:** gitleaks; `dotnet list package --vulnerable`; `pnpm audit --prod` (fail on high or critical); Dependabot/Renovate config.
   - **Acceptance:** a committed fake secret fails CI. A weekly update PR is opened automatically.
   - **Refs:** §18.8, §18.14 · **Depends:** T-001 · **P1**
-- [ ] **T-003** Linting and formatting
+- [x] **T-003** Linting and formatting
   - **Scope:** ESLint (Expo config, plus a rule forbidding `color.gain` outside P&L/executed components) and Prettier for TS; `dotnet format --verify-no-changes`; `pnpm lint` in Turbo and CI.
   - **Acceptance:** CI fails on unformatted code. The lint rule catches a deliberate violation.
   - **Refs:** §8.6, §4.4 · **Depends:** T-001 · **P1**
