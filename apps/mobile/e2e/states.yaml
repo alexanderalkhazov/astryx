@@ -1,0 +1,249 @@
+# States and failures (SYSTEM_DESIGN.md §21.8–21.9, T-111) against the compose stack with fake data:
+# empty Discover → scanner error → connection-lost banner → approval disabled on stale prices → recovery →
+# a paper fill → stop hit (toast and Activity entry). Toggles Development-only faults through /dev/faults.
+#   maestro --device <udid> test -e EMAIL=… -e PASSWORD=… e2e/states.yaml   (setup as for journey.yaml, see README)
+appId: ${APP_ID}
+env:
+  APP_ID: app.astryx.mobile
+  LINK: astryx://
+  API_URL: http://localhost:5080
+  DEV_CLIENT_URL: exp+astryx://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081&disableOnboarding=1
+---
+- runScript:
+    file: scripts/journey-setup.js
+    env:
+      API_URL: ${API_URL}
+      EMAIL: ${EMAIL}
+      PASSWORD: ${PASSWORD}
+- launchApp:
+    stopApp: true
+- openLink: ${DEV_CLIENT_URL}
+- tapOn:
+    text: Open
+    optional: true
+- extendedWaitUntil:
+    visible: "Sign in|Overview"
+    timeout: 60000
+- runFlow:
+    file: sign-in.yaml
+    env:
+      EMAIL: ${EMAIL}
+      PASSWORD: ${PASSWORD}
+- runFlow: close-dev-menu.yaml
+
+# 1. Empty Discover: a filter nothing matches (a deep link: a tab tap right after sign-in can be dropped)
+- openLink: ${LINK}discover
+- tapOn:
+    text: Open
+    optional: true
+- extendedWaitUntil:
+    visible: "All, \\d+"
+    timeout: 30000
+- tapOn: "All, \\d+"
+- runFlow:
+    when:
+      visible: Clear all
+    commands:
+      - tapOn: Clear all
+- tapOn:
+    id: discover-filters
+- extendedWaitUntil:
+    visible: "Show \\d+ setups?"
+    timeout: 10000
+- tapOn: Staples
+- tapOn:
+    id: filters-apply
+- extendedWaitUntil:
+    visible:
+      id: discover-empty
+    timeout: 10000
+- takeScreenshot: states-01-discover-empty
+- tapOn: Reset filters
+
+# 2. Scanner error: the next run fails, Discover hides signals rather than show stale ones
+- runScript:
+    file: scripts/faults.js
+    env:
+      API_URL: ${API_URL}
+      FAULTS: '{"scanner":"failing"}'
+- repeat: # pull to refresh until Discover sees the failed run
+    times: 6
+    while:
+      notVisible:
+        id: scanner-unavailable
+    commands:
+      - swipe:
+          start: 50%, 35%
+          end: 50%, 75%
+      - extendedWaitUntil:
+          visible:
+            id: scanner-unavailable
+          timeout: 3000
+          optional: true
+- assertVisible:
+    id: scanner-unavailable
+- takeScreenshot: states-02-scanner-error
+- runScript:
+    file: scripts/faults.js
+    env:
+      API_URL: ${API_URL}
+      FAULTS: '{"scanner":"ok"}'
+
+# A pending NVDA proposal while prices are fresh (a stale quote refuses new proposals, §11.7 T1)
+- openLink: ${LINK}stock/NVDA
+- extendedWaitUntil:
+    visible:
+      id: stock-review-proposal
+    timeout: 30000
+- runFlow: review-proposal.yaml
+- extendedWaitUntil:
+    visible:
+      id: proposal-approve
+      enabled: true
+    timeout: 60000
+
+# 3. Connection lost: the market data feed goes down
+- runScript:
+    file: scripts/faults.js
+    env:
+      API_URL: ${API_URL}
+      FAULTS: '{"marketData":"down"}'
+- openLink: ${LINK} # Home carries the banner
+- tapOn:
+    text: Open
+    optional: true
+- extendedWaitUntil: # the next quote sync fails (≤ 60 s), the status poll sees it (≤ 15 s)
+    visible: "Market data connection lost.*" # the banner reads title and body together
+    timeout: 120000
+- takeScreenshot: states-03-connection-lost
+
+# 4. Approval disabled: once prices are older than the risk engine's 90 s limit
+- repeat:
+    times: 30
+    while:
+      true: ${!output.quotesOld}
+    commands:
+      - runScript:
+          file: scripts/feed.js
+          env:
+            API_URL: ${API_URL}
+      - extendedWaitUntil:
+          visible: __never_visible__
+          timeout: 5000
+          optional: true
+- assertTrue: ${output.quotesOld}
+- openLink: ${LINK}stock/NVDA
+- extendedWaitUntil:
+    visible:
+      id: stock-review-proposal
+    timeout: 30000
+- runFlow: review-proposal.yaml # answers with the pending proposal from before
+- extendedWaitUntil: # its checks are now over a minute old
+    visible:
+      id: approve-disabled-reason
+    timeout: 30000
+- runFlow: # Recheck runs the risk engine again, which refuses stale prices
+    when:
+      visible: Recheck
+    commands:
+      - tapOn: Recheck
+- extendedWaitUntil:
+    visible: "Prices are stale.*"
+    timeout: 30000
+- assertVisible:
+    id: proposal-approve
+    enabled: false
+- takeScreenshot: states-04-approval-disabled
+
+# 5. Recovery: the feed comes back and the banner clears
+- runScript:
+    file: scripts/faults.js
+    env:
+      API_URL: ${API_URL}
+      FAULTS: '{"marketData":"ok"}'
+- repeat:
+    times: 30
+    while:
+      true: ${!output.feedOk}
+    commands:
+      - runScript:
+          file: scripts/feed.js
+          env:
+            API_URL: ${API_URL}
+      - extendedWaitUntil:
+          visible: __never_visible__
+          timeout: 5000
+          optional: true
+- assertTrue: ${output.feedOk}
+- openLink: ${LINK}
+- extendedWaitUntil:
+    notVisible: "Market data connection lost.*"
+    timeout: 30000
+
+# 6. A paper fill to have a position with a stop (178.20)
+- repeat: # recheck the stale proposal; if a rescan re-issued its signal meanwhile, reviewing again replaces it
+    times: 3
+    while:
+      notVisible:
+        id: proposal-approve
+        enabled: true
+    commands:
+      - runFlow:
+          file: approvable-proposal.yaml
+          env:
+            LINK: ${LINK}
+- assertVisible:
+    id: proposal-approve
+    enabled: true
+- tapOn:
+    id: proposal-approve
+- extendedWaitUntil:
+    visible:
+      id: confirm-order-sheet
+    timeout: 10000
+- longPressOn:
+    id: hold-to-approve
+- extendedWaitUntil:
+    visible:
+      id: fill-receipt
+    timeout: 20000
+- waitForAnimationToEnd
+- repeat:
+    times: 5
+    while:
+      visible:
+        id: fill-receipt
+    commands:
+      - tapOn:
+          id: receipt-view-portfolio
+          optional: true
+      - extendedWaitUntil:
+          notVisible:
+            id: fill-receipt
+          timeout: 2000
+          optional: true
+- extendedWaitUntil:
+    visible:
+      id: position-NVDA
+    timeout: 20000
+
+# 7. Stop hit: NVDA trades through its stop; the position monitor sells and the app says so
+- runScript:
+    file: scripts/faults.js
+    env:
+      API_URL: ${API_URL}
+      FAULTS: '{"prices":{"NVDA":"177.00"}}'
+- extendedWaitUntil: # the next quote sync (≤ 60 s) triggers the stop; the toast shows for 3.8 s
+    visible: "Stop hit · NVDA.*"
+    timeout: 120000
+- takeScreenshot: states-05-stop-toast
+- openLink: ${LINK}activity
+- extendedWaitUntil:
+    visible: "Stop hit · NVDA\\..*"
+    timeout: 20000
+- takeScreenshot: states-06-activity
+
+- runScript:
+    file: scripts/journey-teardown.js
+    env:
+      API_URL: ${API_URL}

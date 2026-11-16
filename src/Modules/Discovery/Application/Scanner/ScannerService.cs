@@ -19,6 +19,7 @@ namespace Astryx.Modules.Discovery.Application.Scanner;
 /// remaining symbol, store the signals, retire the previous ones and announce the new ones.
 /// </summary>
 public sealed class ScannerService(
+    ScannerFaults faults,
     DiscoveryDbContext db,
     IInstrumentDirectory instruments,
     IQuantFacts quant,
@@ -89,6 +90,11 @@ public sealed class ScannerService(
 
     private async Task ScanAsync(ScannerRun run, ScannerOptions settings, CancellationToken cancellationToken)
     {
+        if (faults.Failing)
+        {
+            throw new InvalidOperationException("Injected scanner fault (/dev/faults).");
+        }
+
         var universe = await instruments.ListActiveEquitiesAsync(cancellationToken);
         run.SymbolsTotal = universe.Count;
         var now = timeProvider.GetUtcNow();

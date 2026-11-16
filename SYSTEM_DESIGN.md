@@ -4310,6 +4310,18 @@ Covered in §13.6: golden files, hand cases, properties, insufficient-data and d
 
 The flow relaunches the app, loads the bundle from Metro, signs in and walks the ten steps, then checks Activity and Home.
 
+**T-111 states flow** (`apps/mobile/e2e/states.yaml`). Same setup as the journey, then:
+
+1. **Empty Discover:** the Staples filter matches nothing → `discover-empty` → Reset filters.
+2. **Scanner error:** `/dev/faults {scanner:"failing"}` makes runs fail (`SCN-500`; `ScannerFaults`, Development only) and rescans at once. A pull-to-refresh shows `scanner-unavailable`; `{scanner:"ok"}` restores it.
+3. **Connection lost:** `{marketData:"down"}` → the next quote sync fails → Home shows "Market data connection lost".
+4. **Approval disabled:** once quotes are older than 90 s (`scripts/feed.js` polls `/system/status`), the NVDA proposal shows `approve-disabled-reason` with approval disabled.
+5. **Recovery:** `{marketData:"ok"}`, fresh quotes, and the banner clears.
+6. **A paper fill:** NVDA, with its 178.20 stop.
+7. **Stop hit:** `{prices:{NVDA:"177.00"}}` → the position monitor fills the stop → the "Stop hit · NVDA" toast, then the Activity entry.
+
+The teardown restores the session, prices, feed and scanner.
+
 **Found while building it:**
 
 - `ProposalService` returned a pending proposal whose signal the scanner had re-issued, so 15 minutes after creation it could never be approved, and it blocked a new proposal until the close. It now expires and is replaced.

@@ -1,0 +1,29 @@
+# One attempt at an approvable NVDA proposal after the feed recovered (states.yaml step 6): open the stock, review
+# (the pending proposal, or a replacement when its signal was re-issued), then recheck stale checks on fresh prices.
+appId: ${APP_ID}
+env:
+  APP_ID: app.astryx.mobile
+  LINK: astryx://
+---
+- openLink: ${LINK}stock/NVDA
+- extendedWaitUntil:
+    visible:
+      id: stock-review-proposal
+    timeout: 30000
+- runFlow: review-proposal.yaml
+- repeat:
+    times: 3
+    while:
+      notVisible:
+        id: proposal-approve
+        enabled: true
+    commands:
+      - tapOn:
+          text: Recheck
+          optional: true
+      - extendedWaitUntil:
+          visible:
+            id: proposal-approve
+            enabled: true
+          timeout: 5000
+          optional: true

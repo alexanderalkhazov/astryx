@@ -39,6 +39,9 @@ services:
       Email__Smtp__Host: mailpit
       Email__Smtp__Port: "1025"
       Features__DevFaultInjection: "true"
+      # Every local client shares one IP: the simulator, Maestro's setup scripts and curl. Production keeps 10/min · 50/h.
+      RateLimits__AuthPerMinute: "60"
+      RateLimits__AuthPerHour: "1000"
     extra_hosts:
       - "host.docker.internal:host-gateway"
 

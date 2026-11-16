@@ -3,7 +3,7 @@
 // (Development-only /dev/faults), then resets the paper account (P11) so no earlier run's position is in the way.
 // journey-quote.js then waits for the quote sync to store that price.
 const headers = { 'Content-Type': 'application/json' };
-const faults = http.post(`${API_URL}/dev/faults`, { headers, body: JSON.stringify({ session: 'open', marketData: 'ok', prices: { NVDA: '186.60' } }) });
+const faults = http.post(`${API_URL}/dev/faults`, { headers, body: JSON.stringify({ session: 'open', marketData: 'ok', scanner: 'ok', prices: { NVDA: '186.60' } }) });
 if (faults.status !== 200) throw new Error(`dev faults: HTTP ${faults.status} (the API must run in Development with Features:DevFaultInjection)`);
 
 // Fixture history shaped for today and a fresh scan, so NVDA's breakout is a live signal whatever day it is.

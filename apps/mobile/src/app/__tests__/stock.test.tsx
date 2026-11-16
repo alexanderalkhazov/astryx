@@ -243,6 +243,23 @@ describe('Stock screen', () => {
     await waitFor(() => expect(screen).toHavePathname('/proposal/p-9'));
   });
 
+  it('retries with the current signal when the scanner re-issued it meanwhile', async () => {
+    api.scanner.list
+      .mockResolvedValueOnce({ data: { items: [{ ...SIGNAL, scoreBreakdown: null }], nextCursor: null, counts: {}, scanner: {} } })
+      .mockResolvedValue({ data: { items: [{ ...SIGNAL, id: 'sig-new', scoreBreakdown: null }], nextCursor: null, counts: {}, scanner: {} } });
+    api.scanner.get.mockResolvedValue({ data: SIGNAL });
+    const fromSignal = (jest.requireMock('@/lib/api') as { proposals: { fromSignal: jest.Mock } }).proposals.fromSignal;
+    fromSignal
+      .mockRejectedValueOnce(new ApiError({ status: 409, code: 'signal_not_active', detail: 'This signal is no longer active.' }))
+      .mockResolvedValue({ data: { id: 'p-10' } });
+    await renderStock();
+
+    await fireEvent.press(await screen.findByTestId('stock-review-proposal'));
+
+    await waitFor(() => expect(screen).toHavePathname('/proposal/p-10'));
+    expect(fromSignal).toHaveBeenLastCalledWith('sig-new');
+  });
+
   it('says when no strategy finds a setup, with the evaluation time', async () => {
     await renderStock();
 

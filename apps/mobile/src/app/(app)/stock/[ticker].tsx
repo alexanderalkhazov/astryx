@@ -120,7 +120,7 @@ export default function StockScreen() {
         <Button
           label="Review proposal"
           loading={review.isPending}
-          onPress={() => review.mutate(active.data!.id)}
+          onPress={() => review.mutate({ signalId: active.data!.id, symbol })}
           testID="stock-review-proposal"
         />
       ) : (

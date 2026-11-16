@@ -109,6 +109,29 @@ public sealed class DevSyncedMarketApiFactory : SyncedMarketApiFactory
     }
 }
 
+/// <summary>The scanner fault (T-111): Discover's scanner error on demand, and back.</summary>
+public class DevScannerFaultTests(DevSyncedMarketApiFactory factory) : IClassFixture<DevSyncedMarketApiFactory>
+{
+    [Fact]
+    public async Task A_failing_scanner_hides_signals_until_it_is_restored()
+    {
+        await factory.EnsureSyncedAsync();
+        await factory.RefreshQuotesAsync();
+        var client = await TestUsers.SignedInClientAsync(factory);
+
+        var failing = await client.PostAsJsonAsync("/dev/faults", new { scanner = "failing" });
+
+        (await failing.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("scanner").GetString().ShouldBe("failing");
+        var status = await client.GetFromJsonAsync<JsonElement>("/api/v1/scanner/status");
+        (status.GetProperty("status").GetString(), status.GetProperty("errorCode").GetString()).ShouldBe(("unavailable", "SCN-500"));
+        (await client.GetAsync("/api/v1/signals")).StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
+
+        await client.PostAsJsonAsync("/dev/faults", new { scanner = "ok" });
+        (await client.GetFromJsonAsync<JsonElement>("/api/v1/scanner/status")).GetProperty("status").GetString().ShouldBeOneOf("live", "degraded");
+        (await client.PostAsJsonAsync("/dev/faults", new { scanner = "broken" })).StatusCode.ShouldBe(HttpStatusCode.UnprocessableEntity);
+    }
+}
+
 /// <summary><c>POST /dev/market/reseed</c> (T-110): fresh fixture history for today, so NVDA's breakout is a live signal again.</summary>
 public class DevMarketReseedTests(DevSyncedMarketApiFactory factory) : IClassFixture<DevSyncedMarketApiFactory>
 {

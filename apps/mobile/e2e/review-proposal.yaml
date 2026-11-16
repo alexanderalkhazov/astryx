@@ -1,0 +1,22 @@
+# Taps "Review proposal" on the stock screen until the proposal opens: taps during the screen's push animation are
+# dropped. Used by states.yaml.
+appId: ${APP_ID}
+env:
+  APP_ID: app.astryx.mobile
+---
+- repeat:
+    times: 5
+    while:
+      notVisible:
+        id: proposal-banner
+    commands:
+      - tapOn:
+          id: stock-review-proposal
+          optional: true
+      - extendedWaitUntil:
+          visible:
+            id: proposal-banner
+          timeout: 4000
+          optional: true
+- assertVisible:
+    id: proposal-banner

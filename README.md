@@ -81,4 +81,6 @@ If `pod install` fails with an encoding error, run `export LANG=en_US.UTF-8`.
      `for k in EXDevMenuShowsAtLaunch EXDevMenuShowFloatingActionButton EXDevMenuTouchGestureEnabled EXDevMenuMotionGestureEnabled; do xcrun simctl spawn <udid> defaults write app.astryx.mobile $k -bool NO; done`
   3. With Metro running (`npx expo start --dev-client`), run `maestro --device <udid> test -e EMAIL=… -e PASSWORD=… e2e/journey.yaml`.
 
+  `e2e/states.yaml` (T-111) runs the same way. It walks the failure states: empty Discover, the scanner error, the connection-lost banner, approval disabled on stale prices, and a stop hit. It takes a few minutes because it waits for real quote syncs.
+
   The setup script reseeds the fake market (`POST /dev/market/reseed`) and forces an open session with NVDA at 186.60 (`POST /dev/faults`). It also resets the paper account. These dev routes exist only in Development with `Features:DevFaultInjection=true`.

@@ -116,7 +116,8 @@ export function approveGate(args: { proposal: Proposal; current: RiskAssessment 
   if (error) return { enabled: false, reason: "Couldn't verify the checks, so approval is disabled.", recheck: true };
   if (!current || !inputs || !assessedFor(current, inputs)) return { enabled: false, reason: 'Checking the latest numbers…' };
   const failing = current.checks.find((c) => c.status === 'fail');
-  if (failing) return { enabled: false, reason: failing.message };
+  // Stale data can pass on a recheck once the feed recovers; other failures need a change of inputs.
+  if (failing) return { enabled: false, reason: failing.message, recheck: failing.code === 'data_fresh' || undefined };
   if (current.stale || Date.parse(current.expiresAt) <= now) return { enabled: false, reason: 'The checks are more than a minute old.', recheck: true };
   return current.approvable ? { enabled: true } : { enabled: false, reason: 'A pre-trade check fails.' };
 }

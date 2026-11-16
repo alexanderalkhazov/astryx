@@ -16,9 +16,10 @@ public static class DevEndpoints
 {
     /// <param name="Session"><c>open</c> forces a regular session now (E2E at any hour); <c>real</c> returns to the calendar.</param>
     /// <param name="Prices">Fixed last prices for the fake provider (E2E: NVDA above its buy stop so the entry fills); an empty object clears them.</param>
-    public sealed record FaultsRequest(string? MarketData, string? Session = null, Dictionary<string, decimal>? Prices = null);
+    /// <param name="Scanner"><c>failing</c> makes scanner runs fail (Discover's scanner error); <c>ok</c> restores them. Either rescans at once.</param>
+    public sealed record FaultsRequest(string? MarketData, string? Session = null, Dictionary<string, decimal>? Prices = null, string? Scanner = null);
 
-    public sealed record FaultsResponse(string MarketData, DateTimeOffset? FrozenAt, string Session, IReadOnlyDictionary<string, decimal> Prices);
+    public sealed record FaultsResponse(string MarketData, DateTimeOffset? FrozenAt, string Session, IReadOnlyDictionary<string, decimal> Prices, string Scanner);
 
     public static bool IsEnabled(IHostEnvironment environment, IConfiguration configuration) =>
         environment.IsDevelopment() && configuration.GetValue<bool>("Features:DevFaultInjection");
@@ -27,9 +28,9 @@ public static class DevEndpoints
     {
         var dev = app.MapGroup("/dev").ExcludeFromDescription();
 
-        dev.MapGet("/faults", (MarketDataFaults faults) => Results.Ok(Describe(faults)));
+        dev.MapGet("/faults", (MarketDataFaults faults, ScannerFaults scanner) => Results.Ok(Describe(faults, scanner)));
 
-        dev.MapPost("/faults", (FaultsRequest request, MarketDataFaults faults) =>
+        dev.MapPost("/faults", async (FaultsRequest request, MarketDataFaults faults, ScannerFaults scanner, IServiceProvider services, CancellationToken cancellationToken) =>
         {
             if (request.MarketData is { } value)
             {
@@ -77,7 +78,23 @@ public static class DevEndpoints
                 }
             }
 
-            return Results.Ok(Describe(faults));
+            if (request.Scanner is { } scannerMode)
+            {
+                if (scannerMode is not ("ok" or "failing"))
+                {
+                    return Results.Problem(
+                        statusCode: StatusCodes.Status422UnprocessableEntity,
+                        title: "Unknown scanner mode",
+                        detail: "scanner must be one of: ok, failing.",
+                        extensions: new Dictionary<string, object?> { ["code"] = "validation_failed" });
+                }
+
+                scanner.Failing = scannerMode == "failing";
+                await using var scope = services.CreateAsyncScope();
+                await scope.ServiceProvider.GetRequiredService<ScannerRunHandler>().HandleAsync(new ScannerRunJob("manual"), new JobContext(Guid.NewGuid(), 1, 1, null), cancellationToken);
+            }
+
+            return Results.Ok(Describe(faults, scanner));
         });
 
         // E2E (T-110): the fake provider shapes its history around the current session, but stored bars keep the shape
@@ -111,7 +128,7 @@ public static class DevEndpoints
         return app;
     }
 
-    private static FaultsResponse Describe(MarketDataFaults faults) => new(Format(faults.Mode), faults.FrozenAt, faults.SessionForcedOpen ? "open" : "real", faults.PriceOverrides.ToDictionary(p => p.Key, p => p.Value));
+    private static FaultsResponse Describe(MarketDataFaults faults, ScannerFaults scanner) => new(Format(faults.Mode), faults.FrozenAt, faults.SessionForcedOpen ? "open" : "real", faults.PriceOverrides.ToDictionary(p => p.Key, p => p.Value), scanner.Failing ? "failing" : "ok");
 
     private static bool TryParse(string value, out MarketDataFaultMode mode)
     {
