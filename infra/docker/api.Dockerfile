@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # Build context: repository root (see infra/docker/docker-compose.yml)
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:11.0 AS build
 WORKDIR /repo
 COPY global.json Directory.Build.props Directory.Packages.props Astryx.slnx ./
 COPY apps/api/ apps/api/
