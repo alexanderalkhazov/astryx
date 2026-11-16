@@ -473,7 +473,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [x] **T-113** Observability
   - **Acceptance:** OpenTelemetry traces and metrics from §23.4 are exported to a local collector in compose (Grafana/Tempo or Aspire dashboard). Correlation IDs propagate through the outbox and jobs. Sentry is wired for API and mobile (DSN via env, disabled when unset).
   - **Refs:** §23 · **Depends:** T-085 · **P1**
-- [ ] **T-114** Alerts and runbooks
+- [x] **T-114** Alerts and runbooks
   - **Acceptance:** alert rules from §23.8, with a runbook entry in `docs/runbooks/` for each (stale market data, monitor lag, reconciliation mismatch, live flag enabled, …).
   - **Refs:** §23.8 · **Depends:** T-113 · **P1**
 - [x] **T-115** Security hardening pass
