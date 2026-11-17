@@ -380,12 +380,12 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 
 > Execution venue per SYSTEM_DESIGN.md §17 (ADR-023). Every task here runs against the **Paper** environment only (`paper-api.alpaca.markets`, paper keys). Contract tests use WireMock fixtures built from Alpaca's documented examples, so CI never needs real keys. One opt-in smoke suite uses paper keys from CI secrets.
 
-- [x] **T-140** Alpaca API client
+- [x] **T-140** Alpaca API client — `240fdbb`
   - **Scope:** typed `AlpacaApiClient` for the Trading API (`/v2`) with the base URL taken from the connection's environment: `APCA-API-KEY-ID` + `APCA-API-SECRET-KEY` on every call; per-account rate limiter (200 requests/min, backs off on `429`); retries with backoff only for idempotent reads; error mapping (401/403 auth → `broker_credentials_invalid`, 403 buying power → `broker_insufficient_funds`, 422 → `broker_order_invalid`, 429 → `broker_rate_limited`, 5xx → `broker_unavailable`); circuit breaker; redacted logging; no money-movement or Broker API methods exist.
   - **Acceptance:** WireMock contract tests cover auth headers, paper vs live base URL selection, 429, 5xx, timeout and malformed responses. An architecture test bans funding, transfer, journal and Broker API paths. Keys and secrets never appear in logs (log-capture test).
   - **Refs:** §17.3 · **Depends:** T-013 · **P0**
   - Done with T-141: `AlpacaHttp`/`AlpacaTradingClient` (paper host only), per-key token bucket (180/min), error mapping, `AlpacaTradingClientTests` + `AlpacaMarketDataProviderTests` contract tests, `BrokerMoneyMovementTests` architecture test; secrets never in messages (`AlpacaCredentials.ToString` redacts) and log templates guarded by `SensitiveLoggingTests`.
-- [x] **T-141** Connect Alpaca (encrypted credentials and Settings card)
+- [x] **T-141** Connect Alpaca (encrypted credentials and Settings card) — `240fdbb`
   - **Story:** As a user, I want to connect my Alpaca paper account with my API keys so the app can see my portfolio and place approved trades.
   - **Acceptance:** `trading.broker_connections` migration (environment, key suffix, permissions, ciphertext). Envelope encryption via Data Protection (KMS in production). N7–N9: keys validated with `GET /v2/account` on the paper base URL (live-only keys rejected); `environment:"live"` returns 403 `live_trading_disabled`. Connecting creates an `alpaca_paper` portfolio; disconnect deletes the ciphertext. PROPOSED "Connect Alpaca" screen (paste key ID and secret, choose Paper, help link to the Alpaca dashboard's paper API keys). The design 18 card shows the masked key ID, sync time, status and permission rows. Audit rows for connect and disconnect.
   - **Refs:** §17.6, §10.4, §8.4.11 · **Depends:** T-140, T-023, T-017, T-032 · **P0**
