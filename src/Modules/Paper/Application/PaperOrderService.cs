@@ -45,11 +45,13 @@ public sealed class PaperOrderService(
     IPortfolioLedger ledger,
     IExecutionGate gate,
     IMarketSessionClock sessions,
-    PaperExecution execution)
+    PaperExecution execution,
+    Astryx.Infrastructure.Jobs.IJobQueue jobs)
 {
     public static readonly Error NotFound = new("not_found", "No order with that id.");
     public static readonly Error NoPortfolio = new("conflict", "Your paper portfolio isn't ready yet.");
     public static readonly Error ConcurrencyConflict = new("concurrency_conflict", "The portfolio changed while placing the order. Review and try again.");
+    public static readonly Error VenueChanged = new("conflict", "Your trading account changed since this proposal was made. Create a new proposal.");
 
     public async Task<Result<OrderDto>> PlaceAsync(PlaceOrderRequest request, string idempotencyKey, CancellationToken cancellationToken)
     {
@@ -60,7 +62,7 @@ public sealed class PaperOrderService(
         }
 
         // §15.3 step 2: serialise money movement per portfolio before touching the proposal.
-        if (await portfolios.GetSimulatedAsync(userId, cancellationToken) is not { } portfolioId || !await ledger.LockAsync(portfolioId, cancellationToken))
+        if (await portfolios.GetActiveAsync(userId, cancellationToken) is not { } active || !await ledger.LockAsync(active.Id, cancellationToken))
         {
             return NoPortfolio;
         }
@@ -73,6 +75,11 @@ public sealed class PaperOrderService(
         }
 
         var ticket = prepared.Value;
+        if (ticket.PortfolioId != active.Id)
+        {
+            return VenueChanged; // connected or disconnected Alpaca after the proposal was assessed
+        }
+
         var now = sessions.Now;
         var session = await sessions.TodayAsync(cancellationToken);
         var costs = execution.Costs;
@@ -101,6 +108,25 @@ public sealed class PaperOrderService(
         };
         db.Orders.Add(order);
 
+        if (active.IsBroker)
+        {
+            // §17.5: Alpaca decides the fill. Commit the order as submitting with its worst-case cost reserved; a job
+            // sends it after this transaction commits, so no network call runs inside it.
+            order.Broker = BrokerCode.Alpaca;
+            order.Mode = "alpaca_paper";
+            order.BrokerOrderId = $"pending:{order.Id:N}";
+            order.Status = OrderStatus.Submitting;
+            order.ReservedAmount = RoundingPolicy.Ledger(PaperFillSimulator.Reservation(ticket.OrderType, ticket.Quantity, ticket.Entry, slip, 0m));
+            var held = await ledger.ReserveAsync(ticket.PortfolioId, order.ReservedAmount, cancellationToken);
+            if (!held.IsSuccess)
+            {
+                return held.Error;
+            }
+
+            await jobs.EnqueueAsync(new SubmitBrokerOrderJob(order.Id), new Astryx.Infrastructure.Jobs.EnqueueOptions { DedupeKey = $"broker-submit:{order.Id}" }, cancellationToken);
+            return await AcceptAsync(order, ticket, userId, fill: null, exits: [], cancellationToken);
+        }
+
         var simulated = PaperFillSimulator.EntryOnTick(ticket.OrderType, ticket.Entry, ticket.QuoteLast, slip);
         Fill? fill = null;
         Order[] exits = [];
@@ -126,6 +152,11 @@ public sealed class PaperOrderService(
             (fill, exits) = filled.Value;
         }
 
+        return await AcceptAsync(order, ticket, userId, fill, exits, cancellationToken);
+    }
+
+    private async Task<Result<OrderDto>> AcceptAsync(Order order, ExecutionTicket ticket, Guid userId, Fill? fill, Order[] exits, CancellationToken cancellationToken)
+    {
         await gate.MarkApprovedAsync(ticket.ProposalId, cancellationToken);
         db.Publish(new OrderAccepted(userId, order.Id, ticket.ProposalId, ticket.Symbol, order.Status));
         AstryxTelemetry.Orders.Add(1, new("purpose", "entry"), new("outcome", order.Status));
@@ -185,7 +216,7 @@ public sealed class PaperOrderService(
         var stop = exits.FirstOrDefault(e => e.Purpose == OrderPurpose.ExitStop);
         var target = exits.FirstOrDefault(e => e.Purpose == OrderPurpose.ExitTarget);
         return new OrderDto(
-            o.Id, o.BrokerOrderId, "paper", o.Broker, o.Status, o.Purpose, o.Symbol, o.Side, o.OrderType, Whole(o.Quantity),
+            o.Id, o.BrokerOrderId.StartsWith("pending:", StringComparison.Ordinal) ? "" : o.BrokerOrderId, "paper", o.Broker, o.Status, o.Purpose, o.Symbol, o.Side, o.OrderType, Whole(o.Quantity),
             Px(o.StopPrice), Px(o.LimitPrice),
             f is null ? null : new FillDto(Px(f.Price)!.Value, Px(f.ReferencePrice)!.Value, Px(f.SlippagePerShare)!.Value, RoundingPolicy.Ledger(f.SlippagePerShare * f.Quantity), RoundingPolicy.Ledger(f.Fee), f.FilledAt),
             stop is not null && target is not null ? new AttachedExitsDto(stop.OcoGroupId!.Value, Px(stop.StopPrice)!.Value, Px(target.LimitPrice)!.Value) : null,

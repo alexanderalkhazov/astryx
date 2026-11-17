@@ -125,6 +125,45 @@ public static class DevEndpoints
             return Results.Ok(new { removedBars = bars, storedBars = stored });
         });
 
+        // Switching a database from the fake provider to a real one (T-147): fake history would otherwise be extended
+        // with real bars. Removes every fake-sourced market row and the signals scanned from it, then re-lists the
+        // universe; the recurring syncs fill bars, quotes and corporate actions from the real provider.
+        dev.MapPost("/market/purge-fake", async (IServiceProvider services, CancellationToken cancellationToken) =>
+        {
+            await using var scope = services.CreateAsyncScope();
+            var sp = scope.ServiceProvider;
+            if (sp.GetRequiredService<IMarketDataProvider>().Code == "fake")
+            {
+                return Results.Problem(
+                    statusCode: StatusCodes.Status409Conflict,
+                    title: "Still the fake provider",
+                    detail: "Set MarketData:Provider to a real provider before purging fake data.",
+                    extensions: new Dictionary<string, object?> { ["code"] = "conflict" });
+            }
+
+            var db = sp.GetRequiredService<MarketDataDbContext>();
+            var removed = new Dictionary<string, int>(StringComparer.Ordinal);
+            await using (var transaction = await db.Database.BeginTransactionAsync(cancellationToken))
+            {
+                removed["priceBars"] = await db.Database.ExecuteSqlRawAsync("DELETE FROM market.price_bars WHERE source = 'fake'", cancellationToken);
+                removed["quotes"] = await db.Database.ExecuteSqlRawAsync("DELETE FROM market.quotes WHERE source = 'fake'", cancellationToken);
+                removed["corporateActions"] = await db.Database.ExecuteSqlRawAsync("DELETE FROM market.corporate_actions WHERE source = 'fake'", cancellationToken);
+                removed["fundamentals"] = await db.Database.ExecuteSqlRawAsync("DELETE FROM market.fundamentals WHERE source = 'fake'", cancellationToken);
+                await db.Database.ExecuteSqlRawAsync("DELETE FROM market.instrument_news WHERE article_id IN (SELECT id FROM market.news_articles WHERE provider = 'fake')", cancellationToken);
+                removed["news"] = await db.Database.ExecuteSqlRawAsync("DELETE FROM market.news_articles WHERE provider = 'fake'", cancellationToken);
+                removed["indicatorSnapshots"] = await db.Database.ExecuteSqlRawAsync("DELETE FROM market.indicator_snapshots", cancellationToken);
+                await db.Database.ExecuteSqlRawAsync("DELETE FROM market.provider_sync_state", cancellationToken);
+                removed["signalsExpired"] = await db.Database.ExecuteSqlRawAsync("UPDATE discovery.signals SET status = 'expired' WHERE status = 'active'", cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+            }
+
+            var context = new JobContext(Guid.NewGuid(), 1, 1, null);
+            await sp.GetRequiredService<InstrumentSyncHandler>().HandleAsync(new InstrumentSyncJob(), context, cancellationToken);
+            await sp.GetRequiredService<CalendarSyncHandler>().HandleAsync(new CalendarSyncJob(), context, cancellationToken);
+            var active = await db.Instruments.CountAsync(i => i.IsActive, cancellationToken);
+            return Results.Ok(new { removed, activeInstruments = active });
+        });
+
         return app;
     }
 

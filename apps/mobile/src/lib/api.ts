@@ -1,12 +1,13 @@
 import {
   analysesApi,
   authApi,
+  brokerApi,
+  createApiClient,
+  marketApi,
   notificationsApi,
   paperApi,
   portfolioApi,
   proposalsApi,
-  createApiClient,
-  marketApi,
   scannerApi,
   searchApi,
   settingsApi,
@@ -63,6 +64,7 @@ export const scanner = scannerApi(api);
 export const analyses = analysesApi(api);
 export const proposals = proposalsApi(api);
 export const paper = paperApi(api);
+export const broker = brokerApi(api);
 export const portfolio = portfolioApi(api);
 export const notifications = notificationsApi(api);
 

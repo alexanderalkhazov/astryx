@@ -43,12 +43,15 @@ public static class ErrorHttpMapping
         ["current_password_incorrect"] = 422,
         ["ai_levels_rejected"] = 422,
         ["invalid_or_expired_token"] = 422,
+        ["broker_credentials_invalid"] = 422,
+        ["broker_order_rejected"] = 422,
         ["account_locked"] = 423,
         ["rate_limited"] = 429,
         ["ai_quota_exceeded"] = 429,
         ["market_data_unavailable"] = 503,
         ["scanner_unavailable"] = 503,
         ["ai_provider_unavailable"] = 503,
+        ["broker_unavailable"] = 503,
     };
 
     private static readonly Dictionary<int, string> DefaultCodeByStatus = new()

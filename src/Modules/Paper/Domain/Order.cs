@@ -5,6 +5,10 @@ namespace Astryx.Modules.Paper.Domain;
 public static class OrderStatus
 {
     public const string Accepted = "accepted";
+    /// <summary>Committed, not yet sent to the broker (§17.5).</summary>
+    public const string Submitting = "submitting";
+    /// <summary>The broker accepted it; the fill is pending.</summary>
+    public const string Submitted = "submitted";
     public const string Working = "working";
     public const string Filled = "filled";
     public const string Cancelled = "cancelled";

@@ -72,6 +72,7 @@ public partial class DataIsolationTests(ApiFactory factory) : IClassFixture<ApiF
         ["POST /api/v1/proposals/{id:guid}/assessments"] = t => t.AssertForeignProposalIs404Async(HttpMethod.Post, "/assessments", new { riskPerTradePct = "0.0075" }),
         // N5 is idempotent (204 either way, so it reveals nothing); isolation means Alice's device keeps its pushes.
         ["DELETE /api/v1/devices/{deviceId}"] = t => t.AssertForeignDeviceIsUntouchedAsync(),
+        ["DELETE /api/v1/broker/connections/{id:guid}"] = t => t.AssertForeignBrokerConnectionIs404Async(),
     };
 
     /// <summary>
@@ -173,6 +174,35 @@ public partial class DataIsolationTests(ApiFactory factory) : IClassFixture<ApiF
         var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/positions/{Guid.NewGuid()}{suffix}") { Content = JsonContent.Create(new { }) };
         request.Headers.Add("Idempotency-Key", $"isolation-{Guid.NewGuid():N}");
         (await bob.SendAsync(request)).StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
+    private async Task AssertForeignBrokerConnectionIs404Async()
+    {
+        var alice = await TestUsers.SignedInClientAsync(factory);
+        var bob = await TestUsers.SignedInClientAsync(factory);
+        var aliceId = (await alice.GetFromJsonAsync<JsonElement>("/api/v1/me")).GetProperty("id").GetGuid();
+        var connectionId = Guid.NewGuid();
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<PaperDbContext>();
+            db.BrokerConnections.Add(new BrokerConnection
+            {
+                Id = connectionId,
+                UserId = aliceId,
+                KeySuffix = "3F2A",
+                CredentialsCiphertext = [1, 2, 3],
+                CredentialsKeyId = "k1",
+                ConnectedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow,
+            });
+            await db.SaveChangesAsync();
+        }
+
+        (await bob.DeleteAsync($"/api/v1/broker/connections/{connectionId}")).StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        (await bob.GetFromJsonAsync<JsonElement>("/api/v1/broker/connections")).GetProperty("items").GetArrayLength().ShouldBe(0);
+
+        await using var check = factory.Services.CreateAsyncScope();
+        (await check.ServiceProvider.GetRequiredService<PaperDbContext>().BrokerConnections.IgnoreQueryFilters().SingleAsync(c => c.Id == connectionId)).Status.ShouldBe("connected");
     }
 
     private async Task AssertForeignDeviceIsUntouchedAsync()

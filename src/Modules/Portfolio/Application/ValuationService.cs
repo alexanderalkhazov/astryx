@@ -204,7 +204,7 @@ public sealed class ValuationService(PortfolioDbContext db, ICurrentUser user, I
     }
 
     private Task<PortfolioEntity?> CurrentAsync(CancellationToken cancellationToken) =>
-        db.Portfolios.AsNoTracking().FirstOrDefaultAsync(p => p.UserId == user.RequireUserId() && p.Mode == PortfolioMode.Simulated, cancellationToken);
+        db.Portfolios.AsNoTracking().ActiveFor(user.RequireUserId()).FirstOrDefaultAsync(cancellationToken);
 
     private static decimal Money(decimal v) => RoundingPolicy.Ledger(v);
 

@@ -21,7 +21,7 @@ import { registerForPush, unregisterPush } from '@/features/push/push';
 import { LiveTradingGuardDialog } from '@/features/settings/LiveTradingGuardDialog';
 import { ResetPaperAccountDialog } from '@/features/settings/ResetPaperAccountDialog';
 import { useDefaultWatchlist } from '@/features/watchlist/useWatchlist';
-import { portfolio, settings } from '@/lib/api';
+import { broker, portfolio, settings } from '@/lib/api';
 import { formatCompactMoney, formatEtTime, formatMoney } from '@/lib/format';
 import { signOut } from '@/lib/session';
 import { toast } from '@/state/toasts';
@@ -84,19 +84,39 @@ function Row({ label, value, testID }: { label: string; value: ReactNode; testID
 }
 
 function BrokerSection() {
+  const queryClient = useQueryClient();
   const summary = useQuery({ queryKey: ['portfolio', 'summary'], queryFn: async () => (await portfolio.summary()).data });
+  const connections = useQuery({ queryKey: ['broker', 'connections'], queryFn: async () => (await broker.connections()).data.items });
+  const [confirmDisconnect, setConfirmDisconnect] = useState(false);
+  const alpaca = connections.data?.[0];
+  const disconnect = useMutation({
+    mutationFn: async (id: string) => broker.disconnect(id),
+    onSuccess: () => {
+      setConfirmDisconnect(false);
+      toast({
+        tone: 'info',
+        title: 'Alpaca disconnected',
+        body: 'Regenerate the key in Alpaca too. New trades use the simulated account.',
+      });
+      void queryClient.invalidateQueries(); // back to the simulated portfolio: every money view refetches
+    },
+  });
+  const synced = alpaca?.lastSyncAt ?? summary.data?.asOf;
   return (
     <Section title="Broker connection">
       <View style={styles.card} testID="broker-card">
         <View style={styles.row}>
           <View style={styles.flex}>
-            <Text.Section>Paper account (simulated)</Text.Section>
+            <Text.Section>{alpaca ? alpaca.label : 'Paper account (simulated)'}</Text.Section>
             <Text.Caption tone="secondary">
-              {summary.data ? `Connected · synced ${formatEtTime(summary.data.asOf)}` : 'Connected'}
+              {alpaca ? `API key ••••${alpaca.keySuffix} · ` : ''}
+              {alpaca?.status === 'degraded' ? 'Connection lost' : 'Connected'}
+              {synced ? ` · synced ${formatEtTime(synced)}` : ''}
             </Text.Caption>
           </View>
           <Badge label="PAPER" tone="pending" mono />
         </View>
+        {alpaca?.lastError ? <Text.Caption tone="loss">{alpaca.lastError}</Text.Caption> : null}
         {summary.data ? <Row label="Equity" value={formatMoney(summary.data.equity)} /> : null}
         <View style={styles.divider} />
         <Text.Overline tone="tertiary">Permissions</Text.Overline>
@@ -107,11 +127,35 @@ function BrokerSection() {
           value={<Text.DataSm tone="secondary">Never requested</Text.DataSm>}
           testID="permission-transfers"
         />
-        <Button variant="secondary" label="Connect Alpaca" disabled />
+        {alpaca ? (
+          <Button variant="secondary" label="Disconnect Alpaca" onPress={() => setConfirmDisconnect(true)} testID="disconnect-alpaca" />
+        ) : (
+          <Button
+            variant="secondary"
+            label="Connect Alpaca"
+            onPress={() => router.push('/settings/connect-alpaca')}
+            testID="connect-alpaca"
+          />
+        )}
         <Text.Caption tone="tertiary">
-          Connecting an Alpaca paper account comes in a later release. Astryx never moves money in or out of an account.
+          {alpaca
+            ? 'Approved trades go to your Alpaca paper account, which decides the fills. Astryx never moves money in or out of an account.'
+            : 'Connect an Alpaca paper account to send approved trades to Alpaca. Astryx never moves money in or out of an account.'}
         </Text.Caption>
       </View>
+      {alpaca ? (
+        <Dialog
+          visible={confirmDisconnect}
+          title="Disconnect Alpaca?"
+          body="Open Alpaca positions stay in your Alpaca account. Astryx deletes the stored key and switches back to the simulated account."
+          cancelLabel="Keep connected"
+          confirmLabel="Disconnect"
+          destructive
+          busy={disconnect.isPending}
+          onConfirm={() => disconnect.mutate(alpaca.id)}
+          onCancel={() => setConfirmDisconnect(false)}
+        />
+      ) : null}
     </Section>
   );
 }

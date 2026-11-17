@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Astryx.Modules.Paper.Infrastructure.Persistence;
 
-/// <summary>Paper module data in schema <c>trading</c> (SYSTEM_DESIGN.md §10.4): orders and fills.</summary>
+/// <summary>Paper module data in schema <c>trading</c> (SYSTEM_DESIGN.md §10.4): orders, fills and broker connections.</summary>
 public sealed class PaperDbContext(DbContextOptions<PaperDbContext> options) : ModuleDbContext(options)
 {
     public const string SchemaName = "trading";
@@ -14,6 +14,8 @@ public sealed class PaperDbContext(DbContextOptions<PaperDbContext> options) : M
     public DbSet<Order> Orders => Set<Order>();
 
     public DbSet<Fill> Fills => Set<Fill>();
+
+    public DbSet<BrokerConnection> BrokerConnections => Set<BrokerConnection>();
 
     protected override void ConfigureModel(ModelBuilder modelBuilder)
     {
@@ -55,6 +57,26 @@ public sealed class PaperDbContext(DbContextOptions<PaperDbContext> options) : M
             entity.HasIndex(o => new { o.PositionId, o.Purpose }).IsUnique().HasFilter("status IN ('accepted', 'working') AND purpose LIKE 'exit_%'").HasDatabaseName("ux_orders_one_live_exit");
             entity.HasIndex(o => o.Status).HasFilter("status = 'working'").HasDatabaseName("ix_orders_working");
             entity.HasIndex(o => new { o.PortfolioId, o.SubmittedAt }).IsDescending(false, true);
+        });
+
+        modelBuilder.Entity<BrokerConnection>(entity =>
+        {
+            entity.ToTable("broker_connections", t =>
+            {
+                t.HasCheckConstraint("ck_broker_connections_broker", "broker IN ('alpaca')");
+                // Alpaca Live stays impossible until the §17.9 gates pass (a reviewed migration relaxes this).
+                t.HasCheckConstraint("ck_broker_connections_environment", "environment IN ('paper')");
+                t.HasCheckConstraint("ck_broker_connections_status", "status IN ('connected', 'degraded', 'revoked')");
+            });
+            entity.HasKey(c => c.Id);
+            entity.Property(c => c.Broker).HasMaxLength(8);
+            entity.Property(c => c.Environment).HasMaxLength(8);
+            entity.Property(c => c.Status).HasMaxLength(12);
+            entity.Property(c => c.AccountRef).HasMaxLength(64);
+            entity.Property(c => c.KeySuffix).HasMaxLength(4);
+            entity.Property(c => c.CredentialsKeyId).HasMaxLength(32);
+            entity.Property(c => c.LastError).HasMaxLength(500);
+            entity.HasIndex(c => new { c.UserId, c.Broker, c.Environment }).IsUnique().HasFilter("status <> 'revoked'").HasDatabaseName("ux_broker_connections_one_active");
         });
 
         modelBuilder.Entity<Fill>(entity =>

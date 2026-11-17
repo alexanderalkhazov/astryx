@@ -13,6 +13,8 @@
   <ItemGroup>
     <!-- FakeMarketDataProvider fixtures (T-041); the single copy lives with the tests. -->
     <EmbeddedResource Include="../../../tests/fixtures/market/*.csv;../../../tests/fixtures/market/*.json" LogicalName="Astryx.Fixtures.Market.%(Filename)%(Extension)" />
+    <!-- AlpacaMarketDataProvider universe: S&P 500 members with GICS sectors (T-147). -->
+    <EmbeddedResource Include="Infrastructure/Providers/Alpaca/us_large_cap.csv" LogicalName="Astryx.Reference.Alpaca.us_large_cap.csv" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Astryx.UnitTests" />

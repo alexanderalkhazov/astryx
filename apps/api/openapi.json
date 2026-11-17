@@ -2909,6 +2909,128 @@
         }
       }
     },
+    "/api/v1/broker/connections": {
+      "get": {
+        "tags": [
+          "Broker connections"
+        ],
+        "operationId": "ListBrokerConnections",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrokerConnectionPageDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Broker connections"
+        ],
+        "operationId": "ConnectBroker",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConnectBrokerRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrokerConnectionDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/broker/connections/{id}": {
+      "delete": {
+        "tags": [
+          "Broker connections"
+        ],
+        "operationId": "DisconnectBroker",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/positions/{id}/close-preview": {
       "post": {
         "tags": [
@@ -4379,6 +4501,105 @@
         },
         "additionalProperties": false
       },
+      "BrokerConnectionDto": {
+        "required": [
+          "id",
+          "broker",
+          "environment",
+          "label",
+          "keySuffix",
+          "accountRef",
+          "status",
+          "permissions",
+          "connectedAt",
+          "lastSyncAt",
+          "lastError"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "broker": {
+            "type": "string"
+          },
+          "environment": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "keySuffix": {
+            "type": "string"
+          },
+          "accountRef": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "type": "string"
+          },
+          "permissions": {
+            "$ref": "#/components/schemas/BrokerPermissionsDto"
+          },
+          "connectedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastSyncAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "lastError": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "BrokerConnectionPageDto": {
+        "required": [
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BrokerConnectionDto"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "BrokerPermissionsDto": {
+        "required": [
+          "readPortfolio",
+          "placeOrders",
+          "depositsWithdrawals"
+        ],
+        "type": "object",
+        "properties": {
+          "readPortfolio": {
+            "type": "boolean"
+          },
+          "placeOrders": {
+            "type": "string"
+          },
+          "depositsWithdrawals": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
       "CatalystDto": {
         "required": [
           "type",
@@ -4701,6 +4922,30 @@
             "format": "decimal"
           },
           "explanation": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ConnectBrokerRequest": {
+        "required": [
+          "broker",
+          "environment",
+          "keyId",
+          "secretKey"
+        ],
+        "type": "object",
+        "properties": {
+          "broker": {
+            "type": "string"
+          },
+          "environment": {
+            "type": "string"
+          },
+          "keyId": {
+            "type": "string"
+          },
+          "secretKey": {
             "type": "string"
           }
         },
@@ -8535,6 +8780,9 @@
     },
     {
       "name": "Proposals"
+    },
+    {
+      "name": "Broker connections"
     },
     {
       "name": "Positions"

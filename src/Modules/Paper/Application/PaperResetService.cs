@@ -37,6 +37,7 @@ public sealed class PaperResetService(
     public const string Confirmation = "RESET";
     public static readonly Error ConfirmationRequired = new("validation_failed", "Type RESET to confirm the reset.");
     public static readonly Error NoPortfolio = new("not_found", "No paper portfolio for this account.");
+    public static readonly Error BrokerReset = new("conflict", "Your Alpaca paper account is connected. Reset it in the Alpaca dashboard; Astryx picks up the new balance on its next sync.");
 
     public async Task<Result<PaperResetDto>> ResetAsync(ResetPaperAccountRequest request, CancellationToken cancellationToken)
     {
@@ -46,6 +47,11 @@ public sealed class PaperResetService(
         }
 
         var userId = user.RequireUserId();
+        if (await portfolios.GetActiveAsync(userId, cancellationToken) is { IsBroker: true })
+        {
+            return BrokerReset; // Alpaca owns that account's cash and positions (ADR-021)
+        }
+
         if (await portfolios.GetSimulatedAsync(userId, cancellationToken) is not { } portfolioId || !await ledger.LockAsync(portfolioId, cancellationToken))
         {
             return NoPortfolio;

@@ -41,7 +41,11 @@ services:
       Ai__Provider: ${AI_PROVIDER:-Ollama}
       Ai__Ollama__BaseUrl: http://host.docker.internal:11434
       Ai__Ollama__Model: ${OLLAMA_MODEL:-qwen3.5:0.8b}
-      MarketData__Provider: ${MARKET_DATA_PROVIDER:-Fake}
+      MarketData__Provider: ${MARKET_DATA_PROVIDER:-Fake} # Alpaca for real data (needs ALPACA_KEY_ID / ALPACA_SECRET_KEY)
+      MarketData__Ingestion__RequestsPerMinute: ${MARKET_DATA_REQUESTS_PER_MINUTE:-6000} # Alpaca: 80 provider calls stays under its 200 req/min
+      Alpaca__KeyId: ${ALPACA_KEY_ID:-}
+      Alpaca__SecretKey: ${ALPACA_SECRET_KEY:-}
+      Credentials__MasterKeys: ${CREDENTIALS_MASTER_KEYS:-} # wraps stored broker keys (§17.6): dotnet run --project apps/api -- --generate-credentials-key
       Jwt__SigningKeys: ${JWT_SIGNING_KEYS:?set JWT_SIGNING_KEYS in .env}
       Email__Smtp__Host: mailpit
       Email__Smtp__Port: "1025"

@@ -145,12 +145,12 @@ public sealed class ProposalService(
             return MarketClosed;
         }
 
-        if (await portfolios.GetSimulatedAsync(userId, cancellationToken) is not { } portfolioId)
+        if (await portfolios.GetActiveAsync(userId, cancellationToken) is not { Id: var portfolioId })
         {
             return NoPortfolio;
         }
 
-        draft.PortfolioId = portfolioId;
+        draft.PortfolioId = portfolioId; // the venue the user trades in now: Alpaca paper when connected (§17.1)
         draft.CreatedAt = now;
         draft.ExpiresAt = session.CloseAt - CloseBuffer;
         db.Proposals.Add(draft);

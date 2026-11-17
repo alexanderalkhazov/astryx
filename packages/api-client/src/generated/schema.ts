@@ -1183,6 +1183,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/broker/connections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListBrokerConnections"];
+        put?: never;
+        post: operations["ConnectBroker"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/broker/connections/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["DisconnectBroker"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/positions/{id}/close-preview": {
         parameters: {
             query?: never;
@@ -1685,6 +1717,30 @@ export interface components {
             asOf: string;
             stale: boolean;
         };
+        BrokerConnectionDto: {
+            /** Format: uuid */
+            id: string;
+            broker: string;
+            environment: string;
+            label: string;
+            keySuffix: string;
+            accountRef: null | string;
+            status: string;
+            permissions: components["schemas"]["BrokerPermissionsDto"];
+            /** Format: date-time */
+            connectedAt: string;
+            /** Format: date-time */
+            lastSyncAt: null | string;
+            lastError: null | string;
+        };
+        BrokerConnectionPageDto: {
+            items: components["schemas"]["BrokerConnectionDto"][];
+        };
+        BrokerPermissionsDto: {
+            readPortfolio: boolean;
+            placeOrders: string;
+            depositsWithdrawals: string;
+        };
         CatalystDto: {
             type: string;
             date: null | string;
@@ -1772,6 +1828,12 @@ export interface components {
             /** Format: decimal */
             value: string;
             explanation: string;
+        };
+        ConnectBrokerRequest: {
+            broker: string;
+            environment: string;
+            keyId: string;
+            secretKey: string;
         };
         CreateAnalysisRequest: {
             symbol: string;
@@ -4631,6 +4693,115 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["OrderDto"];
                 };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    ListBrokerConnections: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrokerConnectionPageDto"];
+                };
+            };
+        };
+    };
+    ConnectBroker: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConnectBrokerRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrokerConnectionDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    DisconnectBroker: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Not Found */
             404: {

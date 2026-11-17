@@ -35,11 +35,16 @@ public sealed class PaperExecution(PaperDbContext db, IPortfolioLedger ledger, I
 
     public static string NewBrokerOrderId() => "SIM-" + string.Concat(RandomNumberGenerator.GetBytes(6).Select(b => Base32[b % 32]));
 
-    /// <summary>Fills an entry: fill row, ledger buy (+ fee), position, OCO exits. Returns the fill and the exits.</summary>
+    /// <summary>
+    /// Fills an entry: fill row, ledger buy (+ fee), position, OCO exits. Returns the fill and the exits. For an Alpaca
+    /// order, <paramref name="brokerLegs"/> carries the bracket's stop-loss and take-profit order ids (§17.4), which the
+    /// exit rows mirror; Alpaca is commission-free.
+    /// </summary>
     public async Task<Result<(Fill Fill, Order[] Exits)>> FillEntryAsync(
-        Order order, SimulatedFill simulated, decimal stop, decimal target, Guid? strategyVersionId, DateTimeOffset quoteAsOf, DateTimeOffset now, CancellationToken cancellationToken)
+        Order order, SimulatedFill simulated, decimal stop, decimal target, Guid? strategyVersionId, DateTimeOffset quoteAsOf, DateTimeOffset now, CancellationToken cancellationToken,
+        BrokerLegs? brokerLegs = null)
     {
-        var fee = Costs.Fee;
+        var fee = order.Broker == BrokerCode.Mock ? Costs.Fee : 0m;
         var fill = new Fill
         {
             Id = Ids.New(),
@@ -88,7 +93,7 @@ public sealed class PaperExecution(PaperDbContext db, IPortfolioLedger ledger, I
         order.FilledAt = now;
         order.PositionId = opened.Value;
         order.Version++;
-        var exits = Exits(order, stop, target, opened.Value, now);
+        var exits = Exits(order, stop, target, opened.Value, now, brokerLegs);
         db.Orders.AddRange(exits);
         db.Publish(new OrderFilled(order.UserId, order.Id, opened.Value, order.Symbol, order.Purpose, order.Quantity, simulated.Price, now));
         db.Publish(new PositionOpened(order.UserId, opened.Value, order.PortfolioId, order.Symbol, order.Quantity, simulated.Price));
@@ -99,7 +104,7 @@ public sealed class PaperExecution(PaperDbContext db, IPortfolioLedger ledger, I
     public async Task<Result<decimal>> ExitAsync(
         Order exit, IReadOnlyList<Order> siblings, decimal price, decimal reference, decimal slippagePerShare, string exitReason, bool gapped, DateTimeOffset quoteAsOf, DateTimeOffset now, CancellationToken cancellationToken)
     {
-        var fee = Costs.Fee;
+        var fee = exit.Broker == BrokerCode.Mock ? Costs.Fee : 0m;
         var fill = new Fill
         {
             Id = Ids.New(),
@@ -177,10 +182,10 @@ public sealed class PaperExecution(PaperDbContext db, IPortfolioLedger ledger, I
         return true;
     }
 
-    private static Order[] Exits(Order entry, decimal stop, decimal target, Guid positionId, DateTimeOffset now)
+    private static Order[] Exits(Order entry, decimal stop, decimal target, Guid positionId, DateTimeOffset now, BrokerLegs? legs)
     {
         var group = Ids.New();
-        Order Exit(string purpose, string type, decimal? stopPrice, decimal? limit) => new()
+        Order Exit(string purpose, string type, decimal? stopPrice, decimal? limit, string? brokerOrderId) => new()
         {
             Id = Ids.New(),
             UserId = entry.UserId,
@@ -189,7 +194,9 @@ public sealed class PaperExecution(PaperDbContext db, IPortfolioLedger ledger, I
             Symbol = entry.Symbol,
             PositionId = positionId,
             ClientOrderId = $"exit:{positionId}:{purpose}",
-            BrokerOrderId = NewBrokerOrderId(),
+            Broker = entry.Broker,
+            Mode = entry.Mode,
+            BrokerOrderId = brokerOrderId ?? NewBrokerOrderId(),
             Purpose = purpose,
             Side = "sell",
             OrderType = type,
@@ -201,10 +208,13 @@ public sealed class PaperExecution(PaperDbContext db, IPortfolioLedger ledger, I
             Status = OrderStatus.Working,
             SubmittedAt = now,
         };
-        return [Exit(OrderPurpose.ExitStop, "sell_stop", stop, null), Exit(OrderPurpose.ExitTarget, "limit", null, target)];
+        return [Exit(OrderPurpose.ExitStop, "sell_stop", stop, null, legs?.StopLossOrderId), Exit(OrderPurpose.ExitTarget, "limit", null, target, legs?.TakeProfitOrderId)];
     }
 
     public static string Shares(decimal q) => Math.Round(q, 0, MidpointRounding.ToEven).ToString(CultureInfo.InvariantCulture);
 
     public static string Price(decimal p) => p.ToString("F2", CultureInfo.InvariantCulture);
 }
+
+/// <summary>The broker's order ids for a bracket's two exit legs (§17.4).</summary>
+public sealed record BrokerLegs(string StopLossOrderId, string TakeProfitOrderId);

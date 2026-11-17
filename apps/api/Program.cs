@@ -49,6 +49,13 @@ if (args.Contains("--generate-jwt-key", StringComparer.Ordinal))
     return;
 }
 
+// `dotnet run --project apps/api -- --generate-credentials-key` prints a new Credentials:MasterKeys entry and exits (§17.6).
+if (args.Contains("--generate-credentials-key", StringComparer.Ordinal))
+{
+    Console.WriteLine(Astryx.Infrastructure.Security.CredentialVault.GenerateKey());
+    return;
+}
+
 var builder = WebApplication.CreateBuilder(args);
 
 StartupGuards.EnsureLiveTradingDisabled(builder.Configuration);
@@ -166,6 +173,7 @@ app.MapScannerEndpoints();
 app.MapAnalysisEndpoints();
 app.MapProposalEndpoints();
 app.MapPaperOrderEndpoints();
+app.MapBrokerConnectionEndpoints();
 app.MapPositionEndpoints();
 app.MapPortfolioEndpoints();
 app.MapNotificationEndpoints();

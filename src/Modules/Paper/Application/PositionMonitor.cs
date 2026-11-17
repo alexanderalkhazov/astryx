@@ -79,7 +79,8 @@ public sealed class PositionMonitor(IServiceProvider services, ILogger<PositionM
 
         // A reconciliation halt (§20.13) keeps working entries from filling; exits below still run.
         var halted = (await sp.GetRequiredService<IPortfolioStateSource>().GetAsync(portfolioId, cancellationToken))?.ReconciliationHaltedAt is not null;
-        foreach (var entry in working.Where(o => o.Purpose == OrderPurpose.Entry && !halted))
+        // Alpaca fills its own orders (§17.5); only simulator orders are triggered from quotes here.
+        foreach (var entry in working.Where(o => o.Purpose == OrderPurpose.Entry && o.Broker == BrokerCode.Mock && !halted))
         {
             var level = entry.StopPrice ?? entry.LimitPrice ?? 0m;
             if (TriggerEvaluator.Entry(entry.OrderType, level, window, execution.Costs.Slip(level)) is not { } simulated)
@@ -123,7 +124,7 @@ public sealed class PositionMonitor(IServiceProvider services, ILogger<PositionM
                 continue; // closed by another path while we waited for the lock
             }
 
-            if (TriggerEvaluator.Exit(stop, target, window, execution.Costs.Slip(stop)) is { } exit)
+            if (stopLeg.Broker == BrokerCode.Mock && TriggerEvaluator.Exit(stop, target, window, execution.Costs.Slip(stop)) is { } exit)
             {
                 var leg = exit.Purpose == OrderPurpose.ExitStop ? stopLeg : targetLeg;
                 var closed = await execution.ExitAsync(leg, [.. group], exit.Price, exit.ReferencePrice, exit.SlippagePerShare,
@@ -161,7 +162,7 @@ public sealed class DayOrderExpiryHandler(IServiceProvider services, TimeProvide
         await using (var scope = services.CreateAsyncScope())
         {
             due = (await scope.ServiceProvider.GetRequiredService<PaperDbContext>().Orders.IgnoreQueryFilters()
-                .Where(o => o.Status == OrderStatus.Working && o.TimeInForce == "day" && o.ExpiresAt <= now)
+                .Where(o => o.Status == OrderStatus.Working && o.TimeInForce == "day" && o.ExpiresAt <= now && o.Broker == BrokerCode.Mock) // Alpaca expires its own
                 .Select(o => new { o.Id, o.PortfolioId }).ToListAsync(cancellationToken)).Select(o => (o.Id, o.PortfolioId)).ToList();
         }
 

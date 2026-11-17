@@ -1,0 +1,501 @@
+symbol,exchange_mic,name,sector,industry
+A,XNYS,Agilent Technologies,Health Care,Life Sciences Tools & Services
+AAPL,XNAS,Apple Inc.,Information Technology,"Technology Hardware, Storage & Peripherals"
+ABBV,XNYS,AbbVie,Health Care,Biotechnology
+ABNB,XNAS,Airbnb,Consumer Discretionary,"Hotels, Resorts & Cruise Lines"
+ABT,XNYS,Abbott Laboratories,Health Care,Health Care Equipment
+ACGL,XNAS,Arch Capital Group,Financials,Property & Casualty Insurance
+ACN,XNYS,Accenture,Information Technology,IT Consulting & Other Services
+ADBE,XNAS,Adobe Inc.,Information Technology,Application Software
+ADI,XNAS,Analog Devices,Information Technology,Semiconductors
+ADM,XNYS,Archer Daniels Midland,Consumer Staples,Agricultural Products & Services
+ADP,XNAS,Automatic Data Processing,Industrials,Human Resource & Employment Services
+ADSK,XNAS,Autodesk,Information Technology,Application Software
+AEE,XNYS,Ameren,Utilities,Multi-Utilities
+AEP,XNAS,American Electric Power,Utilities,Electric Utilities
+AES,XNYS,AES Corporation,Utilities,Independent Power Producers & Energy Traders
+AFL,XNYS,Aflac,Financials,Life & Health Insurance
+AIG,XNYS,American International Group,Financials,Multi-line Insurance
+AIZ,XNYS,Assurant,Financials,Multi-line Insurance
+AJG,XNYS,Arthur J. Gallagher & Co.,Financials,Insurance Brokers
+AKAM,XNAS,Akamai Technologies,Information Technology,Internet Services & Infrastructure
+ALB,XNYS,Albemarle Corporation,Materials,Specialty Chemicals
+ALGN,XNAS,Align Technology,Health Care,Health Care Supplies
+ALL,XNYS,Allstate,Financials,Property & Casualty Insurance
+ALLE,XNYS,Allegion,Industrials,Building Products
+AMAT,XNAS,Applied Materials,Information Technology,Semiconductor Materials & Equipment
+AMCR,XNYS,Amcor,Materials,Paper & Plastic Packaging Products & Materials
+AMD,XNAS,Advanced Micro Devices,Information Technology,Semiconductors
+AME,XNYS,Ametek,Industrials,Electrical Components & Equipment
+AMGN,XNAS,Amgen,Health Care,Biotechnology
+AMP,XNYS,Ameriprise Financial,Financials,Asset Management & Custody Banks
+AMT,XNYS,American Tower,Real Estate,Telecom Tower REITs
+AMZN,XNAS,Amazon,Consumer Discretionary,Broadline Retail
+ANET,XNYS,Arista Networks,Information Technology,Communications Equipment
+AON,XNYS,Aon plc,Financials,Insurance Brokers
+AOS,XNYS,A. O. Smith,Industrials,Building Products
+APA,XNAS,APA Corporation,Energy,Oil & Gas Exploration & Production
+APD,XNYS,Air Products,Materials,Industrial Gases
+APH,XNYS,Amphenol,Information Technology,Electronic Components
+APO,XNYS,Apollo Global Management,Financials,Asset Management & Custody Banks
+APP,XNAS,AppLovin,Communication Services,Advertising
+APTV,XNYS,Aptiv,Consumer Discretionary,Automotive Parts & Equipment
+ARE,XNYS,Alexandria Real Estate Equities,Real Estate,Office REITs
+ARES,XNYS,Ares Management,Financials,Asset Management & Custody Banks
+ATO,XNYS,Atmos Energy,Utilities,Gas Utilities
+AVGO,XNAS,Broadcom,Information Technology,Semiconductors
+AVY,XNYS,Avery Dennison,Materials,Paper & Plastic Packaging Products & Materials
+AWK,XNYS,American Water Works,Utilities,Water Utilities
+AXON,XNAS,Axon Enterprise,Industrials,Aerospace & Defense
+AXP,XNYS,American Express,Financials,Consumer Finance
+AZO,XNYS,AutoZone,Consumer Discretionary,Automotive Retail
+BA,XNYS,Boeing,Industrials,Aerospace & Defense
+BAC,XNYS,Bank of America,Financials,Diversified Banks
+BALL,XNYS,Ball Corporation,Materials,"Metal, Glass & Plastic Containers"
+BAX,XNYS,Baxter International,Health Care,Health Care Equipment
+BBY,XNYS,Best Buy,Consumer Discretionary,Computer & Electronics Retail
+BDX,XNYS,Becton Dickinson,Health Care,Health Care Equipment
+BE,XNYS,Bloom Energy,Industrials,Electrical Components & Equipment
+BEN,XNYS,Franklin Resources,Financials,Asset Management & Custody Banks
+BF.B,XNYS,Brown–Forman,Consumer Staples,Distillers & Vintners
+BG,XNYS,Bunge Global,Consumer Staples,Agricultural Products & Services
+BIIB,XNAS,Biogen,Health Care,Biotechnology
+BKNG,XNAS,Booking Holdings,Consumer Discretionary,"Hotels, Resorts & Cruise Lines"
+BKR,XNAS,Baker Hughes,Energy,Oil & Gas Equipment & Services
+BLK,XNYS,BlackRock,Financials,Asset Management & Custody Banks
+BMY,XNYS,Bristol Myers Squibb,Health Care,Pharmaceuticals
+BNY,XNYS,BNY Mellon,Financials,Asset Management & Custody Banks
+BR,XNYS,Broadridge Financial Solutions,Industrials,Data Processing & Outsourced Services
+BRK.B,XNYS,Berkshire Hathaway,Financials,Multi-Sector Holdings
+BRO,XNYS,Brown & Brown,Financials,Insurance Brokers
+BSX,XNYS,Boston Scientific,Health Care,Health Care Equipment
+BX,XNYS,Blackstone Inc.,Financials,Asset Management & Custody Banks
+BXP,XNYS,"BXP, Inc.",Real Estate,Office REITs
+C,XNYS,Citigroup,Financials,Diversified Banks
+CAH,XNYS,Cardinal Health,Health Care,Health Care Distributors
+CARR,XNYS,Carrier Global,Industrials,Building Products
+CASY,XNAS,Casey's,Consumer Staples,Food Retail
+CAT,XNYS,Caterpillar Inc.,Industrials,Construction Machinery & Heavy Transportation Equipment
+CB,XNYS,Chubb Limited,Financials,Property & Casualty Insurance
+CBRE,XNYS,CBRE Group,Real Estate,Real Estate Services
+CCI,XNYS,Crown Castle,Real Estate,Telecom Tower REITs
+CCL,XNYS,Carnival Corporation,Consumer Discretionary,"Hotels, Resorts & Cruise Lines"
+CDNS,XNAS,Cadence Design Systems,Information Technology,Application Software
+CDW,XNAS,CDW Corporation,Information Technology,Technology Distributors
+CEG,XNAS,Constellation Energy,Utilities,Electric Utilities
+CF,XNYS,CF Industries,Materials,Fertilizers & Agricultural Chemicals
+CFG,XNYS,Citizens Financial Group,Financials,Regional Banks
+CHD,XNYS,Church & Dwight,Consumer Staples,Household Products
+CHRW,XNAS,C.H. Robinson,Industrials,Air Freight & Logistics
+CHTR,XNAS,Charter Communications,Communication Services,Cable & Satellite
+CI,XNYS,Cigna,Health Care,Health Care Services
+CIEN,XNYS,Ciena,Information Technology,Communications Equipment
+CINF,XNAS,Cincinnati Financial,Financials,Property & Casualty Insurance
+CL,XNYS,Colgate-Palmolive,Consumer Staples,Household Products
+CLX,XNYS,Clorox,Consumer Staples,Household Products
+CMCSA,XNAS,Comcast,Communication Services,Cable & Satellite
+CME,XNAS,CME Group,Financials,Financial Exchanges & Data
+CMG,XNYS,Chipotle Mexican Grill,Consumer Discretionary,Restaurants
+CMI,XNYS,Cummins,Industrials,Construction Machinery & Heavy Transportation Equipment
+CMS,XNYS,CMS Energy,Utilities,Multi-Utilities
+CNC,XNYS,Centene Corporation,Health Care,Managed Health Care
+CNP,XNYS,CenterPoint Energy,Utilities,Multi-Utilities
+COF,XNYS,Capital One,Financials,Consumer Finance
+COHR,XNYS,Coherent Corp.,Information Technology,Electronic Components
+COIN,XNAS,Coinbase,Financials,Financial Exchanges & Data
+COO,XNAS,Cooper Companies (The),Health Care,Health Care Supplies
+COP,XNYS,ConocoPhillips,Energy,Oil & Gas Exploration & Production
+COR,XNYS,Cencora,Health Care,Health Care Distributors
+COST,XNAS,Costco,Consumer Staples,Consumer Staples Merchandise Retail
+CPAY,XNYS,Corpay,Financials,Transaction & Payment Processing Services
+CPRT,XNAS,Copart,Industrials,Diversified Support Services
+CPT,XNYS,Camden Property Trust,Real Estate,Multi-Family Residential REITs
+CRH,XNYS,CRH plc,Materials,Construction Materials
+CRL,XNYS,Charles River Laboratories,Health Care,Life Sciences Tools & Services
+CRM,XNYS,Salesforce,Information Technology,Application Software
+CRWD,XNAS,CrowdStrike,Information Technology,Systems Software
+CSCO,XNAS,Cisco,Information Technology,Communications Equipment
+CSGP,XNAS,CoStar Group,Real Estate,Real Estate Services
+CSX,XNAS,CSX Corporation,Industrials,Rail Transportation
+CTAS,XNAS,Cintas,Industrials,Diversified Support Services
+CTSH,XNAS,Cognizant,Information Technology,IT Consulting & Other Services
+CVNA,XNYS,Carvana,Consumer Discretionary,Automotive Retail
+CVS,XNYS,CVS Health,Health Care,Health Care Services
+CVX,XNYS,Chevron Corporation,Energy,Integrated Oil & Gas
+D,XNYS,Dominion Energy,Utilities,Multi-Utilities
+DAL,XNYS,Delta Air Lines,Industrials,Passenger Airlines
+DASH,XNAS,DoorDash,Consumer Discretionary,Specialized Consumer Services
+DD,XNYS,DuPont,Industrials,Industrial Conglomerates
+DDOG,XNAS,Datadog,Information Technology,Application Software
+DE,XNYS,Deere & Company,Industrials,Agricultural & Farm Machinery
+DECK,XNYS,Deckers Brands,Consumer Discretionary,Footwear
+DELL,XNYS,Dell Technologies,Information Technology,"Technology Hardware, Storage & Peripherals"
+DG,XNYS,Dollar General,Consumer Staples,Consumer Staples Merchandise Retail
+DGX,XNYS,Quest Diagnostics,Health Care,Health Care Services
+DHI,XNYS,D. R. Horton,Consumer Discretionary,Homebuilding
+DHR,XNYS,Danaher Corporation,Health Care,Life Sciences Tools & Services
+DIS,XNYS,Walt Disney Company (The),Communication Services,Movies & Entertainment
+DLR,XNYS,Digital Realty,Real Estate,Data Center REITs
+DLTR,XNAS,Dollar Tree,Consumer Staples,Consumer Staples Merchandise Retail
+DOC,XNYS,Healthpeak Properties,Real Estate,Health Care REITs
+DOV,XNYS,Dover Corporation,Industrials,Industrial Machinery & Supplies & Components
+DOW,XNYS,Dow Inc.,Materials,Commodity Chemicals
+DPZ,XNAS,Domino's,Consumer Discretionary,Restaurants
+DRI,XNYS,Darden Restaurants,Consumer Discretionary,Restaurants
+DTE,XNYS,DTE Energy,Utilities,Multi-Utilities
+DUK,XNYS,Duke Energy,Utilities,Electric Utilities
+DVA,XNYS,DaVita,Health Care,Health Care Services
+DVN,XNYS,Devon Energy,Energy,Oil & Gas Exploration & Production
+DXCM,XNAS,Dexcom,Health Care,Health Care Equipment
+EBAY,XNAS,eBay Inc.,Consumer Discretionary,Broadline Retail
+ECHO,XNAS,EchoStar,Communication Services,Wireless Telecommunication Services
+ECL,XNYS,Ecolab,Materials,Specialty Chemicals
+ED,XNYS,Consolidated Edison,Utilities,Multi-Utilities
+EFX,XNYS,Equifax,Industrials,Research & Consulting Services
+EG,XNYS,Everest Group,Financials,Reinsurance
+EIX,XNYS,Edison International,Utilities,Electric Utilities
+EL,XNYS,Estée Lauder Companies (The),Consumer Staples,Personal Care Products
+ELV,XNYS,Elevance Health,Health Care,Managed Health Care
+EME,XNYS,Emcor,Industrials,Construction & Engineering
+EMR,XNYS,Emerson Electric,Industrials,Electrical Components & Equipment
+EOG,XNYS,EOG Resources,Energy,Oil & Gas Exploration & Production
+EQIX,XNAS,Equinix,Real Estate,Data Center REITs
+EQT,XNYS,EQT Corporation,Energy,Oil & Gas Exploration & Production
+ERIE,XNAS,Erie Indemnity,Financials,Insurance Brokers
+ES,XNYS,Eversource Energy,Utilities,Electric Utilities
+ESS,XNYS,Essex Property Trust,Real Estate,Multi-Family Residential REITs
+ETN,XNYS,Eaton Corporation,Industrials,Electrical Components & Equipment
+ETR,XNYS,Entergy,Utilities,Electric Utilities
+EVRG,XNAS,Evergy,Utilities,Electric Utilities
+EW,XNYS,Edwards Lifesciences,Health Care,Health Care Equipment
+EXC,XNAS,Exelon,Utilities,Electric Utilities
+EXE,XNAS,Expand Energy,Energy,Oil & Gas Exploration & Production
+EXPD,XNYS,Expeditors International,Industrials,Air Freight & Logistics
+EXPE,XNAS,Expedia Group,Consumer Discretionary,"Hotels, Resorts & Cruise Lines"
+EXR,XNYS,Extra Space Storage,Real Estate,Self-Storage REITs
+F,XNYS,Ford Motor Company,Consumer Discretionary,Automobile Manufacturers
+FANG,XNAS,Diamondback Energy,Energy,Oil & Gas Exploration & Production
+FAST,XNAS,Fastenal,Industrials,Trading Companies & Distributors
+FCX,XNYS,Freeport-McMoRan,Materials,Copper
+FDS,XNYS,FactSet,Financials,Financial Exchanges & Data
+FDX,XNYS,FedEx,Industrials,Air Freight & Logistics
+FDXF,XNYS,FedEx Freight,Industrials,Cargo Ground Transportation
+FE,XNYS,FirstEnergy,Utilities,Electric Utilities
+FERG,XNYS,Ferguson Enterprises,Industrials,Trading Companies & Distributors
+FFIV,XNAS,"F5, Inc.",Information Technology,Communications Equipment
+FICO,XNYS,Fair Isaac,Information Technology,Application Software
+FIS,XNYS,Fidelity National Information Services,Financials,Transaction & Payment Processing Services
+FISV,XNAS,Fiserv,Financials,Transaction & Payment Processing Services
+FITB,XNYS,Fifth Third Bancorp,Financials,Regional Banks
+FIX,XNYS,Comfort Systems USA,Industrials,Construction & Engineering
+FLEX,XNAS,Flex Ltd.,Information Technology,Electronic Manufacturing Services
+FOX,XNAS,Fox Corporation (Class B),Communication Services,Broadcasting
+FOXA,XNAS,Fox Corporation (Class A),Communication Services,Broadcasting
+FRT,XNYS,Federal Realty Investment Trust,Real Estate,Retail REITs
+FSLR,XNAS,First Solar,Information Technology,Semiconductors
+FTNT,XNAS,Fortinet,Information Technology,Systems Software
+FTV,XNYS,Fortive,Industrials,Industrial Machinery & Supplies & Components
+GD,XNYS,General Dynamics,Industrials,Aerospace & Defense
+GDDY,XNYS,GoDaddy,Information Technology,Internet Services & Infrastructure
+GE,XNYS,GE Aerospace,Industrials,Aerospace & Defense
+GEHC,XNAS,GE HealthCare,Health Care,Health Care Equipment
+GEN,XNAS,Gen Digital,Information Technology,Systems Software
+GEV,XNYS,GE Vernova,Industrials,Heavy Electrical Equipment
+GILD,XNAS,Gilead Sciences,Health Care,Biotechnology
+GIS,XNYS,General Mills,Consumer Staples,Packaged Foods & Meats
+GL,XNYS,Globe Life,Financials,Life & Health Insurance
+GLW,XNYS,Corning Inc.,Information Technology,Electronic Components
+GNRC,XNYS,Generac,Industrials,Heavy Electrical Equipment
+GOOG,XNAS,Alphabet Inc. (Class C),Communication Services,Interactive Media & Services
+GOOGL,XNAS,Alphabet Inc. (Class A),Communication Services,Interactive Media & Services
+GPC,XNYS,Genuine Parts Company,Consumer Discretionary,Distributors
+GPN,XNYS,Global Payments,Financials,Transaction & Payment Processing Services
+GRMN,XNYS,Garmin,Consumer Discretionary,Consumer Electronics
+GS,XNYS,Goldman Sachs,Financials,Investment Banking & Brokerage
+GWW,XNYS,W. W. Grainger,Industrials,Industrial Machinery & Supplies & Components
+HAL,XNYS,Halliburton,Energy,Oil & Gas Equipment & Services
+HAS,XNAS,Hasbro,Consumer Discretionary,Leisure Products
+HBAN,XNAS,Huntington Bancshares,Financials,Regional Banks
+HCA,XNYS,HCA Healthcare,Health Care,Health Care Facilities
+HD,XNYS,Home Depot (The),Consumer Discretionary,Home Improvement Retail
+HIG,XNYS,Hartford (The),Financials,Property & Casualty Insurance
+HII,XNYS,Huntington Ingalls Industries,Industrials,Aerospace & Defense
+HLT,XNAS,Hilton Worldwide,Consumer Discretionary,"Hotels, Resorts & Cruise Lines"
+HON,XNAS,Honeywell Technologies,Industrials,Industrial Conglomerates
+HONA,XNAS,Honeywell Aerospace,Industrials,Aerospace & Defense
+HOOD,XNAS,Robinhood Markets,Financials,Investment Banking & Brokerage
+HPE,XNYS,Hewlett Packard Enterprise,Information Technology,"Technology Hardware, Storage & Peripherals"
+HPQ,XNYS,HP Inc.,Information Technology,"Technology Hardware, Storage & Peripherals"
+HRL,XNYS,Hormel Foods,Consumer Staples,Packaged Foods & Meats
+HSIC,XNAS,Henry Schein,Health Care,Health Care Distributors
+HST,XNAS,Host Hotels & Resorts,Real Estate,Hotel & Resort REITs
+HSY,XNYS,Hershey Company (The),Consumer Staples,Packaged Foods & Meats
+HUBB,XNYS,Hubbell Incorporated,Industrials,Industrial Machinery & Supplies & Components
+HUM,XNYS,Humana,Health Care,Managed Health Care
+HWM,XNYS,Howmet Aerospace,Industrials,Aerospace & Defense
+IBKR,XNAS,Interactive Brokers,Financials,Investment Banking & Brokerage
+IBM,XNYS,IBM,Information Technology,IT Consulting & Other Services
+ICE,XNYS,Intercontinental Exchange,Financials,Financial Exchanges & Data
+IDXX,XNAS,Idexx Laboratories,Health Care,Health Care Equipment
+IEX,XNYS,IDEX Corporation,Industrials,Industrial Machinery & Supplies & Components
+IFF,XNYS,International Flavors & Fragrances,Materials,Specialty Chemicals
+ILMN,XNAS,"Illumina, Inc.",Health Care,Life Sciences Tools & Services
+INCY,XNAS,Incyte,Health Care,Biotechnology
+INTC,XNAS,Intel,Information Technology,Semiconductors
+INTU,XNAS,Intuit,Information Technology,Application Software
+INVH,XNYS,Invitation Homes,Real Estate,Single-Family Residential REITs
+IP,XNYS,International Paper,Materials,Paper & Plastic Packaging Products & Materials
+IQV,XNYS,IQVIA,Health Care,Life Sciences Tools & Services
+IR,XNYS,Ingersoll Rand,Industrials,Industrial Machinery & Supplies & Components
+IRM,XNYS,Iron Mountain,Real Estate,Other Specialized REITs
+ISRG,XNAS,Intuitive Surgical,Health Care,Health Care Equipment
+IT,XNYS,Gartner,Information Technology,IT Consulting & Other Services
+ITW,XNYS,Illinois Tool Works,Industrials,Industrial Machinery & Supplies & Components
+IVZ,XNYS,Invesco,Financials,Asset Management & Custody Banks
+J,XNYS,Jacobs Solutions,Industrials,Construction & Engineering
+JBHT,XNAS,J.B. Hunt,Industrials,Cargo Ground Transportation
+JBL,XNYS,Jabil,Information Technology,Electronic Manufacturing Services
+JCI,XNYS,Johnson Controls,Industrials,Building Products
+JKHY,XNAS,Jack Henry & Associates,Financials,Transaction & Payment Processing Services
+JNJ,XNYS,Johnson & Johnson,Health Care,Pharmaceuticals
+JPM,XNYS,JPMorgan Chase,Financials,Diversified Banks
+KDP,XNAS,Keurig Dr Pepper,Consumer Staples,Soft Drinks & Non-alcoholic Beverages
+KEY,XNYS,KeyCorp,Financials,Regional Banks
+KEYS,XNYS,Keysight Technologies,Information Technology,Electronic Equipment & Instruments
+KHC,XNYS,Kraft Heinz,Consumer Staples,Packaged Foods & Meats
+KIM,XNYS,Kimco Realty,Real Estate,Retail REITs
+KKR,XNYS,KKR & Co.,Financials,Asset Management & Custody Banks
+KLAC,XNAS,KLA Corporation,Information Technology,Semiconductor Materials & Equipment
+KMB,XNAS,Kimberly-Clark,Consumer Staples,Household Products
+KMI,XNYS,Kinder Morgan,Energy,Oil & Gas Storage & Transportation
+KO,XNYS,Coca-Cola Company (The),Consumer Staples,Soft Drinks & Non-alcoholic Beverages
+KR,XNYS,Kroger,Consumer Staples,Food Retail
+L,XNYS,Loews Corporation,Financials,Multi-line Insurance
+LDOS,XNYS,Leidos,Industrials,Diversified Support Services
+LEN,XNYS,Lennar,Consumer Discretionary,Homebuilding
+LH,XNYS,Labcorp,Health Care,Health Care Services
+LHX,XNYS,L3Harris,Industrials,Aerospace & Defense
+LII,XNYS,Lennox International,Industrials,Building Products
+LIN,XNAS,Linde plc,Materials,Industrial Gases
+LITE,XNAS,Lumentum,Information Technology,Communications Equipment
+LLY,XNYS,Lilly (Eli),Health Care,Pharmaceuticals
+LMT,XNYS,Lockheed Martin,Industrials,Aerospace & Defense
+LNT,XNAS,Alliant Energy,Utilities,Electric Utilities
+LOW,XNYS,Lowe's,Consumer Discretionary,Home Improvement Retail
+LRCX,XNAS,Lam Research,Information Technology,Semiconductor Materials & Equipment
+LULU,XNAS,Lululemon Athletica,Consumer Discretionary,"Apparel, Accessories & Luxury Goods"
+LUV,XNYS,Southwest Airlines,Industrials,Passenger Airlines
+LVS,XNYS,Las Vegas Sands,Consumer Discretionary,Casinos & Gaming
+LYB,XNYS,LyondellBasell,Materials,Specialty Chemicals
+LYV,XNYS,Live Nation Entertainment,Communication Services,Movies & Entertainment
+MA,XNYS,Mastercard,Financials,Transaction & Payment Processing Services
+MAA,XNYS,Mid-America Apartment Communities,Real Estate,Multi-Family Residential REITs
+MAR,XNAS,Marriott International,Consumer Discretionary,"Hotels, Resorts & Cruise Lines"
+MAS,XNYS,Masco,Industrials,Building Products
+MCD,XNYS,McDonald's,Consumer Discretionary,Restaurants
+MCHP,XNAS,Microchip Technology,Information Technology,Semiconductors
+MCK,XNYS,McKesson,Health Care,Health Care Distributors
+MCO,XNYS,Moody's Corporation,Financials,Financial Exchanges & Data
+MDLZ,XNAS,Mondelez International,Consumer Staples,Packaged Foods & Meats
+MDT,XNYS,Medtronic,Health Care,Health Care Equipment
+MET,XNYS,MetLife,Financials,Life & Health Insurance
+META,XNAS,Meta Platforms,Communication Services,Interactive Media & Services
+MGM,XNYS,MGM Resorts,Consumer Discretionary,Casinos & Gaming
+MKC,XNYS,McCormick & Company,Consumer Staples,Packaged Foods & Meats
+MLM,XNYS,Martin Marietta Materials,Materials,Construction Materials
+MMM,XNYS,3M,Industrials,Industrial Conglomerates
+MNST,XNAS,Monster Beverage,Consumer Staples,Soft Drinks & Non-alcoholic Beverages
+MO,XNYS,Altria,Consumer Staples,Tobacco
+MOS,XNYS,Mosaic Company (The),Materials,Fertilizers & Agricultural Chemicals
+MPC,XNYS,Marathon Petroleum,Energy,Oil & Gas Refining & Marketing
+MPWR,XNAS,Monolithic Power Systems,Information Technology,Semiconductors
+MRK,XNYS,Merck & Co.,Health Care,Pharmaceuticals
+MRNA,XNAS,Moderna,Health Care,Biotechnology
+MRSH,XNYS,Marsh McLennan,Financials,Insurance Brokers
+MRVL,XNAS,Marvell Technology,Information Technology,Semiconductors
+MS,XNYS,Morgan Stanley,Financials,Investment Banking & Brokerage
+MSCI,XNYS,MSCI,Financials,Financial Exchanges & Data
+MSFT,XNAS,Microsoft,Information Technology,Systems Software
+MSI,XNYS,Motorola Solutions,Information Technology,Communications Equipment
+MTB,XNYS,M&T Bank,Financials,Regional Banks
+MTD,XNYS,Mettler Toledo,Health Care,Life Sciences Tools & Services
+MU,XNAS,Micron Technology,Information Technology,Semiconductors
+NCLH,XNYS,Norwegian Cruise Line Holdings,Consumer Discretionary,"Hotels, Resorts & Cruise Lines"
+NDAQ,XNAS,"Nasdaq, Inc.",Financials,Financial Exchanges & Data
+NDSN,XNAS,Nordson Corporation,Industrials,Industrial Machinery & Supplies & Components
+NEE,XNYS,NextEra Energy,Utilities,Multi-Utilities
+NEM,XNYS,Newmont,Materials,Gold
+NFLX,XNAS,Netflix,Communication Services,Movies & Entertainment
+NI,XNYS,NiSource,Utilities,Multi-Utilities
+NKE,XNYS,"Nike, Inc.",Consumer Discretionary,"Apparel, Accessories & Luxury Goods"
+NOC,XNYS,Northrop Grumman,Industrials,Aerospace & Defense
+NOW,XNYS,ServiceNow,Information Technology,Systems Software
+NRG,XNYS,NRG Energy,Utilities,Independent Power Producers & Energy Traders
+NSC,XNYS,Norfolk Southern,Industrials,Rail Transportation
+NTAP,XNAS,NetApp,Information Technology,"Technology Hardware, Storage & Peripherals"
+NTRS,XNAS,Northern Trust,Financials,Asset Management & Custody Banks
+NUE,XNYS,Nucor,Materials,Steel
+NVDA,XNAS,Nvidia,Information Technology,Semiconductors
+NVR,XNYS,"NVR, Inc.",Consumer Discretionary,Homebuilding
+NWS,XNAS,News Corp (Class B),Communication Services,Publishing
+NWSA,XNAS,News Corp (Class A),Communication Services,Publishing
+NXPI,XNAS,NXP Semiconductors,Information Technology,Semiconductors
+O,XNYS,Realty Income,Real Estate,Retail REITs
+ODFL,XNAS,Old Dominion,Industrials,Cargo Ground Transportation
+OKE,XNYS,Oneok,Energy,Oil & Gas Storage & Transportation
+OKTA,XNAS,"Okta, Inc.",Information Technology,Application Software
+OMC,XNYS,Omnicom Group,Communication Services,Advertising
+ON,XNAS,ON Semiconductor,Information Technology,Semiconductors
+ORCL,XNYS,Oracle Corporation,Information Technology,Application Software
+ORLY,XNAS,O'Reilly Automotive,Consumer Discretionary,Automotive Retail
+OTIS,XNYS,Otis Worldwide,Industrials,Industrial Machinery & Supplies & Components
+OXY,XNYS,Occidental Petroleum,Energy,Oil & Gas Exploration & Production
+P,XNYS,Everpure,Information Technology,"Technology Hardware, Storage & Peripherals"
+PANW,XNAS,Palo Alto Networks,Information Technology,Systems Software
+PAYX,XNAS,Paychex,Industrials,Human Resource & Employment Services
+PCAR,XNAS,Paccar,Industrials,Construction Machinery & Heavy Transportation Equipment
+PCG,XNYS,PG&E Corporation,Utilities,Multi-Utilities
+PEG,XNYS,Public Service Enterprise Group,Utilities,Electric Utilities
+PEP,XNAS,PepsiCo,Consumer Staples,Soft Drinks & Non-alcoholic Beverages
+PFE,XNYS,Pfizer,Health Care,Pharmaceuticals
+PFG,XNAS,Principal Financial Group,Financials,Life & Health Insurance
+PG,XNYS,Procter & Gamble,Consumer Staples,Personal Care Products
+PGR,XNYS,Progressive Corporation,Financials,Property & Casualty Insurance
+PH,XNYS,Parker Hannifin,Industrials,Industrial Machinery & Supplies & Components
+PHM,XNYS,PulteGroup,Consumer Discretionary,Homebuilding
+PKG,XNYS,Packaging Corporation of America,Materials,Paper & Plastic Packaging Products & Materials
+PLD,XNYS,Prologis,Real Estate,Industrial REITs
+PLTR,XNAS,Palantir Technologies,Information Technology,Application Software
+PM,XNYS,Philip Morris International,Consumer Staples,Tobacco
+PNC,XNYS,PNC Financial Services,Financials,Diversified Banks
+PNR,XNYS,Pentair,Industrials,Industrial Machinery & Supplies & Components
+PNW,XNYS,Pinnacle West Capital,Utilities,Multi-Utilities
+PODD,XNAS,Insulet Corporation,Health Care,Health Care Equipment
+PPG,XNYS,PPG Industries,Materials,Specialty Chemicals
+PPL,XNYS,PPL Corporation,Utilities,Electric Utilities
+PRU,XNYS,Prudential Financial,Financials,Life & Health Insurance
+PSA,XNYS,Public Storage,Real Estate,Self-Storage REITs
+PSX,XNYS,Phillips 66,Energy,Oil & Gas Refining & Marketing
+PTC,XNAS,PTC Inc.,Information Technology,Application Software
+PWR,XNYS,Quanta Services,Industrials,Construction & Engineering
+PYPL,XNAS,PayPal,Financials,Transaction & Payment Processing Services
+Q,XNYS,Qnity Electronics,Information Technology,Semiconductor Materials & Equipment
+QCOM,XNAS,Qualcomm,Information Technology,Semiconductors
+RCL,XNYS,Royal Caribbean Group,Consumer Discretionary,"Hotels, Resorts & Cruise Lines"
+REG,XNAS,Regency Centers,Real Estate,Retail REITs
+REGN,XNAS,Regeneron Pharmaceuticals,Health Care,Biotechnology
+RF,XNYS,Regions Financial Corporation,Financials,Regional Banks
+RJF,XNYS,Raymond James Financial,Financials,Investment Banking & Brokerage
+RL,XNYS,Ralph Lauren Corporation,Consumer Discretionary,"Apparel, Accessories & Luxury Goods"
+RMD,XNYS,ResMed,Health Care,Health Care Equipment
+ROK,XNYS,Rockwell Automation,Industrials,Electrical Components & Equipment
+ROL,XNYS,"Rollins, Inc.",Industrials,Environmental & Facilities Services
+ROP,XNAS,Roper Technologies,Information Technology,Electronic Equipment & Instruments
+ROST,XNAS,Ross Stores,Consumer Discretionary,Apparel Retail
+RSG,XNYS,Republic Services,Industrials,Environmental & Facilities Services
+RTX,XNYS,RTX Corporation,Industrials,Aerospace & Defense
+RVTY,XNYS,Revvity,Health Care,Health Care Equipment
+SBAC,XNAS,SBA Communications,Real Estate,Telecom Tower REITs
+SBUX,XNAS,Starbucks,Consumer Discretionary,Restaurants
+SCHW,XNYS,Charles Schwab Corporation,Financials,Investment Banking & Brokerage
+SHW,XNYS,Sherwin-Williams,Materials,Specialty Chemicals
+SJM,XNYS,J.M. Smucker Company (The),Consumer Staples,Packaged Foods & Meats
+SKYD,XNYS,Skydance,Communication Services,Movies & Entertainment
+SLB,XNYS,Schlumberger,Energy,Oil & Gas Equipment & Services
+SMCI,XNAS,Supermicro,Information Technology,"Technology Hardware, Storage & Peripherals"
+SNA,XNYS,Snap-on,Industrials,Industrial Machinery & Supplies & Components
+SNDK,XNAS,Sandisk,Information Technology,"Technology Hardware, Storage & Peripherals"
+SNPS,XNAS,Synopsys,Information Technology,Application Software
+SO,XNYS,Southern Company,Utilities,Electric Utilities
+SOLV,XNYS,Solventum,Health Care,Health Care Technology
+SPG,XNYS,Simon Property Group,Real Estate,Retail REITs
+SPGI,XNYS,S&P Global,Financials,Financial Exchanges & Data
+SRE,XNYS,Sempra,Utilities,Multi-Utilities
+STE,XNYS,Steris,Health Care,Health Care Equipment
+STLD,XNAS,Steel Dynamics,Materials,Steel
+STT,XNYS,State Street Corporation,Financials,Asset Management & Custody Banks
+STX,XNAS,Seagate Technology,Information Technology,"Technology Hardware, Storage & Peripherals"
+STZ,XNYS,Constellation Brands,Consumer Staples,Distillers & Vintners
+SW,XNYS,Smurfit Westrock,Materials,Paper & Plastic Packaging Products & Materials
+SWK,XNYS,Stanley Black & Decker,Industrials,Industrial Machinery & Supplies & Components
+SWKS,XNAS,Skyworks Solutions,Information Technology,Semiconductors
+SYF,XNYS,Synchrony Financial,Financials,Consumer Finance
+SYK,XNYS,Stryker Corporation,Health Care,Health Care Equipment
+SYY,XNYS,Sysco,Consumer Staples,Food Distributors
+T,XNYS,AT&T,Communication Services,Integrated Telecommunication Services
+TDG,XNYS,TransDigm Group,Industrials,Aerospace & Defense
+TDY,XNYS,Teledyne Technologies,Information Technology,Electronic Equipment & Instruments
+TECH,XNAS,Bio-Techne,Health Care,Life Sciences Tools & Services
+TEL,XNYS,TE Connectivity,Information Technology,Electronic Manufacturing Services
+TER,XNAS,Teradyne,Information Technology,Semiconductor Materials & Equipment
+TFC,XNYS,Truist Financial,Financials,Diversified Banks
+TGT,XNYS,Target Corporation,Consumer Staples,Consumer Staples Merchandise Retail
+TJX,XNYS,TJX Companies,Consumer Discretionary,Apparel Retail
+TKO,XNYS,TKO Group Holdings,Communication Services,Movies & Entertainment
+TMO,XNYS,Thermo Fisher Scientific,Health Care,Life Sciences Tools & Services
+TMUS,XNAS,T-Mobile US,Communication Services,Wireless Telecommunication Services
+TPL,XNYS,Texas Pacific Land Corporation,Energy,Oil & Gas Exploration & Production
+TPR,XNYS,"Tapestry, Inc.",Consumer Discretionary,"Apparel, Accessories & Luxury Goods"
+TRGP,XNYS,Targa Resources,Energy,Oil & Gas Storage & Transportation
+TRMB,XNAS,Trimble Inc.,Information Technology,Application Software
+TROW,XNAS,T. Rowe Price,Financials,Asset Management & Custody Banks
+TRV,XNYS,Travelers Companies (The),Financials,Property & Casualty Insurance
+TSCO,XNAS,Tractor Supply,Consumer Discretionary,Other Specialty Retail
+TSLA,XNAS,"Tesla, Inc.",Consumer Discretionary,Automobile Manufacturers
+TSN,XNYS,Tyson Foods,Consumer Staples,Packaged Foods & Meats
+TT,XNYS,Trane Technologies,Industrials,Building Products
+TTWO,XNAS,Take-Two Interactive,Communication Services,Interactive Home Entertainment
+TWLO,XNYS,Twilio,Information Technology,Systems Software
+TXN,XNAS,Texas Instruments,Information Technology,Semiconductors
+TXT,XNYS,Textron,Industrials,Aerospace & Defense
+TYL,XNYS,Tyler Technologies,Information Technology,Application Software
+UAL,XNAS,United Airlines Holdings,Industrials,Passenger Airlines
+UBER,XNYS,Uber,Industrials,Passenger Ground Transportation
+UDR,XNYS,"UDR, Inc.",Real Estate,Multi-Family Residential REITs
+UHS,XNYS,Universal Health Services,Health Care,Health Care Facilities
+ULTA,XNAS,Ulta Beauty,Consumer Discretionary,Other Specialty Retail
+UNH,XNYS,UnitedHealth Group,Health Care,Managed Health Care
+UNP,XNYS,Union Pacific Corporation,Industrials,Rail Transportation
+UPS,XNYS,United Parcel Service,Industrials,Air Freight & Logistics
+URI,XNYS,United Rentals,Industrials,Trading Companies & Distributors
+USB,XNYS,U.S. Bancorp,Financials,Diversified Banks
+V,XNYS,Visa Inc.,Financials,Transaction & Payment Processing Services
+VEEV,XNYS,Veeva Systems,Health Care,Health Care Technology
+VICI,XNYS,Vici Properties,Real Estate,Hotel & Resort REITs
+VLO,XNYS,Valero Energy,Energy,Oil & Gas Refining & Marketing
+VLTO,XNYS,Veralto,Industrials,Environmental & Facilities Services
+VMC,XNYS,Vulcan Materials Company,Materials,Construction Materials
+VMRK,XNYS,Vivmark Residential,Real Estate,Multi-Family Residential REITs
+VRSK,XNAS,Verisk Analytics,Industrials,Research & Consulting Services
+VRSN,XNAS,Verisign,Information Technology,Internet Services & Infrastructure
+VRT,XNYS,Vertiv,Industrials,Electrical Components & Equipment
+VRTX,XNAS,Vertex Pharmaceuticals,Health Care,Biotechnology
+VST,XNYS,Vistra Corp.,Utilities,Electric Utilities
+VTR,XNYS,Ventas,Real Estate,Health Care REITs
+VTRS,XNAS,Viatris,Health Care,Pharmaceuticals
+VYLR,XNYS,Vylor,Consumer Staples,Agricultural Products & Services
+VZ,XNYS,Verizon,Communication Services,Integrated Telecommunication Services
+WAB,XNYS,Wabtec,Industrials,Construction Machinery & Heavy Transportation Equipment
+WAT,XNYS,Waters Corporation,Health Care,Life Sciences Tools & Services
+WDAY,XNAS,"Workday, Inc.",Information Technology,Application Software
+WDC,XNAS,Western Digital,Information Technology,"Technology Hardware, Storage & Peripherals"
+WEC,XNYS,WEC Energy Group,Utilities,Electric Utilities
+WELL,XNYS,Welltower,Real Estate,Health Care REITs
+WFC,XNYS,Wells Fargo,Financials,Diversified Banks
+WM,XNYS,Waste Management,Industrials,Environmental & Facilities Services
+WMB,XNYS,Williams Companies,Energy,Oil & Gas Storage & Transportation
+WMT,XNAS,Walmart,Consumer Staples,Consumer Staples Merchandise Retail
+WRB,XNYS,W. R. Berkley Corporation,Financials,Property & Casualty Insurance
+WSM,XNYS,"Williams-Sonoma, Inc.",Consumer Discretionary,Homefurnishing Retail
+WST,XNYS,West Pharmaceutical Services,Health Care,Health Care Supplies
+WTW,XNAS,Willis Towers Watson,Financials,Insurance Brokers
+WY,XNYS,Weyerhaeuser,Real Estate,Timber REITs
+WYNN,XNAS,Wynn Resorts,Consumer Discretionary,Casinos & Gaming
+XEL,XNAS,Xcel Energy,Utilities,Multi-Utilities
+XOM,XNYS,ExxonMobil,Energy,Integrated Oil & Gas
+XYL,XNYS,Xylem Inc.,Industrials,Industrial Machinery & Supplies & Components
+XYZ,XNYS,"Block, Inc.",Financials,Transaction & Payment Processing Services
+YUM,XNYS,Yum! Brands,Consumer Discretionary,Restaurants
+ZBH,XNYS,Zimmer Biomet,Health Care,Health Care Equipment
+ZBRA,XNAS,Zebra Technologies,Information Technology,Electronic Equipment & Instruments
+ZTS,XNYS,Zoetis,Health Care,Pharmaceuticals

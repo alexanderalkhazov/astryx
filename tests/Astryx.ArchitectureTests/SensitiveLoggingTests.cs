@@ -43,7 +43,7 @@ public partial class SensitiveLoggingTests
     [GeneratedRegex(@"\{(Password|NewPassword|CurrentPassword|Token|AccessToken|RefreshToken|PushToken|ApiKey|UserKey|SecretKey|KeyId|Secret|Credentials?|Authorization|Email)\}", RegexOptions.IgnoreCase)]
     private static partial Regex SensitivePlaceholder();
 
-    private static string RepositoryRoot()
+    internal static string RepositoryRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
         while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "Astryx.slnx")))

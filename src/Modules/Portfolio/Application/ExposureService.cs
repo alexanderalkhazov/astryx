@@ -129,7 +129,7 @@ public sealed class ExposureService(
 
     private async Task<(Valuation Valuation, List<Position> Open, RiskLimits Limits)?> LoadAsync(CancellationToken cancellationToken)
     {
-        var portfolio = await db.Portfolios.AsNoTracking().FirstOrDefaultAsync(p => p.UserId == user.RequireUserId() && p.Mode == PortfolioMode.Simulated, cancellationToken);
+        var portfolio = await db.Portfolios.AsNoTracking().ActiveFor(user.RequireUserId()).FirstOrDefaultAsync(cancellationToken);
         if (portfolio is null)
         {
             return null;

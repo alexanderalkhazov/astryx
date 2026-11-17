@@ -31,6 +31,15 @@ public sealed record OrderExpired(Guid UserId, Guid OrderId, Guid? ProposalId, s
     public static string EventName => "paper.order_expired.v1";
 }
 
+/// <summary>
+/// The broker refused or cancelled an entry before it filled (SYSTEM_DESIGN.md §17.5); its reserved cash was released.
+/// <paramref name="Status"/> is <c>rejected</c>, <c>cancelled</c> or <c>expired</c>.
+/// </summary>
+public sealed record OrderRejected(Guid UserId, Guid OrderId, Guid? ProposalId, string Symbol, string Status, string Reason) : IIntegrationEvent
+{
+    public static string EventName => "paper.order_rejected.v1";
+}
+
 /// <summary>The last price came within 1.5% of a position's stop (once per position per session).</summary>
 public sealed record StopProximityReached(Guid UserId, Guid PositionId, string Symbol, decimal Last, decimal Stop) : IIntegrationEvent
 {

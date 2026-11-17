@@ -1,9 +1,11 @@
+using Astryx.Infrastructure.Alpaca;
 using Astryx.Infrastructure.Jobs;
 using Astryx.Infrastructure.Persistence;
 using Astryx.Modules.MarketData.Application.Ingestion;
 using Astryx.Modules.MarketData.Application.Market;
 using Astryx.Modules.MarketData.Application.Providers;
 using Astryx.Modules.MarketData.Infrastructure.Persistence;
+using Astryx.Modules.MarketData.Infrastructure.Providers.Alpaca;
 using Astryx.Modules.MarketData.Infrastructure.Providers.Fake;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,20 +20,29 @@ public static class MarketDataModule
     {
         services.AddModuleDbContext<MarketDataDbContext>(MarketDataDbContext.SchemaName, historyKey: "marketdata");
 
-        // Only the fake provider exists until the provider decision (T-051, Q-03) picks a real one.
+        // `MarketData:Provider`: Fake (default: tests, CI, E2E, offline) or Alpaca (real data, T-147).
         var provider = configuration["MarketData:Provider"] ?? FakeMarketDataProvider.ProviderCode;
-        if (!string.Equals(provider, FakeMarketDataProvider.ProviderCode, StringComparison.OrdinalIgnoreCase))
-        {
-            throw new InvalidOperationException($"MarketData:Provider '{provider}' is not implemented; only '{FakeMarketDataProvider.ProviderCode}' is available (SYSTEM_DESIGN.md §16.2, Q-03).");
-        }
-
         services.TryAddSingleton(TimeProvider.System);
         services.AddOptions<FakeMarketDataOptions>().Bind(configuration.GetSection(FakeMarketDataOptions.SectionName));
         services.AddSingleton(_ => FixtureData.Load());
         services.AddSingleton<FakeCalendar>();
-        services.AddSingleton<MarketDataFaults>();
-        services.AddSingleton<IMarketDataProvider, FakeMarketDataProvider>();
-        services.AddSingleton<INewsProvider, FakeNewsProvider>();
+        services.AddSingleton<MarketDataFaults>(); // the dev fault routes resolve it; only the fake provider reads it
+        if (string.Equals(provider, AlpacaMarketDataProvider.ProviderCode, StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddAlpacaCore(configuration);
+            services.AddSingleton(_ => AlpacaUniverse.Load());
+            services.AddSingleton<IMarketDataProvider, AlpacaMarketDataProvider>();
+            services.AddSingleton<INewsProvider, AlpacaNewsProvider>();
+        }
+        else if (string.Equals(provider, FakeMarketDataProvider.ProviderCode, StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddSingleton<IMarketDataProvider, FakeMarketDataProvider>();
+            services.AddSingleton<INewsProvider, FakeNewsProvider>();
+        }
+        else
+        {
+            throw new InvalidOperationException($"MarketData:Provider '{provider}' is not implemented; use '{FakeMarketDataProvider.ProviderCode}' or '{AlpacaMarketDataProvider.ProviderCode}' (SYSTEM_DESIGN.md §16.2).");
+        }
 
         return services.AddIngestion(configuration);
     }

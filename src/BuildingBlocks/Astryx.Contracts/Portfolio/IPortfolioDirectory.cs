@@ -5,6 +5,32 @@ public interface IPortfolioDirectory
 {
     /// <summary>The user's simulated paper portfolio, or null before registration provisioned it.</summary>
     Task<Guid?> GetSimulatedAsync(Guid userId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// The portfolio the user trades in now (SYSTEM_DESIGN.md §17.1): their Alpaca paper portfolio while a connection is
+    /// attached, otherwise the simulated one. Null before registration provisioned it.
+    /// </summary>
+    Task<ActivePortfolio?> GetActiveAsync(Guid userId, CancellationToken cancellationToken);
+}
+
+/// <param name="Mode"><c>simulated</c> or <c>alpaca_paper</c>.</param>
+/// <param name="BrokerConnectionId">Set for a broker portfolio: the connection whose keys execute its orders.</param>
+public sealed record ActivePortfolio(Guid Id, string Mode, Guid? BrokerConnectionId)
+{
+    public bool IsBroker => BrokerConnectionId is not null;
+}
+
+/// <summary>Owned by Portfolio: the Alpaca paper portfolio's lifecycle, driven by broker connections (T-141, §17.6).</summary>
+public interface IBrokerPortfolios
+{
+    /// <summary>
+    /// Attaches the user's <c>alpaca_paper</c> portfolio to <paramref name="connectionId"/>, creating it on first connect with
+    /// the broker's cash as its opening balance. Returns the portfolio id. Joins the caller's transaction.
+    /// </summary>
+    Task<Guid> AttachAsync(Guid userId, Guid connectionId, decimal brokerCash, DateTimeOffset at, CancellationToken cancellationToken);
+
+    /// <summary>Detaches it: the user trades in the simulated portfolio again. History stays.</summary>
+    Task DetachAsync(Guid userId, CancellationToken cancellationToken);
 }
 
 /// <summary>An open position as the risk engine sees it (valuation uses the latest quote, not this record).</summary>

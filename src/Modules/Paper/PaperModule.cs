@@ -1,7 +1,10 @@
+using Astryx.Infrastructure.Alpaca;
 using Astryx.Infrastructure.Jobs;
 using Astryx.Infrastructure.Outbox;
 using Astryx.Infrastructure.Persistence;
+using Astryx.Infrastructure.Security;
 using Astryx.Modules.Paper.Application;
+using Astryx.Modules.Paper.Infrastructure.Alpaca;
 using Astryx.Modules.Paper.Infrastructure.Persistence;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +17,19 @@ public static class PaperModule
     public static IServiceCollection AddPaperModule(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddModuleDbContext<PaperDbContext>(PaperDbContext.SchemaName, historyKey: "paper");
+
+        // Alpaca Paper execution (§17, T-140–T-145): the trading client, sealed credentials and connections.
+        services.AddAlpacaCore(configuration);
+        services.Configure<CredentialVaultOptions>(configuration.GetSection(CredentialVaultOptions.SectionName));
+        services.AddSingleton<CredentialVault>();
+        services.AddSingleton<IAlpacaTradingClient, AlpacaTradingClient>();
+        services.AddScoped<BrokerCredentials>();
+        services.AddScoped<BrokerConnectionService>();
+        services.AddSingleton<AlpacaExecution>();
+        services.AddJobHandler<SubmitBrokerOrderJob, SubmitBrokerOrderHandler>();
+        services.AddJobHandler<SettleBrokerOrderJob, SettleBrokerOrderHandler>();
+        services.AddJobHandler<BrokerSyncJob, BrokerSyncHandler>();
+        services.AddRecurringJob("paper.broker_sync", TimeSpan.FromMinutes(1), _ => new BrokerSyncJob());
         services.AddScoped<PaperOrderService>();
         services.AddScoped<PaperExecution>();
         services.AddScoped<PositionActions>();
@@ -23,6 +39,7 @@ public static class PaperModule
         services.AddIntegrationEventHandler<Astryx.Contracts.Events.Paper.OrderAccepted, PaperRealtimeRelays>();
         services.AddIntegrationEventHandler<Astryx.Contracts.Events.Paper.OrderFilled, PaperRealtimeRelays>();
         services.AddIntegrationEventHandler<Astryx.Contracts.Events.Paper.OrderExpired, PaperRealtimeRelays>();
+        services.AddIntegrationEventHandler<Astryx.Contracts.Events.Paper.OrderRejected, PaperRealtimeRelays>();
         services.AddIntegrationEventHandler<Astryx.Contracts.Events.Paper.PositionOpened, PaperRealtimeRelays>();
         services.AddIntegrationEventHandler<Astryx.Contracts.Events.Paper.PositionClosed, PaperRealtimeRelays>();
         services.AddRecurringJob("paper-day-order-expiry", TimeSpan.FromMinutes(1), _ => new DayOrderExpiryJob());

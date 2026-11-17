@@ -33,6 +33,7 @@ jest.mock('@/lib/api', () => ({
     setDevFaults: jest.fn(),
   },
   portfolio: { summary: jest.fn(), reset: jest.fn() },
+  broker: { connections: jest.fn(), connect: jest.fn(), disconnect: jest.fn() },
   watchlists: { list: jest.fn() },
 }));
 type SettingsMock = Record<
@@ -51,6 +52,7 @@ type SettingsMock = Record<
 const api = jest.requireMock('@/lib/api') as {
   settings: SettingsMock;
   portfolio: { summary: jest.Mock; reset: jest.Mock };
+  broker: { connections: jest.Mock; connect: jest.Mock; disconnect: jest.Mock };
   watchlists: { list: jest.Mock };
 };
 const { signOut } = jest.requireMock('@/lib/session') as { signOut: jest.Mock };
@@ -119,6 +121,7 @@ beforeEach(() => {
   );
   api.settings.devFaults.mockResolvedValue(ok({ marketData: 'ok', frozenAt: null }));
   api.portfolio.summary.mockResolvedValue(ok({ equity: '118172.40', asOf: '2026-11-09T19:36:10Z' }));
+  api.broker.connections.mockResolvedValue(ok({ items: [] }));
   api.watchlists.list.mockResolvedValue(ok({ items: [{ id: 'w1', isDefault: true, items: [{ symbol: 'NVDA' }, { symbol: 'AMD' }] }] }));
 });
 
@@ -131,7 +134,7 @@ describe('Settings (designs 18 and 25)', () => {
     expect(await screen.findByText('Connected · synced 14:36 ET')).toBeOnTheScreen();
     expect(screen.getByText('Paper only')).toBeOnTheScreen();
     expect(screen.getByText('Never requested')).toBeOnTheScreen();
-    expect(screen.getByRole('button', { name: 'Connect Alpaca' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Connect Alpaca' })).toBeEnabled();
   });
 
   it('walks the live guard to "isn\'t available yet" and stays in paper', async () => {
@@ -277,5 +280,43 @@ describe('Change password', () => {
       currentPassword: 'old password here',
       newPassword: 'a brand new passphrase',
     });
+  });
+});
+
+// Last in the file: the confirm dialog's Modal leaves the test renderer in a state that breaks later renders.
+describe('Alpaca connection card (T-141)', () => {
+  it('shows a connected Alpaca paper account with its masked key and disconnects after confirming', async () => {
+    api.broker.connections.mockResolvedValue(
+      ok({
+        items: [
+          {
+            id: 'c1',
+            broker: 'alpaca',
+            environment: 'paper',
+            label: 'Alpaca · paper account',
+            keySuffix: '6QSR',
+            accountRef: 'PA3TESTACCT',
+            status: 'connected',
+            permissions: { readPortfolio: true, placeOrders: 'paper_only', depositsWithdrawals: 'never_requested' },
+            connectedAt: '2026-11-17T09:00:00Z',
+            lastSyncAt: '2026-11-17T14:32:00Z',
+            lastError: null,
+          },
+        ],
+      }),
+    );
+    api.broker.disconnect.mockResolvedValue(ok(undefined));
+    await renderAt();
+
+    expect(await screen.findByText('Alpaca · paper account')).toBeOnTheScreen();
+    expect(screen.getByText(/API key ••••6QSR · Connected · synced/)).toBeOnTheScreen();
+    expect(screen.getByText('Never requested')).toBeOnTheScreen();
+
+    fireEvent.press(screen.getByRole('button', { name: 'Disconnect Alpaca' }));
+    api.broker.connections.mockResolvedValue(ok({ items: [] })); // what the refetch after disconnecting sees
+    fireEvent.press(await screen.findByRole('button', { name: 'Disconnect' }));
+
+    expect(await screen.findByRole('button', { name: 'Connect Alpaca' })).toBeOnTheScreen(); // back to the simulated account
+    expect(api.broker.disconnect).toHaveBeenCalledWith('c1');
   });
 });

@@ -57,6 +57,29 @@ pnpm mobile                   # Metro; press i for the iOS simulator
 
 Ports: the API uses **5080** on the host (`API_PORT` in `.env`) because 8080 is often taken. Ollama runs natively, and containers reach it at `host.docker.internal:11434`.
 
+## Real market data and Alpaca Paper
+
+The stack uses deterministic fake market data by default (tests, CI and the Maestro flows depend on it). To use real
+US equity data and send approved trades to an Alpaca paper account (SYSTEM_DESIGN.md §16.2, §17):
+
+```bash
+# .env (never commit keys)
+MARKET_DATA_PROVIDER=Alpaca
+MARKET_DATA_REQUESTS_PER_MINUTE=80
+ALPACA_KEY_ID=PK…                   # Alpaca dashboard › Paper trading › API keys (market data for the whole server)
+ALPACA_SECRET_KEY=…
+CREDENTIALS_MASTER_KEYS=$(dotnet run --project apps/api -- --generate-credentials-key)   # encrypts users' stored keys
+
+pnpm stack:up
+curl -X POST localhost:5080/dev/market/purge-fake   # once, when an existing database switches from fake data
+```
+
+The first sync lists the S&P 500 universe, then backfills two years of daily bars in about 30 minutes. Each user
+connects their own paper keys in **Settings › Broker connection › Connect Alpaca**; from then on their approved trades
+go to Alpaca as bracket orders and Alpaca's fills are mirrored. Disconnecting switches back to the simulated account.
+`ALPACA_KEY_ID=… ALPACA_SECRET_KEY=… dotnet test tests/Astryx.IntegrationTests --filter AlpacaPaperSmokeTests` checks
+the real Trading API without filling anything.
+
 ## Development build (iOS)
 
 Expo Go can't load native modules beyond its own set, and it can't run SDK 58 on a physical iPhone. Daily work uses the dev client:

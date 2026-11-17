@@ -10,7 +10,8 @@ export const PaperOrder = z.object({
   brokerOrderId: z.string(),
   mode: z.literal('paper'),
   broker: z.string(),
-  status: z.enum(['accepted', 'working', 'filled', 'cancelled', 'expired', 'rejected']),
+  // submitting/submitted: an Alpaca order on its way to, or resting at, the broker (§17.5).
+  status: z.enum(['accepted', 'submitting', 'submitted', 'working', 'filled', 'cancelled', 'expired', 'rejected']),
   purpose: z.enum(['entry', 'exit_stop', 'exit_target', 'exit_manual', 'exit_reset']),
   symbol: z.string(),
   side: z.enum(['buy', 'sell']),
@@ -29,11 +30,12 @@ export const PaperOrder = z.object({
 });
 export type PaperOrder = z.infer<typeof PaperOrder>;
 
-/** Paper execution T6 (always simulated). Reuse the idempotency key when retrying the same confirm. */
+/** Paper execution T6: the simulator, or Alpaca Paper when connected. Reuse the idempotency key when retrying the same confirm. */
 export function paperApi(client: ApiClient) {
   return {
     place: (input: { proposalId: string; assessmentId: string }, idempotencyKey: string) =>
       client.request('/api/v1/paper/orders', { method: 'POST', body: input, idempotencyKey, schema: PaperOrder }),
+    get: (orderId: string) => client.request(`/api/v1/paper/orders/${encodeURIComponent(orderId)}`, { schema: PaperOrder }),
     working: () => client.request('/api/v1/paper/orders?status=working', { schema: z.object({ items: z.array(PaperOrder) }) }),
     cancel: (orderId: string, idempotencyKey: string) =>
       client.request(`/api/v1/paper/orders/${encodeURIComponent(orderId)}/cancel`, {

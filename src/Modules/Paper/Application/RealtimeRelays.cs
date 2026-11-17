@@ -18,6 +18,7 @@ public sealed class PaperRealtimeRelays(IRealtimeNotifier notifier) :
     IIntegrationEventHandler<OrderAccepted>,
     IIntegrationEventHandler<OrderFilled>,
     IIntegrationEventHandler<OrderExpired>,
+    IIntegrationEventHandler<OrderRejected>,
     IIntegrationEventHandler<PositionOpened>,
     IIntegrationEventHandler<PositionClosed>
 {
@@ -32,6 +33,9 @@ public sealed class PaperRealtimeRelays(IRealtimeNotifier notifier) :
 
     public Task HandleAsync(OrderExpired e, IntegrationEventContext context, CancellationToken cancellationToken) =>
         notifier.SendToUserAsync(e.UserId, OrderUpdated, new OrderUpdatedMessage(e.OrderId, e.ProposalId, e.Symbol, "expired", "entry", null, null), cancellationToken);
+
+    public Task HandleAsync(OrderRejected e, IntegrationEventContext context, CancellationToken cancellationToken) =>
+        notifier.SendToUserAsync(e.UserId, OrderUpdated, new OrderUpdatedMessage(e.OrderId, e.ProposalId, e.Symbol, e.Status, "entry", null, null), cancellationToken);
 
     public Task HandleAsync(PositionOpened e, IntegrationEventContext context, CancellationToken cancellationToken) =>
         notifier.SendToUserAsync(e.UserId, PositionUpdated, new PositionUpdatedMessage(e.PositionId, e.Symbol, "open", null, e.AvgEntryPrice, null, false), cancellationToken);

@@ -32,13 +32,16 @@ public sealed class PositionActions(
     IStockResearchSource research,
     IMarketSessionClock sessions,
     PaperExecution execution,
-    PaperOrderService orders)
+    PaperOrderService orders,
+    BrokerCredentials brokerCredentials,
+    Astryx.Modules.Paper.Infrastructure.Alpaca.IAlpacaTradingClient alpaca)
 {
     public static readonly Error PositionNotFound = new("not_found", "No position with that id.");
     public static readonly Error NotOpen = new("position_not_open", "This position is no longer open.");
     public static readonly Error QuoteStale = new("quote_stale", "The quote is stale. Closing needs live data.");
     public static readonly Error MarketClosed = new("market_closed", "The regular session is closed.");
     public static readonly Error NotCancellable = new("conflict", "Only a working entry order can be cancelled.");
+    public static readonly Error BrokerNotConnected = new("broker_unavailable", "Your Alpaca connection is unavailable. Reconnect it in Settings to close this position.");
 
     public async Task<Result<ClosePreviewDto>> PreviewAsync(Guid positionId, CancellationToken cancellationToken)
     {
@@ -76,7 +79,25 @@ public sealed class PositionActions(
             return new ClosePositionDto(await OrderDtoAsync(done, cancellationToken), ToDto(again!));
         }
 
-        if (await portfolios.GetSimulatedAsync(userId, cancellationToken) is not { } portfolioId || !await ledger.LockAsync(portfolioId, cancellationToken))
+        if (await portfolios.GetActiveAsync(userId, cancellationToken) is not { } active)
+        {
+            return PositionNotFound;
+        }
+
+        // §17.5: an Alpaca position is sold at Alpaca, before the portfolio lock, so no network call holds it.
+        AlpacaClose? brokerClose = null;
+        if (active.IsBroker)
+        {
+            var sent = await CloseAtAlpacaAsync(positionId, userId, cancellationToken);
+            if (!sent.IsSuccess)
+            {
+                return sent.Error;
+            }
+
+            brokerClose = sent.Value;
+        }
+
+        if (!await ledger.LockAsync(active.Id, cancellationToken))
         {
             return PositionNotFound;
         }
@@ -94,6 +115,11 @@ public sealed class PositionActions(
         }
 
         var now = sessions.Now;
+        if (brokerClose is not null)
+        {
+            return await RecordAlpacaCloseAsync(position, brokerClose, userId, idempotencyKey, now, cancellationToken);
+        }
+
         if (await sessions.TodayAsync(cancellationToken) is not { } session || now < session.OpenAt || now >= session.CloseAt)
         {
             return MarketClosed;
@@ -171,10 +197,106 @@ public sealed class PositionActions(
         return await OrderDtoAsync(order, cancellationToken);
     }
 
+    private sealed record AlpacaClose(Astryx.Modules.Paper.Infrastructure.Alpaca.AlpacaOrder Order);
+
+    /// <summary>Cancels the bracket legs at Alpaca and market-sells the position there, waiting briefly for the fill.</summary>
+    private async Task<Result<AlpacaClose>> CloseAtAlpacaAsync(Guid positionId, Guid userId, CancellationToken cancellationToken)
+    {
+        var now = sessions.Now;
+        if (await sessions.TodayAsync(cancellationToken) is not { } session || now < session.OpenAt || now >= session.CloseAt)
+        {
+            return MarketClosed;
+        }
+
+        var legs = await db.Orders.AsNoTracking()
+            .Where(o => o.PositionId == positionId && o.Broker == BrokerCode.Alpaca && o.OcoGroupId != null && o.Status == OrderStatus.Working)
+            .ToListAsync(cancellationToken);
+        var entry = await db.Orders.AsNoTracking().FirstOrDefaultAsync(o => o.PositionId == positionId && o.Purpose == OrderPurpose.Entry, cancellationToken);
+        if (entry is null || entry.Broker != BrokerCode.Alpaca)
+        {
+            return PositionNotFound;
+        }
+
+        var connectionId = await db.BrokerConnections.AsNoTracking().Where(c => c.Status != BrokerConnectionStatus.Revoked).Select(c => (Guid?)c.Id).FirstOrDefaultAsync(cancellationToken);
+        if (connectionId is not { } id || await brokerCredentials.OpenAsync(id, cancellationToken) is not { } opened)
+        {
+            return BrokerNotConnected;
+        }
+
+        try
+        {
+            foreach (var leg in legs)
+            {
+                await alpaca.CancelOrderAsync(opened.Credentials, leg.BrokerOrderId, cancellationToken);
+            }
+
+            var closing = await alpaca.ClosePositionAsync(opened.Credentials, entry.Symbol, cancellationToken);
+            for (var attempt = 0; attempt < 6 && !closing.IsFilled; attempt++)
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(500L), cancellationToken);
+                closing = await alpaca.GetOrderAsync(opened.Credentials, closing.Id, cancellationToken) ?? closing;
+            }
+
+            return new AlpacaClose(closing);
+        }
+        catch (Astryx.Infrastructure.Alpaca.AlpacaApiException ex)
+        {
+            return new Error("broker_unavailable", $"Alpaca couldn't close the position: {ex.Message}");
+        }
+    }
+
+    /// <summary>Records Alpaca's close: the exit at Alpaca's price when it filled, else a submitted exit the sync settles.</summary>
+    private async Task<Result<ClosePositionDto>> RecordAlpacaCloseAsync(PositionSnapshot position, AlpacaClose close, Guid userId, string idempotencyKey, DateTimeOffset now, CancellationToken cancellationToken)
+    {
+        var exit = new Order
+        {
+            Id = Ids.New(),
+            UserId = userId,
+            PortfolioId = position.PortfolioId,
+            InstrumentId = position.InstrumentId,
+            Symbol = position.Symbol,
+            PositionId = position.Id,
+            ClientOrderId = idempotencyKey,
+            Broker = BrokerCode.Alpaca,
+            Mode = "alpaca_paper",
+            BrokerOrderId = close.Order.Id,
+            Purpose = OrderPurpose.ExitManual,
+            Side = "sell",
+            OrderType = "market",
+            TimeInForce = "day",
+            Quantity = position.Quantity,
+            Status = OrderStatus.Submitted,
+            SubmittedAt = now,
+        };
+        db.Orders.Add(exit);
+        var siblings = await db.Orders.IgnoreQueryFilters().Where(o => o.PositionId == position.Id && o.OcoGroupId != null && o.Status == OrderStatus.Working).ToListAsync(cancellationToken);
+        if (close.Order is { IsFilled: true, FilledAvgPrice: { } price })
+        {
+            var closed = await execution.ExitAsync(exit, siblings, price, price, 0m, "manual", gapped: false, close.Order.FilledAt ?? now, close.Order.FilledAt ?? now, cancellationToken);
+            if (!closed.IsSuccess)
+            {
+                return closed.Error;
+            }
+        }
+        else
+        {
+            foreach (var leg in siblings)
+            {
+                leg.Status = OrderStatus.Cancelled; // cancelled at Alpaca above
+                leg.CancelledAt = now;
+                leg.Version++;
+            }
+        }
+
+        await db.SaveChangesAsync(cancellationToken);
+        var after = await positionBook.LockAsync(position.Id, cancellationToken);
+        return new ClosePositionDto(await OrderDtoAsync(exit, cancellationToken), ToDto(after!));
+    }
+
     /// <summary>The user's position, row-locked when inside the close transaction; another user's is not found.</summary>
     private async Task<Result<PositionSnapshot>> OwnedPositionAsync(Guid positionId, CancellationToken cancellationToken)
     {
-        var portfolioId = await portfolios.GetSimulatedAsync(user.RequireUserId(), cancellationToken);
+        var portfolioId = (await portfolios.GetActiveAsync(user.RequireUserId(), cancellationToken))?.Id;
         var position = await positionBook.LockAsync(positionId, cancellationToken);
         return position is null || position.PortfolioId != portfolioId ? PositionNotFound : position;
     }

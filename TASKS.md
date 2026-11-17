@@ -280,6 +280,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Scope:** evaluate at least 2 real providers against the §16.2 matrix (coverage, history, rate limits, licence for local storage and display, cost) and record an ADR. **Does not implement the adapter.**
   - **Acceptance:** an ADR in `docs/adr/` with sources, plus Q-03 and Q-04 answered or explicitly deferred by the owner.
   - **Refs:** §16.2, Q-03, Q-04 · **Depends:** — · **P1**
+  - Note (2026-11-17): the owner chose Alpaca for real data and it is implemented (T-147). The evaluation of a second provider and the Q-04 licence answer are still open.
 
 ### M3 · Quant engine and scanner
 
@@ -379,40 +380,47 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 
 > Execution venue per SYSTEM_DESIGN.md §17 (ADR-023). Every task here runs against the **Paper** environment only (`paper-api.alpaca.markets`, paper keys). Contract tests use WireMock fixtures built from Alpaca's documented examples, so CI never needs real keys. One opt-in smoke suite uses paper keys from CI secrets.
 
-- [ ] **T-140** Alpaca API client
+- [x] **T-140** Alpaca API client
   - **Scope:** typed `AlpacaApiClient` for the Trading API (`/v2`) with the base URL taken from the connection's environment: `APCA-API-KEY-ID` + `APCA-API-SECRET-KEY` on every call; per-account rate limiter (200 requests/min, backs off on `429`); retries with backoff only for idempotent reads; error mapping (401/403 auth → `broker_credentials_invalid`, 403 buying power → `broker_insufficient_funds`, 422 → `broker_order_invalid`, 429 → `broker_rate_limited`, 5xx → `broker_unavailable`); circuit breaker; redacted logging; no money-movement or Broker API methods exist.
   - **Acceptance:** WireMock contract tests cover auth headers, paper vs live base URL selection, 429, 5xx, timeout and malformed responses. An architecture test bans funding, transfer, journal and Broker API paths. Keys and secrets never appear in logs (log-capture test).
   - **Refs:** §17.3 · **Depends:** T-013 · **P0**
-- [ ] **T-141** Connect Alpaca (encrypted credentials and Settings card)
+  - Done with T-141: `AlpacaHttp`/`AlpacaTradingClient` (paper host only), per-key token bucket (180/min), error mapping, `AlpacaTradingClientTests` + `AlpacaMarketDataProviderTests` contract tests, `BrokerMoneyMovementTests` architecture test; secrets never in messages (`AlpacaCredentials.ToString` redacts) and log templates guarded by `SensitiveLoggingTests`.
+- [x] **T-141** Connect Alpaca (encrypted credentials and Settings card)
   - **Story:** As a user, I want to connect my Alpaca paper account with my API keys so the app can see my portfolio and place approved trades.
   - **Acceptance:** `trading.broker_connections` migration (environment, key suffix, permissions, ciphertext). Envelope encryption via Data Protection (KMS in production). N7–N9: keys validated with `GET /v2/account` on the paper base URL (live-only keys rejected); `environment:"live"` returns 403 `live_trading_disabled`. Connecting creates an `alpaca_paper` portfolio; disconnect deletes the ciphertext. PROPOSED "Connect Alpaca" screen (paste key ID and secret, choose Paper, help link to the Alpaca dashboard's paper API keys). The design 18 card shows the masked key ID, sync time, status and permission rows. Audit rows for connect and disconnect.
   - **Refs:** §17.6, §10.4, §8.4.11 · **Depends:** T-140, T-023, T-017, T-032 · **P0**
+  - Done (2026-11-17): `trading.broker_connections`, `CredentialVault` envelope encryption (§17.6), N7–N9, Connect Alpaca screen and Settings card, audit rows; `AlpacaBrokerTests`.
 - [ ] **T-142** Instrument mapping and eligibility
   - **Acceptance:** our instruments map to Alpaca assets by symbol (`GET /v2/assets/{symbol}`, `asset_id` cached in `market.instruments.provider_refs.alpaca`). Instruments that are not `tradable` or not `active` show "Not tradable at Alpaca". New risk checks `broker_eligible` (tradable, active), `broker_connected` and `broker_write_permission`, shown only when they warn or fail.
   - **Refs:** §17.3, §14.5 · **Depends:** T-141, T-082 · **P0**
-- [ ] **T-143** `AlpacaBrokerAdapter` (Paper)
+- [x] **T-143** `AlpacaBrokerAdapter` (Paper)
   - **Scope:** implements `IBrokerAdapter`: submit (`market` / `stop` / `limit` mapping, whole-share `qty`, `time_in_force:"day"`, `order_class:"bracket"` with `stop_loss.stop_price` and `take_profit.limit_price`), order lookup by id and by `client_order_id` with status mapping (`new`/`accepted`/`pending_new`/`partially_filled` in flight; `filled` filled; `rejected`/`canceled`/`expired` closed), close position (cancel bracket legs, then `DELETE /v2/positions/{symbol}`), replace stop and target legs (`PATCH`), cancel, account and positions snapshot.
   - **Acceptance:** contract tests per method using documented request and response shapes. A manual Paper run answers Q-22 (does a bracket accept a `stop` entry? what does a duplicate `client_order_id` return?) and records the answers in §17.3–17.4. If a bracket rejects a stop entry, implement the `oto` fallback.
   - **Refs:** §17.2–17.4, Q-22 · **Depends:** T-140, T-142 · **P0**
+  - Done (2026-11-17): bracket submit, lookups by id and client id, close, cancel, account and positions; Q-22 answered by `AlpacaPaperSmokeTests` against Paper (bracket takes a stop entry; duplicate client id → 422). The adapter is `AlpacaExecution` + `IAlpacaTradingClient` rather than a separate `IBrokerAdapter` interface.
 - [ ] **T-144** Asynchronous broker order flow
   - **Story:** As a user, after I hold to approve, I see "Sending to Alpaca…", then a fill receipt with the Alpaca order id, or a clear rejection reason.
   - **Acceptance:** for `alpaca_*` portfolios, T6 commits the order as `submitting` with a cash reservation and returns 202. `SubmitBrokerOrderJob` sends with `client_order_id` = Idempotency-Key, and after a timeout or lost response it **looks up by `client_order_id` before any resubmit**. `LookupBrokerOrderJob` polls until terminal; a fill records mirrored fill, position (`broker_position_id`), ledger and proposal-approved state, then SignalR `order.updated`. A rejection releases cash and returns the proposal to pending with Alpaca's reason. Fill receipt and Activity show Alpaca ids. Tests: a lost response produces no duplicate order (lookup finds it); a reject path; a stuck order alerts after 10 minutes; 10 concurrent submits with the same key produce one Alpaca call.
   - **Refs:** §17.5, §15.9 · **Depends:** T-143, T-084, T-088, T-015 · **P0**
+  - ⏸ WIP (2026-11-17): submit/settle jobs, lookup before resubmit, 422-duplicate recovery, fills mirrored at Alpaca's price with bracket legs as exits, rejection releases cash, receipt follows the order (`AlpacaBrokerTests`). **Open:** a rejected order leaves the proposal approved instead of pending; stuck-order alert after 10 minutes; the 10-concurrent-submits test.
 - [ ] **T-145** Broker portfolio sync and reconciliation
   - **Acceptance:** `BrokerPortfolioSyncJob` (60 s in session, 15 min otherwise, on pull-to-refresh, after fills) mirrors positions, cash and equity from `GET /v2/account` and `GET /v2/positions`. Positions closed by bracket legs become exit fills with the correct `exit_reason` and realized P&L. `BrokerReconciliationJob` compares against `account/activities` and halts entries on a mismatch. A connection that is degraded (auth failure, 5xx streak or `trading_blocked`) disables approval and shows the Connection-lost banner. Home and Settings show "synced HH:MM ET".
   - **Refs:** §17.7, §20.13 · **Depends:** T-144, T-090 · **P0**
+  - ⏸ WIP (2026-11-17): one-minute `BrokerSyncJob` settles entries, mirrors filled bracket legs as stop/target exits, posts cash `adjustment`s when nothing is in flight, records `last_sync_at` and marks a rejected key degraded; manual close goes through Alpaca. **Open:** position-level reconciliation against `GET /v2/positions` with a halt on mismatch, and the `broker_connected` risk check that disables approval.
 - [ ] **T-146** Alpaca trading-cost preview
   - **Acceptance:** for `alpaca_*` portfolios, the proposal's "Fees and spread" and `maxLossInclCosts` use Alpaca's commission-free pricing, the quote's spread, and estimated regulatory fees (shown for live, labelled as not simulated in paper). Paper fill receipts say "Simulated by Alpaca". Q-23 is answered or deferred with evidence.
   - **Refs:** §17.3, §14.4, Q-23 · **Depends:** T-143, T-083 · **P1**
 - [ ] **T-147** Alpaca market data provider (decision and adapter)
   - **Acceptance:** an ADR resolves Q-03 between Alpaca market data and a dedicated vendor, including the IEX-only free plan versus Algo Trader Plus and whether Alpaca data may be stored and displayed. If Alpaca is chosen: `AlpacaMarketDataProvider` (multi-symbol snapshots and bars, corporate actions) within the plan's rate limit (nightly EOD bars for the universe, batched snapshots for positions, working orders and watchlist).
   - **Refs:** §16, §17.3, Q-03 · **Depends:** T-051, T-140 · **P1**
+  - ⏸ WIP (2026-11-17): `AlpacaMarketDataProvider` and `AlpacaNewsProvider` implemented and running locally (500 S&P 500 symbols, 2 years of real daily bars, IEX real-time quotes with delayed consolidated volume, corporate actions, calendar, news); contract tests in `AlpacaMarketDataProviderTests`. **Open:** the ADR resolving Q-03/Q-04 (licence for storage and display) with T-051.
 - [ ] **T-148** Alpaca trade-updates streaming
   - **Acceptance:** `TradeUpdatesListener` authenticates to `wss://paper-api.alpaca.markets/stream` and listens to `trade_updates`, so `fill`, `partial_fill`, `rejected`, `canceled` and `expired` events settle orders in near real time (lookups stay as the fallback). Optional: the market data stream feeds `QuoteUpdated` for held and watched symbols. Reconnect with resubscribe. Lag metric.
   - **Refs:** §17.3, §17.7, §9.6 · **Depends:** T-145 · **P2**
 - [ ] **T-149** Alpaca Paper end-to-end smoke
   - **Acceptance:** an opt-in CI job (paper keys from secrets, manual trigger) connects, places a 1-share bracket order on a liquid symbol, confirms the fill, verifies the mirrored position, closes it and verifies reconciliation is clean. A Maestro variant of the journey runs against an `alpaca_paper` portfolio.
   - **Refs:** §17, §21 · **Depends:** T-145 · **P1**
+  - ⏸ WIP: `AlpacaPaperSmokeTests` (opt-in with `ALPACA_KEY_ID`/`ALPACA_SECRET_KEY`) checks the real client end to end without a fill. **Open:** the CI job and a filled round trip during market hours.
 
 ### M6 · Portfolio, activity, strategy lab, settings
 

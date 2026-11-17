@@ -94,3 +94,4 @@ export {
   ScannerSettings,
   settingsApi,
 } from './settings';
+export { BrokerConnection, brokerApi } from './broker';

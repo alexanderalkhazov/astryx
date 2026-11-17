@@ -23,6 +23,96 @@ namespace Astryx.Modules.Paper.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Astryx.Modules.Paper.Domain.BrokerConnection", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AccountRef")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("account_ref");
+
+                    b.Property<string>("Broker")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)")
+                        .HasColumnName("broker");
+
+                    b.Property<DateTimeOffset>("ConnectedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("connected_at");
+
+                    b.Property<byte[]>("CredentialsCiphertext")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("credentials_ciphertext");
+
+                    b.Property<string>("CredentialsKeyId")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("credentials_key_id");
+
+                    b.Property<string>("Environment")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)")
+                        .HasColumnName("environment");
+
+                    b.Property<string>("KeySuffix")
+                        .IsRequired()
+                        .HasMaxLength(4)
+                        .HasColumnType("character varying(4)")
+                        .HasColumnName("key_suffix");
+
+                    b.Property<string>("LastError")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("last_error");
+
+                    b.Property<DateTimeOffset?>("LastSyncAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_sync_at");
+
+                    b.Property<DateTimeOffset?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("revoked_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(12)
+                        .HasColumnType("character varying(12)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_broker_connections");
+
+                    b.HasIndex("UserId", "Broker", "Environment")
+                        .IsUnique()
+                        .HasDatabaseName("ux_broker_connections_one_active")
+                        .HasFilter("status <> 'revoked'");
+
+                    b.ToTable("broker_connections", "trading", t =>
+                        {
+                            t.HasCheckConstraint("ck_broker_connections_broker", "broker IN ('alpaca')");
+
+                            t.HasCheckConstraint("ck_broker_connections_environment", "environment IN ('paper')");
+
+                            t.HasCheckConstraint("ck_broker_connections_status", "status IN ('connected', 'degraded', 'revoked')");
+                        });
+                });
+
             modelBuilder.Entity("Astryx.Modules.Paper.Domain.Fill", b =>
                 {
                     b.Property<Guid>("Id")
