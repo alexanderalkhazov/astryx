@@ -393,7 +393,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [ ] **T-142** Instrument mapping and eligibility
   - **Acceptance:** our instruments map to Alpaca assets by symbol (`GET /v2/assets/{symbol}`, `asset_id` cached in `market.instruments.provider_refs.alpaca`). Instruments that are not `tradable` or not `active` show "Not tradable at Alpaca". New risk checks `broker_eligible` (tradable, active), `broker_connected` and `broker_write_permission`, shown only when they warn or fail.
   - **Refs:** §17.3, §14.5 · **Depends:** T-141, T-082 · **P0**
-- [x] **T-143** `AlpacaBrokerAdapter` (Paper)
+- [x] **T-143** `AlpacaBrokerAdapter` (Paper) — `240fdbb`
   - **Scope:** implements `IBrokerAdapter`: submit (`market` / `stop` / `limit` mapping, whole-share `qty`, `time_in_force:"day"`, `order_class:"bracket"` with `stop_loss.stop_price` and `take_profit.limit_price`), order lookup by id and by `client_order_id` with status mapping (`new`/`accepted`/`pending_new`/`partially_filled` in flight; `filled` filled; `rejected`/`canceled`/`expired` closed), close position (cancel bracket legs, then `DELETE /v2/positions/{symbol}`), replace stop and target legs (`PATCH`), cancel, account and positions snapshot.
   - **Acceptance:** contract tests per method using documented request and response shapes. A manual Paper run answers Q-22 (does a bracket accept a `stop` entry? what does a duplicate `client_order_id` return?) and records the answers in §17.3–17.4. If a bracket rejects a stop entry, implement the `oto` fallback.
   - **Refs:** §17.2–17.4, Q-22 · **Depends:** T-140, T-142 · **P0**
