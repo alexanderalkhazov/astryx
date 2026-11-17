@@ -107,9 +107,9 @@ function BrokerSection() {
           value={<Text.DataSm tone="secondary">Never requested</Text.DataSm>}
           testID="permission-transfers"
         />
-        <Button variant="secondary" label="Connect eToro" disabled />
+        <Button variant="secondary" label="Connect Alpaca" disabled />
         <Text.Caption tone="tertiary">
-          Connecting an eToro Demo account comes in a later release. Astryx never moves money in or out of an account.
+          Connecting an Alpaca paper account comes in a later release. Astryx never moves money in or out of an account.
         </Text.Caption>
       </View>
     </Section>

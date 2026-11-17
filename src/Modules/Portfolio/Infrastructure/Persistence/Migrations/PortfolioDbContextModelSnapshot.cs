@@ -212,7 +212,7 @@ namespace Astryx.Modules.Portfolio.Infrastructure.Persistence.Migrations
                         {
                             t.HasCheckConstraint("ck_portfolios_cash", "cash_balance >= 0 AND reserved_cash >= 0 AND reserved_cash <= cash_balance");
 
-                            t.HasCheckConstraint("ck_portfolios_mode", "mode IN ('simulated', 'etoro_demo')");
+                            t.HasCheckConstraint("ck_portfolios_mode", "mode IN ('simulated', 'alpaca_paper')");
                         });
                 });
 

@@ -1,6 +1,6 @@
 # Astryx — AI Trading Workstation · System Design
 
-> **Status:** Draft v0.3 · 2026-11-10 · Owner: @Alex — v0.2 recorded the verified skeleton (§4.5); v0.3 adds the eToro integration (§17) based on eToro's official API docs
+> **Status:** Draft v0.4 · 2026-11-17 · Owner: @Alex — v0.2 recorded the verified skeleton (§4.5); v0.3 added a broker integration (§17); v0.4 replaces eToro with Alpaca (ADR-023), based on Alpaca's official Trading API docs
 > **Scope:** The architectural source of truth for the Astryx monorepo (mobile app, backend, workers, database, AI, infrastructure). Future implementation tasks and code reviews must follow this document. Any change to a `DECIDED` item needs an ADR entry in §25.
 
 ### How to read this document
@@ -55,7 +55,7 @@ Key decisions:
 - `DECIDED` A modular monolith in ASP.NET Core (.NET 10) with PostgreSQL. Background workers use `BackgroundService` and a Postgres-backed job queue.
 - `DECIDED` An Expo + Expo Router React Native app that renders native components to match the "Graphite terminal" design. The design HTML is a visual reference only, and there are no WebViews.
 - `DECIDED` AI runs through `IFinancialAiService`. The initial provider is Ollama with `qwen3.5:0.8b`, which is treated as an **integration prototype**, not a reasoning system. All AI output is schema-validated and **advisory only**.
-- `DECIDED` (v0.3) **Execution goes through eToro's official public API, in the eToro Demo environment for the MVP** (`EToroBrokerAdapter`). The internal paper simulator (`MockBrokerAdapter`) stays for development, CI and offline use. **Real-money trading (eToro Real) remains disabled** until the gates in §17.9 pass. The design's "Live mode" guard is built but blocked server-side.
+- `DECIDED` (v0.4, ADR-023) **Execution goes through Alpaca's official Trading API, in the Alpaca Paper environment for the MVP** (`AlpacaBrokerAdapter`). The internal paper simulator (`MockBrokerAdapter`) stays for development, CI and offline use. **Real-money trading (Alpaca Live) remains disabled** until the gates in §17.9 pass. The design's "Live mode" guard is built but blocked server-side.
 - `DECIDED` All monetary values are `decimal` in C#, `numeric` in Postgres, and **strings** in JSON. The mobile app never computes authoritative financial values.
 
 Recommended first milestone: **Phase 1 + a walking skeleton of Phase 5.** That means auth, a seeded instrument list, mocked market data, and a hard-coded NVDA proposal that goes through the real risk engine and paper engine end to end, with idempotent execution (see §24).
@@ -66,9 +66,9 @@ Recommended first milestone: **Phase 1 + a walking skeleton of Phase 5.** That m
 
 ### 2.1 Product statement (from design)
 
-> "A private, mobile trading workstation that finds stock setups, explains them, and lets you approve a sized trade through eToro, with research kept visibly separate from execution."
+> "A private, mobile trading workstation that finds stock setups, explains them, and lets you approve a sized trade through your broker (Alpaca), with research kept visibly separate from execution."
 
-`DECIDED` (v0.3, supersedes v0.1) For the MVP, "through eToro" means **an eToro Demo (virtual funds) account connected through eToro's official public API** (§17). The design's eToro wording (sync, permissions, "Nothing is sent to eToro until you hold to approve") is kept as designed. eToro Real stays disabled behind §17.9.
+`DECIDED` (v0.4, supersedes v0.3 and v0.1) For the MVP, "through your broker" means **an Alpaca Paper account connected through Alpaca's official Trading API** (§17). The design's broker wording (sync, permissions, "Nothing is sent until you hold to approve") is kept, with eToro replaced by Alpaca. Alpaca Live stays disabled behind §17.9.
 
 ### 2.2 Primary user and context
 
@@ -147,7 +147,7 @@ Recommended first milestone: **Phase 1 + a walking skeleton of Phase 5.** That m
 | C-1 | Stack fixed by the master prompt: Expo/RN/TS, ASP.NET Core .NET 10, EF Core, PostgreSQL, Ollama. |
 | C-2 | AI must never be authoritative for prices, balances, P&L, sizing, limits, stop calculations, execution or data validation. |
 | C-3 | No floating point for authoritative financial values, in either the backend or the mobile app. |
-| C-4 | Real-money execution is disabled in the MVP. eToro integration uses the **Demo** environment only until §17.9 gates pass. |
+| C-4 | Real-money execution is disabled in the MVP. Alpaca integration uses the **Paper** environment only until §17.9 gates pass. |
 | C-5 | No secrets in the mobile binary. |
 | C-6 | The only order path is **Proposal → server risk assessment → Confirm sheet → 1.2 s hold → idempotent order request** (design safety rule 1). |
 | C-7 | Any failed pre-trade check disables approval, with no override in the app (design rule 3) **and none in the API**. |
@@ -323,7 +323,7 @@ Findings that changed the design:
 - **Modules.** Each module owns its domain logic and data (§7).
 - **Workers.** These are the same binaries as the API, running `BackgroundService`s in-process in the MVP. They can run in a separate `Astryx.Workers` container that uses the same images and configuration.
 - **PostgreSQL.** The single database. It holds state, the job queue, the outbox and audit data.
-- **External services.** Ollama (AI), a market data provider, a news provider, and broker adapters (Mock now, eToro if approved later).
+- **External services.** Ollama (AI), a market data provider, a news provider, and broker adapters (Mock now, Alpaca Paper next, Alpaca Live only after §17.9).
 
 ### 5.2 Key architectural principles
 
@@ -386,7 +386,7 @@ flowchart LR
     MKT["Market data provider<br/>via IMarketDataProvider"]
     NEWS["News provider<br/>via INewsProvider"]
     MOCK["MockBrokerAdapter<br/>paper engine"]
-    ETORO["EToroBrokerAdapter<br/>FUTURE, disabled"]
+    ALPACA["AlpacaBrokerAdapter<br/>FUTURE, disabled"]
 
     UI --> RQ --> GW
     HUB -.->|"real-time events"| UI
@@ -400,7 +400,7 @@ flowchart LR
     W3 --> OLL
     DS --> NEWS
     PA --> MOCK
-    PA -.-> ETORO
+    PA -.-> ALPACA
     NT --> HUB
 ```
 
@@ -866,7 +866,7 @@ flowchart TD
 |---|---|
 | Responsibilities | Accept orders (only from approvable assessments), simulate fills, attach OCO exits, cancel/expire working orders, close positions, write fills and ledger entries via Portfolio |
 | Business rules | §15. Idempotency-Key required. One order per proposal. Execution re-runs risk checks in the same DB transaction against a fresh quote. `mode` is always `paper` in MVP; `IBrokerAdapter` resolves to `MockBrokerAdapter`. |
-| Main services | `OrderService`, `PaperFillSimulator`, `OcoManager`, `IBrokerAdapter` (`MockBrokerAdapter`; `EToroBrokerAdapter` NOT IMPLEMENTED) |
+| Main services | `OrderService`, `PaperFillSimulator`, `OcoManager`, `IBrokerAdapter` (`MockBrokerAdapter`; `AlpacaBrokerAdapter` NOT IMPLEMENTED) |
 | Data owned | `trading.orders`, `trading.fills`, `trading.idempotency_records` |
 | Dependencies | Trading (proposal + assessment), MarketData (quotes), Portfolio (position + ledger writes in same transaction via `IPortfolioLedger`) |
 | Outputs | `OrderAccepted`, `OrderFilled`, `OrderCancelled`, `OrderExpired`, `PositionClosed` |
@@ -916,7 +916,7 @@ flowchart TD
 | Aspect | Detail |
 |---|---|
 | Responsibilities | `IBrokerAdapter` abstraction, broker connections, permission model mirroring design (Read portfolio & balances / Place & close orders / Deposits & withdrawals: **never requested**) |
-| Status | `MockBrokerAdapter` only. `EToroBrokerAdapter` **NOT IMPLEMENTED**, gated by Phase 8 research. Real-money disabled. |
+| Status | `MockBrokerAdapter` only. `AlpacaBrokerAdapter` **NOT IMPLEMENTED** (T-140–T-149). Real-money disabled. |
 | Data owned | `trading.broker_connections` |
 | Endpoints | `/api/v1/broker/connection` (returns mock "paper account" connection in MVP) |
 
@@ -992,7 +992,7 @@ PNG file → artboard mapping (`AI Trading Workstation-png/`):
 | `07 · Hold-to-approve confirmation` | 07 | `Search` | 19 |
 | `08 · Simulated fill` | 08 | `Loading — scanner skeleton` | 20 |
 | `09 · Portfolio with new position` | 09 | `Empty — no matching setups` | 21 |
-| `10 · Position detail → strategy` | 10 | `Error — eToro connection lost` | 22 |
+| `10 · Position detail → strategy` | 10 | `Error — broker connection lost` | 22 |
 | `11 · Strategy backtest` | 11 | `Error — scanner feed unavailable` | 23 |
 | `12 · Strategy configuration` | 12 | `Modal — close position` | 24 |
 | `Modal — live trading guard` | 25 | `Notification toast` | 26 |
@@ -1346,7 +1346,7 @@ Implementation (T-049):
 
 | Section | Content | Behaviour |
 |---|---|---|
-| Broker connection | "eToro · paper account" in design → **"Paper account (simulated)"** in MVP; status, last sync | Permissions list: Read portfolio & balances — Allowed; Place & close orders — Paper only; Deposits & withdrawals — **Never requested** |
+| Broker connection | "eToro · paper account" in design → **"Paper account (simulated)"** in MVP, **"Alpaca · paper account"** once connected (T-141); status, last sync | Permissions list: Read portfolio & balances — Allowed; Place & close orders — Paper only; Deposits & withdrawals — **Never requested** |
 | Trading mode | Segmented **Paper · Live**; caption "Paper mode simulates fills at the proposal entry plus slippage. Every approval still requires hold-to-confirm." | Live → `LiveTradingGuardDialog` (25): re-confirm limits, biometrics, type `LIVE`, "Stay in paper mode". **MVP: the dialog ends with "Live trading isn't available yet" — server returns 403 `live_trading_disabled`**; nothing changes |
 | Risk limits | Max risk per trade 0.75%, Max position weight 12%, Max sector exposure 35%, Daily loss halt −2.00%, Max open positions 12 | Edit via Stepper within bounds (§14.3); RHF + Zod; saves `PUT /me/settings/risk` |
 | Scanner | Universe ("S&P 500 + Nasdaq 100 + 450"), **Min price · avg $ volume** ("$10 · $20M"), min score, signal types | `PUT /me/settings/scanner` (adds `minPrice`, `minAvgDollarVolume`) |
@@ -1361,7 +1361,7 @@ Implementation (T-049):
 - **Broker connection:**
   - "Paper account (simulated)", with a PAPER badge, "Connected · synced HH:MM ET" (P1 `asOf`) and the equity;
   - permissions: Read — Allowed; Orders — Paper only; Deposits & withdrawals — **Never requested**;
-  - a disabled "Connect eToro", until the eToro Demo connection lands (T-141).
+  - a disabled "Connect Alpaca", until the Alpaca Paper connection lands (T-141).
 - **Trading mode:** Paper · Live. Live opens the guard (design 25):
   1. re-confirm the five limits;
   2. type `LIVE`;
@@ -2197,9 +2197,9 @@ IX `(proposal_id, created_at desc)`.
 | assessment_id | uuid | FK risk_assessments NULL (required for entries, CK) |
 | position_id | uuid | FK positions NULL (set for exits and after the entry fill) |
 | client_order_id | text | The Idempotency-Key (entries) or a deterministic key (exits: `exit:{positionId}:{reason}`) |
-| broker | text | CK in (`mock`,`etoro`) |
-| broker_order_id | text | UK per broker. `SIM-` + 6 base32 characters for mock; eToro `orderId` for eToro |
-| mode | text | CK in (`simulated`,`etoro_demo`) in the MVP migration |
+| broker | text | CK in (`mock`,`alpaca`) |
+| broker_order_id | text | UK per broker. `SIM-` + 6 base32 characters for mock; Alpaca order `id` (UUID) for Alpaca |
+| mode | text | CK in (`simulated`,`alpaca_paper`) in the MVP migration |
 | purpose | text | CK in (`entry`,`exit_stop`,`exit_target`,`exit_manual`,`exit_reset`) |
 | side | text | CK in (`buy`,`sell`) |
 | order_type | text | CK in (`market`,`limit`,`buy_stop`,`sell_stop`) |
@@ -2208,7 +2208,7 @@ IX `(proposal_id, created_at desc)`.
 | stop_price, limit_price | numeric(18,6) | NULL |
 | oco_group_id | uuid | NULL. Links the stop and target exit orders |
 | status | text | CK in (`accepted`,`submitting`,`submitted`,`working`,`filled`,`cancelled`,`expired`,`rejected`); `submitting`/`submitted` only for async broker venues (§17.5) |
-| broker_status | text | NULL. Last raw broker status id/name (eToro `status.id`) |
+| broker_status | text | NULL. Last raw broker status (Alpaca order `status`) |
 | filled_quantity | numeric(18,6) | DEFAULT 0 |
 | avg_fill_price | numeric(18,6) | NULL |
 | reject_code | text | NULL |
@@ -2237,7 +2237,7 @@ UK `(user_id, client_order_id)`. Partial UK `(proposal_id) WHERE purpose='entry'
 
 UK `(order_id, sequence)`. IX `(portfolio_id, filled_at desc)`.
 
-**`trading.broker_connections`** — `id` PK, `user_id` FK (cascade), `broker` CK (`mock`,`etoro`), `environment` CK (`demo`,`real`), `status` CK (`connected`,`degraded`,`disconnected`,`revoked`), `account_ref` text NULL (eToro username or id), `key_suffix` char(4) (display only, e.g. `3f2a`), `permissions` jsonb (`{read:true, write:true, deposits_withdrawals:"never_requested"}`), `credentials_ciphertext` bytea, `credentials_key_id` text (wrapping key id), `key_expires_at` NULL, `connected_at`, `last_sync_at`, `last_error`, `revoked_at`. Partial UK `(user_id, broker, environment) WHERE status <> 'revoked'`. CK `environment = 'demo'` while §17.9 gates are open. **Credentials are envelope-encrypted** (§17.6, §18.12), never plaintext.
+**`trading.broker_connections`** — `id` PK, `user_id` FK (cascade), `broker` CK (`mock`,`alpaca`), `environment` CK (`paper`,`live`), `status` CK (`connected`,`degraded`,`disconnected`,`revoked`), `account_ref` text NULL (Alpaca account number), `key_suffix` char(4) (display only, e.g. `3f2a`), `permissions` jsonb (`{read:true, write:true, deposits_withdrawals:"never_requested"}`; API keys always have write, OAuth tokens depend on the `trading` scope), `credentials_ciphertext` bytea, `credentials_key_id` text (wrapping key id), `key_expires_at` NULL, `connected_at`, `last_sync_at`, `last_error`, `revoked_at`. Partial UK `(user_id, broker, environment) WHERE status <> 'revoked'`. CK `environment = 'paper'` while §17.9 gates are open. **Credentials are envelope-encrypted** (§17.6, §18.12), never plaintext.
 
 #### Schema `portfolio`
 
@@ -2247,8 +2247,8 @@ UK `(order_id, sequence)`. IX `(portfolio_id, filled_at desc)`.
 |---|---|---|
 | id | uuid | PK |
 | user_id | uuid | FK users (cascade) |
-| mode | text | CK in (`simulated`,`etoro_demo`,`etoro_real`); `etoro_real` rejected by CK while §17.9 gates are open |
-| broker_connection_id | uuid | FK broker_connections NULL (required for `etoro_*`) |
+| mode | text | CK in (`simulated`,`alpaca_paper`,`alpaca_live`); `alpaca_live` rejected by CK while §17.9 gates are open |
+| broker_connection_id | uuid | FK broker_connections NULL (required for `alpaca_*`) |
 | base_currency | char(3) | `USD` |
 | starting_cash | numeric(20,4) | |
 | cash_balance | numeric(20,4) | Cached; equals the sum of transactions (reconciled) |
@@ -2275,7 +2275,7 @@ Partial UK `(user_id, mode)`.
 | entry_order_id | uuid | FK orders |
 | proposal_id | uuid | FK proposals |
 | strategy_version_id | uuid | FK NULL — "Generated by" |
-| broker_position_id | text | NULL. eToro `positionId` for `etoro_*` portfolios |
+| broker_position_id | text | NULL. Alpaca `asset_id` of the position for `alpaca_*` portfolios (Alpaca keeps one position per symbol) |
 | opened_at, closed_at | timestamptz | |
 | exit_price | numeric(18,6) | NULL |
 | exit_reason | text | CK in (`stop`,`target`,`manual`,`reset`) NULL |
@@ -2803,9 +2803,9 @@ Clients poll AI2 with `pollAfterMs` (2 s, growing to 5 s, give up after 120 s wi
 | N4 | `POST /devices` | `{deviceId, pushToken, platform}` | `201` (upsert) | 422 |
 | N5 | `DELETE /devices/{deviceId}` | — | `204` | |
 | N6 | `GET /system/status` | — | `200 {marketData:{status, asOf}, scanner:{status, lastRunAt}, ai:{status, model}, broker:{adapter:"mock", status}}` | |
-| N7 | `GET /broker/connections` | — | `200 {items:[{id, broker:"etoro", environment:"demo", label:"eToro · paper account", keySuffix:"3f2a", status:"connected", permissions:{readPortfolio:true, placeOrders:"demo_only", depositsWithdrawals:"never_requested"}, lastSyncAt}]}` | |
-| N8 | `POST /broker/connections` | `{broker:"etoro", environment:"demo", apiKey, userKey}` (TLS, never logged) | `201` connection (keys validated with eToro identity + read call; write permission detected) | 422 `broker_credentials_invalid`, 403 `live_trading_disabled` for `environment:"real"` |
-| N9 | `DELETE /broker/connections/{id}` | — | `204` (ciphertext deleted; user told to revoke the key in eToro) | 404 |
+| N7 | `GET /broker/connections` | — | `200 {items:[{id, broker:"alpaca", environment:"paper", label:"Alpaca · paper account", keySuffix:"3f2a", status:"connected", permissions:{readPortfolio:true, placeOrders:"paper_only", depositsWithdrawals:"never_requested"}, lastSyncAt}]}` | |
+| N8 | `POST /broker/connections` | `{broker:"alpaca", environment:"paper", keyId, secretKey}` (TLS, never logged) | `201` connection (keys validated with `GET /v2/account` on the paper base URL) | 422 `broker_credentials_invalid`, 403 `live_trading_disabled` for `environment:"live"` |
+| N9 | `DELETE /broker/connections/{id}` | — | `204` (ciphertext deleted; user told to regenerate the key in Alpaca) | 404 |
 
 **Implemented (T-101): push notifications.**
 
@@ -3644,8 +3644,8 @@ Implementations:
 
 - `FakeMarketDataProvider`: deterministic. Uses seeded CSV bars from `tests/fixtures/market/` and a random walk with a fixed seed for intraday ticks. It supports fault injection (down, stale, bad tick). It is the default in Development and in tests, and it reproduces the design's sample data (NVDA 186.40, etc.).
 - `FakeNewsProvider`: fixture headlines.
-- `EToroMarketDataProvider` (v0.3 candidate, `NOT IMPLEMENTED`): eToro's API offers instrument search, market rates (bid/ask, multiple instruments per call), candle history, historical closes and WebSocket rate/candle streams (§17.3). Its limit of 60 req/min per user key fits nightly EOD candles for about 1,000 symbols (about 17 min) and batched quotes for positions and watchlist, but not a full-universe 60 s quote sweep. Whether eToro data may be stored and displayed in this app is part of Q-03.
-- `<Vendor>MarketDataProvider`: `NOT IMPLEMENTED`. Q-03 decides between eToro data and a dedicated vendor.
+- `AlpacaMarketDataProvider` (v0.4 candidate, `NOT IMPLEMENTED`): Alpaca's Market Data API offers multi-symbol bars, latest quotes and snapshots, corporate actions, news and a WebSocket stream (§17.3). The free Basic plan is IEX-only (a fraction of US volume) and limited to 200 req/min; Algo Trader Plus ($99/month) adds all US exchanges and 10,000 req/min, which covers a full-universe 60 s snapshot sweep in batches. Whether Alpaca data may be stored and displayed in this app is part of Q-03.
+- `<Vendor>MarketDataProvider`: `NOT IMPLEMENTED`. Q-03 decides between Alpaca data and a dedicated vendor.
 
 **Implemented (T-041).** Fixtures live in `tests/fixtures/market/` and are embedded in the MarketData assembly, which is why the Docker build copies `tests/fixtures/`:
 - `universe.csv` has 1,034 symbols. About 85 are real large caps carrying the design's values (NVDA 186.40 / prev 180.24 / O 180.60 H 186.77 L 180.05 / V 412.8M; AMD, CRM, PLTR, UBER, COST, TSLA, JPM, AAPL, MSFT, LLY, AMZN). The rest are synthetic `ZZnnn` "Sample Holdings" fillers.
@@ -3711,30 +3711,30 @@ The "vs S&P 500" overlay uses an index proxy (an ETF such as SPY, or index data 
 
 ## 17. Brokerage Integration Architecture
 
-> **v0.3 (2026-11-10):** rewritten after verifying eToro's official public API (sources at the end of this section). eToro is now **in scope**: the **eToro Demo** environment is the MVP execution venue, and **eToro Real** is designed now but stays disabled behind the gates in §17.9.
+> **v0.4 (2026-11-17):** Alpaca replaces eToro as the brokerage (ADR-023, superseding ADR-020). Rewritten from Alpaca's official Trading API documentation (sources at the end of this section). The **Alpaca Paper** environment is the MVP execution venue. **Alpaca Live** is designed now but stays disabled behind the gates in §17.9.
 
 ### 17.1 Execution venues
 
 | Venue (`portfolios.mode`) | Adapter | Money | Status |
 |---|---|---|---|
 | `simulated` | `MockBrokerAdapter` → internal `PaperFillSimulator` (§15) | None, internal ledger | MVP. Default for development, CI, E2E and offline use |
-| `etoro_demo` | `EToroBrokerAdapter` (environment `demo`) | eToro virtual funds | **MVP target.** Matches the design's "eToro · paper account" |
-| `etoro_real` | `EToroBrokerAdapter` (environment `real`) | **Real money** | `NOT IMPLEMENTED` and **disabled**. Code paths exist behind `Features:LiveTrading`, which still fails startup until every §17.9 gate passes |
+| `alpaca_paper` | `AlpacaBrokerAdapter` (environment `paper`) | Alpaca paper funds ($100k default, simulated by Alpaca) | **MVP target.** Matches the design's "paper account" |
+| `alpaca_live` | `AlpacaBrokerAdapter` (environment `live`) | **Real money** | `NOT IMPLEMENTED` and **disabled**. Code paths exist behind `Features:LiveTrading`, which still fails startup until every §17.9 gate passes |
 
-`DECIDED` (ADR-020): one adapter serves both eToro environments. The environment comes from the user's **connection**, never from a request parameter. A demo key cannot authenticate against the real environment (eToro enforces this too).
+`DECIDED` (ADR-023): one adapter serves both Alpaca environments. The environment comes from the user's **connection**, never from a request parameter. Paper and live use different base URLs and different API keys, so a paper key cannot reach the live environment.
 
 ### 17.2 Abstraction
 
 ```csharp
 public interface IBrokerAdapter
 {
-    string Code { get; }                                         // "mock", "etoro"
-    BrokerCapabilities Capabilities { get; }                     // order types, fractional, native SL/TP, async fills
-    Task<BrokerAccountSnapshot> GetAccountAsync(BrokerConnection c, CancellationToken ct);         // cash, equity, P&L
+    string Code { get; }                                         // "mock", "alpaca"
+    BrokerCapabilities Capabilities { get; }                     // order types, fractional, native brackets, async fills
+    Task<BrokerAccountSnapshot> GetAccountAsync(BrokerConnection c, CancellationToken ct);         // cash, equity, buying power
     Task<IReadOnlyList<BrokerPosition>> GetPositionsAsync(BrokerConnection c, CancellationToken ct);
     Task<BrokerEligibility> CheckEligibilityAsync(BrokerConnection c, BrokerInstrumentRef i, CancellationToken ct);
     Task<BrokerCostPreview> PreviewCostAsync(BrokerConnection c, BrokerOrderRequest r, CancellationToken ct);
-    Task<BrokerSubmitResult> SubmitOrderAsync(BrokerConnection c, BrokerOrderRequest r, CancellationToken ct); // r.ClientOrderId → x-request-id
+    Task<BrokerSubmitResult> SubmitOrderAsync(BrokerConnection c, BrokerOrderRequest r, CancellationToken ct); // r.ClientOrderId → client_order_id
     Task<BrokerOrderStatus> LookupOrderAsync(BrokerConnection c, BrokerOrderLookup lookup, CancellationToken ct); // by broker order id or client order id
     Task<BrokerSubmitResult> ClosePositionAsync(BrokerConnection c, BrokerPositionRef p, Quantity units, string clientOrderId, CancellationToken ct);
     Task ModifyProtectionAsync(BrokerConnection c, BrokerPositionRef p, Price? stopLoss, Price? takeProfit, CancellationToken ct);
@@ -3742,42 +3742,45 @@ public interface IBrokerAdapter
 }
 ```
 
-`MockBrokerAdapter` completes synchronously. `EToroBrokerAdapter` is **asynchronous**: a submit only means "accepted"; the fill arrives later (§17.5).
+`MockBrokerAdapter` completes synchronously. `AlpacaBrokerAdapter` is **asynchronous**: a submit only means "accepted"; fills arrive later on the `trade_updates` stream or by lookup (§17.5).
 
-### 17.3 Verified eToro API capabilities (2026-11-10)
+### 17.3 Verified Alpaca API capabilities (2026-11-17)
 
-| Capability | eToro public API | Used for |
+| Capability | Alpaca Trading API | Used for |
 |---|---|---|
-| Base URLs | `https://public-api.etoro.com/api/v1` (data, info) and `/api/v2` (order execution, order lookup, eligibility) | `EToroApiClient` |
-| Auth: personal keys | Headers `x-api-key` (app/public key) + `x-user-key` (user key) + `x-request-id` (unique UUID per request). The user creates keys in eToro → Settings → Trading → API Key Management: one environment per key (Demo or Real), permission read or write, optional IP whitelist and expiry. The user key is shown only once. Requires a KYC-verified eToro account | MVP connection method (§17.6) |
-| Auth: OAuth 2.0 / SSO | Bearer tokens with scopes such as `etoro-public:demo:write`. Needs a registered OAuth application. Never send keys and a token together | `OPEN QUESTION Q-21` (for multi-user / public release) |
-| Create order | `POST /api/v2/trading/execution/{demo\|real}/orders`. Body: `action:"open"`, `transaction:"buy"` (or `sellShort`), `symbol` **or** `instrumentId`, `orderType` `mkt` \| `mit` (market-if-touched, needs `triggerRate`) \| `limitIOC` (needs `limitRate`, within 10% of market), `amount` **or** `units`, `orderCurrency:"usd"`, `leverage` (default 1; >1 requires `stopLossRate`), `stopLossRate`, `stopLossType` `fixed\|trailing`, `takeProfitRate`, `settlementType` `real\|cfd\|…`. Response: `orderId`, `referenceId` (= our `x-request-id`), `token`. **Asynchronous** | Proposal execution |
-| Order lookup | `GET /api/v2/trading/info/{env}/orders:lookup` by `orderId` or `referenceId`. Status ids: 1 Received, 2 Placed, 11 WaitingForMarket, 12 PendingTriggeredRate (in flight); 3 Filled, 5 PartiallyFilled (executed); 4 Rejected, 10 RejectedPartiallyFilled (failed, with `errorCode`/`errorMessage`). `positionExecutions[]` gives the `positionId`s created | Fill confirmation |
-| Idempotency | `x-request-id` "must be unique per request — it provides idempotency"; if the response is lost, `referenceId` lookup is the only way to find the order | Maps 1:1 to our Idempotency-Key / `client_order_id` |
-| Close / modify / cancel | Close position by units; modify stop-loss and take-profit on an open position; cancel pending order or pending close | Close position (T11), exits, cancel working order |
-| Eligibility and cost | "Check instrument trading eligibility" (allowed settlement types); "Get what-if trading cost breakdown" | Pre-trade check `broker_eligible`; proposal "Fees and spread" |
-| Portfolio and P&L | Aggregated portfolio snapshot, portfolio/instrument breakdown, account P&L, trading history (demo and real) | Sync and reconciliation, Home "synced 14:32 ET" |
-| Market data | Instrument search (by symbol or free text), display data, exchanges, instrument types, market rates (bid/ask, one or more instruments), candle history, historical closing prices | Optional `EToroMarketDataProvider` (§16, Q-03) |
-| Streaming | WebSocket topics `instrument:<id>` (rates), `candle:<id>`, `private` / `private:demo` / `private:real` (portfolio updates) | Real-time fills and quotes (T-148) |
-| Watchlists | Read/write user watchlists | Optional two-way watchlist sync (`ASSUMPTION`: not in MVP) |
-| Rate limits | Per **user key**, 1-minute rolling window: **60 req/min** for standard reads; **20 req/min** for execution and state-changing calls (open, close, cancel) shared across demo and real; `429` with `Retry-After`. eToro's index lists 120/min for some market-data groups, which is inconsistent with the rate-limit page, so the client assumes 60 | `EToroRateLimiter` |
-| Money movement | Internal transfers, deposits and withdrawals exist in the API | **Never called.** `DECIDED`: permanently out of scope (design rule 6) |
+| Base URLs | Paper `https://paper-api.alpaca.markets/v2`, live `https://api.alpaca.markets/v2` | `AlpacaApiClient` |
+| Auth: API keys | Headers `APCA-API-KEY-ID` + `APCA-API-SECRET-KEY`. Paper and live accounts have **separate keys** | MVP connection method (§17.6) |
+| Auth: OAuth 2.0 | `https://app.alpaca.markets/oauth/authorize` → token from `https://api.alpaca.markets/oauth/token`, sent as `Authorization: Bearer`. Scopes `trading`, `data`, `account:write` (read-only without a scope). One token can cover one paper and/or one live account. **Alpaca must approve an OAuth app before it can trade for users** | `OPEN QUESTION Q-21` (multi-user / public release) |
+| Create order | `POST /v2/orders`: `symbol`, `side` `buy\|sell`, `type` `market\|limit\|stop\|stop_limit\|trailing_stop`, `time_in_force` `day\|gtc\|opg\|cls\|ioc\|fok`, `qty` **or** `notional` (notional and fractional qty: market + `day` only), `limit_price`, `stop_price`, `order_class` `simple\|bracket\|oco\|oto`, `take_profit.limit_price`, `stop_loss.stop_price` (+ optional `limit_price`), `client_order_id` (≤ 128 characters), `extended_hours`. `403` = insufficient buying power or shares, `422` = invalid input. **Asynchronous** | Proposal execution |
+| Buy stop | `type:"stop"` becomes a market order when a consolidated-tape trade prints **at or above** `stop_price` (within the NBBO): native breakout-entry semantics | Buy-stop entries |
+| Brackets | `order_class:"bracket"`: entry + take-profit limit + stop-loss; `time_in_force` `day` or `gtc`; take-profit above stop for a buy; no extended hours. Exit legs can be replaced with `PATCH` | Attached stop and target |
+| Order lookup | `GET /v2/orders/{order_id}` and `GET /v2/orders:by_client_order_id?client_order_id=…`. Statuses: `new`, `accepted`, `pending_new`, `partially_filled`, `filled`, `done_for_day`, `canceled`, `expired`, `replaced`, `pending_cancel`, `pending_replace`, `rejected`, `suspended`, `stopped`, `calculated` | Fill confirmation |
+| Idempotency | `client_order_id` is a unique, client-chosen id. If a response is lost, a lookup by `client_order_id` finds the order. Behaviour on a duplicate submit is not documented (`OPEN QUESTION Q-22`) | Maps 1:1 to our Idempotency-Key / `orders.client_order_id` |
+| Replace / cancel / close | `PATCH /v2/orders/{id}` (replace prices or quantity; not notional orders), `DELETE /v2/orders/{id}`, `DELETE /v2/positions/{symbol}` (close; optional `qty` or `percentage`) | Exits, cancel working order, close position (T11) |
+| Eligibility | `GET /v2/assets/{symbol}`: `tradable`, `fractionable`, `shortable`, `status` | Pre-trade check `broker_eligible` |
+| Account and positions | `GET /v2/account` (cash, equity, buying power, `trading_blocked`), `GET /v2/positions`, `GET /v2/account/activities` (fills and other activity) | Sync and reconciliation |
+| Streaming | `wss://paper-api.alpaca.markets/stream` (live: `wss://api.alpaca.markets/stream`): authenticate with key and secret, `listen` to `trade_updates`; events `new`, `fill`, `partial_fill`, `canceled`, `expired`, `rejected`, `replaced`, … | Real-time fills (T-148) |
+| Market data | `https://data.alpaca.markets/v2`: historical and latest bars, quotes and snapshots, corporate actions, news. Basic plan (free): **IEX only**, no SIP data from the latest 15 minutes, 200 req/min; Algo Trader Plus ($99/month): all US exchanges, 10,000 req/min. Paper-only accounts are entitled to IEX data only | Optional `AlpacaMarketDataProvider` (§16, Q-03) |
+| Rate limits | Trading API: **200 requests per minute per account**; `429` when exceeded; `X-Ratelimit-Limit` shows the limit | `AlpacaRateLimiter` |
+| Paper realism | Fills only when marketable, at the NBBO; random partial fills 10% of the time; quantity not checked against displayed size. **Not simulated:** market impact, latency slippage, queue position, price improvement, regulatory fees, dividends | Fill receipts label paper fills as simulated by Alpaca (Q-23) |
+| Money movement | Funding, transfers and journals live in Alpaca's dashboard and Broker API, not in the Trading API this app uses | **Never called.** `DECIDED`: permanently out of scope (design rule 6) |
 
-### 17.4 Mapping Astryx orders to eToro
+### 17.4 Mapping Astryx orders to Alpaca
 
-| Astryx | eToro request |
+| Astryx | Alpaca request |
 |---|---|
-| Long entry, `market` | `transaction:"buy"`, `orderType:"mkt"` |
-| Long entry, `buy_stop` @ entry | `orderType:"mit"`, `triggerRate: entry` (`OPEN QUESTION Q-22`: confirm in Demo that `mit` triggers when the price **rises** to the trigger for a buy; fallback is a server-side trigger in `PositionMonitor` that sends `mkt` when the quote reaches entry) |
-| Long entry, `limit` @ price | `orderType:"limitIOC"`, `limitRate: price` (immediate-or-cancel; no resting limit orders in v2) |
-| Quantity | `units` (whole shares while Q-11 is open) |
-| Attached stop / target | `stopLossRate`, `stopLossType:"fixed"`, `takeProfitRate`. eToro manages the exits natively, so there is **no internal OCO** for eToro portfolios |
-| Product | `settlementType:"real"` (real stock, unleveraged; design: "real stock, unleveraged"), `leverage: 1`, `orderCurrency:"usd"` |
-| Idempotency | `x-request-id` = `orders.client_order_id` (the mobile Idempotency-Key for entries; deterministic keys for exits) |
-| Close position | Close by units = full position units |
+| Long entry, `market` | `side:"buy"`, `type:"market"`, `time_in_force:"day"` |
+| Long entry, `buy_stop` @ entry | `type:"stop"`, `stop_price: entry`, `time_in_force:"day"`. Alpaca's buy stop triggers when the price **rises** to the stop, which is the breakout semantics the design needs |
+| Long entry, `limit` @ price | `type:"limit"`, `limit_price: price`, `time_in_force:"day"` (rests until filled or the day ends, like the simulator) |
+| Quantity | `qty` in whole shares while Q-11 is open (brackets need whole shares) |
+| Attached stop / target | `order_class:"bracket"`, `stop_loss.stop_price`, `take_profit.limit_price`. Alpaca manages the exits as an OCO pair, so there is **no internal OCO** for Alpaca portfolios. Whether a bracket accepts a `stop` entry is unverified (Q-22); fallback: `order_class:"oto"` with the stop loss, plus the target placed after the fill |
+| Product | US equities, unleveraged, long only. Margin is never used: the risk engine sizes against cash, not buying power |
+| Idempotency | `client_order_id` = `orders.client_order_id` (the mobile Idempotency-Key for entries; deterministic keys for exits) |
+| Close position | `DELETE /v2/positions/{symbol}` for the full position, after cancelling its open bracket legs |
+| Extended hours | Not used (regular session only, §14) |
 | Short selling | Not used (`DECIDED`: long only) |
 
-### 17.5 Asynchronous order flow (eToro venues)
+### 17.5 Asynchronous order flow (Alpaca venues)
 
 ```mermaid
 sequenceDiagram
@@ -3786,85 +3789,91 @@ sequenceDiagram
     participant API as Astryx API
     participant DB as PostgreSQL
     participant J as Job worker
-    participant E as eToro API
+    participant A as Alpaca API
     M->>API: POST /paper/orders (Idempotency-Key K, proposalId, assessmentId)
     API->>DB: Tx: idempotency, lock portfolio, re-run risk on fresh quote, order(status=submitting, client_order_id=K), reserve cash, enqueue SubmitBrokerOrder(K)
     API-->>M: 202 Accepted {orderId, status:"submitting"}
-    J->>E: POST /api/v2/trading/execution/demo/orders (x-request-id=K, SL/TP attached)
+    J->>A: POST /v2/orders (client_order_id=K, bracket stop/target)
     alt accepted
-        E-->>J: 200 {orderId, referenceId=K}
-        J->>DB: order.broker_order_id, status=submitted, enqueue LookupBrokerOrder
+        A-->>J: 200 {id, client_order_id=K, status}
+        J->>DB: order.broker_order_id, status=submitted
     else timeout / 5xx / lost response
-        J->>E: GET orders:lookup?referenceId=K (never blind-resubmit)
-        E-->>J: found → continue, or not found → resubmit with the same K
+        J->>A: GET /v2/orders:by_client_order_id?client_order_id=K (never blind-resubmit)
+        A-->>J: found → continue, or 404 → resubmit with the same K
     end
-    loop until terminal (1 s, 2 s, 4 s … max 5 min)
-        J->>E: GET orders:lookup?orderId=…
+    par trade_updates stream
+        A-->>J: fill / partial_fill / rejected / canceled events
+    and fallback lookup (1 s, 2 s, 4 s … max 5 min)
+        J->>A: GET /v2/orders/{id}
     end
-    alt Filled
-        J->>DB: Tx: fill(s), position(broker_position_id), ledger mirror, proposal approved, outbox OrderFilled
-    else Rejected
-        J->>DB: Tx: order rejected(errorCode), release reserved cash, proposal back to pending, outbox OrderRejected
+    alt filled
+        J->>DB: Tx: fill(s), position, ledger mirror, proposal approved, outbox OrderFilled
+    else rejected / canceled / expired
+        J->>DB: Tx: order closed (reason), release reserved cash, proposal back to pending, outbox OrderRejected
     end
     DB-->>M: SignalR order.updated → Fill receipt / rejection toast
 ```
 
 Rules:
 
-- The **risk engine runs before anything is sent** and is still authoritative. eToro may reject an order the risk engine accepted, but the reverse never happens.
+- The **risk engine runs before anything is sent** and is still authoritative. Alpaca may reject an order the risk engine accepted, but the reverse never happens.
 - **No network call inside a database transaction.** The submit happens in a job after the order row commits. The order's `client_order_id` makes retries safe.
 - `submitting`/`submitted` orders reserve cash like working orders (§15.3). Stuck orders (not terminal after 10 minutes) raise an alert and are reconciled from portfolio sync.
-- **eToro is authoritative for fills, positions and cash** in `etoro_*` portfolios. Our tables mirror them. Every mirrored fill stores the broker ids, and `BrokerPortfolioSyncJob` reconciles (§17.7).
-- Losing the eToro connection (auth failure, 5xx streak, rate-limit exhaustion) marks the connection `degraded`, **disables approval** and shows the design's "Connection lost" state (design rule 5).
+- **Alpaca is authoritative for fills, positions and cash** in `alpaca_*` portfolios. Our tables mirror them. Every mirrored fill stores the broker ids, and `BrokerPortfolioSyncJob` reconciles (§17.7).
+- Losing the Alpaca connection (auth failure, 5xx streak, rate-limit exhaustion, `trading_blocked`) marks the connection `degraded`, **disables approval** and shows the design's "Connection lost" state (design rule 5).
 
 ### 17.6 Connection and credential security
 
-- **MVP connection method: personal API keys.** The design's Settings card ("eToro · paper account · API key ••••3f2a · synced 14:32 ET") is exactly this. In the PROPOSED "Connect eToro" screen, the user pastes the API key and the user key and chooses Demo. The server validates them with the identity endpoint ("Get authenticated user profile") and a read call, and detects whether the key has write permission.
-- Keys are **envelope-encrypted** (AES-256-GCM data key per connection, wrapped by a master key: ASP.NET Data Protection with a key ring in the secret store locally, a KMS key in production). Only the last 4 characters are kept in clear for display. Keys are decrypted only inside `EToroApiClient`, in memory, and never logged. The mobile app sends keys once over TLS and never stores them.
-- One active connection per user per environment. Disconnect deletes the ciphertext. Users are told to revoke the key in eToro too.
-- Permissions shown in Settings come from the key: Read portfolio and balances (read), Place and close orders (write; "Demo only" while live is disabled), Deposits and withdrawals: **Never requested** (the app never calls money-movement endpoints; enforced by an architecture test that bans those client methods).
-- A read-only key can sync and display, but the risk check `broker_write_permission` fails, so approval is disabled with "Your eToro key is read-only".
+- **MVP connection method: personal API keys.** The design's Settings card ("paper account · API key ••••3f2a · synced 14:32 ET") is exactly this. In the PROPOSED "Connect Alpaca" screen, the user pastes the API key ID and secret from the Alpaca dashboard and chooses Paper. The server validates them with `GET /v2/account` against the paper base URL, and rejects keys that only work against live.
+- Keys are **envelope-encrypted** (AES-256-GCM data key per connection, wrapped by a master key: ASP.NET Data Protection with a key ring in the secret store locally, a KMS key in production). Only the last 4 characters of the key ID are kept in clear for display. Secrets are decrypted only inside `AlpacaApiClient`, in memory, and never logged. The mobile app sends keys once over TLS and never stores them.
+- One active connection per user per environment. Disconnect deletes the ciphertext. Users are told to regenerate the key in Alpaca too.
+- Alpaca API keys carry full trading permission (there is no read-only key), so Settings shows: Read portfolio and balances (Allowed), Place and close orders (Allowed; "Paper only" while live is disabled), Deposits and withdrawals: **Never requested** (the Trading API client has no money-movement methods, enforced by an architecture test that bans Broker API and funding paths).
+- With OAuth (Q-21), a token without the `trading` scope is read-only: sync works, but the risk check `broker_write_permission` fails and approval shows "This connection is read-only".
 
-### 17.7 Portfolio sync and reconciliation (eToro venues)
+### 17.7 Portfolio sync and reconciliation (Alpaca venues)
 
 | Job | Trigger | Work |
 |---|---|---|
-| `BrokerPortfolioSyncJob` | Every 60 s in session, every 15 min otherwise, on pull-to-refresh, after every fill | Aggregated portfolio + P&L → upsert mirrored positions, cash, equity; detect positions closed by eToro SL/TP → record exit fills (`exit_reason` stop/target from history) and realized P&L; update `last_sync_at` |
-| `LookupBrokerOrderJob` | After submit, with backoff | Poll `orders:lookup` until terminal (§17.5) |
-| `BrokerReconciliationJob` | Nightly + after sync errors | Compare mirrored state against broker snapshots. On mismatch: halt new entries for that portfolio, critical alert, audit entry (same rule as §20.13) |
+| `BrokerPortfolioSyncJob` | Every 60 s in session, every 15 min otherwise, on pull-to-refresh, after every fill | Account + positions → upsert mirrored positions, cash, equity; detect positions closed by bracket legs → record exit fills (`exit_reason` stop/target from the filled leg) and realized P&L; update `last_sync_at` |
+| `TradeUpdatesListener` | Hosted service per connected account (T-148) | Consume `trade_updates`; each event triggers the order's lookup and settlement, so the stream is a fast path and never the only source |
+| `LookupBrokerOrderJob` | After submit, with backoff | Poll `GET /v2/orders/{id}` until terminal (§17.5) |
+| `BrokerReconciliationJob` | Nightly + after sync errors | Compare mirrored state against broker snapshots and `account/activities`. On mismatch: halt new entries for that portfolio, critical alert, audit entry (same rule as §20.13) |
 
-Budget per user key: sync uses about 3 reads/min, order lookups at most about 10/min during a fill, and quotes come from the market-data path (or WebSocket). That stays under 60 reads/min. Execution calls (open/close/modify/cancel) are capped at 20/min, so `EToroRateLimiter` queues and backs off on `Retry-After`.
+Budget per account: sync uses about 2 requests/min, order lookups at most about 10/min during a fill, and quotes come from the market-data path. That stays far under 200 requests/min; `AlpacaRateLimiter` still queues and backs off on `429`.
 
 ### 17.8 Design-to-implementation mapping
 
 | Design element | Implementation |
 |---|---|
-| "eToro · paper account · API key ••••3f2a · synced 14:32 ET · Connected" | `etoro_demo` connection: masked key suffix, `last_sync_at`, connection status |
-| Permissions: Read portfolio & balances / Place & close orders / Deposits & withdrawals | Derived from key permission; "Place & close orders — Paper only" means **eToro Demo only**; deposits/withdrawals never requested |
-| "Nothing is sent to eToro until you hold to approve" | Literally true for `etoro_demo`; the submit job is only enqueued by T6 after the hold |
-| "Pull to refresh syncs eToro" | `POST /portfolio/sync` → `BrokerPortfolioSyncJob` |
-| "Losing the eToro connection disables approval and marks values stale" | Connection `degraded` → `broker_connected` check fails, banner shown |
-| Fill receipt "SIM-463AC2" | eToro venues show the eToro order id; simulator keeps `SIM-…` |
+| "paper account · API key ••••3f2a · synced 14:32 ET · Connected" | `alpaca_paper` connection: masked key ID suffix, `last_sync_at`, connection status |
+| Permissions: Read portfolio & balances / Place & close orders / Deposits & withdrawals | "Place & close orders — Paper only" means **Alpaca Paper only**; deposits/withdrawals never requested |
+| "Nothing is sent to the broker until you hold to approve" | Literally true for `alpaca_paper`; the submit job is only enqueued by T6 after the hold |
+| "Pull to refresh syncs the broker" | `POST /portfolio/sync` → `BrokerPortfolioSyncJob` |
+| "Losing the broker connection disables approval and marks values stale" | Connection `degraded` → `broker_connected` check fails, banner shown |
+| Fill receipt "SIM-463AC2" | Alpaca venues show the Alpaca order id; simulator keeps `SIM-…` |
 | Live mode guard (limits, biometrics, type LIVE) | Built; ends in "not available" until §17.9 gates pass |
 | `simulated` mode | Not in the design; used in development and tests, and selectable in Settings › Prototype controls (dev builds) |
 
-### 17.9 Real-money (eToro Real) enablement gates — all mandatory
+### 17.9 Real-money (Alpaca Live) enablement gates — all mandatory
 
-1. A legal/regulatory review approves real-money automation for the operator's jurisdiction and eToro entity (Q-02, Q-13), and eToro's API terms for this use are confirmed.
-2. At least 4 weeks of `etoro_demo` operation with zero reconciliation mismatches and zero duplicate orders.
+1. A legal/regulatory review approves real-money automation for the operator's jurisdiction (Q-02, Q-13), and Alpaca's terms for this use are confirmed (personal account with own keys, or an approved OAuth app for other users).
+2. At least 4 weeks of `alpaca_paper` operation with zero reconciliation mismatches and zero duplicate orders.
 3. `Features:LiveTrading` is enabled per environment **and** per user (allow-list), with a startup guard requiring a configured KMS key and alerting.
 4. The live guard flow is complete: re-confirm limits, device biometrics, type `LIVE`, and a server-side recent re-auth (password ≤ 5 min).
-5. A separate `etoro_real` portfolio and a separate Real write key. Demo and real ledgers are never mixed.
+5. A separate `alpaca_live` portfolio and separate live keys. Paper and live ledgers are never mixed.
 6. An admin kill switch blocks all real submissions instantly. Daily loss halt and limits stay enforced by the risk engine.
 7. Each real order requires its own hold-to-approve. No automation submits real orders without a fresh user approval.
 
-### 17.10 Sources (verified 2026-11-10)
+### 17.10 Sources (verified 2026-11-17)
 
-- eToro API docs — Authentication: <https://api-portal.etoro.com/core/getting-started/authentication>
-- eToro API docs — Create an order (demo): <https://api-portal.etoro.com/api-reference/trading--demo/create-an-order>
-- eToro API docs — Rate limits: <https://api-portal.etoro.com/core/getting-started/rate-limits>
-- eToro API docs index: <https://api-portal.etoro.com/llms.txt>
-- eToro Builders — Getting started / authentication: <https://builders.etoro.com/get-started>, <https://builders.etoro.com/learn/authentication-and-api-keys>
+- Alpaca docs — Orders at Alpaca: <https://docs.alpaca.markets/docs/orders-at-alpaca>
+- Alpaca API reference — Create an order: <https://docs.alpaca.markets/reference/postorder>
+- Alpaca API reference — Get order by client order id: <https://docs.alpaca.markets/reference/getorderbyclientorderid>
+- Alpaca docs — Paper trading: <https://docs.alpaca.markets/docs/paper-trading>
+- Alpaca docs — WebSocket streaming (trade updates): <https://docs.alpaca.markets/docs/websocket-streaming>
+- Alpaca docs — About the Market Data API: <https://docs.alpaca.markets/docs/about-market-data-api>
+- Alpaca docs — Using OAuth2 and Trading API: <https://docs.alpaca.markets/docs/using-oauth2-and-trading-api>
+- Alpaca docs index: <https://docs.alpaca.markets/llms.txt>
 
 ---
 
@@ -3970,7 +3979,7 @@ See §7.18. The audit write happens in the same transaction as the action (via o
 
 ### 18.12 Broker connection security (future)
 
-Envelope encryption: a per-record data key (AES-256-GCM) encrypts the credentials. The data key is wrapped by a KMS key (`credentials_key_id`). Decryption happens only inside `EToroBrokerAdapter`, in memory, never logged. Credentials are revoked and deleted on disconnect. The mock connection stores no credentials.
+Envelope encryption: a per-record data key (AES-256-GCM) encrypts the credentials. The data key is wrapped by a KMS key (`credentials_key_id`). Decryption happens only inside `AlpacaBrokerAdapter`, in memory, never logged. Credentials are revoked and deleted on disconnect. The mock connection stores no credentials.
 
 ### 18.13 Replay and duplicate execution
 
@@ -4656,14 +4665,14 @@ Sentry SDKs: `@sentry/react-native` (with source maps through EAS) and `Sentry.A
 | Acceptance | §21.10 release gate. Restore from backup tested. All §23.8 alerts fire in staging drills |
 | Risks | Hosting choice (Q-16). Market data licence for any non-personal distribution (Q-02/Q-03) |
 
-### Phase 8 — Brokerage research (no implementation commitment)
+### Phase 8 — Real-money readiness: Alpaca Live (no implementation commitment)
 
 | | |
 |---|---|
-| Deliverables | Research ADR on eToro (and alternatives): official API existence and access process, sandbox availability, permission scopes, order types, rate limits, ToS on automated/third-party trading and data storage, regional and regulatory constraints, authentication model. Legal review. Go/no-go decision. Only on "go": `EToroBrokerAdapter` design + the live enablement requirements (§17.4) |
+| Deliverables | Legal and regulatory review of real-money automation through Alpaca (personal account with own keys vs an approved OAuth app for other users), Alpaca's terms on automated trading and data storage, regional constraints. Go/no-go decision. Only on "go": Alpaca Live enablement per §17.9 |
 | Dependencies | Phase 7 |
-| Acceptance | A documented decision with sources. Live trading stays disabled unless every §17.4 item is satisfied |
-| Risks | No suitable official API. Regulatory obligations. Liability for real-money losses |
+| Acceptance | A documented decision with sources. Live trading stays disabled unless every §17.9 gate is satisfied |
+| Risks | Alpaca's terms or an OAuth-app approval block multi-user live trading. Regulatory obligations. Liability for real-money losses |
 
 ---
 
@@ -4678,7 +4687,7 @@ Sentry SDKs: `@sentry/react-native` (with source maps through EAS) and `Sentry.A
 | 005 | Async AI via job table + SignalR/polling | DECIDED | Inference latency is unbounded on local hardware | Synchronous request; SSE streaming | Clients handle job states. Extra tables |
 | 006 | Ollama + `qwen3.5:0.8b` as PoC behind `IAiProvider` | DECIDED (PoC) | Local, free, private | Hosted LLM APIs | Low output quality expected. Eval gate before relying on it |
 | 007 | Risk engine authoritative, re-run at execution, no override | DECIDED | Design rule 3 + master prompt | Client-side checks; override with confirmation | Some 409 `assessment_stale` friction when prices move |
-| 008 | No real money in the MVP; live blocked in 3 places + startup guard | DECIDED (amended by 020) | Regulatory and financial risk | Live behind a confirmation | eToro Demo is the MVP venue; eToro Real waits for §17.9 |
+| 008 | No real money in the MVP; live blocked in 3 places + startup guard | DECIDED (amended by 020, 023) | Regulatory and financial risk | Live behind a confirmation | Alpaca Paper is the MVP venue; Alpaca Live waits for §17.9 |
 | 009 | Expo Router instead of hand-wired React Navigation | DECIDED | Mandated stack; file-based deep links; it wraps the same native stack/tabs the design handoff names | React Navigation directly (design handoff) | Route files must mirror the handoff tree (§8.3) |
 | 010 | Strategy-generated signals as the primary proposal source | DECIDED | Matches the design (proposal "Source: Base Breakout v3"); deterministic and backtestable | AI-only proposals | Requires a strategy rule implementation (Q-09) |
 | 011 | Server-side sizing on every stepper change (debounced) | DECIDED | The design says client-computed, re-verified server-side; we keep the client as preview only to avoid float math and divergence | Client-authoritative preview | One API call per change (rate-limited, ~150 ms debounce) |
@@ -4689,9 +4698,10 @@ Sentry SDKs: `@sentry/react-native` (with source maps through EAS) and `Sentry.A
 | 016 | No MediatR / AutoMapper | DECIDED | Licensing changes and unneeded indirection; explicit handlers and mapping | MediatR, AutoMapper, Mapster | Slightly more boilerplate |
 | 017 | Unadjusted bar storage + adjustment factors | DECIDED | Correct historical reconstruction; supports split-only and total-return modes | Store vendor-adjusted bars | Adjustment logic must be tested |
 | 018 | SignalR scale-out via outbox + LISTEN/NOTIFY, no Redis | DECIDED | Keeps a single datastore | Redis backplane, Azure SignalR | Custom fan-out code |
-| 020 | eToro official public API as the execution venue; Demo in MVP, Real gated | DECIDED (2026-11-10) | Verified official API with separate Demo/Real environments, native SL/TP, async orders with `x-request-id` idempotency; matches the design's eToro flows | Internal simulator only; other brokers | Async order flow (§17.5), encrypted key storage, broker-authoritative fills and reconciliation; simulator kept for tests |
-| 021 | Broker is authoritative for fills, positions and cash in `etoro_*` portfolios; Astryx mirrors and reconciles | DECIDED (2026-11-10) | Avoids two sources of truth for real broker state | Astryx ledger authoritative | Mirror tables store broker ids; mismatches halt entries |
-| 022 | Postgres row-level security evaluated and deferred: application-level `IUserOwned` filters plus isolation tests for the MVP | DECIDED (2026-11-16) | One tested mechanism; RLS adds a per-transaction GUC, a role split for system jobs and fail-closed surprises | RLS now (`docs/adr/022-postgres-row-level-security.md`) | Revisit before eToro Real or any shared database access |
+| 020 | eToro official public API as the execution venue; Demo in MVP, Real gated | **SUPERSEDED by 023** (2026-11-17) | Verified official API with separate Demo/Real environments, native SL/TP, async orders with `x-request-id` idempotency; matches the design's eToro flows | Internal simulator only; other brokers | Async order flow (§17.5), encrypted key storage, broker-authoritative fills and reconciliation; simulator kept for tests |
+| 021 | Broker is authoritative for fills, positions and cash in broker portfolios (`alpaca_*` since ADR-023); Astryx mirrors and reconciles | DECIDED (2026-11-10) | Avoids two sources of truth for real broker state | Astryx ledger authoritative | Mirror tables store broker ids; mismatches halt entries |
+| 022 | Postgres row-level security evaluated and deferred: application-level `IUserOwned` filters plus isolation tests for the MVP | DECIDED (2026-11-16) | One tested mechanism; RLS adds a per-transaction GUC, a role split for system jobs and fail-closed surprises | RLS now (`docs/adr/022-postgres-row-level-security.md`) | Revisit before Alpaca Live or any shared database access |
+| 023 | Alpaca replaces eToro as the brokerage: Alpaca Paper in the MVP, Alpaca Live gated | DECIDED (2026-11-17) | Owner decision. Official Trading API with separate paper and live keys and base URLs, native buy-stop and bracket orders, `client_order_id` idempotency, a `trade_updates` stream, 200 req/min, and an optional market-data API (`docs/adr/023-alpaca-brokerage.md`) | eToro (ADR-020) | Supersedes 020; `alpaca_paper`/`alpaca_live` modes and `alpaca` broker code; T-140–T-149 retargeted |
 | 019 | Minimal APIs with endpoint filters instead of MVC controllers (supersedes the v0.1 "controllers" choice) | DECIDED (2026-11-10, T-013) | .NET 10 OpenAPI generation works natively with minimal APIs and typed results; less ceremony; each module maps its own route group; validation and idempotency become reusable endpoint filters (`WithValidation<T>()`, `[Idempotent]`) | MVC controllers | OpenAPI metadata is declared per endpoint (`Produces…`, `WithName`); conventions live in `Astryx.Infrastructure.Http` |
 
 ---
@@ -4712,10 +4722,10 @@ Sentry SDKs: `@sentry/react-native` (with source maps through EAS) and `Sentry.A
 | Q-10 | Backtest engine scope: in-house vs a library; point-in-time universe; per-user strategies? | Strategy lab Configure/re-run | Phase 6 | Seeded read-only runs |
 | Q-11 | Fractional shares? | Quantity precision, sizing | Phase 5 | Whole shares |
 | Q-12 | Paper execution assumptions: slippage model, commission, spread, liquidity cap, limit-touch fills | Realism of paper results | Phase 5 | §15.7 defaults |
-| Q-13 | eToro Real for this use: legal/regulatory approval and eToro API terms for automated real-money orders (the API capability itself is verified, §17.3) | Real money | §17.9 | eToro Demo only |
-| Q-21 | Personal API keys (MVP) vs a registered eToro OAuth application for multi-user or public release | Onboarding, security | Before tester release | Personal keys |
-| Q-22 | Does eToro `mit` for a buy trigger when price **rises** to the trigger (buy-stop semantics)? | Breakout entries | T-143 | Verify in Demo; fallback: server-side trigger sending `mkt` |
-| Q-23 | eToro Demo fill realism (spread, slippage, timing) and fees for `settlementType: real` stocks | Paper results, "Fees and spread" | T-146 | Use the what-if cost endpoint; label Demo fills as simulated by eToro |
+| Q-13 | Alpaca Live for this use: legal/regulatory approval and Alpaca's terms for automated real-money orders (the API capability itself is verified, §17.3) | Real money | §17.9 | Alpaca Paper only |
+| Q-21 | Personal API keys (MVP) vs an Alpaca-approved OAuth application for multi-user or public release | Onboarding, security | Before tester release | Personal keys |
+| Q-22 | Does a bracket order accept a `stop` (buy-stop) entry, and what does Alpaca return for a duplicate `client_order_id`? | Breakout entries, idempotency | T-143 | Verify in Paper; fallbacks: `oto` with the stop loss and the target placed after the fill; always look up by `client_order_id` before resubmitting |
+| Q-23 | Alpaca Paper fill realism: fills at the NBBO without slippage, market impact or regulatory fees; random partial fills | Paper results, "Fees and spread" | T-146 | Show Alpaca's commission-free pricing plus estimated regulatory fees for live; label paper fills as simulated by Alpaca |
 | Q-14 | Multi-currency support? | Data model, P&L | Post-MVP | USD only |
 | Q-15 | Production domain and universal links? | Deep links, email links | Phase 7 | Custom scheme `astryx://` |
 | Q-16 | Production hosting and infrastructure (cloud, region, budget, GPU for AI)? | §22.2 | Phase 7 | Single-region container platform + managed Postgres |

@@ -5,8 +5,8 @@ namespace Astryx.Modules.Portfolio.Domain;
 public static class PortfolioMode
 {
     public const string Simulated = "simulated";
-    public const string EToroDemo = "etoro_demo";
-    public const string EToroReal = "etoro_real";
+    public const string AlpacaPaper = "alpaca_paper";
+    public const string AlpacaLive = "alpaca_live";
 }
 
 /// <summary>Row in <c>portfolio.portfolios</c> (SYSTEM_DESIGN.md §10.4). Cash is the sum of its ledger, cached here.</summary>

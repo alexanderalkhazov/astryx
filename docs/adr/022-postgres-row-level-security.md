@@ -34,5 +34,5 @@ Keep application-level isolation (option 1) for the MVP, and strengthen it:
 
 ## Consequences
 
-- **Revisit:** RLS (option 2) is the planned step before eToro Real (§17.9 gates) or any shared database access (analytics, admin tools). That work will add an `astryx_app` role without `BYPASSRLS`, an `astryx_jobs` role with it, and a `UserScopedConnectionInterceptor` that sets `app.user_id` per transaction.
-- **Risk accepted for paper trading:** a filter bug could expose another user's paper data. It is mitigated by the two test suites and by the absence of any real money or credentials until T-141, where eToro keys are additionally envelope-encrypted per user.
+- **Revisit:** RLS (option 2) is the planned step before Alpaca Live (§17.9 gates) or any shared database access (analytics, admin tools). That work will add an `astryx_app` role without `BYPASSRLS`, an `astryx_jobs` role with it, and a `UserScopedConnectionInterceptor` that sets `app.user_id` per transaction.
+- **Risk accepted for paper trading:** a filter bug could expose another user's paper data. It is mitigated by the two test suites and by the absence of any real money or credentials until T-141, where Alpaca keys are additionally envelope-encrypted per user.

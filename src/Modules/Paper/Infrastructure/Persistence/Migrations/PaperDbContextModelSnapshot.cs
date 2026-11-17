@@ -294,11 +294,11 @@ namespace Astryx.Modules.Paper.Infrastructure.Persistence.Migrations
 
                     b.ToTable("orders", "trading", t =>
                         {
-                            t.HasCheckConstraint("ck_orders_broker", "broker IN ('mock', 'etoro')");
+                            t.HasCheckConstraint("ck_orders_broker", "broker IN ('mock', 'alpaca')");
 
                             t.HasCheckConstraint("ck_orders_entry_assessed", "purpose <> 'entry' OR (proposal_id IS NOT NULL AND assessment_id IS NOT NULL)");
 
-                            t.HasCheckConstraint("ck_orders_mode", "mode IN ('simulated', 'etoro_demo')");
+                            t.HasCheckConstraint("ck_orders_mode", "mode IN ('simulated', 'alpaca_paper')");
 
                             t.HasCheckConstraint("ck_orders_purpose", "purpose IN ('entry', 'exit_stop', 'exit_target', 'exit_manual', 'exit_reset')");
 

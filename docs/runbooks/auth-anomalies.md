@@ -16,4 +16,4 @@
 - One user's tokens reused: their family is already revoked. If needed, force "sign out of all devices" for that user (security-stamp rotation) and tell them.
 - Lower `RateLimits:AuthPerMinute` temporarily if the pressure continues.
 
-**Escalate:** if any reuse involves accounts with eToro connections (from T-141), or the spike lasts over an hour.
+**Escalate:** if any reuse involves accounts with Alpaca connections (from T-141), or the spike lasts over an hour.

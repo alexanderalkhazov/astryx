@@ -21,8 +21,8 @@ public sealed class PaperDbContext(DbContextOptions<PaperDbContext> options) : M
         {
             entity.ToTable("orders", t =>
             {
-                t.HasCheckConstraint("ck_orders_broker", "broker IN ('mock', 'etoro')");
-                t.HasCheckConstraint("ck_orders_mode", "mode IN ('simulated', 'etoro_demo')");
+                t.HasCheckConstraint("ck_orders_broker", "broker IN ('mock', 'alpaca')");
+                t.HasCheckConstraint("ck_orders_mode", "mode IN ('simulated', 'alpaca_paper')");
                 t.HasCheckConstraint("ck_orders_purpose", "purpose IN ('entry', 'exit_stop', 'exit_target', 'exit_manual', 'exit_reset')");
                 t.HasCheckConstraint("ck_orders_side", "side IN ('buy', 'sell')");
                 t.HasCheckConstraint("ck_orders_type", "order_type IN ('market', 'limit', 'buy_stop', 'sell_stop')");

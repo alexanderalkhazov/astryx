@@ -26,8 +26,8 @@ public sealed class PortfolioDbContext(DbContextOptions<PortfolioDbContext> opti
         {
             entity.ToTable("portfolios", t =>
             {
-                // eToro Real stays impossible until the §17.9 gates pass (a reviewed migration relaxes this).
-                t.HasCheckConstraint("ck_portfolios_mode", "mode IN ('simulated', 'etoro_demo')");
+                // Alpaca Live stays impossible until the §17.9 gates pass (a reviewed migration relaxes this).
+                t.HasCheckConstraint("ck_portfolios_mode", "mode IN ('simulated', 'alpaca_paper')");
                 t.HasCheckConstraint("ck_portfolios_cash", "cash_balance >= 0 AND reserved_cash >= 0 AND reserved_cash <= cash_balance");
             });
             entity.Property(p => p.ReconciliationIssues).HasColumnType("jsonb");

@@ -17,6 +17,7 @@ public static class AuditRedactor
         "password", "passwordhash", "newpassword", "currentpassword", "token", "accesstoken", "refreshtoken",
         "idtoken", "secret", "clientsecret", "apikey", "userkey", "xapikey", "xuserkey", "authorization",
         "credentials", "credentialsciphertext", "privatekey", "signingkeys", "securitystamp", "otp",
+        "secretkey", "keyid", "apcaapisecretkey", "apcaapikeyid", // Alpaca API credentials and their headers (§17.6)
     };
 
     private static readonly HashSet<string> EmailKeys = new(StringComparer.Ordinal) { "email", "normalizedemail" };

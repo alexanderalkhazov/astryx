@@ -11,6 +11,6 @@
 **Fix:**
 1. Set `Features:LiveTrading=false` and redeploy.
 2. Check `audit.audit_logs` for `trading_mode.live_attempt` rows during the window.
-3. Confirm no `etoro_real` portfolio exists: `SELECT count(*) FROM portfolio.portfolios WHERE mode = 'etoro_real';` must be 0 (the check constraint forbids it).
+3. Confirm no `alpaca_live` portfolio exists: `SELECT count(*) FROM portfolio.portfolios WHERE mode = 'alpaca_live';` must be 0 (the check constraint forbids it).
 
 **Escalate:** immediately, to the owner. File an incident even if nothing executed.

@@ -131,7 +131,7 @@ describe('Settings (designs 18 and 25)', () => {
     expect(await screen.findByText('Connected · synced 14:36 ET')).toBeOnTheScreen();
     expect(screen.getByText('Paper only')).toBeOnTheScreen();
     expect(screen.getByText('Never requested')).toBeOnTheScreen();
-    expect(screen.getByRole('button', { name: 'Connect eToro' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Connect Alpaca' })).toBeDisabled();
   });
 
   it('walks the live guard to "isn\'t available yet" and stays in paper', async () => {

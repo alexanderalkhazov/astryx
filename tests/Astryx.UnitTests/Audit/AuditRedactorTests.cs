@@ -17,11 +17,13 @@ public class AuditRedactorTests
             ["refresh_token"] = "abc",
             ["x-api-key"] = "k",
             ["userKey"] = "u",
+            ["secretKey"] = "s",
+            ["APCA-API-SECRET-KEY"] = "s",
             ["credentials_ciphertext"] = "c",
             ["displayName"] = "Alex",
         });
 
-        foreach (var key in new[] { "password", "RefreshToken", "refresh_token", "x-api-key", "userKey", "credentials_ciphertext" })
+        foreach (var key in new[] { "password", "RefreshToken", "refresh_token", "x-api-key", "userKey", "secretKey", "APCA-API-SECRET-KEY", "credentials_ciphertext" })
         {
             json.GetProperty(key).GetString().ShouldBe(AuditRedactor.Redacted);
         }
@@ -34,12 +36,12 @@ public class AuditRedactorTests
     {
         var json = Redact(new
         {
-            connection = new { broker = "etoro", apiKey = "pk_live", environment = "demo" },
+            connection = new { broker = "alpaca", apiKey = "pk_live", environment = "paper" },
             sessions = new[] { new { deviceId = "ios-1", token = "t1" }, new { deviceId = "ios-2", token = "t2" } },
         });
 
         json.GetProperty("connection").GetProperty("apiKey").GetString().ShouldBe(AuditRedactor.Redacted);
-        json.GetProperty("connection").GetProperty("environment").GetString().ShouldBe("demo");
+        json.GetProperty("connection").GetProperty("environment").GetString().ShouldBe("paper");
         json.GetProperty("sessions")[1].GetProperty("token").GetString().ShouldBe(AuditRedactor.Redacted);
         json.GetProperty("sessions")[1].GetProperty("deviceId").GetString().ShouldBe("ios-2");
     }

@@ -12,7 +12,7 @@ release gate.
 | V3 Session management | Met |
 | V4 Access control | Met |
 | V5 Validation, sanitisation and encoding | Met |
-| V6 Stored cryptography | Met (eToro key envelope encryption lands with T-141) |
+| V6 Stored cryptography | Met (Alpaca key envelope encryption lands with T-141) |
 | V7 Error handling and logging | Met |
 | V8 Data protection | Met |
 | V9 Communications | Met at the edge (TLS terminates at the load balancer, T-117) |

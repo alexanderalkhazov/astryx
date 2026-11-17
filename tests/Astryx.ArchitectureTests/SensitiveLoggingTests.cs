@@ -40,7 +40,7 @@ public partial class SensitiveLoggingTests
     [GeneratedRegex(@"\.Log(Trace|Debug|Information|Warning|Error|Critical)\(")]
     private static partial Regex LogCall();
 
-    [GeneratedRegex(@"\{(Password|NewPassword|CurrentPassword|Token|AccessToken|RefreshToken|PushToken|ApiKey|UserKey|Secret|Credentials?|Authorization|Email)\}", RegexOptions.IgnoreCase)]
+    [GeneratedRegex(@"\{(Password|NewPassword|CurrentPassword|Token|AccessToken|RefreshToken|PushToken|ApiKey|UserKey|SecretKey|KeyId|Secret|Credentials?|Authorization|Email)\}", RegexOptions.IgnoreCase)]
     private static partial Regex SensitivePlaceholder();
 
     private static string RepositoryRoot()
