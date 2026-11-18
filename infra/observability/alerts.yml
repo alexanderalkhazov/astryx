@@ -20,6 +20,13 @@ groups:
           summary: Nightly reconciliation found {{ $value }} mismatch(es); affected portfolios are halted for new entries
           runbook: docs/runbooks/reconciliation-mismatch.md
 
+      - alert: BrokerOrderStuck
+        expr: max(broker_orders_stuck) > 0
+        labels: { severity: high }
+        annotations:
+          summary: "{{ $value }} Alpaca entry order(s) neither filled nor closed 10 minutes after submission"
+          runbook: docs/runbooks/broker-order-stuck.md
+
       - alert: LiveTradingEnabled
         expr: max(live_trading_enabled) > 0
         labels: { severity: critical }

@@ -7,6 +7,7 @@ One page per alert in `infra/observability/alerts.yml` (SYSTEM_DESIGN.md §23.8)
 | PositionMonitorLag | Critical | [position-monitor-lag.md](position-monitor-lag.md) |
 | ReconciliationMismatch | Critical | [reconciliation-mismatch.md](reconciliation-mismatch.md) |
 | LiveTradingEnabled | Critical | [live-trading-enabled.md](live-trading-enabled.md) |
+| BrokerOrderStuck | High | [broker-order-stuck.md](broker-order-stuck.md) |
 | OrderErrorRate | High | [order-error-rate.md](order-error-rate.md) |
 | MarketDataStale | High | [market-data-stale.md](market-data-stale.md) |
 | OutboxLag | High | [outbox-lag.md](outbox-lag.md) |

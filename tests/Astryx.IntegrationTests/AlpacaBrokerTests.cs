@@ -4,6 +4,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using Astryx.Infrastructure.Alpaca;
+using Astryx.Infrastructure.Outbox;
 using Astryx.Infrastructure.Security;
 using Astryx.Modules.Paper.Application;
 using Astryx.Modules.Paper.Infrastructure.Alpaca;
@@ -65,6 +66,11 @@ public sealed class FakeAlpaca : IAlpacaTradingClient
         {
             RejectNext = null;
             throw reject;
+        }
+
+        if (Orders.Values.Any(o => o.ClientOrderId == request.ClientOrderId))
+        {
+            throw new AlpacaApiException(AlpacaFailure.Invalid, 422, "Alpaca 422: client_order_id must be unique"); // as Paper answers (Q-22)
         }
 
         Submitted.Enqueue(request);
@@ -327,9 +333,72 @@ public class AlpacaBrokerTests(AlpacaApiFactory factory) : IClassFixture<AlpacaA
 
         await factory.Execution.SubmitAsync(orderId, default);
 
-        (await client.GetFromJsonAsync<JsonElement>($"/api/v1/paper/orders/{orderId}")).GetProperty("status").GetString().ShouldBe("rejected");
+        var rejected = await client.GetFromJsonAsync<JsonElement>($"/api/v1/paper/orders/{orderId}");
+        rejected.GetProperty("status").GetString().ShouldBe("rejected");
         var after = await client.GetFromJsonAsync<JsonElement>("/api/v1/portfolio");
         after.GetProperty("cashAvailable").GetString().ShouldBe(after.GetProperty("cash").GetString());
+        var proposalId = rejected.GetProperty("proposalId").GetGuid();
+        await Eventually(async () => (await client.GetFromJsonAsync<JsonElement>($"/api/v1/proposals/{proposalId}")).GetProperty("status").GetString() == "pending",
+            "the proposal back to pending"); // never executed: the user can retry or reject it
+    }
+
+    private async Task Eventually(Func<Task<bool>> condition, string what)
+    {
+        var dispatcher = factory.Services.GetRequiredService<OutboxDispatcher>();
+        for (var deadline = DateTime.UtcNow.AddSeconds(15); DateTime.UtcNow < deadline; await Task.Delay(100))
+        {
+            await dispatcher.DispatchOnceAsync(default);
+            if (await condition())
+            {
+                return;
+            }
+        }
+
+        throw new TimeoutException($"Timed out waiting for {what}.");
+    }
+
+    [Fact]
+    public async Task Ten_concurrent_approvals_with_one_key_send_one_order_to_Alpaca()
+    {
+        var client = await TestUsers.SignedInClientAsync(factory);
+        (await ConnectAsync(client)).StatusCode.ShouldBe(HttpStatusCode.Created);
+        await factory.MakeQuoteLiveAsync("NVDA", 186.60m);
+        var proposal = await (await client.PostAsJsonAsync("/api/v1/proposals", new { source = "signal", signalId = await factory.ActiveSignalIdAsync("NVDA") })).Content.ReadFromJsonAsync<JsonElement>();
+        var body = new { proposalId = proposal.GetProperty("id").GetGuid(), assessmentId = proposal.GetProperty("assessment").GetProperty("id").GetGuid() };
+        var key = $"key-{Guid.NewGuid():N}";
+
+        var responses = await Task.WhenAll(Enumerable.Range(0, 10).Select(_ =>
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/paper/orders") { Content = JsonContent.Create(body) };
+            request.Headers.Add("Idempotency-Key", key);
+            return client.SendAsync(request);
+        }));
+
+        responses.ShouldAllBe(r => r.StatusCode == HttpStatusCode.Created || r.StatusCode == HttpStatusCode.Conflict); // replays, or "still in progress"
+        var orderIds = new HashSet<Guid>();
+        foreach (var response in responses.Where(r => r.StatusCode == HttpStatusCode.Created))
+        {
+            orderIds.Add((await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid());
+        }
+
+        var orderId = orderIds.ShouldHaveSingleItem();
+        var before = factory.Alpaca.Submitted.Count;
+        await Task.WhenAll(Enumerable.Range(0, 10).Select(_ => factory.Execution.SubmitAsync(orderId, default))); // the job, retried while in flight
+        (factory.Alpaca.Submitted.Count - before).ShouldBe(1);
+        (await client.GetFromJsonAsync<JsonElement>($"/api/v1/paper/orders/{orderId}")).GetProperty("status").GetString().ShouldNotBe("rejected");
+    }
+
+    [Fact]
+    public async Task An_entry_unresolved_after_ten_minutes_counts_as_stuck()
+    {
+        var (_, order) = await ConnectAndPlaceAsync();
+        var orderId = order.GetProperty("id").GetGuid();
+        var before = await factory.Execution.ReportStuckAsync(default);
+
+        await Query<PaperDbContext, int>(db => db.Orders.IgnoreQueryFilters().Where(o => o.Id == orderId)
+            .ExecuteUpdateAsync(s => s.SetProperty(o => o.SubmittedAt, o => o.SubmittedAt - TimeSpan.FromMinutes(11L))));
+
+        (await factory.Execution.ReportStuckAsync(default)).ShouldBe(before + 1);
     }
 
     [Fact]

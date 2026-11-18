@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Astryx.Contracts.Audit;
 using Astryx.Contracts.Events.Paper;
 using Astryx.Contracts.Portfolio;
@@ -48,7 +49,31 @@ public sealed class AlpacaExecution(IServiceProvider services, IAlpacaTradingCli
     private const int MaxSettleBackoffAttempts = 8;
 
     /// <summary>Submits the bracket. Throws on a transient failure so the job runner retries it (with the same client id).</summary>
+    /// <summary>
+    /// Sends an entry once. Overlapping attempts for the same order in this process (a job retried while the first
+    /// attempt is still waiting on Alpaca) return at once; across processes Alpaca's 422 on a duplicate
+    /// <c>client_order_id</c> and the lookup below keep it to one order (§17.5).
+    /// </summary>
     public async Task SubmitAsync(Guid orderId, CancellationToken cancellationToken)
+    {
+        if (!_submitting.TryAdd(orderId, 0))
+        {
+            return;
+        }
+
+        try
+        {
+            await SubmitOnceAsync(orderId, cancellationToken);
+        }
+        finally
+        {
+            _submitting.TryRemove(orderId, out _);
+        }
+    }
+
+    private readonly ConcurrentDictionary<Guid, byte> _submitting = new();
+
+    private async Task SubmitOnceAsync(Guid orderId, CancellationToken cancellationToken)
     {
         var (order, credentials) = await LoadAsync(orderId, cancellationToken);
         if (order is null || order.Status != OrderStatus.Submitting)
@@ -205,7 +230,27 @@ public sealed class AlpacaExecution(IServiceProvider services, IAlpacaTradingCli
             }
         }
 
+        await ReportStuckAsync(cancellationToken);
         await ReconcileAccountsAsync(cancellationToken);
+    }
+
+    /// <summary>An entry Alpaca has neither filled nor closed this long after submission alerts (T-144).</summary>
+    public static readonly TimeSpan StuckAfter = TimeSpan.FromMinutes(10L);
+
+    /// <summary>Counts entries still sending or unacknowledged after <see cref="StuckAfter"/> for the <c>BrokerOrderStuck</c> alert.</summary>
+    public async Task<int> ReportStuckAsync(CancellationToken cancellationToken)
+    {
+        await using var scope = services.CreateAsyncScope();
+        var before = timeProvider.GetUtcNow() - StuckAfter;
+        var stuck = await scope.ServiceProvider.GetRequiredService<PaperDbContext>().Orders.IgnoreQueryFilters()
+            .CountAsync(o => o.Broker == BrokerCode.Alpaca && o.Purpose == OrderPurpose.Entry && (o.Status == OrderStatus.Submitting || o.Status == OrderStatus.Submitted) && o.SubmittedAt < before, cancellationToken);
+        AstryxTelemetry.BrokerOrdersStuck(stuck);
+        if (stuck > 0)
+        {
+            logger.LogWarning("{Count} Alpaca entry order(s) unresolved for more than {Minutes} minutes", stuck, (long)StuckAfter.TotalMinutes);
+        }
+
+        return stuck;
     }
 
     /// <summary>

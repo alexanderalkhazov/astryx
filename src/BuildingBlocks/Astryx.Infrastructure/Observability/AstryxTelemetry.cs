@@ -45,6 +45,7 @@ public static class AstryxTelemetry
     private static double _outboxLag;
     private static long _liveTrading;
     private static long _sessionOpen;
+    private static long _brokerOrdersStuck;
     private static Func<bool>? _aiCircuitOpen;
 
     static AstryxTelemetry()
@@ -55,6 +56,7 @@ public static class AstryxTelemetry
         Meter.CreateObservableGauge("outbox_lag_seconds", () => Volatile.Read(ref _outboxLag), "s", "Event occurrence to dispatch, latest message.");
         Meter.CreateObservableGauge("market_session_open", () => Interlocked.Read(ref _sessionOpen), description: "1 during the regular session: alerts that only matter while trading key on it.");
         Meter.CreateObservableGauge("live_trading_enabled", () => Interlocked.Read(ref _liveTrading), description: "1 when Features:LiveTrading is on: must stay 0 in the MVP.");
+        Meter.CreateObservableGauge("broker_orders_stuck", () => Interlocked.Read(ref _brokerOrdersStuck), description: "Alpaca entry orders still sending or unacknowledged 10 minutes after submission.");
         Meter.CreateObservableGauge("ai_circuit_open", () => _aiCircuitOpen?.Invoke() == true ? 1 : 0, description: "1 while the AI provider's circuit breaker is open.");
     }
 
@@ -64,6 +66,8 @@ public static class AstryxTelemetry
     public static void ScannerRun(TimeSpan duration, string status) => ScannerRunDuration.Record(duration.TotalSeconds, new KeyValuePair<string, object?>("status", status));
 
     public static void SessionOpen(bool open) => Interlocked.Exchange(ref _sessionOpen, open ? 1 : 0);
+
+    public static void BrokerOrdersStuck(int count) => Interlocked.Exchange(ref _brokerOrdersStuck, count);
 
     public static void LiveTrading(bool enabled) => Interlocked.Exchange(ref _liveTrading, enabled ? 1 : 0);
 

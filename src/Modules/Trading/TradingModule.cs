@@ -1,4 +1,5 @@
 using Astryx.Infrastructure.Jobs;
+using Astryx.Infrastructure.Outbox;
 using Astryx.Infrastructure.Persistence;
 using Astryx.Modules.Trading.Api;
 using Astryx.Modules.Trading.Application;
@@ -19,6 +20,7 @@ public static class TradingModule
         services.AddScoped<AssessmentService>();
         services.AddScoped<Astryx.Contracts.Trading.IExecutionGate, ExecutionGate>();
         services.AddScoped<Astryx.Contracts.Trading.IPendingProposals, PendingProposals>();
+        services.AddIntegrationEventHandler<Astryx.Contracts.Events.Paper.OrderRejected, ProposalReopener>();
         services.AddScoped<Astryx.Contracts.Trading.IProposalLineage, ProposalLineageSource>();
         services.AddValidatorsFromAssemblyContaining<CreateProposalRequestValidator>(includeInternalTypes: true);
         services.AddJobHandler<ProposalExpiryJob, ProposalExpiryHandler>();
