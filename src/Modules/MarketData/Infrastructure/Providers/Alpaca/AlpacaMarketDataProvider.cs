@@ -71,15 +71,32 @@ internal sealed class AlpacaMarketDataProvider(IHttpClientFactory httpFactory, A
                 continue; // providers omit what they cannot price rather than failing the batch
             }
 
-            var asOf = trade.Time("t") ?? timeProvider.GetUtcNow();
+            var tradedAt = trade.Time("t") ?? timeProvider.GetUtcNow();
             decimal? bid = null, ask = null;
-            if (realtime.Object("latestQuote") is { } quote && quote.Decimal("bp") is > 0 and var bp && quote.Decimal("ap") is > 0 and var ap
-                && ap >= bp && (ap - bp) / last <= 0.02m)
+            DateTimeOffset asOf;
+            if (!InRegularSession(tradedAt))
             {
-                (bid, ask) = (bp, ap); // a one-sided or very wide IEX quote is not a usable spread
-                if (quote.Time("t") is { } quotedAt && quotedAt > asOf)
+                // IEX prints pre-market and after-hours trades; the app quotes the regular session (§8.4), so outside it
+                // the price is the consolidated close, stamped at the bell, and the extended-hours book is ignored.
+                last = day.Decimal("c") ?? last;
+                asOf = day.Time("t") is { } session ? AtNewYork(Instant.FromDateTimeOffset(session).InZone(NewYork).Date.ToDateOnly(), SessionClose) : tradedAt;
+            }
+            else
+            {
+                // As of the newer of IEX's last trade and last book update: for a quiet name the book moves long after
+                // the last IEX print, and the price is still current.
+                asOf = tradedAt;
+                if (realtime.Object("latestQuote") is { } quote)
                 {
-                    asOf = quotedAt;
+                    if (quote.Time("t") is { } quotedAt && quotedAt > asOf)
+                    {
+                        asOf = quotedAt;
+                    }
+
+                    if (quote.Decimal("bp") is > 0 and var bp && quote.Decimal("ap") is > 0 and var ap && ap >= bp && (ap - bp) / last <= 0.02m)
+                    {
+                        (bid, ask) = (bp, ap); // a one-sided or very wide IEX quote is not a usable spread
+                    }
                 }
             }
 
@@ -305,6 +322,12 @@ internal sealed class AlpacaMarketDataProvider(IHttpClientFactory httpFactory, A
 
     private static LocalTime? LocalTimeOf(string? text) =>
         text is not null && TimeOnly.TryParseExact(text, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var time) ? LocalTime.FromTimeOnly(time) : null;
+
+    private static bool InRegularSession(DateTimeOffset at)
+    {
+        var local = Instant.FromDateTimeOffset(at).InZone(NewYork);
+        return local.DayOfWeek is not (IsoDayOfWeek.Saturday or IsoDayOfWeek.Sunday) && local.TimeOfDay >= SessionOpen && local.TimeOfDay < SessionClose;
+    }
 
     internal static DateTimeOffset AtNewYork(DateOnly date, LocalTime time) =>
         LocalDate.FromDateOnly(date).At(time).InZoneLeniently(NewYork).ToDateTimeOffset().ToUniversalTime();

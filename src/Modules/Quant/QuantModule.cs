@@ -23,6 +23,8 @@ public static class QuantModule
         services.AddScoped<IndicatorSnapshotService>();
         services.AddIntegrationEventHandler<Astryx.Contracts.Events.MarketData.CorporateActionRecorded, IndicatorCacheInvalidation>();
         services.AddScoped<Astryx.Contracts.Quant.IIndicatorSnapshots>(sp => sp.GetRequiredService<IndicatorSnapshotService>());
+        var realData = !string.Equals(configuration["MarketData:Provider"] ?? "Fake", "Fake", StringComparison.OrdinalIgnoreCase);
+        services.AddSingleton(new FormingVolumePolicy(configuration.GetValue("Quant:ProjectFormingVolume", realData)));
         services.AddScoped<Astryx.Contracts.Quant.IQuantFacts, QuantFactsService>();
         return services;
     }

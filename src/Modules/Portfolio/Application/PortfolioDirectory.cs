@@ -29,7 +29,7 @@ public sealed class PortfolioDirectory(PortfolioDbContext db) : IPortfolioDirect
 }
 
 /// <summary><see cref="IBrokerPortfolios"/>.</summary>
-public sealed class BrokerPortfolios(PortfolioDbContext db, TimeProvider timeProvider) : IBrokerPortfolios
+public sealed class BrokerPortfolios(PortfolioDbContext db, IPortfolioLedger ledger, TimeProvider timeProvider) : IBrokerPortfolios
 {
     public async Task<Guid> AttachAsync(Guid userId, Guid connectionId, decimal brokerCash, DateTimeOffset at, CancellationToken cancellationToken)
     {
@@ -63,12 +63,65 @@ public sealed class BrokerPortfolios(PortfolioDbContext db, TimeProvider timePro
                 Description = "Alpaca paper account balance when connected",
             });
         }
+        else if (await ReopenAsync(portfolio, brokerCash, at, cancellationToken))
+        {
+            return await AttachedAsync(portfolio.Id, connectionId, at, cancellationToken);
+        }
 
         portfolio.BrokerConnectionId = connectionId;
         portfolio.UpdatedAt = at;
         portfolio.Version++;
         await db.SaveChangesAsync(cancellationToken);
         return portfolio.Id;
+    }
+
+    /// <summary>
+    /// A reconnect may be a different Alpaca account (new keys, a reset paper account), so a flat portfolio starts a new
+    /// epoch at the broker's cash, as a paper reset does (PAPER-08): the difference is a deposit, not profit. A portfolio
+    /// still holding positions keeps its epoch, and reconciliation reports any mismatch (§17.7).
+    /// </summary>
+    private async Task<bool> ReopenAsync(PortfolioEntity portfolio, decimal brokerCash, DateTimeOffset at, CancellationToken cancellationToken)
+    {
+        if (!await ledger.LockAsync(portfolio.Id, cancellationToken))
+        {
+            return false;
+        }
+
+        var current = await db.Portfolios.IgnoreQueryFilters().AsNoTracking().SingleAsync(p => p.Id == portfolio.Id, cancellationToken);
+        if (current.ReservedCash != 0 || await db.Positions.IgnoreQueryFilters().AnyAsync(p => p.PortfolioId == portfolio.Id && p.Status == PositionStatus.Open, cancellationToken))
+        {
+            return false;
+        }
+
+        db.Entry(portfolio).State = EntityState.Detached; // the ledger and the update below write the row directly
+        var cash = RoundingPolicy.Ledger(brokerCash);
+        if (cash != current.CashBalance)
+        {
+            var posted = await ledger.PostAsync(portfolio.Id, [new LedgerEntry(LedgerType.ResetDeposit, cash - current.CashBalance, $"reconnect:{portfolio.Id}:{at.ToUnixTimeMilliseconds()}", "Alpaca account reconnected: cash set to the account balance")], cancellationToken);
+            if (!posted.IsSuccess)
+            {
+                throw new InvalidOperationException(posted.Error.Message);
+            }
+        }
+
+        await db.Portfolios.IgnoreQueryFilters().Where(p => p.Id == portfolio.Id).ExecuteUpdateAsync(
+            s => s.SetProperty(p => p.StartingCash, cash)
+                .SetProperty(p => p.RealizedPnl, 0m)
+                .SetProperty(p => p.StartOfDayEquity, cash)
+                .SetProperty(p => p.ResetCount, p => p.ResetCount + 1)
+                .SetProperty(p => p.EpochStartedAt, at),
+            cancellationToken);
+        return true;
+    }
+
+    private async Task<Guid> AttachedAsync(Guid portfolioId, Guid connectionId, DateTimeOffset at, CancellationToken cancellationToken)
+    {
+        await db.Portfolios.IgnoreQueryFilters().Where(p => p.Id == portfolioId).ExecuteUpdateAsync(
+            s => s.SetProperty(p => p.BrokerConnectionId, connectionId)
+                .SetProperty(p => p.UpdatedAt, at)
+                .SetProperty(p => p.Version, p => p.Version + 1),
+            cancellationToken);
+        return portfolioId;
     }
 
     public async Task DetachAsync(Guid userId, CancellationToken cancellationToken)

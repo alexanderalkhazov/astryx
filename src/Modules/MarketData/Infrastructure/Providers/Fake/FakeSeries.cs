@@ -8,7 +8,7 @@ internal sealed record DailyBar(ProviderSession Session, decimal Open, decimal H
 /// <summary>
 /// Builds a symbol's daily history so it ends exactly at the fixture's previous close and current-session values.
 /// History is generated <b>backwards</b> from that anchor, with the shape set by the row's <c>pattern</c> (the setups
-/// the scanner should find in M3). The same seed, symbol and current session always give the same bars.
+/// the scanner should find in M3). The same seed and symbol give the same history shape, whatever the current session.
 /// </summary>
 internal static class FakeSeries
 {
@@ -17,7 +17,9 @@ internal static class FakeSeries
     /// <summary>History (oldest first) followed by the current session's bar.</summary>
     public static IReadOnlyList<DailyBar> Daily(FixtureInstrument instrument, IReadOnlyList<ProviderSession> history, ProviderSession current, int seed)
     {
-        var random = SeededRandom.For(seed, instrument.Symbol, current.SessionDate.DayNumber);
+        // Not seeded by date: the walk before each pattern feeds the universe's relative-strength ranks, and a per-day
+        // walk let NVDA's design rank drift below the rule's threshold on some days.
+        var random = SeededRandom.For(seed, instrument.Symbol);
         var count = history.Count;
         var closes = new decimal[count];
         var volatility = BaseVolatility(instrument);

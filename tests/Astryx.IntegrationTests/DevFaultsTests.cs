@@ -147,7 +147,9 @@ public class DevMarketReseedTests(DevSyncedMarketApiFactory factory) : IClassFix
             await db.Database.ExecuteSqlRawAsync("UPDATE market.price_bars SET high = high * 1.05, close = close * 1.04");
         }
 
-        var response = await factory.CreateClient().PostAsync("/dev/market/reseed", null);
+        var client = factory.CreateClient();
+        client.Timeout = TimeSpan.FromMinutes(5L); // resyncs and rescans the whole universe in one request
+        var response = await client.PostAsync("/dev/market/reseed", null);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("storedBars").GetInt32().ShouldBeGreaterThan(1000);

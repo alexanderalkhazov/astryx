@@ -245,6 +245,28 @@ public class AlpacaBrokerTests(AlpacaApiFactory factory) : IClassFixture<AlpacaA
     }
 
     [Fact]
+    public async Task Reconnecting_to_an_account_with_another_balance_starts_a_new_epoch_not_a_profit()
+    {
+        var client = await TestUsers.SignedInClientAsync(factory);
+        var first = await (await ConnectAsync(client)).Content.ReadFromJsonAsync<JsonElement>();
+        (await client.DeleteAsync($"/api/v1/broker/connections/{first.GetProperty("id").GetGuid()}")).StatusCode.ShouldBe(HttpStatusCode.NoContent);
+        var before = factory.Alpaca.Cash;
+        factory.Alpaca.Cash = 100_000m; // new keys, a different paper account
+        try
+        {
+            (await ConnectAsync(client)).StatusCode.ShouldBe(HttpStatusCode.Created);
+
+            var portfolio = await client.GetFromJsonAsync<JsonElement>("/api/v1/portfolio");
+            (portfolio.GetProperty("cash").GetString(), portfolio.GetProperty("allTimePnl").GetString(), portfolio.GetProperty("dayPnl").GetString())
+                .ShouldBe(("100000.00", "0.00", "0.00"));
+        }
+        finally
+        {
+            factory.Alpaca.Cash = before;
+        }
+    }
+
+    [Fact]
     public async Task An_approved_order_goes_to_Alpaca_as_a_bracket_and_mirrors_Alpacas_fill()
     {
         var (client, order) = await ConnectAndPlaceAsync();

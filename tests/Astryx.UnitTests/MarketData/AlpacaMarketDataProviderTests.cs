@@ -60,9 +60,24 @@ public class AlpacaMarketDataProviderTests
         nvda.AsOf.ShouldBe(DateTimeOffset.Parse("2026-11-16T19:59:59Z", System.Globalization.CultureInfo.InvariantCulture)); // the newer of trade and quote
         var aapl = quotes.Single(q => q.Symbol == "AAPL");
         (aapl.Bid, aapl.Ask).ShouldBe((null, null)); // a 10 % wide IEX quote is not a usable spread
+        aapl.AsOf.ShouldBe(DateTimeOffset.Parse("2026-11-16T19:59:59Z", System.Globalization.CultureInfo.InvariantCulture)); // the book moved after the last print
         quotes.ShouldNotContain(q => q.Symbol == "UNKNOWN");
         stub.Requests.Count.ShouldBe(2);
         stub.Requests.ShouldAllBe(r => r.Headers.GetValues("APCA-API-KEY-ID").Single() == "PKTEST00003F2A" && !r.RequestUri!.ToString().Contains("secret"));
+    }
+
+    [Fact]
+    public async Task After_hours_the_quote_is_the_regular_session_close_not_the_last_extended_hours_print()
+    {
+        // NVDA on 2026-11-17: closed at 155.46, then traded at 158.30 on IEX at 16:59 ET.
+        const string iex = """{"NVDA":{"latestTrade":{"p":158.30,"t":"2026-11-17T21:59:41Z"},"latestQuote":{"bp":158.00,"ap":159.74,"t":"2026-11-17T21:59:50Z"}}}""";
+        const string delayed = """{"NVDA":{"dailyBar":{"o":156.90,"h":158.19,"l":150.33,"c":155.46,"v":407797122,"t":"2026-11-17T05:00:00Z"},"prevDailyBar":{"c":156.14}}}""";
+        var (provider, _) = Create(uri => (HttpStatusCode.OK, uri.Query.Contains("feed=iex") ? iex : delayed));
+
+        var nvda = (await provider.GetQuotesAsync(["NVDA"], default)).Single();
+
+        (nvda.Last, nvda.PrevClose, nvda.High, nvda.Bid, nvda.Ask).ShouldBe((155.46m, 156.14m, 158.19m, (decimal?)null, (decimal?)null));
+        nvda.AsOf.ShouldBe(DateTimeOffset.Parse("2026-11-17T21:00:00Z", System.Globalization.CultureInfo.InvariantCulture)); // the bell
     }
 
     [Fact]

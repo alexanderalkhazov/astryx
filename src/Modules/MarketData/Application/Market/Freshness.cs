@@ -37,7 +37,8 @@ public sealed class FreshnessPolicy(MarketDataDbContext db, MarketClock clock, I
 {
     /// <summary>
     /// Session open: fresh if no older than <see cref="FreshnessOptions.QuoteMaxAgeSeconds"/>. Otherwise fresh if it
-    /// reflects the most recent close ("at close").
+    /// reflects the most recent close ("at close"): a real feed stamps the last trade, a moment before the bell, so a
+    /// quote within the same budget of the close counts.
     /// </summary>
     public async Task<Freshness> QuoteAsync(DateTimeOffset? asOf, CancellationToken cancellationToken)
     {
@@ -47,12 +48,12 @@ public sealed class FreshnessPolicy(MarketDataDbContext db, MarketClock clock, I
         }
 
         var session = await clock.CurrentSessionAsync(cancellationToken);
-        var now = clock.Now;
-        var stale = now < session.CloseAt
-            ? now - asOf.Value > TimeSpan.FromSeconds(options.Value.QuoteMaxAgeSeconds)
-            : asOf.Value < session.CloseAt!.Value;
-        return new Freshness(asOf, stale);
+        return new Freshness(asOf, IsQuoteStale(asOf.Value, clock.Now, session.CloseAt!.Value, TimeSpan.FromSeconds(options.Value.QuoteMaxAgeSeconds)));
     }
+
+    /// <summary>The rule behind <see cref="QuoteAsync"/>, for the current (or most recent) session's close.</summary>
+    public static bool IsQuoteStale(DateTimeOffset asOf, DateTimeOffset now, DateTimeOffset closeAt, TimeSpan maxAge) =>
+        now < closeAt ? now - asOf > maxAge : asOf < closeAt - maxAge;
 
     /// <summary>Fresh if the stored history includes every session whose deadline (18:00 ET on its date) has passed.</summary>
     public async Task<bool> DailyBarsStaleAsync(DateOnly? lastFinalSession, CancellationToken cancellationToken)
