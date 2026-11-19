@@ -129,6 +129,24 @@ public class AlpacaTradingClientTests
     }
 
     [Fact]
+    public void The_stream_reads_authorization_and_trade_updates_and_ignores_the_rest()
+    {
+        static byte[] Utf8(string json) => System.Text.Encoding.UTF8.GetBytes(json);
+
+        AlpacaTradeUpdatesStream.StreamUrl(new Uri("https://paper-api.alpaca.markets/")).ToString().ShouldBe("wss://paper-api.alpaca.markets/stream");
+        AlpacaTradeUpdatesStream.IsAuthorized(Utf8("""{"stream":"authorization","data":{"action":"authenticate","status":"authorized"}}""")).ShouldBeTrue();
+        AlpacaTradeUpdatesStream.IsAuthorized(Utf8("""{"stream":"authorization","data":{"action":"authenticate","status":"unauthorized"}}""")).ShouldBeFalse();
+        AlpacaTradeUpdatesStream.Parse(Utf8("""{"stream":"listening","data":{"streams":["trade_updates"]}}""")).ShouldBeNull();
+
+        var update = AlpacaTradeUpdatesStream.Parse(Utf8("""
+            {"stream":"trade_updates","data":{"event":"fill","execution_id":"x1","price":"186.71","qty":"64","position_qty":"64",
+             "timestamp":"2026-11-19T14:35:01.123Z","order":{"id":"61e69015","client_order_id":"0193b8e5-0000-7000-8000-000000000001","status":"filled","symbol":"NVDA"}}}
+            """));
+
+        update.ShouldBe(new AlpacaTradeUpdate("fill", "61e69015", "0193b8e5-0000-7000-8000-000000000001", DateTimeOffset.Parse("2026-11-19T14:35:01.123Z", System.Globalization.CultureInfo.InvariantCulture)));
+    }
+
+    [Fact]
     public async Task Cancelling_an_order_Alpaca_already_finished_is_not_an_error()
     {
         var (client, _) = Create((_, _) => (HttpStatusCode.UnprocessableEntity, """{"message":"order is already in \"filled\" state"}"""));

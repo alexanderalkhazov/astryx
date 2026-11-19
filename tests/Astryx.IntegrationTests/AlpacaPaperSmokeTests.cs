@@ -119,6 +119,29 @@ public class AlpacaPaperSmokeTests
         await Until(() => alpaca.ListPositionsAsync(credentials, default), p => p.All(x => x.Symbol != "SPY"), "the account to be flat in SPY");
     }
 
+    /// <summary>The account stream (T-148) authorizes these keys and listens; read-only, safe on any paper account.</summary>
+    [AlpacaPaperFact]
+    public async Task The_trade_updates_stream_authorizes_and_listens()
+    {
+        var (_, credentials) = Create();
+        var stream = new AlpacaTradeUpdatesStream(Options.Create(new AlpacaOptions()));
+        using var listening = new CancellationTokenSource(TimeSpan.FromSeconds(5L));
+
+        // Unauthorized keys throw CredentialsInvalid during the handshake; authorized ones listen until cancelled.
+        await Should.ThrowAsync<OperationCanceledException>(async () =>
+        {
+            await foreach (var _ in stream.ListenAsync(credentials, listening.Token))
+            {
+            }
+        });
+        await Should.ThrowAsync<AlpacaApiException>(async () =>
+        {
+            await foreach (var _ in stream.ListenAsync(new AlpacaCredentials(credentials.KeyId, "wrong-secret"), default))
+            {
+            }
+        });
+    }
+
     private static async Task<T> Until<T>(Func<Task<T>> read, Func<T, bool> done, string what)
     {
         for (var deadline = DateTime.UtcNow.AddSeconds(60); ; await Task.Delay(1000))

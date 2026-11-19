@@ -467,7 +467,7 @@ public sealed class AlpacaExecution(IServiceProvider services, IAlpacaTradingCli
     }
 
     /// <summary>A bracket leg (stop loss or take profit) that Alpaca filled closes the mirrored position at Alpaca's price.</summary>
-    private async Task SettleExitAsync(Guid exitId, CancellationToken cancellationToken)
+    public async Task SettleExitAsync(Guid exitId, CancellationToken cancellationToken)
     {
         var (exit, credentials) = await LoadAsync(exitId, cancellationToken);
         if (exit is null || exit.Status is not (OrderStatus.Working or OrderStatus.Submitted) || credentials is null)

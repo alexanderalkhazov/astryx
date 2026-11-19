@@ -23,6 +23,8 @@ public static class AstryxTelemetry
 
     public static readonly Counter<long> MarketProviderRequests = Meter.CreateCounter<long>("market_provider_requests_total", description: "Market data sync runs by provider, dataset and outcome.");
 
+    private static readonly Histogram<double> BrokerTradeUpdateLagSeconds = Meter.CreateHistogram<double>("broker_trade_update_lag_seconds", "s", "Alpaca trade_updates event time to settlement in Astryx.");
+
     private static readonly Histogram<double> ScannerRunDuration = Meter.CreateHistogram<double>("scanner_run_duration_seconds", "s", "One scanner run.");
 
     public static readonly Counter<long> Orders = Meter.CreateCounter<long>("orders_total", description: "Paper orders by purpose and outcome.");
@@ -62,6 +64,8 @@ public static class AstryxTelemetry
 
     public static void AiInference(TimeSpan latency, string model, string promptVersion, string outcome) =>
         AiInferenceDuration.Record(latency.TotalSeconds, new("model", model), new("prompt_version", promptVersion), new("outcome", outcome));
+
+    public static void BrokerTradeUpdateLag(TimeSpan lag, string @event) => BrokerTradeUpdateLagSeconds.Record(Math.Max(0, lag.TotalSeconds), new KeyValuePair<string, object?>("event", @event));
 
     public static void ScannerRun(TimeSpan duration, string status) => ScannerRunDuration.Record(duration.TotalSeconds, new KeyValuePair<string, object?>("status", status));
 

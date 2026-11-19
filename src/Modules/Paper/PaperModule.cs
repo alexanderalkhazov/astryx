@@ -28,6 +28,12 @@ public static class PaperModule
         services.AddScoped<Astryx.Contracts.Paper.IBrokerReadiness, BrokerReadinessService>();
         services.AddScoped<BrokerConnectionService>();
         services.AddSingleton<AlpacaExecution>();
+        services.AddSingleton<IAlpacaTradeUpdates, AlpacaTradeUpdatesStream>();
+        services.AddSingleton<TradeUpdatesListener>();
+        if (configuration.GetValue("Workers:Enabled", true) && configuration.GetValue("Workers:Jobs", true) && configuration.GetValue("Alpaca:Streaming", true))
+        {
+            services.AddHostedService(sp => sp.GetRequiredService<TradeUpdatesListener>()); // T-148: the fast path; BrokerSyncJob stays the fallback
+        }
         services.AddSingleton<Astryx.Contracts.Paper.IBrokerSync>(sp => sp.GetRequiredService<AlpacaExecution>());
         services.AddJobHandler<SubmitBrokerOrderJob, SubmitBrokerOrderHandler>();
         services.AddJobHandler<SettleBrokerOrderJob, SettleBrokerOrderHandler>();

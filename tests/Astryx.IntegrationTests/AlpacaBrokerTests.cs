@@ -356,6 +356,33 @@ public class AlpacaBrokerTests(AlpacaApiFactory factory) : IClassFixture<AlpacaA
     }
 
     [Fact]
+    public async Task A_trade_updates_fill_event_settles_the_entry_and_then_its_stop_leg_without_waiting_for_the_sync()
+    {
+        var (client, order) = await ConnectAndPlaceAsync();
+        var orderId = order.GetProperty("id").GetGuid();
+        await factory.Execution.SubmitAsync(orderId, default);
+        var listener = factory.Services.GetRequiredService<TradeUpdatesListener>();
+        var alpacaId = factory.Alpaca.Orders.Values.Single(o => o.ClientOrderId == orderId.ToString()).Id;
+
+        await listener.HandleAsync(new AlpacaTradeUpdate("new", alpacaId, orderId.ToString(), DateTimeOffset.UtcNow), default); // not final: nothing to do
+        (await client.GetFromJsonAsync<JsonElement>($"/api/v1/paper/orders/{orderId}")).GetProperty("status").GetString().ShouldBe("submitted");
+
+        factory.Alpaca.FillEntry(orderId.ToString(), 186.71m);
+        await listener.HandleAsync(new AlpacaTradeUpdate("fill", alpacaId, orderId.ToString(), DateTimeOffset.UtcNow), default);
+
+        var filled = await client.GetFromJsonAsync<JsonElement>($"/api/v1/paper/orders/{orderId}");
+        (filled.GetProperty("status").GetString(), filled.GetProperty("fill").GetProperty("price").GetString()).ShouldBe(("filled", "186.71"));
+
+        factory.Alpaca.FillLeg($"{alpacaId}-sl", 178.05m);
+        await listener.HandleAsync(new AlpacaTradeUpdate("fill", $"{alpacaId}-sl", $"{alpacaId}-sl", DateTimeOffset.UtcNow), default);
+
+        var positionId = filled.GetProperty("positionId").GetGuid();
+        var position = await Query<PortfolioDbContext, Astryx.Modules.Portfolio.Domain.Position>(db => db.Positions.IgnoreQueryFilters().AsNoTracking().SingleAsync(p => p.Id == positionId));
+        (position.Status, position.ExitReason, position.ExitPrice).ShouldBe(("closed", "stop", 178.05m));
+        await listener.HandleAsync(new AlpacaTradeUpdate("fill", "placed-in-the-dashboard", null, DateTimeOffset.UtcNow), default); // not ours: ignored
+    }
+
+    [Fact]
     public async Task Alpaca_filling_the_stop_leg_closes_the_position_at_Alpacas_price()
     {
         var (client, order) = await ConnectAndPlaceAsync();
