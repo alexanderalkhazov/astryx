@@ -3769,9 +3769,10 @@ public interface IBrokerAdapter
 
 | Astryx | Alpaca request |
 |---|---|
-| Long entry, `market` | `side:"buy"`, `type:"market"`, `time_in_force:"day"` |
-| Long entry, `buy_stop` @ entry | `type:"stop"`, `stop_price: entry`, `time_in_force:"day"`. Alpaca's buy stop triggers when the price **rises** to the stop, which is the breakout semantics the design needs |
-| Long entry, `limit` @ price | `type:"limit"`, `limit_price: price`, `time_in_force:"day"` (rests until filled or the day ends, like the simulator) |
+| Time in force | **`gtc` for every bracket.** Verified in Paper (2026-11-19): Alpaca gives the legs the entry's time in force, so a `day` bracket's stop and target expire at the close and leave a filled position unprotected overnight. Astryx keeps the entry's day lifetime itself: each sync cancels an unfilled entry past `orders.expires_at` at Alpaca and records it `expired` (a fill that beat the cancel is mirrored as a fill) |
+| Long entry, `market` | `side:"buy"`, `type:"market"` |
+| Long entry, `buy_stop` @ entry | `type:"stop"`, `stop_price: entry`. Alpaca's buy stop triggers when the price **rises** to the stop, which is the breakout semantics the design needs |
+| Long entry, `limit` @ price | `type:"limit"`, `limit_price: price` (rests until filled or the day ends, like the simulator) |
 | Quantity | `qty` in whole shares while Q-11 is open (brackets need whole shares) |
 | Attached stop / target | `order_class:"bracket"`, `stop_loss.stop_price`, `take_profit.limit_price`. Alpaca manages the exits as an OCO pair, so there is **no internal OCO** for Alpaca portfolios. **Verified in Paper (2026-11-17, Q-22):** a bracket accepts a `stop` entry, so no `oto` fallback is needed |
 | Product | US equities, unleveraged, long only. Margin is never used: the risk engine sizes against cash, not buying power |

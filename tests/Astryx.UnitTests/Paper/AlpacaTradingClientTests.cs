@@ -54,7 +54,7 @@ public class AlpacaTradingClientTests
         request.Headers.GetValues("APCA-API-SECRET-KEY").Single().ShouldBe("secret-value");
         var json = JsonDocument.Parse(body!).RootElement;
         (json.GetProperty("qty").GetString(), json.GetProperty("type").GetString(), json.GetProperty("time_in_force").GetString(), json.GetProperty("order_class").GetString())
-            .ShouldBe(("64", "stop", "day", "bracket"));
+            .ShouldBe(("64", "stop", "gtc", "bracket")); // GTC so the exit legs outlive the session
         (json.GetProperty("stop_price").GetString(), json.GetProperty("stop_loss").GetProperty("stop_price").GetString(), json.GetProperty("take_profit").GetProperty("limit_price").GetString())
             .ShouldBe(("186.5", "178.2", "204"));
         json.TryGetProperty("limit_price", out _).ShouldBeFalse(); // nulls are left out, not sent

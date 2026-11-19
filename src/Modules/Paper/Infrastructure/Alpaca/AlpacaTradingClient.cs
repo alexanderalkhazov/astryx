@@ -37,7 +37,11 @@ public sealed record AlpacaOrder(
     public bool IsClosedUnfilled => Status is "canceled" or "expired" or "rejected" or "done_for_day" && FilledQuantity == 0;
 }
 
-/// <summary>A bracket entry (§17.4): whole shares, day order, Alpaca manages the stop and target as an OCO pair.</summary>
+/// <summary>
+/// A bracket entry (§17.4): whole shares, Alpaca manages the stop and target as an OCO pair. Sent GTC: Alpaca gives the
+/// legs the entry's time in force, so a day bracket would drop the stop at the close. The entry's day lifetime is kept by
+/// <c>AlpacaExecution</c>, which cancels it once the session ends unfilled (verified in Paper 2026-11-19).
+/// </summary>
 public sealed record AlpacaBracketRequest(string Symbol, decimal Quantity, string Type, decimal? StopPrice, decimal? LimitPrice, decimal StopLoss, decimal TakeProfit, string ClientOrderId);
 
 /// <summary>
@@ -111,7 +115,7 @@ public sealed class AlpacaTradingClient(IHttpClientFactory httpFactory, AlpacaRa
             ["qty"] = Text(request.Quantity),
             ["side"] = "buy",
             ["type"] = request.Type,
-            ["time_in_force"] = "day",
+            ["time_in_force"] = "gtc",
             ["stop_price"] = request.StopPrice is { } stop ? Text(stop) : null,
             ["limit_price"] = request.LimitPrice is { } limit ? Text(limit) : null,
             ["order_class"] = "bracket",

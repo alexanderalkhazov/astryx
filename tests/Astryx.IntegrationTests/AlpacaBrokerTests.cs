@@ -121,6 +121,11 @@ public sealed class FakeAlpaca : IAlpacaTradingClient
             Cancelled.Add(orderId);
         }
 
+        if (Orders.TryGetValue(orderId, out var order) && !order.IsFilled)
+        {
+            Orders[orderId] = order with { Status = "canceled", Legs = order.Legs.Select(l => l with { Status = "canceled" }).ToList() }; // as Alpaca does
+        }
+
         return Task.CompletedTask;
     }
 
@@ -380,6 +385,26 @@ public class AlpacaBrokerTests(AlpacaApiFactory factory) : IClassFixture<AlpacaA
         var position = await Query<PortfolioDbContext, Astryx.Modules.Portfolio.Domain.Position>(db => db.Positions.IgnoreQueryFilters().AsNoTracking().SingleAsync(p => p.Id == positionId));
         (position.Status, position.ExitReason, position.ExitPrice).ShouldBe(("closed", "stop", 178.05m));
         await listener.HandleAsync(new AlpacaTradeUpdate("fill", "placed-in-the-dashboard", null, DateTimeOffset.UtcNow), default); // not ours: ignored
+    }
+
+    [Fact]
+    public async Task A_day_entry_untriggered_at_the_close_is_cancelled_at_Alpaca_and_expires()
+    {
+        var (client, order) = await ConnectAndPlaceAsync();
+        var orderId = order.GetProperty("id").GetGuid();
+        await factory.Execution.SubmitAsync(orderId, default);
+        await factory.Execution.SettleAsync(orderId, default); // resting at Alpaca
+        var alpacaId = factory.Alpaca.Orders.Values.Single(o => o.ClientOrderId == orderId.ToString()).Id;
+        (await client.GetFromJsonAsync<JsonElement>($"/api/v1/paper/orders/{orderId}")).GetProperty("status").GetString().ShouldBe("working");
+
+        await Query<PaperDbContext, int>(db => db.Orders.IgnoreQueryFilters().Where(o => o.Id == orderId)
+            .ExecuteUpdateAsync(s => s.SetProperty(o => o.ExpiresAt, DateTimeOffset.UtcNow.AddMinutes(-1)))); // the session closed
+        await factory.Execution.SyncAsync(default);
+
+        factory.Alpaca.Cancelled.ShouldContain(alpacaId); // the GTC bracket does not outlive the day at Alpaca
+        (await client.GetFromJsonAsync<JsonElement>($"/api/v1/paper/orders/{orderId}")).GetProperty("status").GetString().ShouldBe("expired");
+        var portfolio = await client.GetFromJsonAsync<JsonElement>("/api/v1/portfolio");
+        portfolio.GetProperty("cashAvailable").GetString().ShouldBe(portfolio.GetProperty("cash").GetString()); // reservation released
     }
 
     [Fact]

@@ -167,6 +167,12 @@ public sealed class AlpacaExecution(IServiceProvider services, IAlpacaTradingCli
 
         if (remote.IsClosedUnfilled)
         {
+            if (remote.Status == "canceled" && order.ExpiresAt <= timeProvider.GetUtcNow())
+            {
+                await CloseUnfilledAsync(orderId, OrderStatus.Expired, "day_expired", "Not triggered before the close, so Astryx cancelled it at Alpaca.", cancellationToken);
+                return true;
+            }
+
             var status = remote.Status switch { "expired" or "done_for_day" => OrderStatus.Expired, "rejected" => OrderStatus.Rejected, _ => OrderStatus.Cancelled };
             await CloseUnfilledAsync(orderId, status, $"alpaca_{remote.Status}", $"Alpaca reported the order {remote.Status}.", cancellationToken);
             return true;
@@ -250,12 +256,51 @@ public sealed class AlpacaExecution(IServiceProvider services, IAlpacaTradingCli
             }
         }
 
+        await ExpireDayEntriesAsync(userId, cancellationToken);
         if (userId is null)
         {
             await ReportStuckAsync(cancellationToken);
         }
 
         await ReconcileAccountsAsync(userId, cancellationToken);
+    }
+
+    /// <summary>
+    /// Day entries past the close (§15.4 at Alpaca): brackets go to Alpaca as GTC so their stop and target survive the
+    /// session, so an entry that never triggered is cancelled here and recorded as expired. A fill that beat the cancel is
+    /// mirrored as a fill; a cancel still pending finishes on the next pass.
+    /// </summary>
+    private async Task ExpireDayEntriesAsync(Guid? userId, CancellationToken cancellationToken)
+    {
+        var now = timeProvider.GetUtcNow();
+        List<Guid> due;
+        await using (var scope = services.CreateAsyncScope())
+        {
+            due = await scope.ServiceProvider.GetRequiredService<PaperDbContext>().Orders.IgnoreQueryFilters().AsNoTracking()
+                .Where(o => o.Broker == BrokerCode.Alpaca && o.Purpose == OrderPurpose.Entry && o.TimeInForce == "day" && o.ExpiresAt <= now)
+                .Where(o => o.Status == OrderStatus.Submitted || o.Status == OrderStatus.Working)
+                .Where(o => userId == null || o.UserId == userId)
+                .Select(o => o.Id).ToListAsync(cancellationToken);
+        }
+
+        foreach (var orderId in due)
+        {
+            var (order, credentials) = await LoadAsync(orderId, cancellationToken);
+            if (order is null || credentials is null)
+            {
+                continue;
+            }
+
+            try
+            {
+                await alpaca.CancelOrderAsync(credentials, order.BrokerOrderId, cancellationToken);
+                await SettleAsync(orderId, cancellationToken);
+            }
+            catch (AlpacaApiException ex)
+            {
+                logger.LogWarning("Could not expire Alpaca entry {OrderId} after the close: {Reason}; retrying next pass", orderId, ex.Message);
+            }
+        }
     }
 
     /// <summary>An entry Alpaca has neither filled nor closed this long after submission alerts (T-144).</summary>
