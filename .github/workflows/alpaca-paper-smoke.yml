@@ -1,0 +1,52 @@
+# Alpaca Paper end-to-end smoke (TASKS.md T-149, SYSTEM_DESIGN.md §17). Manual only: it trades on a real Alpaca paper
+# account. Use a paper account of its own (repository secrets ALPACA_SMOKE_KEY_ID / ALPACA_SMOKE_SECRET_KEY), never the
+# one a user's Astryx portfolio is connected to: reconciliation would treat the smoke's trades as made outside Astryx
+# and halt that portfolio's entries. The filled round trip skips itself outside 09:35–15:50 New York.
+name: Alpaca Paper smoke
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: alpaca-paper-smoke
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_NOLOGO: "1"
+
+jobs:
+  smoke:
+    name: Alpaca Paper smoke (real paper API)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+          cache: true
+          cache-dependency-path: "**/packages.lock.json"
+
+      - name: Check the secrets are set
+        env:
+          KEY: ${{ secrets.ALPACA_SMOKE_KEY_ID }}
+          SECRET: ${{ secrets.ALPACA_SMOKE_SECRET_KEY }}
+        run: |
+          if [ -z "$KEY" ] || [ -z "$SECRET" ]; then
+            echo "::error::Add the ALPACA_SMOKE_KEY_ID and ALPACA_SMOKE_SECRET_KEY repository secrets (a dedicated Alpaca paper account)."
+            exit 1
+          fi
+
+      - name: Restore (locked)
+        run: dotnet restore tests/Astryx.IntegrationTests --locked-mode
+
+      - name: Smoke
+        env:
+          ALPACA_KEY_ID: ${{ secrets.ALPACA_SMOKE_KEY_ID }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SMOKE_SECRET_KEY }}
+        run: dotnet test tests/Astryx.IntegrationTests -c Release --no-restore --filter "FullyQualifiedName~AlpacaPaperSmokeTests" --logger "console;verbosity=normal"

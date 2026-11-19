@@ -422,7 +422,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [ ] **T-149** Alpaca Paper end-to-end smoke
   - **Acceptance:** an opt-in CI job (paper keys from secrets, manual trigger) connects, places a 1-share bracket order on a liquid symbol, confirms the fill, verifies the mirrored position, closes it and verifies reconciliation is clean. A Maestro variant of the journey runs against an `alpaca_paper` portfolio.
   - **Refs:** §17, §21 · **Depends:** T-145 · **P1**
-  - ⏸ WIP: `AlpacaPaperSmokeTests` (opt-in with `ALPACA_KEY_ID`/`ALPACA_SECRET_KEY`) checks the real client end to end without a fill. **Open:** the CI job and a filled round trip during market hours.
+  - ⏸ WIP (2026-11-19): `AlpacaPaperSmokeTests` (opt-in with `ALPACA_KEY_ID`/`ALPACA_SECRET_KEY`) checks the real client end to end, and a filled round trip (1-share SPY market bracket → fill → position → FILL activity → close → flat) runs during the regular session. Manual workflow `.github/workflows/alpaca-paper-smoke.yml` runs both with the `ALPACA_SMOKE_KEY_ID`/`ALPACA_SMOKE_SECRET_KEY` secrets, which must belong to a dedicated paper account (a connected account would be halted by reconciliation). **Open:** add the secrets and run it once in market hours; the Maestro journey against an `alpaca_paper` portfolio.
 
 ### M6 · Portfolio, activity, strategy lab, settings
 
