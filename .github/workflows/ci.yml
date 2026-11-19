@@ -19,7 +19,7 @@ env:
 
 jobs:
   backend:
-    name: Backend (.NET build + tests)
+    name: Backend (.NET format, build, unit + architecture tests)
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -40,15 +40,51 @@ jobs:
       - name: Build (warnings as errors)
         run: dotnet build Astryx.slnx -c Release --no-restore
 
-      # Integration tests start postgres:17 via Testcontainers (Docker is available on ubuntu runners).
-      - name: Test
-        run: dotnet test Astryx.slnx -c Release --no-build --logger "trx" --results-directory TestResults
+      - name: Unit and architecture tests
+        run: |
+          dotnet test tests/Astryx.UnitTests -c Release --no-build --logger "trx" --results-directory TestResults
+          dotnet test tests/Astryx.ArchitectureTests -c Release --no-build --logger "trx" --results-directory TestResults
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: dotnet-test-results
+          name: dotnet-test-results-unit
+          path: TestResults
+
+  # The integration tests were 13 of the backend job's 14½ minutes (T-001: a green run under 10). Four shards of whole
+  # test classes run in parallel; each starts postgres:17 per class via Testcontainers (Docker is on ubuntu runners).
+  integration:
+    name: Integration tests (${{ matrix.shard }}/4)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+          cache: true
+          cache-dependency-path: "**/packages.lock.json"
+
+      - name: Restore (locked)
+        run: dotnet restore tests/Astryx.IntegrationTests --locked-mode
+
+      - name: Build
+        run: dotnet build tests/Astryx.IntegrationTests -c Release --no-restore
+
+      - name: Test (shard ${{ matrix.shard }} of 4)
+        run: scripts/ci/integration-shard.sh $(( ${{ matrix.shard }} - 1 )) 4 --logger "trx" --results-directory TestResults
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dotnet-test-results-integration-${{ matrix.shard }}
           path: TestResults
 
   mobile:
