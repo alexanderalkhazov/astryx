@@ -14,7 +14,7 @@ import { Segmented } from '@/components/Segmented';
 import { HomeHeader, Screen } from '@/components/Shell';
 import { Text } from '@/components/Text';
 import { ConnectionBanner } from '@/features/connection/ConnectionBanner';
-import { market, notifications, portfolio, scanner } from '@/lib/api';
+import { broker, market, notifications, portfolio, scanner } from '@/lib/api';
 import { formatEtTime, formatMoney, formatPct, formatPnl, formatPrice, formatRatio } from '@/lib/format';
 import { toast } from '@/state/toasts';
 
@@ -56,6 +56,12 @@ export default function HomeScreen() {
     queryFn: async () => (await notifications.list('all')).data.unreadCount,
     retry: false,
   });
+  const connections = useQuery({
+    queryKey: ['broker', 'connections'],
+    queryFn: async () => (await broker.connections()).data.items,
+    retry: false,
+  });
+  const alpaca = connections.data?.find((c) => c.broker === 'alpaca');
   const strategies = useQuery({
     queryKey: ['portfolio', 'strategies-mtd'],
     queryFn: async () => (await portfolio.strategyMtd()).data.items,
@@ -69,6 +75,7 @@ export default function HomeScreen() {
       queryClient.setQueryData(['portfolio', 'summary'], synced);
       await queryClient.invalidateQueries({ queryKey: ['portfolio'] });
       await queryClient.invalidateQueries({ queryKey: ['positions'] });
+      await queryClient.invalidateQueries({ queryKey: ['broker'] });
       toast({ tone: 'success', title: `Synced ${formatEtTime(synced.asOf)}` });
     } catch {
       toast({ tone: 'error', title: "Couldn't sync", body: 'Check your connection and try again.' });
@@ -92,7 +99,7 @@ export default function HomeScreen() {
         <ConnectionBanner />
 
         {s ? (
-          <MetricHero label="Total portfolio value · paper account" value={point?.equity ?? s.equity}>
+          <MetricHero label={`Total portfolio value · ${alpaca ? 'Alpaca paper' : 'paper account'}`} value={point?.equity ?? s.equity}>
             {point ? (
               <Text.DataSm tone="tertiary">{point.t.slice(0, 10)}</Text.DataSm>
             ) : (
@@ -103,6 +110,15 @@ export default function HomeScreen() {
                 <Text.DataSm
                   tone={tone(s.allTimePnl)}
                 >{`${formatPnl(s.allTimePnl)} (${formatPct(s.allTimeReturnPct, { signed: true })}) all time`}</Text.DataSm>
+                {alpaca ? (
+                  <Text.Caption tone={alpaca.status === 'degraded' ? 'loss' : 'tertiary'} testID="home-broker-sync">
+                    {alpaca.status === 'degraded'
+                      ? 'Alpaca connection lost · approvals paused'
+                      : alpaca.lastSyncAt
+                        ? `Alpaca synced ${formatEtTime(alpaca.lastSyncAt)}`
+                        : 'Alpaca connected'}
+                  </Text.Caption>
+                ) : null}
               </View>
             )}
           </MetricHero>

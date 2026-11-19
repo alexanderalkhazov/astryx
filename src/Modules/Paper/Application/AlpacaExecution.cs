@@ -1,6 +1,8 @@
 using System.Collections.Concurrent;
 using Astryx.Contracts.Audit;
 using Astryx.Contracts.Events.Paper;
+using Astryx.Contracts.MarketData;
+using Astryx.Contracts.Paper;
 using Astryx.Contracts.Portfolio;
 using Astryx.Contracts.Trading;
 using Astryx.Infrastructure.Alpaca;
@@ -44,13 +46,12 @@ public sealed record BrokerSyncJob : IJob
 /// <item>A lost submit is never blindly resent: the order is looked up by its <c>client_order_id</c> (the order id) first.</item>
 /// </list>
 /// </summary>
-public sealed class AlpacaExecution(IServiceProvider services, IAlpacaTradingClient alpaca, TimeProvider timeProvider, ILogger<AlpacaExecution> logger)
+public sealed class AlpacaExecution(IServiceProvider services, IAlpacaTradingClient alpaca, TimeProvider timeProvider, ILogger<AlpacaExecution> logger) : IBrokerSync
 {
     private const int MaxSettleBackoffAttempts = 8;
 
-    /// <summary>Submits the bracket. Throws on a transient failure so the job runner retries it (with the same client id).</summary>
     /// <summary>
-    /// Sends an entry once. Overlapping attempts for the same order in this process (a job retried while the first
+    /// Submits the bracket, throwing on a transient failure so the job runner retries it (with the same client id). Sends an entry once. Overlapping attempts for the same order in this process (a job retried while the first
     /// attempt is still waiting on Alpaca) return at once; across processes Alpaca's 422 on a duplicate
     /// <c>client_order_id</c> and the lookup below keep it to one order (§17.5).
     /// </summary>
@@ -200,14 +201,33 @@ public sealed class AlpacaExecution(IServiceProvider services, IAlpacaTradingCli
         await scope.ServiceProvider.GetRequiredService<IJobQueue>().EnqueueAsync(new SettleBrokerOrderJob(orderId, attempt + 1), new EnqueueOptions { RunAfter = timeProvider.GetUtcNow() + delay }, cancellationToken);
     }
 
-    /// <summary>One sync pass for every connected account (§17.7).</summary>
-    public async Task SyncAsync(CancellationToken cancellationToken)
+    /// <summary>Outside the regular session nothing fills, so the recurring sync reconciles each account this often (§17.7).</summary>
+    public static readonly TimeSpan OffSessionInterval = TimeSpan.FromMinutes(15L);
+
+    /// <summary>The recurring pass (every minute) over every connected account (§17.7).</summary>
+    public Task SyncAsync(CancellationToken cancellationToken) => SyncCoreAsync(null, cancellationToken);
+
+    /// <inheritdoc />
+    public async Task SyncUserAsync(Guid userId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await SyncCoreAsync(userId, cancellationToken);
+        }
+        catch (AlpacaApiException ex)
+        {
+            logger.LogWarning("Broker sync for user {UserId} failed: {Reason}", userId, ex.Message);
+        }
+    }
+
+    private async Task SyncCoreAsync(Guid? userId, CancellationToken cancellationToken)
     {
         List<(Guid Id, string Purpose)> open;
         await using (var scope = services.CreateAsyncScope())
         {
             open = (await scope.ServiceProvider.GetRequiredService<PaperDbContext>().Orders.IgnoreQueryFilters().AsNoTracking()
                 .Where(o => o.Broker == BrokerCode.Alpaca && (o.Status == OrderStatus.Submitted || o.Status == OrderStatus.Working || o.Status == OrderStatus.Submitting))
+                .Where(o => userId == null || o.UserId == userId)
                 .Select(o => new { o.Id, o.Purpose }).ToListAsync(cancellationToken)).Select(o => (o.Id, o.Purpose)).ToList();
         }
 
@@ -230,8 +250,12 @@ public sealed class AlpacaExecution(IServiceProvider services, IAlpacaTradingCli
             }
         }
 
-        await ReportStuckAsync(cancellationToken);
-        await ReconcileAccountsAsync(cancellationToken);
+        if (userId is null)
+        {
+            await ReportStuckAsync(cancellationToken);
+        }
+
+        await ReconcileAccountsAsync(userId, cancellationToken);
     }
 
     /// <summary>An entry Alpaca has neither filled nor closed this long after submission alerts (T-144).</summary>
@@ -258,13 +282,22 @@ public sealed class AlpacaExecution(IServiceProvider services, IAlpacaTradingCli
     /// mirrored ledger (a reset in the Alpaca dashboard, a trade placed outside Astryx) is posted as an <c>adjustment</c>.
     /// Also records the connection's sync time, and marks it degraded when Alpaca stops accepting its keys.
     /// </summary>
-    private async Task ReconcileAccountsAsync(CancellationToken cancellationToken)
+    private async Task ReconcileAccountsAsync(Guid? userId, CancellationToken cancellationToken)
     {
         List<Guid> connections;
         await using (var scope = services.CreateAsyncScope())
         {
+            // The recurring pass reconciles every minute in the session and every 15 minutes outside it; a user's own
+            // sync (pull-to-refresh) always runs.
+            var now = timeProvider.GetUtcNow();
+            var sessions = scope.ServiceProvider.GetRequiredService<IMarketSessionClock>();
+            var inSession = await sessions.TodayAsync(cancellationToken) is { } today && sessions.Now >= today.OpenAt && sessions.Now < today.CloseAt;
+            var dueBefore = userId is null && !inSession ? now - OffSessionInterval : (DateTimeOffset?)null;
             connections = await scope.ServiceProvider.GetRequiredService<PaperDbContext>().BrokerConnections.IgnoreQueryFilters().AsNoTracking()
-                .Where(c => c.Status != BrokerConnectionStatus.Revoked).Select(c => c.Id).ToListAsync(cancellationToken);
+                .Where(c => c.Status != BrokerConnectionStatus.Revoked)
+                .Where(c => userId == null || c.UserId == userId)
+                .Where(c => dueBefore == null || c.LastSyncAt == null || c.LastSyncAt < dueBefore)
+                .Select(c => c.Id).ToListAsync(cancellationToken);
         }
 
         foreach (var connectionId in connections)

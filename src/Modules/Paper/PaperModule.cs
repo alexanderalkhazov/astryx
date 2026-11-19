@@ -28,6 +28,7 @@ public static class PaperModule
         services.AddScoped<Astryx.Contracts.Paper.IBrokerReadiness, BrokerReadinessService>();
         services.AddScoped<BrokerConnectionService>();
         services.AddSingleton<AlpacaExecution>();
+        services.AddSingleton<Astryx.Contracts.Paper.IBrokerSync>(sp => sp.GetRequiredService<AlpacaExecution>());
         services.AddJobHandler<SubmitBrokerOrderJob, SubmitBrokerOrderHandler>();
         services.AddJobHandler<SettleBrokerOrderJob, SettleBrokerOrderHandler>();
         services.AddJobHandler<BrokerSyncJob, BrokerSyncHandler>();

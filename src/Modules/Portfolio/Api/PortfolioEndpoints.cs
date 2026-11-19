@@ -1,4 +1,5 @@
 using Astryx.Infrastructure.Http;
+using Astryx.Infrastructure.Security;
 using Astryx.Modules.Portfolio.Application;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -16,8 +17,16 @@ public static class PortfolioEndpoints
         portfolio.MapGet("/", async (ValuationService service, CancellationToken ct) => (await service.GetAsync(ct)).Match(Results.Ok, e => e.ToProblem()))
             .WithName("GetPortfolio").Produces<PortfolioDto>().ProducesProblem(StatusCodes.Status404NotFound);
 
-        // P10 sync: a paper portfolio has nothing to pull from a broker, so it revalues at the latest quotes (Alpaca sync arrives with T-145).
-        portfolio.MapPost("/sync", async (ValuationService service, CancellationToken ct) => (await service.GetAsync(ct)).Match(Results.Ok, e => e.ToProblem()))
+        // P10 sync: an Alpaca portfolio pulls from Alpaca first (T-145); a simulated one only revalues at the latest quotes.
+        portfolio.MapPost("/sync", async (ValuationService service, ICurrentUser user, Astryx.Contracts.Paper.IBrokerSync broker, CancellationToken ct) =>
+            {
+                if (user.UserId is { } userId)
+                {
+                    await broker.SyncUserAsync(userId, ct); // an Alpaca portfolio pulls Alpaca's orders, cash and positions first (§17.7)
+                }
+
+                return (await service.GetAsync(ct)).Match(Results.Ok, e => e.ToProblem());
+            })
             .WithName("SyncPortfolio").RequireRateLimiting(RateLimitPolicies.Sync).Produces<PortfolioDto>();
 
         portfolio.MapGet("/positions", async (string? status, int? limit, string? cursor, ValuationService service, CancellationToken ct) =>

@@ -505,6 +505,27 @@ public class AlpacaBrokerTests(AlpacaApiFactory factory) : IClassFixture<AlpacaA
     }
 
     [Fact]
+    public async Task Pull_to_refresh_pulls_Alpacas_cash_for_this_user()
+    {
+        var client = await TestUsers.SignedInClientAsync(factory);
+        (await ConnectAsync(client)).StatusCode.ShouldBe(HttpStatusCode.Created);
+        var before = factory.Alpaca.Cash;
+        factory.Alpaca.Cash = before + 40m; // a dividend credited at Alpaca
+        try
+        {
+            var response = await client.PostAsync("/api/v1/portfolio/sync", null);
+
+            response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("cash").GetString()
+                .ShouldBe((before + 40m).ToString("F2", System.Globalization.CultureInfo.InvariantCulture));
+        }
+        finally
+        {
+            factory.Alpaca.Cash = before;
+        }
+    }
+
+    [Fact]
     public async Task Sync_posts_an_adjustment_when_Alpacas_cash_moved_outside_the_app()
     {
         var client = await TestUsers.SignedInClientAsync(factory);

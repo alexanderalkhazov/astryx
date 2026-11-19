@@ -24,11 +24,13 @@ jest.mock('@/lib/api', () => ({
   },
   scanner: { list: jest.fn() },
   market: { breadth: jest.fn() },
+  broker: { connections: jest.fn() },
 }));
 const api = jest.requireMock('@/lib/api') as {
   portfolio: Record<'summary' | 'performance' | 'attention' | 'positions' | 'sync' | 'strategyMtd', jest.Mock>;
   scanner: { list: jest.Mock };
   market: { breadth: jest.Mock };
+  broker: { connections: jest.Mock };
 };
 const ok = <T,>(data: T) => ({ data });
 
@@ -123,6 +125,7 @@ beforeEach(() => {
       ],
     }),
   );
+  api.broker.connections.mockResolvedValue(ok({ items: [] }));
   api.market.breadth.mockResolvedValue(
     ok({ advancers: 612, decliners: 401, pctAbove50dma: '0.58', sentiment: 'risk_on', asOf: '2026-11-09T19:32:00Z', stale: false }),
   );
@@ -141,6 +144,33 @@ describe('Home (design 01)', () => {
     expect(await screen.findByLabelText('612 advancing, 401 declining, 58% above their 50-day average')).toBeOnTheScreen();
     expect(await screen.findByLabelText('Base Breakout v3, +1.24% month to date, 3 trades')).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'Alerts, unread' })).toBeOnTheScreen();
+  });
+
+  it('names the Alpaca account and when it last synced, or that the connection is lost', async () => {
+    const connection = {
+      id: 'c1',
+      broker: 'alpaca',
+      environment: 'paper',
+      label: 'Alpaca · paper account',
+      keySuffix: 'YSFF',
+      accountRef: 'PA3E445ZN',
+      status: 'connected',
+      permissions: { readPortfolio: true, placeOrders: 'paper_only', depositsWithdrawals: 'never_requested' },
+      connectedAt: '2026-11-09T14:00:00Z',
+      lastSyncAt: '2026-11-09T19:38:00Z',
+      lastError: null,
+    };
+    api.broker.connections.mockResolvedValue(ok({ items: [connection] }));
+    await renderHome();
+
+    expect(await screen.findByLabelText('Total portfolio value · Alpaca paper: 118172 dollars and 18 cents')).toBeOnTheScreen();
+    expect(await screen.findByText('Alpaca synced 14:38 ET')).toBeOnTheScreen();
+
+    api.broker.connections.mockResolvedValue(ok({ items: [{ ...connection, status: 'degraded' }] }));
+    api.portfolio.sync.mockResolvedValue(ok(SUMMARY));
+    await act(async () => screen.getByTestId('home-scroll').props.refreshControl.props.onRefresh());
+
+    expect(await screen.findByText('Alpaca connection lost · approvals paused')).toBeOnTheScreen();
   });
 
   it('deep-links from Needs attention', async () => {
