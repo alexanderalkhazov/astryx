@@ -372,6 +372,7 @@ public sealed class AlpacaExecution(IServiceProvider services, IAlpacaTradingCli
             .Where(d => d.Alpaca != d.Astryx)
             .Select(d => $"position {d.symbol}: Alpaca holds {Shares(d.Alpaca)}, Astryx {Shares(d.Astryx)}")
             .ToList();
+        issues.AddRange(await FillIssuesAsync(db, active.Id, connection, credentials, now, cancellationToken));
         if (issues.Count == 0)
         {
             return;
@@ -380,6 +381,56 @@ public sealed class AlpacaExecution(IServiceProvider services, IAlpacaTradingCli
         logger.LogCritical("Alpaca positions differ for portfolio {PortfolioId}, new entries halted: {Issues}", active.Id, string.Join(" | ", issues));
         await sp.GetRequiredService<IBrokerPortfolios>().HaltAsync(active.Id, issues, now, cancellationToken);
         db.Audit(new AuditEntry("portfolio.broker_positions_mismatch", AuditActor.System, connection.UserId, "portfolio", active.Id.ToString(), Metadata: new { issues }));
+    }
+
+    /// <summary>How far back fills are compared with Alpaca's <c>FILL</c> activities on each pass (§17.7).</summary>
+    public static readonly TimeSpan FillWindow = TimeSpan.FromHours(24L);
+
+    /// <summary>
+    /// Alpaca's executions since the window (or the connection) began against our mirrored fills, per Alpaca order:
+    /// an execution we never mirrored, or a quantity that differs, is an issue. Alpaca unavailable: no verdict this pass.
+    /// </summary>
+    private async Task<IReadOnlyList<string>> FillIssuesAsync(PaperDbContext db, Guid portfolioId, BrokerConnection connection, AlpacaCredentials credentials, DateTimeOffset now, CancellationToken cancellationToken)
+    {
+        var after = connection.ConnectedAt > now - FillWindow ? connection.ConnectedAt : now - FillWindow;
+        IReadOnlyList<AlpacaFill> remote;
+        try
+        {
+            remote = await alpaca.ListFillsAsync(credentials, after, cancellationToken);
+        }
+        catch (AlpacaApiException ex)
+        {
+            logger.LogWarning("Alpaca fill activities for connection {ConnectionId} unavailable: {Reason}", connection.Id, ex.Message);
+            return [];
+        }
+
+        var theirs = remote.GroupBy(f => f.OrderId).ToDictionary(g => g.Key, g => (Symbol: g.First().Symbol, Side: g.First().Side, Quantity: g.Sum(f => f.Quantity)));
+        var ours = await db.Fills.IgnoreQueryFilters().AsNoTracking()
+            .Where(f => f.PortfolioId == portfolioId && f.FilledAt >= after)
+            .Join(db.Orders.IgnoreQueryFilters().Where(o => o.Broker == BrokerCode.Alpaca), f => f.OrderId, o => o.Id, (f, o) => new { o.BrokerOrderId, o.Symbol, f.Side, f.Quantity })
+            .ToListAsync(cancellationToken);
+        var mirrored = ours.GroupBy(f => f.BrokerOrderId).ToDictionary(g => g.Key, g => (Symbol: g.First().Symbol, Side: g.First().Side, Quantity: g.Sum(f => f.Quantity)));
+
+        // Our fills are only compared once Alpaca's window covers them, so an execution right at the edge is not flagged.
+        var known = await db.Orders.IgnoreQueryFilters().AsNoTracking()
+            .Where(o => o.PortfolioId == portfolioId && o.Broker == BrokerCode.Alpaca && theirs.Keys.Contains(o.BrokerOrderId))
+            .Select(o => o.BrokerOrderId).ToListAsync(cancellationToken);
+        var issues = new List<string>();
+        foreach (var (orderId, fill) in theirs.OrderBy(t => t.Key, StringComparer.Ordinal))
+        {
+            if (!known.Contains(orderId))
+            {
+                issues.Add($"fill {fill.Symbol}: Alpaca {fill.Side} {Shares(fill.Quantity)} (order {orderId}) has no Astryx order");
+            }
+            else if (mirrored.GetValueOrDefault(orderId).Quantity != fill.Quantity)
+            {
+                issues.Add($"fill {fill.Symbol}: Alpaca filled {Shares(fill.Quantity)} of order {orderId}, Astryx {Shares(mirrored.GetValueOrDefault(orderId).Quantity)}");
+            }
+        }
+
+        issues.AddRange(mirrored.Where(m => !theirs.ContainsKey(m.Key)).OrderBy(m => m.Key, StringComparer.Ordinal)
+            .Select(m => $"fill {m.Value.Symbol}: Astryx {m.Value.Side} {Shares(m.Value.Quantity)} (order {m.Key}) is not in Alpaca's activities"));
+        return issues;
     }
 
     private static string Shares(decimal quantity) => quantity.ToString("0.######", System.Globalization.CultureInfo.InvariantCulture);

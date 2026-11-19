@@ -11,6 +11,9 @@ public sealed record AlpacaAsset(string Symbol, string Status, bool Tradable, bo
 
 public sealed record AlpacaPosition(string Symbol, string AssetId, decimal Quantity, decimal AvgEntryPrice, decimal? CurrentPrice);
 
+/// <summary>One <c>FILL</c> account activity: a full or partial execution of <paramref name="OrderId"/>.</summary>
+public sealed record AlpacaFill(string Id, string OrderId, string Symbol, string Side, decimal Quantity, decimal Price, DateTimeOffset At);
+
 /// <summary>An order as Alpaca reports it. <see cref="Legs"/> holds a bracket's take-profit and stop-loss orders.</summary>
 public sealed record AlpacaOrder(
     string Id,
@@ -60,6 +63,9 @@ public interface IAlpacaTradingClient
 
     /// <summary>Market-sells the whole position; returns the closing order.</summary>
     Task<AlpacaOrder> ClosePositionAsync(AlpacaCredentials credentials, string symbol, CancellationToken cancellationToken);
+
+    /// <summary>Executions after <paramref name="after"/>, oldest first (<c>GET /v2/account/activities/FILL</c>), for reconciliation (§17.7).</summary>
+    Task<IReadOnlyList<AlpacaFill>> ListFillsAsync(AlpacaCredentials credentials, DateTimeOffset after, CancellationToken cancellationToken);
 }
 
 public sealed class AlpacaTradingClient(IHttpClientFactory httpFactory, AlpacaRateLimiter limiter, IOptions<AlpacaOptions> options) : IAlpacaTradingClient
@@ -172,6 +178,33 @@ public sealed class AlpacaTradingClient(IHttpClientFactory httpFactory, AlpacaRa
     {
         using var json = await SendAsync(credentials, HttpMethod.Delete, $"v2/positions/{Uri.EscapeDataString(symbol)}", null, cancellationToken);
         return ToOrder(json.RootElement);
+    }
+
+    /// <summary>At most this many pages of 100 per call; a busier day is reconciled on the next pass.</summary>
+    private const int MaxFillPages = 10;
+
+    public async Task<IReadOnlyList<AlpacaFill>> ListFillsAsync(AlpacaCredentials credentials, DateTimeOffset after, CancellationToken cancellationToken)
+    {
+        var fills = new List<AlpacaFill>();
+        string? pageToken = null;
+        for (var page = 0; page < MaxFillPages; page++)
+        {
+            var path = $"v2/account/activities/FILL?after={Uri.EscapeDataString(after.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture))}&direction=asc&page_size=100"
+                + (pageToken is null ? string.Empty : $"&page_token={Uri.EscapeDataString(pageToken)}");
+            using var json = await SendAsync(credentials, HttpMethod.Get, path, null, cancellationToken);
+            var batch = json.RootElement.EnumerateArray().Select(a => new AlpacaFill(
+                a.String("id") ?? string.Empty, a.String("order_id") ?? string.Empty, a.String("symbol") ?? string.Empty, a.String("side") ?? string.Empty,
+                a.Decimal("qty") ?? 0m, a.Decimal("price") ?? 0m, a.Time("transaction_time") ?? after)).ToList();
+            fills.AddRange(batch);
+            if (batch.Count < 100)
+            {
+                break;
+            }
+
+            pageToken = batch[^1].Id;
+        }
+
+        return fills;
     }
 
     internal static AlpacaOrder ToOrder(JsonElement o) => new(

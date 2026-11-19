@@ -138,6 +138,17 @@ public sealed class FakeAlpaca : IAlpacaTradingClient
             : Task.FromException<IReadOnlyList<AlpacaPosition>>(new AlpacaApiException(AlpacaFailure.Unavailable, 503, "Alpaca 503: positions not modelled by this test."));
     }
 
+    /// <summary>The account's executions, when a test models them; unavailable otherwise, like <see cref="Positions"/>.</summary>
+    public IReadOnlyList<AlpacaFill>? Fills { get; set; }
+
+    public Task<IReadOnlyList<AlpacaFill>> ListFillsAsync(AlpacaCredentials credentials, DateTimeOffset after, CancellationToken cancellationToken)
+    {
+        Check(credentials);
+        return Fills is { } fills
+            ? Task.FromResult<IReadOnlyList<AlpacaFill>>(fills.Where(f => f.At > after).ToList())
+            : Task.FromException<IReadOnlyList<AlpacaFill>>(new AlpacaApiException(AlpacaFailure.Unavailable, 503, "Alpaca 503: activities not modelled by this test."));
+    }
+
     public Task<AlpacaOrder> ClosePositionAsync(AlpacaCredentials credentials, string symbol, CancellationToken cancellationToken)
     {
         Check(credentials);
@@ -502,6 +513,37 @@ public class AlpacaBrokerTests(AlpacaApiFactory factory) : IClassFixture<AlpacaA
         portfolio.GetProperty("halted").GetBoolean().ShouldBeTrue();
         var issues = await Query<PortfolioDbContext, string?>(db => db.Portfolios.IgnoreQueryFilters().Where(p => p.Id == portfolio.GetProperty("id").GetGuid()).Select(p => p.ReconciliationIssues).SingleAsync());
         issues.ShouldNotBeNull().ShouldContain("position AAPL: Alpaca holds 10, Astryx 0");
+    }
+
+    [Fact]
+    public async Task An_Alpaca_execution_Astryx_never_mirrored_halts_new_entries()
+    {
+        var client = await TestUsers.SignedInClientAsync(factory);
+        (await ConnectAsync(client)).StatusCode.ShouldBe(HttpStatusCode.Created);
+        factory.Alpaca.Positions = [];
+        factory.Alpaca.Fills = [];
+        try
+        {
+            await factory.Execution.SyncAsync(default); // the recurring pass
+            (await client.GetFromJsonAsync<JsonElement>("/api/v1/portfolio")).GetProperty("halted").GetBoolean().ShouldBeFalse();
+
+            // Bought and sold again in the Alpaca dashboard: flat at Alpaca, so only the activities show it.
+            factory.Alpaca.Fills =
+            [
+                new AlpacaFill("a1", "dash-1", "AAPL", "buy", 10m, 350.10m, DateTimeOffset.UtcNow),
+                new AlpacaFill("a2", "dash-2", "AAPL", "sell", 10m, 351.00m, DateTimeOffset.UtcNow),
+            ];
+            (await client.PostAsync("/api/v1/portfolio/sync", null)).EnsureSuccessStatusCode(); // pull-to-refresh
+        }
+        finally
+        {
+            (factory.Alpaca.Positions, factory.Alpaca.Fills) = (null, null);
+        }
+
+        var portfolio = await client.GetFromJsonAsync<JsonElement>("/api/v1/portfolio");
+        portfolio.GetProperty("halted").GetBoolean().ShouldBeTrue();
+        var issues = await Query<PortfolioDbContext, string?>(db => db.Portfolios.IgnoreQueryFilters().Where(p => p.Id == portfolio.GetProperty("id").GetGuid()).Select(p => p.ReconciliationIssues).SingleAsync());
+        issues.ShouldNotBeNull().ShouldContain("fill AAPL: Alpaca buy 10 (order dash-1) has no Astryx order");
     }
 
     [Fact]

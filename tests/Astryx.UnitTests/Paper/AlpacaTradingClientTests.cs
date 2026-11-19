@@ -113,6 +113,22 @@ public class AlpacaTradingClientTests
     }
 
     [Fact]
+    public async Task Fill_activities_are_read_oldest_first_and_paged_by_the_last_id()
+    {
+        var page = Enumerable.Range(1, 100).Select(i => $$"""{"id":"a{{i}}","activity_type":"FILL","order_id":"o1","symbol":"NVDA","side":"buy","qty":"1","price":"186.5","transaction_time":"2026-11-18T14:35:01Z"}""");
+        var (client, stub) = Create((request, _) => (HttpStatusCode.OK, request.RequestUri!.Query.Contains("page_token")
+            ? """[{"id":"a101","activity_type":"FILL","type":"partial_fill","order_id":"o2","symbol":"AAPL","side":"sell","qty":"3","price":"351.9","transaction_time":"2026-11-18T15:00:00Z"}]"""
+            : $"[{string.Join(',', page)}]"));
+
+        var fills = await client.ListFillsAsync(Keys, DateTimeOffset.Parse("2026-11-18T00:00:00Z", System.Globalization.CultureInfo.InvariantCulture), default);
+
+        fills.Count.ShouldBe(101);
+        fills[^1].ShouldBe(new AlpacaFill("a101", "o2", "AAPL", "sell", 3m, 351.9m, DateTimeOffset.Parse("2026-11-18T15:00:00Z", System.Globalization.CultureInfo.InvariantCulture)));
+        stub.Calls[0].Request.RequestUri!.PathAndQuery.ShouldBe("/v2/account/activities/FILL?after=2026-11-18T00%3A00%3A00Z&direction=asc&page_size=100");
+        stub.Calls[1].Request.RequestUri!.Query.ShouldEndWith("&page_token=a100");
+    }
+
+    [Fact]
     public async Task Cancelling_an_order_Alpaca_already_finished_is_not_an_error()
     {
         var (client, _) = Create((_, _) => (HttpStatusCode.UnprocessableEntity, """{"message":"order is already in \"filled\" state"}"""));
