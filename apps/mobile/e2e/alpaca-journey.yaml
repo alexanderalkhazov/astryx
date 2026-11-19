@@ -1,0 +1,93 @@
+# The journey against an alpaca_paper portfolio (TASKS.md T-149, SYSTEM_DESIGN.md §17.5): Home names the Alpaca account →
+# a real signal's stock → proposal → hold to approve → the receipt follows the order at Alpaca → Activity.
+# It places a REAL order on the connected Alpaca paper account, so it runs only in the regular session (the risk engine
+# refuses approval otherwise) with an account already connected in Settings, and SYMBOL must have an active signal:
+#   maestro --device <udid> test -e EMAIL=… -e PASSWORD=… -e SYMBOL=TGT e2e/alpaca-journey.yaml
+appId: ${APP_ID}
+env:
+  APP_ID: app.astryx.mobile
+  LINK: astryx://
+  DEV_CLIENT_URL: exp+astryx://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081&disableOnboarding=1
+---
+- launchApp:
+    stopApp: true
+- openLink: ${DEV_CLIENT_URL}
+- tapOn:
+    text: Open
+    optional: true
+- extendedWaitUntil:
+    visible: "Sign in|Overview"
+    timeout: 60000
+- runFlow: close-dev-menu.yaml
+- runFlow:
+    when:
+      visible:
+        id: sign-in-submit
+    file: sign-in.yaml
+    env:
+      EMAIL: ${EMAIL}
+      PASSWORD: ${PASSWORD}
+- runFlow: close-dev-menu.yaml
+
+# 1. Home names the Alpaca account and when it last synced
+- openLink: ${LINK}
+- tapOn:
+    text: Open
+    optional: true
+- extendedWaitUntil:
+    visible: "Total portfolio value · Alpaca paper.*"
+    timeout: 30000
+- assertVisible:
+    id: home-broker-sync
+- takeScreenshot: alpaca-01-home
+
+# 2. The signal's stock and its proposal, priced commission-free at half the spread
+- openLink: ${LINK}stock/${SYMBOL}
+- extendedWaitUntil:
+    visible:
+      id: stock-review-proposal
+    timeout: 30000
+- runFlow: review-proposal.yaml
+- extendedWaitUntil:
+    visible:
+      id: proposal-approve
+      enabled: true
+    timeout: 20000
+- scrollUntilVisible:
+    element:
+      id: regulatory-fees-note
+    direction: DOWN
+- takeScreenshot: alpaca-02-proposal
+
+# 3. Confirm and hold to approve (≥ 1.2 s)
+- tapOn:
+    id: proposal-approve
+- extendedWaitUntil:
+    visible:
+      id: confirm-order-sheet
+    timeout: 10000
+- longPressOn:
+    id: hold-to-approve
+- extendedWaitUntil:
+    visible:
+      id: fill-receipt
+    timeout: 20000
+
+# 4. The receipt follows Alpaca: sending, then working (a buy stop rests) or filled
+- extendedWaitUntil:
+    visible: "ORDER WORKING · NOT FILLED|EXECUTED · FILLED BY ALPACA \\(PAPER\\)"
+    timeout: 90000
+- takeScreenshot: alpaca-03-receipt
+
+# 5. Activity lists the order
+- tapOn:
+    id: receipt-view-activity
+    optional: true
+- runFlow:
+    when:
+      visible:
+        id: receipt-view-portfolio
+    commands:
+      - tapOn:
+          id: receipt-view-portfolio
+- takeScreenshot: alpaca-04-after
