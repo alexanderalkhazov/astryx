@@ -1,4 +1,6 @@
+using System.Text.Json;
 using Astryx.Contracts.Portfolio;
+using Astryx.Infrastructure.Observability;
 using Astryx.Modules.Portfolio.Domain;
 using Astryx.Modules.Portfolio.Infrastructure.Persistence;
 using Astryx.SharedKernel;
@@ -122,6 +124,17 @@ public sealed class BrokerPortfolios(PortfolioDbContext db, IPortfolioLedger led
                 .SetProperty(p => p.Version, p => p.Version + 1),
             cancellationToken);
         return portfolioId;
+    }
+
+    public async Task HaltAsync(Guid portfolioId, IReadOnlyList<string> issues, DateTimeOffset at, CancellationToken cancellationToken)
+    {
+        var halted = await db.Portfolios.IgnoreQueryFilters().Where(p => p.Id == portfolioId && p.ReconciliationHaltedAt == null).ExecuteUpdateAsync(
+            s => s.SetProperty(p => p.ReconciliationHaltedAt, at).SetProperty(p => p.ReconciliationIssues, JsonSerializer.Serialize(issues)),
+            cancellationToken);
+        if (halted > 0)
+        {
+            AstryxTelemetry.ReconciliationMismatches.Add(issues.Count, new KeyValuePair<string, object?>("kind", "broker_position"));
+        }
     }
 
     public async Task DetachAsync(Guid userId, CancellationToken cancellationToken)

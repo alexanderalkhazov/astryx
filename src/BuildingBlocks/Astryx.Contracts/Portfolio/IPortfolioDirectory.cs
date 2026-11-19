@@ -31,6 +31,12 @@ public interface IBrokerPortfolios
 
     /// <summary>Detaches it: the user trades in the simulated portfolio again. History stays.</summary>
     Task DetachAsync(Guid userId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Halts new entries after the broker's positions stopped matching ours (§17.7, T-145): the same
+    /// <c>reconciliation_halted_at</c> the nightly reconciliation sets, cleared by an operator. Exits still work.
+    /// </summary>
+    Task HaltAsync(Guid portfolioId, IReadOnlyList<string> issues, DateTimeOffset at, CancellationToken cancellationToken);
 }
 
 /// <summary>An open position as the risk engine sees it (valuation uses the latest quote, not this record).</summary>
@@ -43,7 +49,7 @@ public sealed record OpenPositionView(Guid InstrumentId, string Symbol, decimal 
 /// <param name="ReconciliationHaltedAt">Set when nightly reconciliation found a mismatch (§20.13): new entries are blocked, exits allowed.</param>
 public sealed record PortfolioState(
     Guid Id, Guid UserId, decimal CashBalance, decimal ReservedCash, long Version, decimal? StartOfDayEquity, IReadOnlyList<OpenPositionView> OpenPositions,
-    DateTimeOffset? ReconciliationHaltedAt = null);
+    DateTimeOffset? ReconciliationHaltedAt = null, Guid? BrokerConnectionId = null);
 
 /// <summary>Owned by Portfolio; read by Trading (risk engine) through Contracts.</summary>
 public interface IPortfolioStateSource

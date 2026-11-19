@@ -299,12 +299,57 @@ public sealed class AlpacaExecution(IServiceProvider services, IAlpacaTradingCli
             {
                 connection.LastSyncAt = now;
                 await AdjustCashAsync(sp, db, connection, account, now, cancellationToken);
+                await ReconcilePositionsAsync(sp, db, connection, opened.Credentials, now, cancellationToken);
             }
 
             await db.SaveChangesAsync(cancellationToken);
             await unit.CommitAsync(cancellationToken);
         }
     }
+
+    /// <summary>
+    /// Alpaca is authoritative for positions too (§17.7, T-145): with nothing in flight, every symbol's quantity at Alpaca
+    /// must equal our open position. A difference (a trade placed in the Alpaca dashboard, a bracket leg we missed)
+    /// halts new entries until an operator has looked; exits keep working so the user can still get out.
+    /// </summary>
+    private async Task ReconcilePositionsAsync(IServiceProvider sp, PaperDbContext db, BrokerConnection connection, AlpacaCredentials credentials, DateTimeOffset now, CancellationToken cancellationToken)
+    {
+        if (await sp.GetRequiredService<IPortfolioDirectory>().GetActiveAsync(connection.UserId, cancellationToken) is not { } active || active.BrokerConnectionId != connection.Id
+            || await db.Orders.IgnoreQueryFilters().AnyAsync(o => o.PortfolioId == active.Id && (o.Status == OrderStatus.Submitting || o.Status == OrderStatus.Submitted), cancellationToken)
+            || await sp.GetRequiredService<IPortfolioStateSource>().GetAsync(active.Id, cancellationToken) is not { ReconciliationHaltedAt: null } state)
+        {
+            return; // a fill is on its way, or the portfolio is already halted
+        }
+
+        IReadOnlyList<AlpacaPosition> remote;
+        try
+        {
+            remote = await alpaca.ListPositionsAsync(credentials, cancellationToken);
+        }
+        catch (AlpacaApiException ex)
+        {
+            logger.LogWarning("Alpaca positions for connection {ConnectionId} unavailable: {Reason}", connection.Id, ex.Message);
+            return;
+        }
+
+        var theirs = remote.GroupBy(p => p.Symbol, StringComparer.OrdinalIgnoreCase).ToDictionary(g => g.Key, g => g.Sum(p => p.Quantity), StringComparer.OrdinalIgnoreCase);
+        var ours = state.OpenPositions.GroupBy(p => p.Symbol, StringComparer.OrdinalIgnoreCase).ToDictionary(g => g.Key, g => g.Sum(p => p.Quantity), StringComparer.OrdinalIgnoreCase);
+        var issues = theirs.Keys.Union(ours.Keys, StringComparer.OrdinalIgnoreCase).Order(StringComparer.Ordinal)
+            .Select(symbol => (symbol, Alpaca: theirs.GetValueOrDefault(symbol), Astryx: ours.GetValueOrDefault(symbol)))
+            .Where(d => d.Alpaca != d.Astryx)
+            .Select(d => $"position {d.symbol}: Alpaca holds {Shares(d.Alpaca)}, Astryx {Shares(d.Astryx)}")
+            .ToList();
+        if (issues.Count == 0)
+        {
+            return;
+        }
+
+        logger.LogCritical("Alpaca positions differ for portfolio {PortfolioId}, new entries halted: {Issues}", active.Id, string.Join(" | ", issues));
+        await sp.GetRequiredService<IBrokerPortfolios>().HaltAsync(active.Id, issues, now, cancellationToken);
+        db.Audit(new AuditEntry("portfolio.broker_positions_mismatch", AuditActor.System, connection.UserId, "portfolio", active.Id.ToString(), Metadata: new { issues }));
+    }
+
+    private static string Shares(decimal quantity) => quantity.ToString("0.######", System.Globalization.CultureInfo.InvariantCulture);
 
     private async Task AdjustCashAsync(IServiceProvider sp, PaperDbContext db, BrokerConnection connection, AlpacaAccount account, DateTimeOffset now, CancellationToken cancellationToken)
     {

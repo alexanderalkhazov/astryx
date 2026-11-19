@@ -13,6 +13,7 @@ using Astryx.Modules.Portfolio.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Astryx.IntegrationTests;
@@ -56,8 +57,11 @@ public sealed class FakeAlpaca : IAlpacaTradingClient
         return Task.FromResult(new AlpacaAccount("PA3TESTACCT", "ACTIVE", Cash, Cash, Cash * 2, false, false));
     }
 
+    /// <summary>Symbols Alpaca lists but won't trade.</summary>
+    public ConcurrentDictionary<string, byte> Untradable { get; } = new(StringComparer.OrdinalIgnoreCase);
+
     public Task<AlpacaAsset?> GetAssetAsync(AlpacaCredentials credentials, string symbol, CancellationToken cancellationToken) =>
-        Task.FromResult<AlpacaAsset?>(new AlpacaAsset(symbol, "active", true, true));
+        Task.FromResult<AlpacaAsset?>(new AlpacaAsset(symbol, "active", !Untradable.ContainsKey(symbol), true));
 
     public Task<AlpacaOrder> SubmitBracketAsync(AlpacaCredentials credentials, AlpacaBracketRequest request, CancellationToken cancellationToken)
     {
@@ -120,8 +124,19 @@ public sealed class FakeAlpaca : IAlpacaTradingClient
         return Task.CompletedTask;
     }
 
-    public Task<IReadOnlyList<AlpacaPosition>> ListPositionsAsync(AlpacaCredentials credentials, CancellationToken cancellationToken) =>
-        Task.FromResult<IReadOnlyList<AlpacaPosition>>([]);
+    /// <summary>
+    /// The account's positions, when a test models them. Every test user shares this one fake account, so by default the
+    /// fake reports positions as unavailable and reconciliation skips, as it does while Alpaca is down.
+    /// </summary>
+    public IReadOnlyList<AlpacaPosition>? Positions { get; set; }
+
+    public Task<IReadOnlyList<AlpacaPosition>> ListPositionsAsync(AlpacaCredentials credentials, CancellationToken cancellationToken)
+    {
+        Check(credentials);
+        return Positions is { } positions
+            ? Task.FromResult(positions)
+            : Task.FromException<IReadOnlyList<AlpacaPosition>>(new AlpacaApiException(AlpacaFailure.Unavailable, 503, "Alpaca 503: positions not modelled by this test."));
+    }
 
     public Task<AlpacaOrder> ClosePositionAsync(AlpacaCredentials credentials, string symbol, CancellationToken cancellationToken)
     {
@@ -269,6 +284,35 @@ public class AlpacaBrokerTests(AlpacaApiFactory factory) : IClassFixture<AlpacaA
         finally
         {
             factory.Alpaca.Cash = before;
+        }
+    }
+
+    [Fact]
+    public async Task An_Alpaca_portfolio_assesses_broker_readiness_and_refuses_an_untradable_symbol()
+    {
+        var client = await TestUsers.SignedInClientAsync(factory);
+        (await ConnectAsync(client)).StatusCode.ShouldBe(HttpStatusCode.Created);
+        await factory.MakeQuoteLiveAsync("NVDA", 186.60m);
+        var proposal = await (await client.PostAsJsonAsync("/api/v1/proposals", new { source = "signal", signalId = await factory.ActiveSignalIdAsync("NVDA") })).Content.ReadFromJsonAsync<JsonElement>();
+        proposal.TryGetProperty("assessment", out _).ShouldBeTrue(proposal.ToString());
+        var checks = proposal.GetProperty("assessment").GetProperty("checks").EnumerateArray().ToDictionary(c => c.GetProperty("code").GetString()!, c => c.GetProperty("status").GetString());
+        (checks["broker_connected"], checks["broker_write_permission"], checks["broker_eligible"]).ShouldBe(("pass", "pass", "pass"));
+
+        factory.Alpaca.Untradable["NVDA"] = 0;
+        factory.Services.GetRequiredService<IMemoryCache>().Remove(("alpaca-asset", "NVDA")); // the hour-long asset cache
+        try
+        {
+            var response = await client.PostAsJsonAsync($"/api/v1/proposals/{proposal.GetProperty("id").GetGuid()}/assessments", new { riskPerTradePct = "0.0075" });
+            response.StatusCode.ShouldBe(HttpStatusCode.Created, await response.Content.ReadAsStringAsync());
+            var reassessed = await response.Content.ReadFromJsonAsync<JsonElement>();
+            reassessed.GetProperty("approvable").GetBoolean().ShouldBeFalse();
+            var eligible = reassessed.GetProperty("checks").EnumerateArray().Single(c => c.GetProperty("code").GetString() == "broker_eligible");
+            (eligible.GetProperty("status").GetString(), eligible.GetProperty("message").GetString()).ShouldBe(("fail", "Not tradable at Alpaca."));
+        }
+        finally
+        {
+            factory.Alpaca.Untradable.TryRemove("NVDA", out _);
+            factory.Services.GetRequiredService<IMemoryCache>().Remove(("alpaca-asset", "NVDA"));
         }
     }
 
@@ -433,6 +477,31 @@ public class AlpacaBrokerTests(AlpacaApiFactory factory) : IClassFixture<AlpacaA
         await factory.Execution.SubmitAsync(orderId, default);
 
         (await client.GetFromJsonAsync<JsonElement>($"/api/v1/paper/orders/{orderId}")).GetProperty("status").GetString().ShouldBe("submitted");
+    }
+
+    [Fact]
+    public async Task A_position_Alpaca_holds_that_Astryx_does_not_halts_new_entries()
+    {
+        var client = await TestUsers.SignedInClientAsync(factory);
+        (await ConnectAsync(client)).StatusCode.ShouldBe(HttpStatusCode.Created);
+        factory.Alpaca.Positions = []; // matches: nothing held on either side
+        try
+        {
+            await factory.Execution.SyncAsync(default);
+            (await client.GetFromJsonAsync<JsonElement>("/api/v1/portfolio")).GetProperty("halted").GetBoolean().ShouldBeFalse();
+
+            factory.Alpaca.Positions = [new AlpacaPosition("AAPL", "b0b6dd9d", 10m, 350.10m, 351.91m)]; // bought in the Alpaca dashboard
+            await factory.Execution.SyncAsync(default);
+        }
+        finally
+        {
+            factory.Alpaca.Positions = null;
+        }
+
+        var portfolio = await client.GetFromJsonAsync<JsonElement>("/api/v1/portfolio");
+        portfolio.GetProperty("halted").GetBoolean().ShouldBeTrue();
+        var issues = await Query<PortfolioDbContext, string?>(db => db.Portfolios.IgnoreQueryFilters().Where(p => p.Id == portfolio.GetProperty("id").GetGuid()).Select(p => p.ReconciliationIssues).SingleAsync());
+        issues.ShouldNotBeNull().ShouldContain("position AAPL: Alpaca holds 10, Astryx 0");
     }
 
     [Fact]

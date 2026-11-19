@@ -1,5 +1,6 @@
 using System.Globalization;
 using Astryx.Contracts.MarketData;
+using Astryx.Contracts.Paper;
 using Astryx.Contracts.Profiles;
 
 namespace Astryx.Modules.Trading.Domain.Risk;
@@ -38,7 +39,8 @@ public sealed record RiskInputs(
     TradingSession? Session,
     DateTimeOffset Now,
     RiskLimits Limits,
-    CostModel Costs);
+    CostModel Costs,
+    BrokerReadiness? Broker = null);
 
 public static class CheckStatus
 {
@@ -128,6 +130,10 @@ public static class RiskEngine
             DataFresh(i),
             QuantityValid(q, qCash),
         };
+        if (i.Broker is { } broker)
+        {
+            checks.AddRange(BrokerChecks(broker));
+        }
 
         return new RiskResult(
             q, sizedBy, qRisk, qWeight, qCash, slip, capital, maxLoss, maxLossInclCosts, profit, rewardRisk, 2 * fee, estSlippage,
@@ -222,6 +228,24 @@ public static class RiskEngine
         !ordered || rr < min ? new("reward_risk", CheckStatus.Fail, $"Reward:risk {Ratio(rr)} below minimum {Ratio(min)}", rr, min)
         : rr < min + 0.25m ? new("reward_risk", CheckStatus.Warn, $"Reward:risk {Ratio(rr)}, close to the {Ratio(min)} minimum", rr, min)
         : new("reward_risk", CheckStatus.Pass, $"Reward:risk {Ratio(rr)} ≥ {Ratio(min)}", rr, min);
+
+    /// <summary>Broker portfolios only (§17.3, T-142): the connection, the account's permission to trade, and the asset.</summary>
+    private static IEnumerable<RiskCheck> BrokerChecks(BrokerReadiness b)
+    {
+        yield return b.Connected
+            ? new("broker_connected", CheckStatus.Pass, "Alpaca connected")
+            : new("broker_connected", CheckStatus.Fail, "The Alpaca connection is lost. Reconnect in Settings.");
+        yield return b.CanPlaceOrders
+            ? new("broker_write_permission", CheckStatus.Pass, "Alpaca account can place orders")
+            : new("broker_write_permission", CheckStatus.Fail, b.Connected ? "Alpaca has blocked trading on this account." : "Orders can't be placed without an Alpaca connection.");
+        yield return b.Eligible switch
+        {
+            true => new("broker_eligible", CheckStatus.Pass, "Tradable at Alpaca"),
+            false => new("broker_eligible", CheckStatus.Fail, b.Reason ?? "Not tradable at Alpaca."),
+            null when b.Connected => new("broker_eligible", CheckStatus.Warn, b.Reason ?? "Alpaca could not confirm this symbol is tradable."),
+            null => new("broker_eligible", CheckStatus.Fail, "Tradability can't be checked without an Alpaca connection."),
+        };
+    }
 
     private static RiskCheck NoDuplicate(RiskInputs i) =>
         i.HoldsSymbol ? new("no_duplicate", CheckStatus.Fail, $"You already hold {i.Symbol}.")

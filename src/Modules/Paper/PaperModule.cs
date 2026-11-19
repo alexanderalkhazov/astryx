@@ -24,6 +24,8 @@ public static class PaperModule
         services.AddSingleton<CredentialVault>();
         services.AddSingleton<IAlpacaTradingClient, AlpacaTradingClient>();
         services.AddScoped<BrokerCredentials>();
+        services.AddMemoryCache();
+        services.AddScoped<Astryx.Contracts.Paper.IBrokerReadiness, BrokerReadinessService>();
         services.AddScoped<BrokerConnectionService>();
         services.AddSingleton<AlpacaExecution>();
         services.AddJobHandler<SubmitBrokerOrderJob, SubmitBrokerOrderHandler>();

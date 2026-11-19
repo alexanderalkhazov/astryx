@@ -19,6 +19,6 @@ public sealed class PortfolioStateSource(PortfolioDbContext db) : IPortfolioStat
             .Where(x => x.PortfolioId == portfolioId && x.Status == PositionStatus.Open)
             .Select(x => new OpenPositionView(x.InstrumentId, x.Symbol, x.Quantity, x.StopPrice, x.Id))
             .ToListAsync(cancellationToken);
-        return new PortfolioState(p.Id, p.UserId, p.CashBalance, p.ReservedCash, p.Version, p.StartOfDayEquity, open, p.ReconciliationHaltedAt);
+        return new PortfolioState(p.Id, p.UserId, p.CashBalance, p.ReservedCash, p.Version, p.StartOfDayEquity, open, p.ReconciliationHaltedAt, p.BrokerConnectionId);
     }
 }

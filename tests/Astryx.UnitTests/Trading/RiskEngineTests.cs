@@ -1,4 +1,5 @@
 using Astryx.Contracts.MarketData;
+using Astryx.Contracts.Paper;
 using Astryx.Contracts.Profiles;
 using Astryx.Modules.Trading.Domain.Risk;
 using FsCheck;
@@ -44,6 +45,37 @@ public class RiskEngineTests
         Check(r, "session_open").Message.ShouldBe("Regular session open until 16:00 ET");
         r.Checks.Where(c => c.Code is not "position_weight").ShouldAllBe(c => c.Status == "pass");
         r.Checks.Select(c => c.Code).Take(6).ShouldBe(RiskEngine.DesignChecks);
+    }
+
+    [Fact]
+    public void A_simulated_portfolio_has_no_broker_checks() =>
+        RiskEngine.Assess(Design()).Checks.ShouldNotContain(c => c.Code.StartsWith("broker_", StringComparison.Ordinal));
+
+    [Fact]
+    public void A_ready_Alpaca_portfolio_passes_the_three_broker_checks()
+    {
+        var r = RiskEngine.Assess(Design() with { Broker = new BrokerReadiness(Connected: true, CanPlaceOrders: true, Eligible: true) });
+
+        r.Checks.Where(c => c.Code.StartsWith("broker_", StringComparison.Ordinal)).Select(c => (c.Code, c.Status))
+            .ShouldBe([("broker_connected", "pass"), ("broker_write_permission", "pass"), ("broker_eligible", "pass")]);
+        r.Approvable.ShouldBeTrue();
+    }
+
+    [Theory]
+    [InlineData(false, false, null, "broker_connected", "fail")]
+    [InlineData(true, false, true, "broker_write_permission", "fail")]
+    [InlineData(true, true, false, "broker_eligible", "fail")]
+    [InlineData(true, true, null, "broker_eligible", "warn")] // Alpaca unreachable: its answer at submit decides
+    public void Broker_readiness_gates_approval(bool connected, bool canPlace, bool? eligible, string code, string status)
+    {
+        var r = RiskEngine.Assess(Design() with { Broker = new BrokerReadiness(connected, canPlace, eligible, eligible == false ? "Not tradable at Alpaca." : null) });
+
+        Check(r, code).Status.ShouldBe(status);
+        r.Approvable.ShouldBe(status != "fail");
+        if (eligible == false)
+        {
+            Check(r, code).Message.ShouldBe("Not tradable at Alpaca.");
+        }
     }
 
     [Fact]
