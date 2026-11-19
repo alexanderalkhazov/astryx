@@ -96,4 +96,50 @@ public sealed class PriceHistoryProvider(MarketDataDbContext db, MarketQueries q
     }
 
     private sealed record LadderRow(string Symbol, long N, decimal Close, DateOnly SessionDate);
+
+    public async Task<IReadOnlyDictionary<string, PriceTrail>> GetTrailsAsync(IReadOnlyCollection<string> symbols, int sessions, CancellationToken cancellationToken)
+    {
+        if (symbols.Count == 0)
+        {
+            return new Dictionary<string, PriceTrail>();
+        }
+
+        var wanted = symbols.Select(s => s.ToUpperInvariant()).Distinct().ToArray();
+        var rows = await db.Database
+            .SqlQuery<TrailRow>(
+                $"""
+                SELECT i.symbol, r.n, r.close, r.volume, r.session_date
+                FROM (
+                    SELECT instrument_id, close, volume, session_date,
+                           row_number() OVER (PARTITION BY instrument_id ORDER BY bar_start DESC) - 1 AS n
+                    FROM market.price_bars
+                    WHERE timeframe = {Timeframe.OneDay} AND instrument_id IN (SELECT id FROM market.instruments WHERE symbol = ANY({wanted}))
+                ) r
+                JOIN market.instruments i ON i.id = r.instrument_id
+                WHERE r.n < {sessions}
+                """)
+            .ToListAsync(cancellationToken);
+
+        var today = clock.Today;
+        var splits = (await (
+                from a in db.CorporateActions.AsNoTracking()
+                join i in db.Instruments.AsNoTracking() on a.InstrumentId equals i.Id
+                where wanted.Contains(i.Symbol) && (a.ActionType == CorporateActionType.Split || a.ActionType == CorporateActionType.ReverseSplit) && a.ExDate <= today
+                select new { i.Symbol, Action = a })
+            .ToListAsync(cancellationToken))
+            .GroupBy(x => x.Symbol)
+            .ToDictionary(g => g.Key, g => PriceAdjustment.Factors(g.Select(x => x.Action), AdjustmentMode.SplitOnly, _ => null), StringComparer.Ordinal);
+
+        return rows.GroupBy(r => r.Symbol, StringComparer.Ordinal).ToDictionary(
+            g => g.Key,
+            g =>
+            {
+                var ordered = g.OrderByDescending(r => r.N).ToList();
+                var closes = ordered.Select(r => splits.TryGetValue(g.Key, out var f) ? r.Close * PriceAdjustment.At(r.SessionDate, f).Price : r.Close).ToList();
+                return new PriceTrail(closes, ordered[^1].Volume);
+            },
+            StringComparer.Ordinal);
+    }
+
+    private sealed record TrailRow(string Symbol, long N, decimal Close, long Volume, DateOnly SessionDate);
 }

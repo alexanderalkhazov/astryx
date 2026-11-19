@@ -56,6 +56,8 @@ internal sealed class Stubs : IInstrumentDirectory, IPriceHistoryProvider, IIndi
 
     public Task<CloseLadder> GetCloseLadderAsync(IReadOnlyList<int> sessionsBack, CancellationToken cancellationToken) => throw new NotSupportedException();
 
+    public Task<IReadOnlyDictionary<string, PriceTrail>> GetTrailsAsync(IReadOnlyCollection<string> symbols, int sessions, CancellationToken cancellationToken) => throw new NotSupportedException();
+
     Task<IndicatorReadout?> IIndicatorSnapshots.GetDailyAsync(string symbol, CancellationToken cancellationToken) =>
         Task.FromResult<IndicatorReadout?>(new IndicatorReadout(symbol, new DateOnly(2026, 11, 9), 300, Quality, Missing, new Dictionary<string, string?>
         {

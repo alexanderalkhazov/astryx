@@ -115,11 +115,9 @@ public sealed class SignalQueries(
         var sorted = Sort(withoutType.Where(r => Matches(r, filter)), filter.Sort ?? "score").ToList();
         var offset = DecodeCursor(filter.Cursor);
         var limit = filter.Limit ?? DefaultLimit;
-        var page = new List<SignalDto>();
-        foreach (var (row, i) in sorted.Skip(offset).Take(limit).Select((r, i) => (r, i)))
-        {
-            page.Add(ToDto(row, offset + i + 1, withBreakdown: false, await TrailAsync(row.Signal.Symbol, cancellationToken)));
-        }
+        var shown = sorted.Skip(offset).Take(limit).ToList();
+        var trails = await history.GetTrailsAsync(shown.Select(r => r.Signal.Symbol).ToList(), SparklineSessions, cancellationToken); // one query for the page
+        var page = shown.Select((row, i) => ToDto(row, offset + i + 1, withBreakdown: false, Trail(trails, row.Signal.Symbol))).ToList();
 
         var next = offset + limit < sorted.Count ? EncodeCursor(offset + limit) : null;
         return new SignalPageDto(page, next, counts, new ScannerRefDto(scanner.LastRunAt, scanner.DataAsOf));
@@ -154,7 +152,7 @@ public sealed class SignalQueries(
         var rank = signal.Status == SignalStatus.Active
             ? await db.Signals.CountAsync(s => s.Status == SignalStatus.Active && s.Score > signal.Score, cancellationToken) + 1
             : 0;
-        return ToDto(new Row(signal, summary), rank, withBreakdown: true, await TrailAsync(signal.Symbol, cancellationToken));
+        return ToDto(new Row(signal, summary), rank, withBreakdown: true, Trail(await history.GetTrailsAsync([signal.Symbol], SparklineSessions, cancellationToken), signal.Symbol));
     }
 
     private sealed record Row(Signal Signal, InstrumentSummary? Instrument);
@@ -234,11 +232,8 @@ public sealed class SignalQueries(
     public const int SparklineSessions = 20;
 
     /// <summary>The last 20 daily closes and today's volume, for the row's sparkline and "412M".</summary>
-    private async Task<(IReadOnlyList<decimal> Closes, long? Volume)> TrailAsync(string symbol, CancellationToken cancellationToken)
-    {
-        var daily = await history.GetDailyAsync(symbol, SparklineSessions, cancellationToken);
-        return daily is null || daily.Bars.Count == 0 ? ([], null) : (daily.Bars.Select(b => Price(b.Close)).ToList(), daily.Bars[^1].Volume);
-    }
+    private static (IReadOnlyList<decimal> Closes, long? Volume) Trail(IReadOnlyDictionary<string, PriceTrail> trails, string symbol) =>
+        trails.TryGetValue(symbol.ToUpperInvariant(), out var trail) ? (trail.Closes.Select(Price).ToList(), trail.Volume) : ([], null);
 
     private static SignalDto ToDto(Row row, int rank, bool withBreakdown, (IReadOnlyList<decimal> Closes, long? Volume) trail)
     {

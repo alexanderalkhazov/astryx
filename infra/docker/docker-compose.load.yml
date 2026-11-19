@@ -1,0 +1,22 @@
+# A throwaway stack for the load test (TASKS.md T-116), beside the everyday one: its own project, database volume and
+# ports, on the fake market (the k6 script needs the fixture's NVDA signal and price overrides), so a run never touches
+# the local stack's real Alpaca data. See docs/load/README.md.
+#   docker compose -f infra/docker/docker-compose.yml -f infra/docker/docker-compose.load.yml --env-file .env up -d --build
+name: astryx-load
+services:
+  postgres:
+    ports: !override ["5433:5432"]
+  mailpit:
+    ports: !override ["1026:1025", "8026:8025"]
+  otel:
+    ports: !override ["18889:18888"]
+  api:
+    ports: !override ["5081:8080"]
+    environment:
+      MarketData__Provider: Fake
+      MarketData__Ingestion__RequestsPerMinute: "6000"
+      Alpaca__KeyId: ""
+      Alpaca__SecretKey: ""
+      RateLimits__AuthPerMinute: "100000"
+      RateLimits__AuthPerHour: "1000000"
+      Serilog__MinimumLevel__Default: Information

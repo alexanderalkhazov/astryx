@@ -28,6 +28,12 @@ public interface IPriceHistoryProvider
     /// <paramref name="sessionsBack"/> (0 = latest).
     /// </summary>
     Task<CloseLadder> GetCloseLadderAsync(IReadOnlyList<int> sessionsBack, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Each symbol's last <paramref name="sessions"/> daily closes (split-adjusted, oldest first, including the forming
+    /// session) and the latest bar's volume, in one query: list rows' sparklines (T-116). Unknown symbols are absent.
+    /// </summary>
+    Task<IReadOnlyDictionary<string, PriceTrail>> GetTrailsAsync(IReadOnlyCollection<string> symbols, int sessions, CancellationToken cancellationToken);
 }
 
 /// <summary>How stored (unadjusted) bars are adjusted for corporate actions (SYSTEM_DESIGN.md §20.7).</summary>
@@ -39,3 +45,6 @@ public enum AdjustmentMode
     /// <summary>Splits and cash dividends: for backtests.</summary>
     TotalReturn,
 }
+
+/// <summary>A sparkline: closes oldest first and the latest bar's volume.</summary>
+public sealed record PriceTrail(IReadOnlyList<decimal> Closes, long Volume);

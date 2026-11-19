@@ -5,6 +5,7 @@ using Astryx.Modules.MarketData.Application.Ingestion;
 using Astryx.Modules.MarketData.Application.Market;
 using Astryx.Modules.MarketData.Application.Providers;
 using Astryx.Modules.MarketData.Infrastructure.Persistence;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
@@ -129,7 +130,7 @@ public class MarketSessionTests(ApiFactory factory) : IClassFixture<ApiFactory>
     {
         _ = factory.CreateClient();
         var scope = factory.Services.CreateAsyncScope();
-        var clock = new MarketClock(scope.ServiceProvider.GetRequiredService<MarketDataDbContext>(), scope.ServiceProvider.GetRequiredService<IMarketDataProvider>(), new FakeTimeProvider(now));
+        var clock = new MarketClock(scope.ServiceProvider.GetRequiredService<MarketDataDbContext>(), scope.ServiceProvider.GetRequiredService<IMarketDataProvider>(), new FakeTimeProvider(now), new MemoryCache(new MemoryCacheOptions()));
         var collection = new ServiceCollection();
         collection.AddSingleton(clock);
         collection.AddSingleton<MarketSessionService>();

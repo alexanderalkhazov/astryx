@@ -54,6 +54,7 @@ public static class MarketDataModule
         services.AddOptions<IngestionOptions>().Bind(section);
         services.AddSingleton<RateBudget>();
         services.AddSingleton<QuoteRotation>();
+        services.AddMemoryCache();
         services.AddScoped<MarketClock>();
         services.AddScoped<SyncStateStore>();
         services.AddScoped<SyncRunner>();

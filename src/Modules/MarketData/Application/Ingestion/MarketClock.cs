@@ -1,12 +1,13 @@
 using Astryx.Modules.MarketData.Application.Providers;
 using Astryx.Modules.MarketData.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using NodaTime;
 
 namespace Astryx.Modules.MarketData.Application.Ingestion;
 
 /// <summary>Exchange-time helpers for the sync schedules: New York wall-clock times and US equity sessions.</summary>
-public sealed class MarketClock(MarketDataDbContext db, IMarketDataProvider provider, TimeProvider timeProvider)
+public sealed class MarketClock(MarketDataDbContext db, IMarketDataProvider provider, TimeProvider timeProvider, IMemoryCache cache)
 {
     public const string PrimaryMic = "XNYS";
 
@@ -30,13 +31,22 @@ public sealed class MarketClock(MarketDataDbContext db, IMarketDataProvider prov
         return candidate.ToDateTimeOffset().ToUniversalTime();
     }
 
+    /// <summary>A stored calendar row is reused this long: one request asks for today's session a dozen times (T-116).</summary>
+    private static readonly TimeSpan CalendarCacheTtl = TimeSpan.FromMinutes(10L);
+
     /// <summary>The session row for a date, from <c>market.trading_calendar</c> or, before the first calendar sync, the provider.</summary>
     public async Task<ProviderSession?> SessionAsync(DateOnly date, CancellationToken cancellationToken)
     {
+        if (cache.TryGetValue(("trading-calendar", date), out ProviderSession? cached))
+        {
+            return cached;
+        }
+
         var stored = await db.TradingCalendar.AsNoTracking().SingleOrDefaultAsync(s => s.ExchangeMic == PrimaryMic && s.SessionDate == date, cancellationToken);
         if (stored is not null)
         {
-            return new ProviderSession(stored.ExchangeMic, stored.SessionDate, stored.OpenAt, stored.CloseAt, stored.IsHalfDay, stored.IsHoliday);
+            // Only stored rows are cached: the provider fallback below must be retried until the calendar sync has run.
+            return cache.Set(("trading-calendar", date), new ProviderSession(stored.ExchangeMic, stored.SessionDate, stored.OpenAt, stored.CloseAt, stored.IsHalfDay, stored.IsHoliday), CalendarCacheTtl);
         }
 
         try
