@@ -50,7 +50,7 @@ services:
       Email__Smtp__Host: mailpit
       Email__Smtp__Port: "1025"
       Features__DevFaultInjection: "true"
-      Serilog__MinimumLevel__Default: ${LOG_LEVEL:-Debug} # the load test measures at Information
+      Serilog__MinimumLevel__Default: ${LOG_LEVEL:-Information} # LOG_LEVEL=Debug in .env for SQL and job detail; Debug rotates the logs within hours
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel:18889
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc
       Sentry__Dsn: ${SENTRY_DSN:-} # error tracking stays off unless set in .env
