@@ -10,9 +10,17 @@
         "tags": [
           "Astryx.Api"
         ],
+        "operationId": "GetSystemStatus",
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemStatusDto"
+                }
+              }
+            }
           }
         }
       }
@@ -8372,6 +8380,131 @@
           },
           "accepted": {
             "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SystemAiStatus": {
+        "required": [
+          "status",
+          "model"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "model": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "SystemBrokerStatus": {
+        "required": [
+          "adapter",
+          "mode"
+        ],
+        "type": "object",
+        "properties": {
+          "adapter": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "mode": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SystemFeatures": {
+        "required": [
+          "liveTrading"
+        ],
+        "type": "object",
+        "properties": {
+          "liveTrading": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SystemMarketDataStatus": {
+        "required": [
+          "provider",
+          "quotesAsOf",
+          "quotesStale",
+          "dailyBarsThrough",
+          "dailyBarsStale",
+          "feedDown"
+        ],
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "quotesAsOf": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "quotesStale": {
+            "type": "boolean"
+          },
+          "dailyBarsThrough": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date"
+          },
+          "dailyBarsStale": {
+            "type": "boolean"
+          },
+          "feedDown": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SystemStatusDto": {
+        "required": [
+          "database",
+          "migrations",
+          "ai",
+          "marketData",
+          "broker",
+          "features"
+        ],
+        "type": "object",
+        "properties": {
+          "database": {
+            "type": "string"
+          },
+          "migrations": {
+            "type": "string"
+          },
+          "ai": {
+            "$ref": "#/components/schemas/SystemAiStatus"
+          },
+          "marketData": {
+            "$ref": "#/components/schemas/SystemMarketDataStatus"
+          },
+          "broker": {
+            "$ref": "#/components/schemas/SystemBrokerStatus"
+          },
+          "features": {
+            "$ref": "#/components/schemas/SystemFeatures"
           }
         },
         "additionalProperties": false

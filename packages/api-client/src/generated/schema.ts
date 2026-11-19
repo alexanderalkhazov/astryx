@@ -11,24 +11,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
+        get: operations["GetSystemStatus"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2697,6 +2680,35 @@ export interface components {
             rationale: null | string;
             accepted: boolean;
         };
+        SystemAiStatus: {
+            status: string;
+            model: null | string;
+        };
+        SystemBrokerStatus: {
+            adapter: null | string;
+            mode: string;
+        };
+        SystemFeatures: {
+            liveTrading: boolean;
+        };
+        SystemMarketDataStatus: {
+            provider: null | string;
+            /** Format: date-time */
+            quotesAsOf: null | string;
+            quotesStale: boolean;
+            /** Format: date */
+            dailyBarsThrough: null | string;
+            dailyBarsStale: boolean;
+            feedDown: boolean;
+        };
+        SystemStatusDto: {
+            database: string;
+            migrations: string;
+            ai: components["schemas"]["SystemAiStatus"];
+            marketData: components["schemas"]["SystemMarketDataStatus"];
+            broker: components["schemas"]["SystemBrokerStatus"];
+            features: components["schemas"]["SystemFeatures"];
+        };
         TokenResponse: {
             accessToken: string;
             /** Format: date-time */
@@ -2801,6 +2813,26 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    GetSystemStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SystemStatusDto"];
+                };
+            };
+        };
+    };
     ChangePassword: {
         parameters: {
             query?: never;

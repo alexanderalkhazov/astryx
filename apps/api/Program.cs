@@ -143,24 +143,16 @@ app.MapGet("/api/v1/system/status", async (HealthCheckService health, FreshnessP
     var report = await health.CheckHealthAsync(ct);
     var market = await freshness.StatusAsync(ct);
     string Status(string name) => report.Entries.TryGetValue(name, out var e) ? e.Status.ToString().ToLowerInvariant() : "unknown";
-    return Results.Ok(new
-    {
-        database = Status("postgres"),
-        migrations = Status("migrations"),
-        ai = new { status = Status("ollama"), model = config["Ai:Ollama:Model"] },
-        marketData = new
-        {
-            provider = config["MarketData:Provider"],
-            quotesAsOf = market.Quotes.AsOf,
-            quotesStale = market.Quotes.Stale,
-            dailyBarsThrough = market.DailyBarsThrough,
-            dailyBarsStale = market.DailyBarsStale,
-            feedDown = market.FeedDown,
-        },
-        broker = new { adapter = config["Broker:Adapter"], mode = "paper" },
-        features = new { liveTrading = config.GetValue<bool>("Features:LiveTrading") },
-    });
-});
+    return Results.Ok(new SystemStatusDto(
+        Status("postgres"),
+        Status("migrations"),
+        new SystemAiStatus(Status("ollama"), config["Ai:Ollama:Model"]),
+        new SystemMarketDataStatus(config["MarketData:Provider"], market.Quotes.AsOf, market.Quotes.Stale, market.DailyBarsThrough, market.DailyBarsStale, market.FeedDown),
+        new SystemBrokerStatus(config["Broker:Adapter"], "paper"),
+        new SystemFeatures(config.GetValue<bool>("Features:LiveTrading"))));
+})
+.WithName("GetSystemStatus")
+.Produces<SystemStatusDto>();
 
 app.MapIdentityEndpoints();
 app.MapProfileEndpoints();

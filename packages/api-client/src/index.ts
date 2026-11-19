@@ -3,6 +3,8 @@
 // (pnpm api:gen, T-010), so server DTO changes surface in `pnpm typecheck`.
 import { z } from 'zod';
 
+import type { components } from './generated/schema';
+
 export { ApiError, isApiError, toApiError } from './errors';
 export { createApiClient, type ApiClient, type ApiClientOptions, type ApiResponse, type RequestOptions } from './client';
 export { authApi, CurrentUser, RegisterResponse, TokenResponse } from './auth';
@@ -33,21 +35,21 @@ export type Decimal = z.infer<typeof Decimal>;
 
 export const SystemStatus = z.object({
   database: z.string(),
-  migrations: z.string().optional(),
+  migrations: z.string(),
   ai: z.object({ status: z.string(), model: z.string().nullable() }),
   marketData: z.object({
     provider: z.string().nullable(),
     // Freshness (SYSTEM_DESIGN.md §20.5); drives the connection-lost banner.
-    quotesAsOf: z.string().nullable().optional(),
-    quotesStale: z.boolean().optional(),
-    dailyBarsThrough: z.string().nullable().optional(),
-    dailyBarsStale: z.boolean().optional(),
+    quotesAsOf: z.string().nullable(),
+    quotesStale: z.boolean(),
+    dailyBarsThrough: z.string().nullable(),
+    dailyBarsStale: z.boolean(),
     /** The latest quote sync could not reach the provider (T-050): the banner shows without waiting for quotes to age. */
-    feedDown: z.boolean().optional(),
+    feedDown: z.boolean(),
   }),
   broker: z.object({ adapter: z.string().nullable(), mode: z.literal('paper') }),
   features: z.object({ liveTrading: z.literal(false) }),
-});
+}) satisfies z.ZodType<components['schemas']['SystemStatusDto']>;
 export type SystemStatus = z.infer<typeof SystemStatus>;
 
 export async function getSystemStatus(baseUrl: string, signal?: AbortSignal): Promise<SystemStatus> {

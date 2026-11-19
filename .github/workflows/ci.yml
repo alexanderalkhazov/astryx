@@ -68,6 +68,13 @@ jobs:
       - name: Install (frozen lockfile)
         run: pnpm install --frozen-lockfile
 
+      # T-010: the backend job's OpenApiDriftTests keep apps/api/openapi.json in step with the code; this keeps the
+      # generated TypeScript in step with that document. Fix either with `pnpm stack:up && pnpm api:gen`.
+      - name: Generated API types match openapi.json
+        run: |
+          pnpm --filter @astryx/api-client exec openapi-typescript ../../apps/api/openapi.json --output src/generated/schema.ts
+          git diff --exit-code -- packages/api-client/src/generated || { echo "::error::packages/api-client/src/generated is stale: run pnpm api:gen and commit it."; exit 1; }
+
       - name: Typecheck
         run: pnpm typecheck
 

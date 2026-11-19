@@ -1,5 +1,6 @@
 // pnpm api:gen — exports the API's OpenAPI document and regenerates the TypeScript types in @astryx/api-client (T-010).
-// Needs the API running in Development (pnpm stack:up). The CI drift check comes with T-001.
+// Needs the API running in Development (pnpm stack:up). CI fails when either output is stale: OpenApiDriftTests compares
+// apps/api/openapi.json with the running API, and the mobile job regenerates the types from it and diffs them.
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
