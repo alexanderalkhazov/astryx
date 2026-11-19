@@ -10,6 +10,7 @@ using Astryx.Modules.Paper.Infrastructure.Persistence;
 using Astryx.SharedKernel;
 using Astryx.SharedKernel.Results;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Astryx.Modules.Paper.Application;
 
@@ -20,9 +21,13 @@ public sealed record ConnectBrokerRequest(string Broker, string Environment, str
 /// N7 item (SYSTEM_DESIGN.md §11, §17.8): what Settings shows. Alpaca API keys always carry trading permission, and
 /// money movement is never requested.
 /// </summary>
+/// <param name="BuyingPower">
+/// Alpaca's buying power, cash plus margin, for information only: Astryx sizes and trades with cash and never uses margin
+/// (§17.4). Null when Alpaca couldn't be asked.
+/// </param>
 public sealed record BrokerConnectionDto(
     Guid Id, string Broker, string Environment, string Label, string KeySuffix, string? AccountRef, string Status,
-    BrokerPermissionsDto Permissions, DateTimeOffset ConnectedAt, DateTimeOffset? LastSyncAt, string? LastError);
+    BrokerPermissionsDto Permissions, DateTimeOffset ConnectedAt, DateTimeOffset? LastSyncAt, string? LastError, decimal? BuyingPower = null);
 
 public sealed record BrokerPermissionsDto(bool ReadPortfolio, string PlaceOrders, string DepositsWithdrawals);
 
@@ -39,6 +44,8 @@ public sealed class BrokerConnectionService(
     CredentialVault vault,
     IAlpacaTradingClient alpaca,
     IBrokerPortfolios portfolios,
+    BrokerCredentials credentials,
+    IMemoryCache cache,
     TimeProvider timeProvider)
 {
     public static readonly Error CredentialsInvalid = new("broker_credentials_invalid", "Alpaca didn't accept that key ID and secret for a paper account. Check you copied the paper keys from the Alpaca dashboard.");
@@ -52,7 +59,36 @@ public sealed class BrokerConnectionService(
     public async Task<BrokerConnectionPageDto> ListAsync(CancellationToken cancellationToken)
     {
         var rows = await db.BrokerConnections.AsNoTracking().Where(c => c.Status != BrokerConnectionStatus.Revoked).OrderBy(c => c.ConnectedAt).ToListAsync(cancellationToken);
-        return new BrokerConnectionPageDto(rows.Select(ToDto).ToList());
+        var items = new List<BrokerConnectionDto>(rows.Count);
+        foreach (var row in rows)
+        {
+            items.Add(ToDto(row) with { BuyingPower = await BuyingPowerAsync(row, cancellationToken) });
+        }
+
+        return new BrokerConnectionPageDto(items);
+    }
+
+    /// <summary>From the account snapshot the readiness checks cache for a minute; null when Alpaca can't be asked.</summary>
+    private async Task<decimal?> BuyingPowerAsync(BrokerConnection connection, CancellationToken cancellationToken)
+    {
+        if (connection.Status != BrokerConnectionStatus.Connected || await credentials.OpenAsync(connection.Id, cancellationToken) is not var (_, keys))
+        {
+            return null;
+        }
+
+        try
+        {
+            var account = await cache.GetOrCreateAsync(("alpaca-account", connection.Id), entry =>
+            {
+                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(1L);
+                return alpaca.GetAccountAsync(keys, cancellationToken);
+            });
+            return account?.BuyingPower;
+        }
+        catch (AlpacaApiException)
+        {
+            return null;
+        }
     }
 
     public async Task<Result<BrokerConnectionDto>> ConnectAsync(ConnectBrokerRequest request, CancellationToken cancellationToken)

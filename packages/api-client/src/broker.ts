@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 import type { ApiClient } from './client';
 
+const Decimal = z.string().regex(/^-?\d+(\.\d+)?$/, 'Expected a decimal string');
+
 /** N7 item (SYSTEM_DESIGN.md §17.8): an Alpaca paper connection. The secret is never returned. */
 export const BrokerConnection = z.object({
   id: z.string(),
@@ -15,6 +17,8 @@ export const BrokerConnection = z.object({
   connectedAt: z.string(),
   lastSyncAt: z.string().nullable(),
   lastError: z.string().nullable(),
+  /** Cash plus margin at Alpaca, for information: Astryx trades with cash only. */
+  buyingPower: Decimal.nullable().optional(),
 });
 export type BrokerConnection = z.infer<typeof BrokerConnection>;
 

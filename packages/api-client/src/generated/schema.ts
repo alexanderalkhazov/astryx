@@ -1715,6 +1715,8 @@ export interface components {
             /** Format: date-time */
             lastSyncAt: null | string;
             lastError: null | string;
+            /** Format: decimal */
+            buyingPower?: null | string;
         };
         BrokerConnectionPageDto: {
             items: components["schemas"]["BrokerConnectionDto"][];

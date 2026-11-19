@@ -271,6 +271,8 @@ public class AlpacaBrokerTests(AlpacaApiFactory factory) : IClassFixture<AlpacaA
         var stored = await Query<PaperDbContext, byte[]>(db => db.BrokerConnections.IgnoreQueryFilters().Where(c => c.Id == body.GetProperty("id").GetGuid()).Select(c => c.CredentialsCiphertext).SingleAsync());
         Encoding.UTF8.GetString(stored).ShouldNotContain(FakeAlpaca.Secret); // sealed, not plaintext
         (await ConnectAsync(client)).StatusCode.ShouldBe(HttpStatusCode.Conflict); // one paper connection
+        var listed = (await client.GetFromJsonAsync<JsonElement>("/api/v1/broker/connections")).GetProperty("items")[0];
+        listed.GetProperty("buyingPower").GetString().ShouldBe("199950.48"); // Alpaca's cash plus margin, shown for information only
 
         var portfolio = await client.GetFromJsonAsync<JsonElement>("/api/v1/portfolio");
         portfolio.GetProperty("cash").GetString().ShouldBe("99975.24"); // Alpaca's balance, not the simulated $100,000

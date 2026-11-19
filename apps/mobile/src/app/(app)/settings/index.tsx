@@ -118,6 +118,14 @@ function BrokerSection() {
         </View>
         {alpaca?.lastError ? <Text.Caption tone="loss">{alpaca.lastError}</Text.Caption> : null}
         {summary.data ? <Row label="Equity" value={formatMoney(summary.data.equity)} /> : null}
+        {alpaca?.buyingPower ? (
+          <>
+            <Row label="Alpaca buying power" value={formatMoney(alpaca.buyingPower)} testID="broker-buying-power" />
+            <Text.Caption tone="tertiary">
+              Includes Alpaca margin. Astryx sizes and trades with cash only and never uses margin.
+            </Text.Caption>
+          </>
+        ) : null}
         <View style={styles.divider} />
         <Text.Overline tone="tertiary">Permissions</Text.Overline>
         <Row label="Read portfolio & balances" value={<Text.DataSm tone="gain">Allowed</Text.DataSm>} />

@@ -301,6 +301,7 @@ describe('Alpaca connection card (T-141)', () => {
             connectedAt: '2026-11-17T09:00:00Z',
             lastSyncAt: '2026-11-17T14:32:00Z',
             lastError: null,
+            buyingPower: '200000.00',
           },
         ],
       }),
@@ -311,6 +312,8 @@ describe('Alpaca connection card (T-141)', () => {
     expect(await screen.findByText('Alpaca · paper account')).toBeOnTheScreen();
     expect(screen.getByText(/API key ••••6QSR · Connected · synced/)).toBeOnTheScreen();
     expect(screen.getByText('Never requested')).toBeOnTheScreen();
+    expect(screen.getByTestId('broker-buying-power')).toHaveTextContent('Alpaca buying power$200,000.00');
+    expect(screen.getByText('Includes Alpaca margin. Astryx sizes and trades with cash only and never uses margin.')).toBeOnTheScreen();
 
     fireEvent.press(screen.getByRole('button', { name: 'Disconnect Alpaca' }));
     api.broker.connections.mockResolvedValue(ok({ items: [] })); // what the refetch after disconnecting sees

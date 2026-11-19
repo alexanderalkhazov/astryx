@@ -4569,6 +4569,14 @@
               "null",
               "string"
             ]
+          },
+          "buyingPower": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "decimal"
           }
         },
         "additionalProperties": false
