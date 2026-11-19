@@ -490,9 +490,10 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [x] **T-115** Security hardening pass
   - **Acceptance:** an OWASP ASVS L1 checklist is completed and recorded in `docs/security/`. Log redaction is verified. JWT key rotation drill. Screenshot protection on balance screens. Postgres row-level security evaluated and an ADR recorded.
   - **Refs:** §18 · **Depends:** T-024, T-113 · **P1**
-- [ ] **T-116** Load smoke test
+- [x] **T-116** Load smoke test — `12f36d6`
   - **Acceptance:** a k6 script with 50 VUs against assessment and order endpoints. p95 meets NFR-01 and NFR-02. Zero duplicate fills.
   - **Refs:** §2.5, §21.2 · **Depends:** T-084 · **P2**
+  - Done (2026-11-19): after caching the trading calendar and batching sparklines, a steady-state run on the isolated load stack gives orders p95 230 ms, reads 77 ms, assessments 149 ms, zero duplicate fills (`docs/load/2026-11-19.md`). A staging run belongs to T-117.
 - [ ] **T-117** Staging deployment
   - **Acceptance:** hosting decision recorded as an ADR (Q-16). Staging environment with managed Postgres, API and worker roles, secrets in a manager, migrations as a job, and a GitHub Actions deploy with an E2E smoke run. Backup and restore drill documented.
   - **Refs:** §22.2, Q-16 · **Depends:** T-110, T-113 · **P1**
