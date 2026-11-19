@@ -409,6 +409,15 @@ function SecuritySection() {
           <Text.Body style={styles.flex}>Change password</Text.Body>
           <ChevronRight size={18} strokeWidth={1.7} color={color.text3} />
         </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.push('/privacy')}
+          style={({ pressed }) => [styles.row, styles.link, { opacity: pressed ? 0.7 : 1 }]}
+          testID="settings-privacy"
+        >
+          <Text.Body style={styles.flex}>Privacy policy</Text.Body>
+          <ChevronRight size={18} strokeWidth={1.7} color={color.text3} />
+        </Pressable>
         <Button variant="secondary" label="Sign out" onPress={() => void signOut()} />
         <Button variant="link" label="Sign out of all devices" onPress={() => setConfirmAll(true)} />
       </View>

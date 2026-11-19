@@ -36,3 +36,16 @@ env:
           notVisible:
             id: sign-in-submit
           timeout: 15000
+# A fresh account sees the onboarding disclaimer once (T-118).
+- extendedWaitUntil:
+    visible:
+      id: disclaimer-accept
+    timeout: 5000
+    optional: true
+- runFlow:
+    when:
+      visible:
+        id: disclaimer-accept
+    commands:
+      - tapOn:
+          id: disclaimer-accept

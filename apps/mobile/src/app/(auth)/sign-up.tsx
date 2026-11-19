@@ -41,7 +41,12 @@ export default function SignUpScreen() {
     <AuthScaffold
       title="Create account"
       subtitle="Research US stocks and practise with a $100,000 paper account."
-      footer={<Button variant="link" label="I already have an account" onPress={() => router.replace('/sign-in')} />}
+      footer={
+        <>
+          <Button variant="link" label="I already have an account" onPress={() => router.replace('/sign-in')} />
+          <Button variant="link" label="Privacy policy" onPress={() => router.push('/privacy')} testID="sign-up-privacy" />
+        </>
+      }
     >
       {failure ? <StatusBanner tone="error" title="Couldn't create your account" body={failure} testID="sign-up-error" /> : null}
       <FormField

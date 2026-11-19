@@ -3,6 +3,7 @@ import { Redirect, Stack, useGlobalSearchParams, usePathname, useSegments } from
 import { useEffect } from 'react';
 import { useReducedMotion } from 'react-native-reanimated';
 
+import { useDisclaimerAccepted } from '@/features/onboarding/disclaimer';
 import { usePushNotifications } from '@/features/push/usePushNotifications';
 import { useScreenProtection } from '@/features/security/useScreenProtection';
 import { useRealtimeConnection } from '@/features/realtime/useRealtimeConnection';
@@ -18,6 +19,8 @@ export default function AppLayout() {
   const segments = useSegments();
   const params = useGlobalSearchParams();
   const reduceMotion = useReducedMotion();
+  const userId = useSession((s) => s.user?.id);
+  const disclaimer = useDisclaimerAccepted(status === 'signedIn' ? userId : undefined);
   useRealtimeConnection();
   usePushNotifications();
   useScreenProtection(status === 'signedIn');
@@ -32,6 +35,8 @@ export default function AppLayout() {
 
   if (status === 'unknown') return null; // splash is still up while the session is restored
   if (status === 'signedOut') return <Redirect href="/sign-in" />;
+  // T-118: the disclaimer comes first, once per account on this device.
+  if (disclaimer === false && pathname !== '/welcome') return <Redirect href="/welcome" />;
 
   return (
     <Stack
@@ -42,6 +47,7 @@ export default function AppLayout() {
       }}
     >
       <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="welcome" options={{ gestureEnabled: false, animation: 'fade' }} />
       <Stack.Screen name="search" options={{ presentation: 'fullScreenModal', animation: 'fade' }} />
     </Stack>
   );

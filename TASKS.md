@@ -500,6 +500,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [ ] **T-118** Tester builds and in-app disclaimers
   - **Acceptance:** EAS builds for TestFlight and Play internal testing. Onboarding disclaimer ("Paper trading only · not investment advice · AI research is experimental"). Privacy policy page. App icons and splash in Graphite style.
   - **Refs:** §1, §12.6 · **Depends:** T-117 · **P1**
+  - ⏸ WIP (2026-11-19): onboarding disclaimer ("Paper trading only · not investment advice · AI research is experimental", once per account and device) and a privacy policy page (draft, describes the app as built; linked from onboarding, sign-up and Settings). **Open:** EAS builds for TestFlight and Play internal testing (needs an Expo account and T-117), and Graphite-style icons and splash.
 - [ ] **T-119** MVP release gate
   - **Acceptance:** every item in §21.10 is verified and listed in the commit body with evidence (CI run link, E2E artifacts). Open P0 tasks: none.
   - **Refs:** §21.10 · **Depends:** T-110–T-118 (P0/P1) · **P0**
