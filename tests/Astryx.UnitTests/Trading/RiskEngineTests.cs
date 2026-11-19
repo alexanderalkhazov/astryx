@@ -48,6 +48,21 @@ public class RiskEngineTests
     }
 
     [Fact]
+    public void Alpaca_costs_are_commission_free_and_half_the_quoted_spread()
+    {
+        var simulated = RiskEngine.Assess(Design() with { Costs = CostModel.Default with { FeePerOrder = 1.00m } });
+        var alpaca = RiskEngine.Assess(Design() with { Costs = CostModel.Alpaca(186.30m, 186.42m, CostModel.Default with { FeePerOrder = 1.00m }) });
+
+        (simulated.EstFees, simulated.SlippagePerShare).ShouldBe((2.00m, 0.02m)); // $1 each way; 1 bp of 186.50 rounds up to 2¢
+        (alpaca.EstFees, alpaca.SlippagePerShare).ShouldBe((0m, 0.06m)); // no commission; half of a 12¢ spread
+        alpaca.MaxLossInclCosts.ShouldBe((alpaca.Quantity * (186.50m - 178.20m + (2 * 0.06m))));
+    }
+
+    [Fact]
+    public void Without_a_usable_spread_Alpaca_costs_fall_back_to_basis_points() =>
+        RiskEngine.Assess(Design() with { Costs = CostModel.Alpaca(null, null, CostModel.Default) }).SlippagePerShare.ShouldBe(0.02m);
+
+    [Fact]
     public void A_simulated_portfolio_has_no_broker_checks() =>
         RiskEngine.Assess(Design()).Checks.ShouldNotContain(c => c.Code.StartsWith("broker_", StringComparison.Ordinal));
 

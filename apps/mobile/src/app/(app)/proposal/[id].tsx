@@ -1,6 +1,6 @@
 import { type PaperOrder, type Proposal, type RiskAssessment, RISK_CHOICES } from '@astryx/api-client';
 import { color, radius, space } from '@astryx/design-tokens';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Decimal from 'decimal.js-light';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
@@ -31,6 +31,7 @@ import {
   useRiskLimits,
   useSizing,
 } from '@/features/proposal/useProposal';
+import { broker } from '@/lib/api';
 import { formatEtTime, formatMoney, formatPct, formatPrice } from '@/lib/format';
 
 const ORDER_LABEL: Record<Proposal['orderType'], string> = { buy_stop: 'BUY STOP', limit: 'LIMIT', market: 'MARKET' };
@@ -61,6 +62,12 @@ export default function ProposalScreen() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [placed, setPlaced] = useState<PaperOrder | null>(null);
   const queryClient = useQueryClient();
+  const connections = useQuery({
+    queryKey: ['broker', 'connections'],
+    queryFn: async () => (await broker.connections()).data.items,
+    retry: false,
+  });
+  const alpaca = connections.data?.some((c) => c.broker === 'alpaca') ?? false;
 
   const header = <StackHeader title={proposal.data?.symbol ?? 'Proposal'} subtitle="Trade proposal" />;
 
@@ -227,9 +234,14 @@ export default function ProposalScreen() {
         {a ? (
           <>
             <Section title="Fees and spread">
-              <Row label="Commission" value={formatMoney(a.estFees)} dim={!!dim} />
-              <Row label="Estimated slippage" value={formatMoney(a.estSlippage)} dim={!!dim} />
+              <Row label="Commission" value={alpaca ? `${formatMoney(a.estFees)} · commission-free` : formatMoney(a.estFees)} dim={!!dim} />
+              <Row label={alpaca ? 'Half the quoted spread' : 'Estimated slippage'} value={formatMoney(a.estSlippage)} dim={!!dim} />
               <Row label="Max loss incl. costs" value={`−${formatMoney(a.maxLossInclCosts)}`} dim={!!dim} />
+              {alpaca ? (
+                <Text.Caption tone="tertiary" testID="regulatory-fees-note">
+                  Regulatory fees (SEC, FINRA TAF, CAT) apply to live sells only. Alpaca Paper doesn&apos;t charge them.
+                </Text.Caption>
+              ) : null}
             </Section>
 
             <Section title="Portfolio impact">

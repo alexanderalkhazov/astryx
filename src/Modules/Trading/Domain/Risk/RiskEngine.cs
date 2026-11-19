@@ -6,11 +6,22 @@ using Astryx.Contracts.Profiles;
 namespace Astryx.Modules.Trading.Domain.Risk;
 
 /// <summary>Paper cost model (§15): slippage per share max(MinSlippage, ceil_cent(P × bps/10000)) and a flat fee per order.</summary>
-public sealed record CostModel(int SlippageBps, decimal MinSlippage, decimal FeePerOrder)
+/// <param name="HalfSpread">Set for an Alpaca portfolio with a usable quote: crossing costs half the quoted spread per share.</param>
+public sealed record CostModel(int SlippageBps, decimal MinSlippage, decimal FeePerOrder, decimal? HalfSpread = null)
 {
     public static readonly CostModel Default = new(1, 0.01m, 0m);
 
-    public decimal SlippagePerShare(decimal price) => Math.Max(MinSlippage, Math.Ceiling(price * SlippageBps / 10_000m * 100m) / 100m);
+    /// <summary>
+    /// Alpaca (§17.3, T-146): commission-free, and a marketable order pays half the quoted spread. Without a usable spread
+    /// the basis-point slippage of <paramref name="fallback"/> applies. Regulatory fees (SEC, FINRA TAF, CAT) are charged
+    /// on live sells only and are not part of the estimate; Alpaca Paper doesn't charge them (Q-23).
+    /// </summary>
+    public static CostModel Alpaca(decimal? bid, decimal? ask, CostModel fallback) =>
+        new(fallback.SlippageBps, fallback.MinSlippage, 0m, bid is > 0 && ask is { } a && a >= bid ? (a - bid.Value) / 2 : null);
+
+    public decimal SlippagePerShare(decimal price) => HalfSpread is { } half
+        ? Math.Max(MinSlippage, Math.Ceiling(half * 100m) / 100m)
+        : Math.Max(MinSlippage, Math.Ceiling(price * SlippageBps / 10_000m * 100m) / 100m);
 }
 
 /// <summary>Everything one assessment depends on (§14.2, §14.5). Money in USD at full precision; fractions as fractions.</summary>

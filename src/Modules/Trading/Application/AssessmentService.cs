@@ -226,7 +226,8 @@ public sealed class AssessmentService(
             equity, portfolio.CashBalance - portfolio.ReservedCash, sector, sectorValue,
             portfolio.OpenPositions.Count, working.Count,
             HoldsSymbol: portfolio.OpenPositions.Any(p => p.InstrumentId == proposal.InstrumentId), WorkingEntryForSymbol: working.InstrumentIds.Contains(proposal.InstrumentId),
-            portfolio.StartOfDayEquity, facts?.Atr14, await sessions.TodayAsync(cancellationToken), sessions.Now, limits, Costs(),
+            portfolio.StartOfDayEquity, facts?.Atr14, await sessions.TodayAsync(cancellationToken), sessions.Now, limits,
+            portfolio.BrokerConnectionId is null ? Costs() : CostModel.Alpaca(quote.Bid, quote.Ask, Costs()),
             portfolio.BrokerConnectionId is { } connectionId ? await brokers.GetAsync(connectionId, proposal.Symbol, cancellationToken) : null);
         return (inputs, new HashContext(quote.QuoteSeq, portfolio.Version, limits.Version));
     }

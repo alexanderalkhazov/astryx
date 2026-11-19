@@ -15,10 +15,12 @@ jest.mock('expo-secure-store', () => ({
 }));
 jest.mock('@/lib/api', () => ({
   proposals: { get: jest.fn(), assess: jest.fn(), reject: jest.fn(), riskLimits: jest.fn() },
-  paper: { place: jest.fn() },
+  paper: { place: jest.fn(), get: jest.fn() },
+  broker: { connections: jest.fn() },
 }));
 const api = (jest.requireMock('@/lib/api') as { proposals: Record<'get' | 'assess' | 'reject' | 'riskLimits', jest.Mock> }).proposals;
-const paper = (jest.requireMock('@/lib/api') as { paper: { place: jest.Mock } }).paper;
+const paper = (jest.requireMock('@/lib/api') as { paper: { place: jest.Mock; get: jest.Mock } }).paper;
+const broker = (jest.requireMock('@/lib/api') as { broker: { connections: jest.Mock } }).broker;
 
 const inAMinute = () => new Date(Date.now() + 60_000).toISOString();
 
@@ -123,6 +125,7 @@ beforeEach(() => {
   jest.clearAllMocks();
   api.get.mockResolvedValue(ok(PROPOSAL()));
   api.riskLimits.mockResolvedValue(ok({ maxRiskPerTradePct: '0.0075' }));
+  broker.connections.mockResolvedValue(ok({ items: [] }));
 });
 
 describe('Trade proposal (design 06)', () => {
@@ -145,6 +148,17 @@ describe('Trade proposal (design 06)', () => {
     expect(screen.queryByText('Stop 1.50× ATR')).not.toBeOnTheScreen(); // engine checks show only when they warn or fail
     expect(screen.getByText('Choices above your 0.75% limit are disabled.')).toBeOnTheScreen();
     await waitFor(() => expect(screen.getByTestId('proposal-approve')).toBeEnabled());
+  });
+
+  it('prices an Alpaca portfolio commission-free at half the spread, with regulatory fees live-only', async () => {
+    broker.connections.mockResolvedValue(ok({ items: [{ id: 'c1', broker: 'alpaca', status: 'connected' }] }));
+    await renderProposal();
+
+    expect(await screen.findByText('Half the quoted spread')).toBeOnTheScreen();
+    expect(screen.getByTestId('regulatory-fees-note')).toHaveTextContent(
+      "Regulatory fees (SEC, FINRA TAF, CAT) apply to live sells only. Alpaca Paper doesn't charge them.",
+    );
+    expect(screen.queryByText('Estimated slippage')).not.toBeOnTheScreen();
   });
 
   it('re-assesses on the server 150 ms after a change, disabling Approve meanwhile, and shows a failing reason', async () => {
@@ -285,6 +299,22 @@ describe('Trade proposal (design 06)', () => {
       expect(screen.getByLabelText('Stop / target: OCO attached · 178.20 / 204.00')).toBeOnTheScreen();
       await fireEvent.press(screen.getByRole('button', { name: 'View in portfolio' }));
       await waitFor(() => expect(screen).toHavePathname('/portfolio'));
+    });
+
+    it('labels an Alpaca paper fill as simulated by Alpaca', async () => {
+      const alpacaFill = { ...FILLED, broker: 'alpaca', brokerOrderId: '61e69015-8549-4bfd-b9c3-01e75843f47d' };
+      paper.place.mockResolvedValue(ok(alpacaFill));
+      paper.get.mockResolvedValue(ok(alpacaFill));
+      await renderProposal();
+      await waitFor(() => expect(screen.getByTestId('proposal-approve')).toBeEnabled());
+
+      await fireEvent.press(screen.getByTestId('proposal-approve'));
+      await approve();
+
+      expect(await screen.findByText('EXECUTED · FILLED BY ALPACA (PAPER)')).toBeOnTheScreen();
+      expect(screen.getByTestId('simulated-by-alpaca')).toHaveTextContent(
+        'Simulated by Alpaca: paper fills at the quoted price, without market impact or regulatory fees.',
+      );
     });
 
     it('says when a buy stop is working rather than filled', async () => {

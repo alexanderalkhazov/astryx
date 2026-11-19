@@ -97,6 +97,11 @@ export function FillReceiptSheet({
                 />
               ) : null}
               <Row label="Commission" value={formatMoney(fill.fee)} />
+              {alpaca ? (
+                <Text.Caption tone="tertiary" testID="simulated-by-alpaca">
+                  Simulated by Alpaca: paper fills at the quoted price, without market impact or regulatory fees.
+                </Text.Caption>
+              ) : null}
               <View style={styles.buttons}>
                 <Button variant="secondary" label="Done" block={false} onPress={onDone} style={styles.flex} />
                 <Button
