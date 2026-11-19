@@ -280,7 +280,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Scope:** evaluate at least 2 real providers against the §16.2 matrix (coverage, history, rate limits, licence for local storage and display, cost) and record an ADR. **Does not implement the adapter.**
   - **Acceptance:** an ADR in `docs/adr/` with sources, plus Q-03 and Q-04 answered or explicitly deferred by the owner.
   - **Refs:** §16.2, Q-03, Q-04 · **Depends:** — · **P1**
-  - Note (2026-11-17): the owner chose Alpaca for real data and it is implemented (T-147). The evaluation of a second provider and the Q-04 licence answer are still open.
+  - ⏸ WIP (2026-11-19): ADR 024 records Alpaca (owner decision) against Massive and Tiingo with sources; Q-03 answered. **Open:** Q-04, the owner's answer or explicit deferral: every evaluated retail plan is personal or internal use only, so showing data to testers needs per-user keys, an Alpaca agreement or a redistribution plan.
 
 ### M3 · Quant engine and scanner
 
@@ -415,7 +415,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [ ] **T-147** Alpaca market data provider (decision and adapter)
   - **Acceptance:** an ADR resolves Q-03 between Alpaca market data and a dedicated vendor, including the IEX-only free plan versus Algo Trader Plus and whether Alpaca data may be stored and displayed. If Alpaca is chosen: `AlpacaMarketDataProvider` (multi-symbol snapshots and bars, corporate actions) within the plan's rate limit (nightly EOD bars for the universe, batched snapshots for positions, working orders and watchlist).
   - **Refs:** §16, §17.3, Q-03 · **Depends:** T-051, T-140 · **P1**
-  - ⏸ WIP (2026-11-17): `AlpacaMarketDataProvider` and `AlpacaNewsProvider` implemented and running locally (500 S&P 500 symbols, 2 years of real daily bars, IEX real-time quotes with delayed consolidated volume, corporate actions, calendar, news); contract tests in `AlpacaMarketDataProviderTests`. **Open:** the ADR resolving Q-03/Q-04 (licence for storage and display) with T-051.
+  - ⏸ WIP (2026-11-17): `AlpacaMarketDataProvider` and `AlpacaNewsProvider` implemented and running locally (500 S&P 500 symbols, 2 years of real daily bars, IEX real-time quotes with delayed consolidated volume, corporate actions, calendar, news); contract tests in `AlpacaMarketDataProviderTests`. ADR 024 written (Q-03 answered). **Open:** Q-04 with T-051 (owner decision).
 - [x] **T-148** Alpaca trade-updates streaming — `dcdfa92`
   - **Acceptance:** `TradeUpdatesListener` authenticates to `wss://paper-api.alpaca.markets/stream` and listens to `trade_updates`, so `fill`, `partial_fill`, `rejected`, `canceled` and `expired` events settle orders in near real time (lookups stay as the fallback). Optional: the market data stream feeds `QuoteUpdated` for held and watched symbols. Reconnect with resubscribe. Lag metric.
   - **Refs:** §17.3, §17.7, §9.6 · **Depends:** T-145 · **P2**
