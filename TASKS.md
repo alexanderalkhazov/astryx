@@ -416,9 +416,10 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Acceptance:** an ADR resolves Q-03 between Alpaca market data and a dedicated vendor, including the IEX-only free plan versus Algo Trader Plus and whether Alpaca data may be stored and displayed. If Alpaca is chosen: `AlpacaMarketDataProvider` (multi-symbol snapshots and bars, corporate actions) within the plan's rate limit (nightly EOD bars for the universe, batched snapshots for positions, working orders and watchlist).
   - **Refs:** §16, §17.3, Q-03 · **Depends:** T-051, T-140 · **P1**
   - ⏸ WIP (2026-11-17): `AlpacaMarketDataProvider` and `AlpacaNewsProvider` implemented and running locally (500 S&P 500 symbols, 2 years of real daily bars, IEX real-time quotes with delayed consolidated volume, corporate actions, calendar, news); contract tests in `AlpacaMarketDataProviderTests`. **Open:** the ADR resolving Q-03/Q-04 (licence for storage and display) with T-051.
-- [ ] **T-148** Alpaca trade-updates streaming
+- [x] **T-148** Alpaca trade-updates streaming — `dcdfa92`
   - **Acceptance:** `TradeUpdatesListener` authenticates to `wss://paper-api.alpaca.markets/stream` and listens to `trade_updates`, so `fill`, `partial_fill`, `rejected`, `canceled` and `expired` events settle orders in near real time (lookups stay as the fallback). Optional: the market data stream feeds `QuoteUpdated` for held and watched symbols. Reconnect with resubscribe. Lag metric.
   - **Refs:** §17.3, §17.7, §9.6 · **Depends:** T-145 · **P2**
+  - Done (2026-11-19): `TradeUpdatesListener` settles orders from `trade_updates` with reconnect and backoff, the sync stays the fallback, and `broker_trade_update_lag_seconds` measures lag; verified against the real paper stream. The optional market-data stream is not built: quotes stay on the 60 s snapshot sync.
 - [ ] **T-149** Alpaca Paper end-to-end smoke
   - **Acceptance:** an opt-in CI job (paper keys from secrets, manual trigger) connects, places a 1-share bracket order on a liquid symbol, confirms the fill, verifies the mirrored position, closes it and verifies reconciliation is clean. A Maestro variant of the journey runs against an `alpaca_paper` portfolio.
   - **Refs:** §17, §21 · **Depends:** T-145 · **P1**
