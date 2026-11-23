@@ -27,6 +27,16 @@ export {
 export { ScannerStatus, ScoreComponent, Signal, SignalCount, SignalPage, SignalType, scannerApi, type SignalFilters } from './scanner';
 export { SearchItem, SearchResults, searchApi } from './search';
 export { Watchlist, WatchlistItem, Watchlists, watchlistETag, watchlistsApi } from './watchlists';
+export {
+  CONTRIBUTION_FREQUENCIES,
+  type ContributionFrequency,
+  INVEST_PROFILES,
+  InvestFund,
+  InvestPlan,
+  type InvestProfile,
+  investApi,
+  type SaveInvestPlan,
+} from './invest';
 export type { components as ApiSchemas } from './generated/schema';
 
 /** Money, prices, quantities and percents travel as decimal strings — never JS numbers. */

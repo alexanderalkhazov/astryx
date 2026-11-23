@@ -13,6 +13,7 @@ import {
   settingsApi,
   strategiesApi,
   watchlistsApi,
+  investApi,
 } from '@astryx/api-client';
 import { randomUUID } from 'expo-crypto';
 import { router } from 'expo-router';
@@ -60,6 +61,7 @@ export const auth = authApi(api);
 export const market = marketApi(api);
 export const search = searchApi(api);
 export const watchlists = watchlistsApi(api);
+export const invest = investApi(api);
 export const scanner = scannerApi(api);
 export const analyses = analysesApi(api);
 export const proposals = proposalsApi(api);

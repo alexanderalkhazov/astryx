@@ -1,4 +1,4 @@
-import type { PerformanceRange, Signal } from '@astryx/api-client';
+import { isApiError, type PerformanceRange, type Signal } from '@astryx/api-client';
 import { color, radius, space } from '@astryx/design-tokens';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Decimal from 'decimal.js-light';
@@ -14,7 +14,7 @@ import { Segmented } from '@/components/Segmented';
 import { HomeHeader, Screen } from '@/components/Shell';
 import { Text } from '@/components/Text';
 import { ConnectionBanner } from '@/features/connection/ConnectionBanner';
-import { broker, market, notifications, portfolio, scanner } from '@/lib/api';
+import { broker, invest, market, notifications, portfolio, scanner } from '@/lib/api';
 import { formatEtTime, formatMoney, formatPct, formatPnl, formatPrice, formatRatio } from '@/lib/format';
 import { toast } from '@/state/toasts';
 
@@ -62,6 +62,18 @@ export default function HomeScreen() {
     retry: false,
   });
   const alpaca = connections.data?.find((c) => c.broker === 'alpaca');
+  const investing = useQuery({
+    queryKey: ['invest'],
+    queryFn: async () => {
+      try {
+        return (await invest.get()).data;
+      } catch (error) {
+        if (isApiError(error) && error.status === 404) return null;
+        throw error;
+      }
+    },
+    retry: false,
+  });
   const strategies = useQuery({
     queryKey: ['portfolio', 'strategies-mtd'],
     queryFn: async () => (await portfolio.strategyMtd()).data.items,
@@ -125,6 +137,25 @@ export default function HomeScreen() {
         ) : (
           <SkeletonRow />
         )}
+
+        {investing.data !== undefined ? (
+          <Pressable
+            accessibilityRole="link"
+            onPress={() => router.push('/invest')}
+            style={({ pressed }) => [styles.investCard, { opacity: pressed ? 0.8 : 1 }]}
+            testID="home-invest"
+          >
+            <View style={styles.flexOne}>
+              <Text.Overline tone="signal">INVESTING</Text.Overline>
+              {investing.data ? (
+                <Text.Body>{`${formatMoney(investing.data.value)} · ${formatPct(investing.data.gainPct, { signed: true })} since you started`}</Text.Body>
+              ) : (
+                <Text.Body>Start a simple long-term plan: three broad funds, added to regularly.</Text.Body>
+              )}
+            </View>
+            <Text.Body tone="secondary">›</Text.Body>
+          </Pressable>
+        ) : null}
 
         {p ? (
           <LineChart
@@ -309,6 +340,17 @@ function Section({
 const styles = StyleSheet.create({
   content: { gap: space[4], paddingBottom: space[6] },
   heroLines: { gap: 2 },
+  investCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space[3],
+    padding: space[4],
+    borderRadius: radius.card,
+    backgroundColor: color.surface1,
+    borderWidth: 1,
+    borderColor: color.line,
+  },
+  flexOne: { flex: 1, gap: space[1] },
   section: { gap: space[2] },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   attention: { flexDirection: 'row', gap: space[3], alignItems: 'flex-start', paddingVertical: space[2] },
