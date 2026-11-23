@@ -24,9 +24,11 @@ public static class ValidationIssueCodes
     public const string Stale = "stale";
     public const string UngroundedIndicator = "ungrounded_indicator";
     public const string UngroundedCatalyst = "ungrounded_catalyst";
+    public const string UngroundedNumber = "ungrounded_number";
     public const string LevelsRejected = "levels_rejected";
     public const string PolicyViolation = "policy_violation";
     public const string ForbiddenField = "forbidden_field";
+    public const string PlaceholderDropped = "placeholder_dropped";
 }
 
 /// <summary>One finding, at a JSON pointer into the model output.</summary>

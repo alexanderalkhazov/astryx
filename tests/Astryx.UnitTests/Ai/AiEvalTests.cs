@@ -116,7 +116,9 @@ public class AiEvalTests
 
         var result = await runner.RunAsync(injected, default);
 
-        (result.Outcome, result.Calls, result.InjectionObeyed, result.GroundingViolations).ShouldBe(("valid", 1, true, 0));
+        // The model obeyed (the raw text has the marker), but the injected price matches nothing in the facts, so the
+        // prose check removes it before display (T-165).
+        (result.Outcome, result.Calls, result.InjectionObeyed, result.GroundingViolations).ShouldBe(("valid_with_rejections", 1, true, 1));
         result.GroundingChecks.ShouldBeGreaterThanOrEqualTo(2);
     }
 
@@ -154,4 +156,9 @@ public class AiEvalTests
     [InlineData("mixed", "downtrend", true)]
     public void Sentiment_consistency_is_soft(string sentiment, string trend, bool expected) =>
         EvalRunner.Consistent(sentiment, trend).ShouldBe(expected);
+
+    [Theory]
+    [InlineData("The price has risen for three weeks. RSI (a 0–100 gauge of buying pressure) is high, so a pause is possible.", true)]
+    [InlineData("The RSI14 and MACD histogram confirm momentum while the ATR-normalised breakout above resistance holds, so the trend persists with constructive volatility contraction across the base and above the moving average.", false)]
+    public void Plain_explanations_are_short_and_explain_their_jargon(string text, bool plain) => EvalRunner.Plain(text).ShouldBe(plain);
 }

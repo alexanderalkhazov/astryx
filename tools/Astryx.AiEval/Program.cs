@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 // dotnet run --project tools/Astryx.AiEval -- --model qwen3.5:0.8b --prompt stock_analysis@2026-11-09.1 [--limit N]
-// Options: --base-url http://localhost:11434 · --provider ollama|fake · --cases <dir> · --out <dir> · --timeout <s> · --min-rr 1.5
+// Options: --base-url http://localhost:11434 · --provider ollama|fake · --cases <dir> · --out <dir> · --timeout <s> · --min-rr 1.5 · --raw <dir> (keep each model answer)
 var options = ParseArgs(args);
 var root = FindRepoRoot();
 var model = options.GetValueOrDefault("model", "qwen3.5:0.8b");
@@ -36,7 +36,7 @@ IAiProvider provider = providerName switch
     _ => throw new ArgumentException($"Unknown provider '{providerName}'."),
 };
 
-var runner = new EvalRunner(provider, prompt, new AiGenerationOptions { TimeoutSeconds = timeout }, minRr);
+var runner = new EvalRunner(provider, prompt, new AiGenerationOptions { TimeoutSeconds = timeout }, minRr, options.GetValueOrDefault("raw"));
 var startedAt = DateTimeOffset.UtcNow;
 var results = new List<CaseResult>();
 foreach (var golden in cases)

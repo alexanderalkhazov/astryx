@@ -18,7 +18,7 @@ public sealed record GateCheck(string Name, string Threshold, string Actual, boo
 public sealed record EvalReport(
     string Model, string Prompt, string Provider, DateTimeOffset StartedAt, int Cases,
     Rate SchemaValidFirstCall, Rate SchemaValidAfterRepair, Rate GroundingViolations, Rate LevelsAccepted, Rate PolicyHits,
-    Rate ForbiddenFields, Rate InjectionObeyed, Rate SentimentConsistent, Rate ProviderErrors,
+    Rate ForbiddenFields, Rate InjectionObeyed, Rate SentimentConsistent, Rate PlainExplanations, Rate ProviderErrors,
     long LatencyP50Ms, long LatencyP95Ms, int MeanCompletionTokens, IReadOnlyList<GateCheck> Gate, IReadOnlyList<CaseResult> Results)
 {
     public bool GatePassed => Gate.All(g => g.Pass);
@@ -48,6 +48,7 @@ public sealed record EvalReport(
             new Rate(answered.Count(r => r.ForbiddenFields > 0), answered.Count),
             obeyed,
             new Rate(valid.Count(r => r.SentimentConsistent == true), valid.Count),
+            new Rate(valid.Count(r => r.PlainExplanation == true), valid.Count),
             new Rate(results.Count - answered.Count, results.Count),
             Percentile(latencies, 50), p95,
             answered.Count == 0 ? 0 : (int)(answered.Sum(r => (long)r.CompletionTokens) / answered.Count),
@@ -87,12 +88,13 @@ public sealed record EvalReport(
         md.AppendLine("|---|---|");
         md.AppendLine(CultureInfo.InvariantCulture, $"| Schema-valid on the first call | {SchemaValidFirstCall} |");
         md.AppendLine(CultureInfo.InvariantCulture, $"| Schema-valid after one repair | {SchemaValidAfterRepair} |");
-        md.AppendLine(CultureInfo.InvariantCulture, $"| Grounding violations (dropped indicators and catalysts) | {GroundingViolations} |");
+        md.AppendLine(CultureInfo.InvariantCulture, $"| Grounding violations (dropped indicators, catalysts and prose numbers) | {GroundingViolations} |");
         md.AppendLine(CultureInfo.InvariantCulture, $"| Justified levels that pass LevelValidator | {LevelsAccepted} |");
         md.AppendLine(CultureInfo.InvariantCulture, $"| Valid answers with a policy hit | {PolicyHits} |");
         md.AppendLine(CultureInfo.InvariantCulture, $"| Answers with a forbidden field | {ForbiddenFields} |");
         md.AppendLine(CultureInfo.InvariantCulture, $"| Injection cases where the model obeyed | {InjectionObeyed} |");
         md.AppendLine(CultureInfo.InvariantCulture, $"| Sentiment consistent with the trend (soft) | {SentimentConsistent} |");
+        md.AppendLine(CultureInfo.InvariantCulture, $"| Plain explanation for beginners (soft: ≤ 20 words a sentence, jargon explained) | {PlainExplanations} |");
         md.AppendLine(CultureInfo.InvariantCulture, $"| Provider errors | {ProviderErrors} |");
         md.AppendLine(CultureInfo.InvariantCulture, $"| Latency per case p50 / p95 | {Seconds(LatencyP50Ms)} / {Seconds(LatencyP95Ms)} |");
         md.AppendLine(CultureInfo.InvariantCulture, $"| Mean completion tokens per case | {MeanCompletionTokens} |");

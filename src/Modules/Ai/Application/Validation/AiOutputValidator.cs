@@ -30,6 +30,8 @@ public sealed partial class AiOutputValidator
     public const string Disclaimer = "AI-generated research for information only. Not investment advice. Not a guarantee of any outcome. Levels are suggestions that must pass deterministic risk checks.";
 
     /// <summary>Fields only the backend may set, plus sizing and order fields the model must never propose (step 8).</summary>
+    private static readonly HashSet<string> PlaceholderTypes = new(StringComparer.OrdinalIgnoreCase) { "", "none", "null", "n/a", "na" };
+
     private static readonly HashSet<string> Forbidden = new(StringComparer.OrdinalIgnoreCase)
     {
         "rewardRisk", "riskReward", "rewardToRisk", "positionSize", "quantity", "qty", "shares", "notional", "size",
@@ -67,6 +69,7 @@ public sealed partial class AiOutputValidator
 
         // 8 Forbidden fields (dropped before the schema check)
         DropForbidden(analysis, "", issues);
+        DropPlaceholderCatalysts(analysis, issues);
 
         // 2 Schema
         var evaluation = Schema(input.Prompt).Evaluate(JsonSerializer.SerializeToElement(analysis), new EvaluationOptions { OutputFormat = OutputFormat.List, RequireFormatValidation = true });
@@ -110,6 +113,9 @@ public sealed partial class AiOutputValidator
 
         // 6 Levels
         var levels = CheckLevels(analysis, context, input.MinRewardRisk, issues);
+
+        // 5b Numbers in the prose (T-165)
+        ProseGrounding.Check(analysis, context, levels, input.MinRewardRisk, issues);
 
         // 7 Content policy
         Police(analysis, "", issues);
@@ -185,6 +191,28 @@ public sealed partial class AiOutputValidator
                 }
 
                 break;
+        }
+    }
+
+    /// <summary>
+    /// Small models write "no upcoming event" as a catalyst with a null or "none" type instead of an empty list. Such an
+    /// item says nothing, so it is removed before the schema check rather than failing the whole answer.
+    /// </summary>
+    private static void DropPlaceholderCatalysts(JsonObject analysis, List<ValidationIssue> issues)
+    {
+        if (analysis["catalysts"] is not JsonArray catalysts)
+        {
+            return;
+        }
+
+        for (var i = catalysts.Count - 1; i >= 0; i--)
+        {
+            if (catalysts[i] is JsonObject item && item["type"] is var type
+                && (type is null || (type is JsonValue v && v.GetValueKind() == JsonValueKind.String && PlaceholderTypes.Contains(v.GetValue<string>().Trim()))))
+            {
+                catalysts.RemoveAt(i);
+                issues.Add(new ValidationIssue(ValidationIssueCodes.PlaceholderDropped, $"/catalysts/{i}", "Dropped a catalyst with no type: it was a placeholder for \"no upcoming event\"."));
+            }
         }
     }
 

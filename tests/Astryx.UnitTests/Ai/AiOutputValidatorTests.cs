@@ -35,7 +35,7 @@ public class AiOutputValidatorTests
     {
         var result = _validator.Validate(Valid(), await InputAsync());
 
-        result.Status.ShouldBe(ValidationStatus.Valid, string.Join("; ", result.Issues.Select(i => i.Message)));
+        result.Status.ShouldBe(ValidationStatus.Valid, string.Join("; ", result.Issues.Select(i => $"{i.Path}: {i.Message}")));
         var a = result.Analysis!;
         a["analysisTimestamp"]!.GetValue<string>().ShouldBe("2026-11-09T19:32:41Z");
         a["rewardRisk"]!.GetValue<string>().ShouldBe("1.77"); // (204.00 − 187.50) ÷ (187.50 − 178.20), worst fill
@@ -81,6 +81,21 @@ public class AiOutputValidatorTests
         var huge = Edit(j => j["explanation"] = new string('x', AiOutputValidator.MaxBytes));
         var result = _validator.Validate(huge, await InputAsync());
         (result.Issues[0].Code, result.Repairable).ShouldBe(("parse_error", false));
+    }
+
+    [Theory]
+    [InlineData("null")]
+    [InlineData("\"none\"")]
+    [InlineData("\"\"")]
+    public async Task A_placeholder_catalyst_for_no_upcoming_event_is_dropped_not_fatal(string type)
+    {
+        // qwen3.5:4b in T-165: {"type": null, "date": null, "note": "No upcoming earnings date listed"} failed 42 of 54 cases.
+        var raw = Edit(j => j["catalysts"]!.AsArray().Add(JsonNode.Parse($$"""{"type":{{type}},"date":null,"note":"No upcoming earnings date listed"}""")));
+        var result = _validator.Validate(raw, await InputAsync());
+
+        result.Status.ShouldBe(ValidationStatus.ValidWithRejections);
+        result.Analysis!["catalysts"]!.AsArray().Count.ShouldBe(1);
+        result.Issues.ShouldContain(i => i.Code == "placeholder_dropped" && i.Path == "/catalysts/1");
     }
 
     [Fact]
