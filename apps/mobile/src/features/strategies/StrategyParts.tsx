@@ -84,6 +84,13 @@ export function StrategyCard({ strategy, onPress }: { strategy: StrategySummary;
       </View>
       {s.sparkline.length > 1 ? <Sparkline closes={s.sparkline} width={280} height={44} /> : null}
       {s.metrics ? <HeadlineGrid metrics={s.metrics} /> : <Text.Caption tone="tertiary">No backtest yet.</Text.Caption>}
+      {s.metrics ? (
+        <Text.Caption tone={s.backtestIllustrative !== false ? 'pending' : 'tertiary'} testID={`strategy-${s.code}-source`}>
+          {s.backtestIllustrative !== false
+            ? 'Illustrative figures: not yet backtested on real data'
+            : 'Backtest on real Alpaca daily data'}
+        </Text.Caption>
+      ) : null}
       <GuardLine strategy={s} />
       {s.liveSince ? (
         <Text.DataSm tone="tertiary">

@@ -26,6 +26,7 @@ public static class QuantModule
         var realData = !string.Equals(configuration["MarketData:Provider"] ?? "Fake", "Fake", StringComparison.OrdinalIgnoreCase);
         services.AddSingleton(new FormingVolumePolicy(configuration.GetValue("Quant:ProjectFormingVolume", realData)));
         services.AddScoped<Astryx.Contracts.Quant.IQuantFacts, QuantFactsService>();
+        services.AddScoped<Astryx.Contracts.Quant.IBacktestData, BacktestDataService>();
         return services;
     }
 }

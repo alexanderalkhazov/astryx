@@ -125,6 +125,24 @@ public static class DevEndpoints
             return Results.Ok(new { removedBars = bars, storedBars = stored });
         });
 
+        // T-160: backtests want years of history; the recurring sync only backfills BackfillDays for new instruments.
+        // Runs once, paced by the provider's rate limiter (Alpaca: about 500 requests).
+        dev.MapPost("/market/deepen-history", async (int? days, IServiceProvider services, CancellationToken cancellationToken) =>
+        {
+            await using var scope = services.CreateAsyncScope();
+            var stored = await scope.ServiceProvider.GetRequiredService<EodBarSyncHandler>().DeepenAsync(Math.Clamp(days ?? 1825, 30, 3650), cancellationToken);
+            return Results.Ok(new { storedBars = stored });
+        });
+
+        // T-160: run a strategy's backtest now on the stored universe; the Strategy lab shows the new run.
+        dev.MapPost("/strategies/{code}/backtest", async (string code, IServiceProvider services, CancellationToken cancellationToken) =>
+        {
+            await using var scope = services.CreateAsyncScope();
+            return await scope.ServiceProvider.GetRequiredService<Astryx.Modules.Strategies.Application.Backtesting.BacktestService>().RunAsync(code, cancellationToken) is { } summary
+                ? Results.Ok(summary)
+                : Results.Problem(statusCode: StatusCodes.Status404NotFound, title: "No backtest", detail: "Unknown strategy, no implemented rule, or too little history.", extensions: new Dictionary<string, object?> { ["code"] = "not_found" });
+        });
+
         // Switching a database from the fake provider to a real one (T-147): fake history would otherwise be extended
         // with real bars. Removes every fake-sourced market row and the signals scanned from it, then re-lists the
         // universe; the recurring syncs fill bars, quotes and corporate actions from the real provider.

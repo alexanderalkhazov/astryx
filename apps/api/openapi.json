@@ -8340,6 +8340,10 @@
                 "$ref": "#/components/schemas/GuardDto"
               }
             ]
+          },
+          "backtestIllustrative": {
+            "type": "boolean",
+            "default": true
           }
         },
         "additionalProperties": false

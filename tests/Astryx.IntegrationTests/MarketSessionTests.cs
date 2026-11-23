@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -123,6 +124,49 @@ public class MarketSessionTests(ApiFactory factory) : IClassFixture<ApiFactory>
         market.GetProperty("quotesStale").GetBoolean().ShouldBeTrue(); // nothing synced in a test database
         market.GetProperty("quotesAsOf").ValueKind.ShouldBe(JsonValueKind.Null);
         market.GetProperty("dailyBarsStale").GetBoolean().ShouldBeTrue();
+    }
+
+    /// <summary>Counts calendar calls; everything else goes to the real (fake) provider.</summary>
+    private sealed class CountingProvider(IMarketDataProvider inner) : IMarketDataProvider
+    {
+        public int CalendarCalls { get; private set; }
+
+        public string Code => inner.Code;
+
+        public MarketDataCapabilities Capabilities => inner.Capabilities;
+
+        public Task<IReadOnlyList<ProviderQuote>> GetQuotesAsync(IReadOnlyList<string> symbols, CancellationToken cancellationToken) => inner.GetQuotesAsync(symbols, cancellationToken);
+
+        public Task<IReadOnlyList<ProviderBar>> GetBarsAsync(string symbol, BarInterval interval, DateOnly from, DateOnly to, CancellationToken cancellationToken) => inner.GetBarsAsync(symbol, interval, from, to, cancellationToken);
+
+        public Task<IReadOnlyList<ProviderInstrument>> GetInstrumentsAsync(string universeCode, CancellationToken cancellationToken) => inner.GetInstrumentsAsync(universeCode, cancellationToken);
+
+        public Task<IReadOnlyList<ProviderCorporateAction>> GetCorporateActionsAsync(string symbol, DateOnly from, CancellationToken cancellationToken) => inner.GetCorporateActionsAsync(symbol, from, cancellationToken);
+
+        public Task<ProviderFundamentals?> GetFundamentalsAsync(string symbol, CancellationToken cancellationToken) => inner.GetFundamentalsAsync(symbol, cancellationToken);
+
+        public Task<IReadOnlyList<ProviderSession>> GetCalendarAsync(string exchangeMic, DateOnly from, DateOnly to, CancellationToken cancellationToken)
+        {
+            CalendarCalls++;
+            return inner.GetCalendarAsync(exchangeMic, from, to, cancellationToken);
+        }
+    }
+
+    [Fact]
+    public async Task Weekends_never_reach_the_provider_and_provider_answers_are_cached()
+    {
+        _ = factory.CreateClient();
+        await using var scope = factory.Services.CreateAsyncScope();
+        var provider = new CountingProvider(scope.ServiceProvider.GetRequiredService<IMarketDataProvider>());
+        var clock = new MarketClock(scope.ServiceProvider.GetRequiredService<MarketDataDbContext>(), provider, new FakeTimeProvider(DateTimeOffset.Parse("2030-01-09T15:00:00Z", CultureInfo.InvariantCulture)), new MemoryCache(new MemoryCacheOptions()));
+
+        (await clock.SessionAsync(new DateOnly(2030, 1, 5), default)).ShouldBeNull(); // a Saturday
+        (await clock.SessionAsync(new DateOnly(2030, 1, 6), default)).ShouldBeNull(); // a Sunday
+        provider.CalendarCalls.ShouldBe(0); // a backtest asked about weekends once per symbol and crawled (T-160)
+
+        var weekday = await clock.SessionAsync(new DateOnly(2030, 1, 7), default); // not in the stored calendar
+        (await clock.SessionAsync(new DateOnly(2030, 1, 7), default)).ShouldBe(weekday);
+        provider.CalendarCalls.ShouldBe(1);
     }
 
     /// <summary>Services bound to a clock of our choosing; the calendar comes from the fake provider.</summary>

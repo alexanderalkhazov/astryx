@@ -41,6 +41,32 @@ public sealed class EodBarSyncHandler(MarketDataDbContext db, IMarketDataProvide
         await runner.RunAsync(SyncDataset.EodBars, meter => SyncAsync(target.SessionDate, meter, cancellationToken), rethrowUnavailable: true, cancellationToken);
     }
 
+    /// <summary>
+    /// One-time deepening of daily history to <paramref name="days"/> calendar days back for every active instrument
+    /// (T-160: backtests need more than the default backfill, and the relative-strength rank alone needs a year of
+    /// warm-up). Fetches only what is older than each instrument's earliest stored bar; the provider's own rate limiter
+    /// paces the calls. Returns the number of bars stored.
+    /// </summary>
+    public async Task<int> DeepenAsync(int days, CancellationToken cancellationToken)
+    {
+        var target = clock.Today.AddDays(-days);
+        var instruments = await db.Instruments
+            .Where(i => i.IsActive)
+            .Select(i => new { i.Id, i.Symbol, Earliest = db.PriceBars.Where(b => b.InstrumentId == i.Id && b.Timeframe == Timeframe.OneDay).Min(b => (DateOnly?)b.SessionDate) })
+            .ToListAsync(cancellationToken);
+
+        var stored = 0;
+        foreach (var instrument in instruments.Where(i => i.Earliest is { } earliest && earliest > target.AddDays(7)).OrderBy(i => i.Symbol))
+        {
+            var bars = (await provider.GetBarsAsync(instrument.Symbol, BarInterval.OneDay, target, instrument.Earliest!.Value.AddDays(-1), cancellationToken))
+                .Where(b => b.IsFinal && IsValid(b)).ToList();
+            await UpsertDailyBarsAsync(instrument.Id, bars, cancellationToken);
+            stored += bars.Count;
+        }
+
+        return stored;
+    }
+
     /// <summary>The newest session that closed at least 30 minutes ago, so its final bar is published.</summary>
     private async Task<ProviderSession?> LatestClosedSessionAsync(CancellationToken cancellationToken)
     {

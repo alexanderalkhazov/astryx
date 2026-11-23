@@ -43,6 +43,8 @@ export const StrategySummary = z.object({
   backtestEnd: z.string().nullable(),
   /** Drawdown guard (T-097): drawdown from the window's high and the warn/pause thresholds, as fractions. */
   guard: z.object({ drawdown: Decimal, warnAt: Decimal, pauseAt: Decimal, windowDays: z.number().int(), asOf: z.string() }).nullable(),
+  /** False once a real backtest (T-160) replaced the seeded illustrative figures; absent means illustrative. */
+  backtestIllustrative: z.boolean().optional(),
 });
 export type StrategySummary = z.infer<typeof StrategySummary>;
 

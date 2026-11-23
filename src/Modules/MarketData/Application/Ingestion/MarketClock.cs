@@ -37,6 +37,11 @@ public sealed class MarketClock(MarketDataDbContext db, IMarketDataProvider prov
     /// <summary>The session row for a date, from <c>market.trading_calendar</c> or, before the first calendar sync, the provider.</summary>
     public async Task<ProviderSession?> SessionAsync(DateOnly date, CancellationToken cancellationToken)
     {
+        if (date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
+        {
+            return null; // US equities never trade at weekends; the calendar stores weekdays only, so don't ask the provider
+        }
+
         if (cache.TryGetValue(("trading-calendar", date), out ProviderSession? cached))
         {
             return cached;
@@ -45,20 +50,19 @@ public sealed class MarketClock(MarketDataDbContext db, IMarketDataProvider prov
         var stored = await db.TradingCalendar.AsNoTracking().SingleOrDefaultAsync(s => s.ExchangeMic == PrimaryMic && s.SessionDate == date, cancellationToken);
         if (stored is not null)
         {
-            // Only stored rows are cached: the provider fallback below must be retried until the calendar sync has run.
             return cache.Set(("trading-calendar", date), new ProviderSession(stored.ExchangeMic, stored.SessionDate, stored.OpenAt, stored.CloseAt, stored.IsHalfDay, stored.IsHoliday), CalendarCacheTtl);
         }
 
         try
         {
-            return (await provider.GetCalendarAsync(PrimaryMic, date, date, cancellationToken)).SingleOrDefault();
+            // The provider's answer is as good as a stored row (and a provider call is rate-limited): cache it too.
+            return cache.Set(("trading-calendar", date), (await provider.GetCalendarAsync(PrimaryMic, date, date, cancellationToken)).SingleOrDefault(), CalendarCacheTtl);
         }
         catch (MarketDataUnavailableException)
         {
-            // Best effort without the provider: weekdays 09:30–16:00 ET, holidays unknown. Stored data must keep answering.
-            return date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday
-                ? null
-                : new ProviderSession(PrimaryMic, date, At(date, 9, 30), At(date, 16, 0), IsHalfDay: false, IsHoliday: false);
+            // Best effort without the provider (not cached, so the provider is asked again next time): 09:30–16:00 ET,
+            // holidays unknown. Stored data must keep answering.
+            return new ProviderSession(PrimaryMic, date, At(date, 9, 30), At(date, 16, 0), IsHalfDay: false, IsHoliday: false);
         }
     }
 

@@ -58,7 +58,9 @@ export default function StrategiesScreen() {
       ) : (
         <>
           <Text.Caption tone="tertiary">
-            {`${items.length} strategies${start && end ? ` · backtests ${formatMonthYear(start)} – ${formatMonthYear(end)}` : ''} · illustrative results`}
+            {`${items.length} strategies${start && end ? ` · backtests ${formatMonthYear(start)} – ${formatMonthYear(end)}` : ''} · ${
+              items.some((s) => s.metrics && s.backtestIllustrative !== false) ? 'some results illustrative' : 'Alpaca daily data'
+            }`}
           </Text.Caption>
           {view === 'strategies' ? (
             <View style={styles.list}>

@@ -22,7 +22,8 @@ public sealed record GuardDto(string Drawdown, string WarnAt, string PauseAt, in
 /// <param name="Sparkline">Equity of the latest run, downsampled to at most 60 points, as decimal strings.</param>
 public sealed record StrategySummaryDto(
     Guid Id, string Code, string Name, string Description, string Status, int DisplayOrder, int Version,
-    DateOnly? LiveSince, LiveResultsDto? Live, StrategyMetricsDto? Metrics, IReadOnlyList<string> Sparkline, DateOnly? BacktestStart, DateOnly? BacktestEnd, GuardDto? Guard);
+    DateOnly? LiveSince, LiveResultsDto? Live, StrategyMetricsDto? Metrics, IReadOnlyList<string> Sparkline, DateOnly? BacktestStart, DateOnly? BacktestEnd, GuardDto? Guard,
+    bool BacktestIllustrative = true);
 
 public sealed record ParameterDto(string Key, string Label, string Unit, JsonNode? Default, JsonNode? Min, JsonNode? Max, JsonNode? Step, JsonNode? Value);
 
@@ -233,7 +234,8 @@ public sealed class StrategyCatalog(StrategiesDbContext db, IStrategySignalFeed 
         }
 
         return new StrategySummaryDto(
-            s.Id, s.Code, s.Name, s.Description, s.Status, s.DisplayOrder, version?.VersionNumber ?? 0, s.LiveSince, Live(s), metrics, sparkline, run?.PeriodStart, run?.PeriodEnd, Guard(s));
+            s.Id, s.Code, s.Name, s.Description, s.Status, s.DisplayOrder, version?.VersionNumber ?? 0, s.LiveSince, Live(s), metrics, sparkline, run?.PeriodStart, run?.PeriodEnd, Guard(s),
+            BacktestIllustrative: run is null || JsonNode.Parse(run.Assumptions)?["illustrative"]?.GetValue<bool>() is not false); // seeded runs carry no flag
     }
 
     private static LiveResultsDto? Live(Strategy s)

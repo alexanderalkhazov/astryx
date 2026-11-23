@@ -158,11 +158,21 @@ beforeEach(() => {
 });
 
 describe('Strategy lab (designs 13 and 14)', () => {
+  it('labels a strategy backtested on real data and the illustrative ones apart (T-160)', async () => {
+    mocks.strategies.list.mockResolvedValue(ok({ items: [SUMMARY({ backtestIllustrative: false }), PULLBACK] }));
+    await renderAt('/strategies');
+
+    expect(await screen.findByTestId('strategy-base_breakout-source')).toHaveTextContent('Backtest on real Alpaca daily data');
+    expect(screen.getByTestId(`strategy-${PULLBACK.code}-source`)).toHaveTextContent(
+      'Illustrative figures: not yet backtested on real data',
+    );
+  });
+
   it('lists strategies with status, headline metrics, live MTD and the illustrative caption', async () => {
     await renderAt('/strategies');
 
     expect(await screen.findByText('Base Breakout v3')).toBeOnTheScreen();
-    expect(screen.getByText('2 strategies · backtests Jan 2015 – Jun 2026 · illustrative results')).toBeOnTheScreen();
+    expect(screen.getByText('2 strategies · backtests Jan 2015 – Jun 2026 · some results illustrative')).toBeOnTheScreen();
     expect(screen.getByText('Active')).toBeOnTheScreen();
     expect(screen.getByText('Active · guard')).toBeOnTheScreen();
     expect(screen.getAllByLabelText('CAGR: 16.9%')).toHaveLength(2);

@@ -27,6 +27,38 @@ public static class TrendClassifier
             : new Trend(TrendState.Insufficient, ShortHistory: true);
     }
 
+    /// <summary>
+    /// <see cref="Classify"/> at every bar at once (T-160): the state at index <c>i</c> equals
+    /// <c>Classify(closes[0..i])</c>, because the SMAs are causal.
+    /// </summary>
+    public static IReadOnlyList<TrendState> Series(IReadOnlyList<decimal> closes, IIndicatorCalculator calculator)
+    {
+        var states = new TrendState[closes.Count];
+        if (closes.Count < FallbackMinBars)
+        {
+            Array.Fill(states, TrendState.Insufficient);
+            return states;
+        }
+
+        var sma20 = calculator.Sma(closes, 20).Values;
+        var sma50 = calculator.Sma(closes, 50).Values;
+        var sma200 = closes.Count >= MinBars ? calculator.Sma(closes, 200).Values : null;
+        for (var i = 0; i < closes.Count; i++)
+        {
+            var count = i + 1;
+            states[i] = count >= MinBars ? At(closes[i], sma50[i]!.Value, sma200![i]!.Value, sma50[i]!.Value - sma50[i - SlopeBars]!.Value)
+                : count >= FallbackMinBars ? At(closes[i], sma20[i]!.Value, sma50[i]!.Value, sma20[i]!.Value - sma20[i - SlopeBars]!.Value)
+                : TrendState.Insufficient;
+        }
+
+        return states;
+    }
+
+    private static TrendState At(decimal close, decimal fastNow, decimal slowNow, decimal slope) =>
+        close > fastNow && fastNow > slowNow && slope > 0m ? TrendState.Uptrend
+        : close < fastNow && fastNow < slowNow && slope < 0m ? TrendState.Downtrend
+        : TrendState.Sideways;
+
     private static TrendState Rule(IReadOnlyList<decimal> closes, IIndicatorCalculator calculator, int fast, int slow)
     {
         var fastSma = calculator.Sma(closes, fast).Values;

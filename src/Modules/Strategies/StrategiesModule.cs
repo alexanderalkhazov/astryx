@@ -19,6 +19,8 @@ public static class StrategiesModule
         services.AddScoped<Astryx.Contracts.Strategies.IStrategySignals, StrategySignals>();
         services.AddSingleton<IStrategyRule, BaseBreakoutRule>();
         services.AddJobHandler<DrawdownGuardJob, DrawdownGuardHandler>();
+        services.AddScoped<Application.Backtesting.BacktestService>();
+        services.AddJobHandler<Application.Backtesting.BacktestJob, Application.Backtesting.BacktestService>();
         services.AddRecurringJob("strategies-drawdown-guard", TimeSpan.FromHours(1), _ => new DrawdownGuardJob());
         return services;
     }

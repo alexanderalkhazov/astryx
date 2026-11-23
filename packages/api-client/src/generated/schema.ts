@@ -2673,6 +2673,8 @@ export interface components {
             /** Format: date */
             backtestEnd: null | string;
             guard: null | components["schemas"]["GuardDto"];
+            /** @default true */
+            backtestIllustrative: boolean;
         };
         SuggestedLevelsDto: {
             justified: boolean;
