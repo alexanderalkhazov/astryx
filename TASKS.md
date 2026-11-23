@@ -105,6 +105,8 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 | **M6** Portfolio and activity | Positions, P&L, Activity, notifications, strategy lab, settings | Full 10-step journey works manually |
 | **M7** E2E and hardening | Automated journey, failure tests, observability, release gate | §21.10 release gate passes |
 | **M8** Alpaca Live (gated) | Real-money trading through Alpaca, only after legal, operational and safety gates | Every §17.9 gate ticked, owner sign-off |
+| **M9** Beginner mode | Evidence-gated strategies, plain language, onboarding, long-term investing | A beginner can start an Invest plan and only sees strategies with real evidence |
+| **M10** Whole market and company data | Any US stock or ETF, a Markets overview, quarterly financials and dividends | AAPL shows 8 quarters of SEC financials and its dividends; any Alpaca-tradable symbol opens |
 
 **Priority (owner, 2026-11-12): a working local app first.** Work runs M2 → M3 → M4 → M5 → M5b → M6 on the local stack (Docker, simulator, dev build). The CI, scanning and lint tasks (T-001, T-002, T-003, the CI check in T-010) and release or deployment work are deferred until the end-to-end journey works locally. A `Depends:` on one of them does not block local work. T-010's local generation (`pnpm api:gen`) is done with the market endpoints (T-045). Rule A.1 (real money disabled) and every safety rule still apply.
 
@@ -562,6 +564,50 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Acceptance:** each strategy's live paper results (signals, fills, P&L, drawdown) since a start date shown beside its backtest, so users see real out-of-sample results; a strategy is offered to Beginners only after a minimum soak and drawdown within its backtest range.
   - **Refs:** §17.9 (T-131) · **Depends:** T-160 · **P2**
   - ⏸ WIP (2026-11-23, `007de59`): evidence gate done (verdict per strategy from its real backtest, risk-engine warning, beginners only see proven strategies). **Open:** each strategy's live paper results beside its backtest, and a minimum soak before Beginners see a strategy.
+
+### M10 · Whole market and company data (owner request 2026-11-23: "broad stocks / indices / market integration", "dividends / company earnings in Q1–Q4")
+
+> Today the real universe is the 500 S&P 500 members (`us_large_cap`) plus the three Invest funds; mid and small caps and most ETFs can't be found. Alpaca's free data plan allows about 200 requests a minute and has no fundamentals, so history beyond the core set loads on demand and financials come from SEC EDGAR. Showing any of it to anyone but the owner is still Q-04.
+>
+> **SEC EDGAR contact (owner decision 2026-11-23):** every EDGAR request must send a User-Agent with a contact (SEC fair-access policy). Use `Astryx alexander410dev@gmail.com`, configured as `Sec:UserAgent` (env `SEC__USERAGENT`), never hard-coded in code. Stay under SEC's 10 requests a second.
+
+- [ ] **T-170** Every US stock and ETF, history on demand
+  - **Acceptance:** the instrument sync loads Alpaca's full list of active, tradable US equities and ETFs (about 11,000; `/v2/assets`) as searchable instruments, flagged core (the scanned universe) or extended. Opening, watching, analysing or proposing an extended symbol fetches its 5-year daily history once (queued, rate-limited, then kept fresh daily while watched or held); the stock screen shows "Loading history…" until then. Search ranks exact symbol, then core, then name matches. Paper trading and every risk check work the same for extended symbols.
+  - **Refs:** ADR 024, §20 · **Depends:** — · **P1**
+- [ ] **T-171** Core ETF set
+  - **Acceptance:** about 40 ETFs synced like the core stocks, in a reference CSV: index (SPY, QQQ, DIA, IWM, VTI), the 11 SPDR sectors (XLK, XLF, XLV, XLY, XLP, XLE, XLI, XLB, XLU, XLRE, XLC), international (VXUS, VEA, VWO), bonds (BND, AGG, TLT, SHY), gold and real estate (GLD, VNQ). ETFs are never scanned by the single-stock rules; the Invest track can offer more mixes from them.
+  - **Refs:** T-164 · **Depends:** T-170 · **P1**
+- [ ] **T-172** Markets screen
+  - **Acceptance:** a Markets view (Home entry or tab) with the four indices' moves and sparklines (via SPY, QQQ, DIA, IWM), a sector map coloured by each sector fund's move today, breadth over the core universe (share rising today, share above the 50- and 200-day average), and the day's top gainers and losers. One endpoint, cached per minute; plain-language captions in Simple mode.
+  - **Refs:** §11 · **Depends:** T-171 · **P1**
+- [ ] **T-173** Larger scanned universe (measured)
+  - **Acceptance:** measure quote and bar sync cost for the top ~1,000 by liquidity against Alpaca's free limits; enable it only if a full scan still finishes within its 15-minute cadence, else record why not in ADR 024.
+  - **Refs:** ADR 024 · **Depends:** T-170 · **P2**
+- [ ] **T-174** Company financials from SEC EDGAR
+  - **Acceptance:** an `ISecFilingsProvider` (Http, `Sec:UserAgent`, ≤ 10 req/s, retries) reads `data.sec.gov` company tickers (symbol → CIK) and XBRL `companyfacts`. Per instrument and fiscal quarter (Q1–Q4, Q4 derived from the 10-K minus Q1–Q3 when needed): revenue, gross profit, operating income, net income, diluted EPS, operating cash flow, cash, total debt, shares outstanding, filing date and form. Stored in `market.financials`; synced weekly for core and ETF-less instruments, on demand for extended ones. A fake provider with fixture data for tests and CI. Values are the reported figures, unadjusted, with the source filing linked.
+  - **Refs:** §20 · **Depends:** — · **P1**
+- [ ] **T-175** Dividends
+  - **Acceptance:** cash dividends from Alpaca corporate actions (amount, ex-date, record and pay dates) kept as history per instrument; derived trailing-12-month yield, payout ratio (dividends ÷ EPS), and the next announced ex-date when known. Invest funds show their yield.
+  - **Refs:** §20.7 · **Depends:** — · **P1**
+- [ ] **T-176** Financials tab on the stock screen
+  - **Acceptance:** the last 8 quarters as bar charts (revenue, net income, EPS) with year-over-year growth; dividends (yield, history, payout ratio, next ex-date); health basics (profit margin, debt against cash, P/E from the latest price and trailing EPS), each with a glossary explanation; a plain summary in Simple mode ("Revenue grew 12% from a year ago, the 6th quarter of growth in a row. It is profitable and pays a dividend."). "Last reported" date and an *estimated* next report from the company's filing rhythm, labelled as an estimate. No analyst estimates or beat/miss (not available free).
+  - **Refs:** §11.5, T-161 · **Depends:** T-174, T-175 · **P1**
+- [ ] **T-177** Financials in the AI and in Earnings Drift
+  - **Acceptance:** the analysis context carries the latest quarters and dividends (grounded by the T-165 number check); Earnings Drift uses SEC filing dates instead of the headline regex, re-backtested and its evidence recomputed.
+  - **Refs:** §12, T-163, T-165 · **Depends:** T-174 · **P2**
+
+### M11 · Product depth (proposed 2026-11-23, in recommended order)
+
+- [ ] **T-180** Real Alpaca round trip during market hours: proposal → bracket → fill → stop or target → reconciliation, observed and fixed (closes T-149).
+- [ ] **T-181** Streaming quotes from Alpaca's market-data WebSocket instead of 60 s snapshots, for positions, stops and assessments.
+- [ ] **T-182** Price and event alerts (price crosses, stop nearby, earnings soon) as push notifications.
+- [ ] **T-183** Portfolio health: diversification, largest sector and single-stock risks, return against holding SPY, results per strategy.
+- [ ] **T-184** Account deletion and data export (store and privacy requirement).
+- [ ] **T-185** "Ask about this stock": grounded Q&A over stored facts, financials and news, through the AI validator.
+- [ ] **T-186** Learning path: short lessons reusing the glossary, unlocked as the user goes.
+- [ ] **T-187** Trade journal: a plain review of each closed trade against its plan.
+- [ ] **T-188** Invest upgrades: dividends reinvested, more mixes from T-171, an illustrative long-term projection.
+- [ ] **T-189** Fractional shares and dollar-amount orders in trading.
 
 ---
 

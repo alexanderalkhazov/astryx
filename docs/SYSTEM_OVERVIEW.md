@@ -96,9 +96,10 @@ flowchart LR
 | **Profiles** | `identity` | `/me`, preferences, risk settings | Risk limits per user (risk per trade, weight cap, sector cap, daily loss halt, max positions, min R:R) |
 | **MarketData** | `market` | Instruments, daily and intraday bars, quotes, corporate actions, calendar, news, fundamentals, provider sync state | Provider abstraction (§5), ingestion jobs, `MarketClock` (calendar cached 10 min), `FreshnessPolicy`, split and dividend adjustment, batched sparklines (`GetTrailsAsync`) |
 | **Quant** | — (uses `market`) | Indicators and facts for rules | SMA, EMA, Wilder RSI and ATR, MACD 12/26/9, relative volume, ROC, relative-strength percentile rank, trend classifier; forming-volume projection for real data; golden-file tested |
-| **Strategies** | `strategy` | Strategy catalog, versions, parameters, backtest runs (seeded), drawdown guard | `BaseBreakoutRule` (the only rule implemented); `catalog.json` seed; drawdown guard pauses a strategy at −6% over 30 days |
+| **Strategies** | `strategy` | Strategy catalog, versions, parameters, backtest runs and trades, live track records, drawdown guard | Five rules (Base Breakout, Trend Momentum, Trend Pullback, RSI(2) mean reversion, Earnings Drift) with time and indicator exits; a real event-driven backtester over 5 years of Alpaca bars (T-160); evidence verdicts and a beginner soak gate from each strategy's live signal record (T-166); drawdown guard pauses a strategy at −6% over 30 days |
 | **Discovery** | `discovery` | Scanner runs, signals, search | 15-minute scanner over the universe, signals with score breakdown, filters, cursor pages |
 | **Watchlists** | `watchlist` | Watchlists and items | Default watchlist per user; feeds quote priority |
+| **Invest** | `invest` | Long-term plans, fund holdings, deposits and trades | Three-fund paper portfolio (SPY, VXUS, BND) in a cautious, balanced or growth mix; recurring contributions; rebalancing past 5 points of drift (T-164). Simulated only, never sent to Alpaca |
 | **Ai** | `ai` | Analysis jobs and results, prompt versions | `IAiProvider` → Ollama `/api/chat`; versioned prompts; output validator; circuit breaker; local eval set (`docs/ai-eval`) |
 | **Trading** | `trading` | Proposals, risk assessments | `RiskEngine` (pure, deterministic), `AssessmentService`, `ExecutionGate`, proposal expiry, `ProposalReopener` (broker rejection → pending) |
 | **Paper** | `trading` | Orders, fills, broker connections | Simulator (`PaperExecution`, `PositionMonitor`), Alpaca execution (`AlpacaExecution`, `TradeUpdatesListener`, `BrokerReadinessService`), connection service with the credential vault |
@@ -349,6 +350,10 @@ All jobs run on the Postgres job queue. Recurring schedules enqueue them; handle
 | `portfolio.start_of_day` | 5 min | Start-of-day equity for the daily loss halt |
 | `portfolio.reconciliation` | 30 min | Reconciliation (each portfolio once per ~20 h) |
 | `strategies.drawdown_guard` | 1 h | Pause strategies past the guard |
+| `strategies.exit.v1` | 5 min (from open + 5 min) | Time and indicator exits for strategy positions (T-163) |
+| `strategies.track-record.v1` | 4 h | Follow every emitted signal forward; live record and beginner soak gate (T-166) |
+| `strategies.backtest` | On demand | Real backtest of a strategy version (T-160) |
+| `invest.contribution.v1` | 1 h | Recurring Invest contributions, invested at once (T-164) |
 | `notifications.push` | On demand | Send a push |
 | `identity.token_cleanup` | 1 day | Expired tokens |
 | `infra.idempotency_cleanup` | 1 h | Old idempotency records |
@@ -517,8 +522,9 @@ maestro --device <udid> test -e EMAIL=… -e PASSWORD=… e2e/journey.yaml
 | Item | State |
 |---|---|
 | First real fill through the app at Alpaca | Not yet observed. Every step is tested against `FakeAlpaca`, and the connection pieces against the real account |
-| Strategy rules beyond Base Breakout (Q-09) | Drafts in `docs/strategies/rules-draft.md`, awaiting owner approval; few signals until then |
-| Strategy lab figures | Seeded "illustrative" backtests; real backtests depend on Q-09 and Q-10 |
+| Strategy edge | Real backtests (2022-11 to 2026-11): none of the five strategies beat holding the 500 stocks equally (×1.86); Earnings Drift ×1.55, RSI(2) ×1.44, Base Breakout ×1.27, Trend Pullback ×0.91, Trend Momentum ×0.89. Beginners see none until one makes money in testing *and* passes its live trial (20 closed signals over 60 days, drawdown within the backtest's) |
+| Strategy "live" month-to-date figures | Still seeded and labelled illustrative; the real out-of-sample record is the track-record line (T-166) |
+| Market coverage | Real universe is the 500 S&P 500 members plus the three Invest funds; every US stock and ETF, a Markets screen and SEC EDGAR financials and dividends are planned as M10 (T-170 to T-177). EDGAR requests will send the owner-approved contact `Astryx alexander410dev@gmail.com` (`Sec:UserAgent`) |
 | Market data licence for anyone but the owner (Q-04) | Open (ADR 024): blocks tester builds |
 | Staging and deployment (T-117), tester builds (T-118 EAS), release gate (T-119) | Not started (needs hosting and an Expo account) |
 | Branch protection (T-001) | Owner action |
