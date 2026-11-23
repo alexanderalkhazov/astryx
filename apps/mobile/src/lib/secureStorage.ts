@@ -1,8 +1,8 @@
 import { randomUUID } from 'expo-crypto';
 import * as SecureStore from 'expo-secure-store';
 
-// Only the refresh token, the device id, which accounts accepted the onboarding disclaimer and each account's
-// Simple/Pro view are persisted, in the iOS
+// Only the refresh token, the device id, which accounts accepted the onboarding disclaimer, each account's
+// Simple/Pro view and its onboarding answers are persisted, in the iOS
 // Keychain / Android Keystore, readable only while the device is unlocked and never migrated to another device
 // (SYSTEM_DESIGN.md §8.9, §18.6).
 const OPTIONS: SecureStore.SecureStoreOptions = { keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY };
@@ -12,6 +12,7 @@ const DEVICE_ID = 'astryx.deviceId';
 /** Bumped when the disclaimer text changes materially, so everyone sees it again (T-118). */
 const DISCLAIMER = (userId: string) => `astryx.disclaimer.v1.${userId}`;
 const VIEW_MODE = (userId: string) => `astryx.viewMode.${userId}`;
+const PROFILE = (userId: string) => `astryx.profile.v1.${userId}`;
 
 export const secureStorage = {
   getRefreshToken: () => SecureStore.getItemAsync(REFRESH_TOKEN, OPTIONS),
@@ -22,6 +23,8 @@ export const secureStorage = {
   acceptDisclaimer: (userId: string) => SecureStore.setItemAsync(DISCLAIMER(userId), 'accepted', OPTIONS),
   getViewMode: (userId: string) => SecureStore.getItemAsync(VIEW_MODE(userId), OPTIONS),
   setViewMode: (userId: string, mode: 'simple' | 'pro') => SecureStore.setItemAsync(VIEW_MODE(userId), mode, OPTIONS),
+  getProfile: (userId: string) => SecureStore.getItemAsync(PROFILE(userId), OPTIONS),
+  setProfile: (userId: string, json: string) => SecureStore.setItemAsync(PROFILE(userId), json, OPTIONS),
 
   /** A random id generated on first use; refresh-token families are bound to it on the server. */
   async getDeviceId(): Promise<string> {

@@ -17,6 +17,7 @@ import { Screen } from '@/components/Shell';
 import { Stepper } from '@/components/Stepper';
 import { Switch } from '@/components/Switch';
 import { Text } from '@/components/Text';
+import { LEVEL_LABEL, useInvestorProfile } from '@/features/onboarding/profile';
 import { setViewMode, useViewMode, type ViewMode } from '@/features/plain/mode';
 import { registerForPush, unregisterPush } from '@/features/push/push';
 import { LiveTradingGuardDialog } from '@/features/settings/LiveTradingGuardDialog';
@@ -54,6 +55,7 @@ export default function SettingsScreen() {
       </Section>
       <LiveTradingGuardDialog visible={guardOpen} limits={risk.data} onClose={() => setGuardOpen(false)} />
 
+      <ExperienceSection />
       <ExplanationsSection />
 
       <Section title="Risk limits">{risk.data ? <RiskLimits current={risk.data} /> : <SkeletonRow />}</Section>
@@ -444,6 +446,28 @@ function SecuritySection() {
         onCancel={() => setConfirmAll(false)}
         onConfirm={() => all.mutate()}
       />
+    </Section>
+  );
+}
+
+// T-162: the onboarding answers set the level and its risk limits; retaking them updates both.
+function ExperienceSection() {
+  const profile = useInvestorProfile(useSession((s) => s.user?.id));
+  return (
+    <Section title="Experience">
+      <View style={styles.card}>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.push('/onboarding')}
+          style={({ pressed }) => [styles.row, styles.link, { opacity: pressed ? 0.7 : 1 }]}
+          testID="settings-experience"
+        >
+          <Text.Body style={styles.flex}>{profile ? LEVEL_LABEL[profile.level] : 'Not set'}</Text.Body>
+          <Text.Caption tone="secondary">Retake the questions</Text.Caption>
+          <ChevronRight size={18} strokeWidth={1.7} color={color.text3} />
+        </Pressable>
+      </View>
+      <Text.Caption tone="tertiary">Your answers set your risk limits and how much Astryx explains.</Text.Caption>
     </Section>
   );
 }

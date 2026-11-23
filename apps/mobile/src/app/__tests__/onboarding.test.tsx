@@ -2,6 +2,7 @@ import { Text } from 'react-native';
 import { fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
 
 import AppLayout from '../(app)/_layout';
+import OnboardingScreen from '../(app)/onboarding';
 import WelcomeScreen from '../(app)/welcome';
 import PrivacyScreen from '../privacy';
 import { useSession } from '@/state/session';
@@ -17,11 +18,14 @@ jest.mock('expo-secure-store', () => ({
 jest.mock('@/features/realtime/useRealtimeConnection', () => ({ useRealtimeConnection: () => undefined }));
 jest.mock('@/features/push/usePushNotifications', () => ({ usePushNotifications: () => undefined }));
 jest.mock('@/features/security/useScreenProtection', () => ({ useScreenProtection: () => undefined }));
+jest.mock('@/lib/api', () => ({ settings: { risk: jest.fn(), updateRisk: jest.fn() } }));
+const api = jest.requireMock('@/lib/api') as { settings: { risk: jest.Mock; updateRisk: jest.Mock } };
 
 const routes = {
   '(app)/_layout': AppLayout,
   '(app)/index': () => <Text>Home</Text>,
   '(app)/welcome': WelcomeScreen,
+  '(app)/onboarding': OnboardingScreen,
   privacy: PrivacyScreen,
 };
 
@@ -30,7 +34,11 @@ const signedInAs = (id: string) => {
   useSession.getState().setUser({ id, email: `${id}@example.com`, emailConfirmed: true } as never);
 };
 
-beforeEach(() => mockStored.clear());
+beforeEach(() => {
+  mockStored.clear();
+  api.settings.risk.mockResolvedValue({ data: { version: 3 } });
+  api.settings.updateRisk.mockResolvedValue({ data: { version: 4 } });
+});
 
 describe('onboarding disclaimer (T-118)', () => {
   it('sends a new account to the disclaimer first and remembers the acceptance', async () => {
@@ -44,13 +52,56 @@ describe('onboarding disclaimer (T-118)', () => {
 
     await fireEvent.press(screen.getByRole('button', { name: 'I understand' }));
 
-    await waitFor(() => expect(screen).toHavePathname('/'));
-    expect(screen.getByText('Home')).toBeOnTheScreen();
+    await waitFor(() => expect(screen).toHavePathname('/onboarding')); // then the questions (T-162)
     expect(mockStored.get('astryx.disclaimer.v1.user-new')).toBe('accepted');
   });
 
-  it('lets an account that already accepted straight in', async () => {
+  it('turns the answers into an experience level, its risk limits and the explanation mode (T-162)', async () => {
+    mockStored.set('astryx.disclaimer.v1.user-beg', 'accepted');
+    signedInAs('user-beg');
+    await renderRouter(routes, { initialUrl: '/' });
+    await waitFor(() => expect(screen).toHavePathname('/onboarding'));
+    expect(screen.getByRole('button', { name: 'Continue' })).toBeDisabled();
+
+    await fireEvent.press(screen.getByRole('radio', { name: "I've bought a few, but don't trade" }));
+    await fireEvent.press(screen.getByRole('radio', { name: 'Years: saving for the long term' }));
+    await fireEvent.press(screen.getByRole('radio', { name: 'Sell, I can’t stand losing money' })); // one level more careful
+    expect(screen.getByTestId('onboarding-summary')).toHaveTextContent(
+      'Beginner: at most 0.50% of your account at risk per trade and 5 open positions. You can change this in Settings.',
+    );
+    await fireEvent.press(screen.getByRole('button', { name: 'Continue' }));
+
+    await waitFor(() => expect(screen).toHavePathname('/'));
+    expect(api.settings.updateRisk).toHaveBeenCalledWith(
+      { version: 3 },
+      expect.objectContaining({ maxRiskPerTradePct: '0.005', maxOpenPositions: 5 }),
+    );
+    expect(JSON.parse(mockStored.get('astryx.profile.v1.user-beg')!)).toEqual({ level: 'beginner', horizon: 'years', tolerance: 'sell' });
+    expect(mockStored.get('astryx.viewMode.user-beg')).toBe('simple');
+  });
+
+  it('gives an experienced trader the default limits and the Pro view (T-162)', async () => {
+    mockStored.set('astryx.disclaimer.v1.user-pro', 'accepted');
+    signedInAs('user-pro');
+    await renderRouter(routes, { initialUrl: '/' });
+    await waitFor(() => expect(screen).toHavePathname('/onboarding'));
+
+    await fireEvent.press(screen.getByRole('radio', { name: 'I trade regularly' }));
+    await fireEvent.press(screen.getByRole('radio', { name: 'Days to weeks: active trading' }));
+    await fireEvent.press(screen.getByRole('radio', { name: 'See it as normal ups and downs' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Continue' }));
+
+    await waitFor(() => expect(screen).toHavePathname('/'));
+    expect(api.settings.updateRisk).toHaveBeenCalledWith(
+      { version: 3 },
+      expect.objectContaining({ maxRiskPerTradePct: '0.0075', maxOpenPositions: 12 }),
+    );
+    expect(mockStored.get('astryx.viewMode.user-pro')).toBe('pro');
+  });
+
+  it('lets an account that already accepted and answered straight in', async () => {
     mockStored.set('astryx.disclaimer.v1.user-old', 'accepted');
+    mockStored.set('astryx.profile.v1.user-old', JSON.stringify({ level: 'intermediate', horizon: 'months', tolerance: 'hold' }));
     signedInAs('user-old');
     await renderRouter(routes, { initialUrl: '/' });
 

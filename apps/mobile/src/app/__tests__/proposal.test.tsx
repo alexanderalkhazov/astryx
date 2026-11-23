@@ -142,6 +142,24 @@ describe('Trade proposal (design 06)', () => {
     expect(await screen.findByText(/sold automatically to cap the loss/)).toBeOnTheScreen();
   });
 
+  it("keeps the engine's position size for beginners (T-162)", async () => {
+    const secureStore = jest.requireMock('expo-secure-store') as { getItemAsync: jest.Mock };
+    secureStore.getItemAsync.mockImplementation(async (key: string) =>
+      key === 'astryx.profile.v1.beginner-user' ? JSON.stringify({ level: 'beginner', horizon: 'years', tolerance: 'hold' }) : null,
+    );
+    useSession.setState({ user: { id: 'beginner-user' } as never });
+    try {
+      await renderProposal();
+
+      expect(await screen.findByTestId('quantity-locked')).toHaveTextContent(/76 shares/);
+      expect(
+        screen.getByText('Astryx sizes trades for beginners automatically. Change your experience level in Settings.'),
+      ).toBeOnTheScreen();
+    } finally {
+      useSession.setState({ user: null });
+    }
+  });
+
   it('shows only the numbers in Pro mode (T-161)', async () => {
     const secureStore = jest.requireMock('expo-secure-store') as { getItemAsync: jest.Mock };
     secureStore.getItemAsync.mockImplementation(async (key: string) => (key === 'astryx.viewMode.pro-user' ? 'pro' : null));

@@ -20,6 +20,7 @@ import { StatusBanner } from '@/components/StatusBanner';
 import { Stepper } from '@/components/Stepper';
 import { Text } from '@/components/Text';
 import { ConfirmOrderSheet } from '@/features/proposal/ConfirmOrderSheet';
+import { canChooseQuantity, useInvestorProfile } from '@/features/onboarding/profile';
 import { useViewMode } from '@/features/plain/mode';
 import { PlainProposalCard } from '@/features/plain/PlainProposalCard';
 import { FillReceiptSheet } from '@/features/proposal/FillReceiptSheet';
@@ -71,7 +72,9 @@ export default function ProposalScreen() {
     retry: false,
   });
   const alpaca = connections.data?.some((c) => c.broker === 'alpaca') ?? false;
-  const simple = useViewMode(useSession((s) => s.user?.id)) === 'simple';
+  const userId = useSession((s) => s.user?.id);
+  const simple = useViewMode(userId) === 'simple';
+  const chooseQuantity = canChooseQuantity(useInvestorProfile(userId)?.level);
 
   const header = <StackHeader title={proposal.data?.symbol ?? 'Proposal'} subtitle="Trade proposal" />;
 
@@ -208,7 +211,16 @@ export default function ProposalScreen() {
         </Section>
 
         <Section title="Position size">
-          <Stepper value={quantity} min="1" unit="shares" onChange={(q) => sizing.setQuantity(q)} disabled={!pending || !a} />
+          {chooseQuantity ? (
+            <Stepper value={quantity} min="1" unit="shares" onChange={(q) => sizing.setQuantity(q)} disabled={!pending || !a} />
+          ) : (
+            <View testID="quantity-locked">
+              <Text.Data>{`${quantity} shares`}</Text.Data>
+              <Text.Caption tone="tertiary">
+                Astryx sizes trades for beginners automatically. Change your experience level in Settings.
+              </Text.Caption>
+            </View>
+          )}
           <Text.Caption tone="secondary">Risk per trade</Text.Caption>
           <Segmented
             accessibilityLabel="Risk per trade"

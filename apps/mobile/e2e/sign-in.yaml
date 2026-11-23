@@ -49,3 +49,26 @@ env:
     commands:
       - tapOn:
           id: disclaimer-accept
+# Then the three questions (T-162): the Experienced answers keep the design's default risk limits the flows expect.
+- extendedWaitUntil:
+    visible:
+      id: onboarding-continue
+    timeout: 5000
+    optional: true
+- runFlow:
+    when:
+      visible:
+        id: onboarding-continue
+    commands:
+      - tapOn:
+          id: onboarding-experience-experienced
+      - tapOn:
+          id: onboarding-horizon-weeks
+      - scrollUntilVisible:
+          element:
+            id: onboarding-tolerance-normal
+          direction: DOWN
+      - tapOn:
+          id: onboarding-tolerance-normal
+      - tapOn:
+          id: onboarding-continue

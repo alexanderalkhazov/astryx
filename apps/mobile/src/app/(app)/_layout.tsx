@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useReducedMotion } from 'react-native-reanimated';
 
 import { useDisclaimerAccepted } from '@/features/onboarding/disclaimer';
+import { useInvestorProfile } from '@/features/onboarding/profile';
 import { usePushNotifications } from '@/features/push/usePushNotifications';
 import { useScreenProtection } from '@/features/security/useScreenProtection';
 import { useRealtimeConnection } from '@/features/realtime/useRealtimeConnection';
@@ -21,6 +22,7 @@ export default function AppLayout() {
   const reduceMotion = useReducedMotion();
   const userId = useSession((s) => s.user?.id);
   const disclaimer = useDisclaimerAccepted(status === 'signedIn' ? userId : undefined);
+  const profile = useInvestorProfile(status === 'signedIn' ? userId : undefined);
   useRealtimeConnection();
   usePushNotifications();
   useScreenProtection(status === 'signedIn');
@@ -37,6 +39,9 @@ export default function AppLayout() {
   if (status === 'signedOut') return <Redirect href="/sign-in" />;
   // T-118: the disclaimer comes first, once per account on this device.
   if (disclaimer === false && pathname !== '/welcome') return <Redirect href="/welcome" />;
+  // T-162: then the three onboarding questions, once.
+  if (disclaimer === true && profile === null && pathname !== '/onboarding' && pathname !== '/welcome')
+    return <Redirect href="/onboarding" />;
 
   return (
     <Stack
@@ -48,6 +53,7 @@ export default function AppLayout() {
     >
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="welcome" options={{ gestureEnabled: false, animation: 'fade' }} />
+      <Stack.Screen name="onboarding" options={{ gestureEnabled: false, animation: 'fade' }} />
       <Stack.Screen name="search" options={{ presentation: 'fullScreenModal', animation: 'fade' }} />
     </Stack>
   );
