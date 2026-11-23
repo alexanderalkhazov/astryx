@@ -582,6 +582,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [ ] **T-192** Safety promise everywhere
   - **Acceptance:** a calm, always-visible "Practice money: nothing here can cost you real money" badge in Simple mode, and short "What happens if…?" answers (what if the price falls, what if I close the app, can I undo) beside every money action: approve, close, invest, rebalance.
   - **Refs:** §17 · **Depends:** — · **P1**
+  - Done (2026-11-24): in Simple mode every signed-in screen shows "Practice money: nothing here can cost you real money" at the top (`ScreenTopContext`, provided by the signed-in layout). A collapsed "What happens if…?" sits beside approve (confirm sheet), close (position), invest and rebalance, with three answers each (`features/plain/moneyAnswers.ts`), written to match what the server does (buy-stops end at the close, entries can be cancelled until filled, closing needs the market open).
 - [ ] **T-193** Guided first trade
   - **Acceptance:** a step-by-step walkthrough on a real setup, using practice money: what a stock and its price are, what the plan is (buy if it rises to X), what the stop does, how much could be lost, then approve with the hold gesture, ending in a small celebration and "here's where to watch it". Skippable; it resumes where you left off.
   - **Refs:** T-161, T-162 · **Depends:** T-192 · **P1**

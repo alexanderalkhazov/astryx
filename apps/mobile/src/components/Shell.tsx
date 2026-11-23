@@ -1,12 +1,15 @@
 import { color, radius, space } from '@astryx/design-tokens';
 import { router } from 'expo-router';
 import { Bell, Info, Search, SlidersHorizontal } from 'lucide-react-native';
-import type { ReactNode } from 'react';
+import { createContext, type ReactNode, useContext } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { type Edge, SafeAreaView } from 'react-native-safe-area-context';
 
 import { IconButton } from './Button';
 import { Text } from './Text';
+
+/** Shown at the top of every Screen inside the provider (T-192: the signed-in layout puts the safety promise here). */
+export const ScreenTopContext = createContext<ReactNode>(null);
 
 /** Widest content column: phones are 360–430 wide; anything wider centres the column (SYSTEM_DESIGN.md §8.12). */
 export const MAX_CONTENT_WIDTH = 430;
@@ -25,8 +28,10 @@ export interface ScreenProps {
 
 /** Screen frame: background, top safe area, 16 pt gutter, centred column. */
 export function Screen({ children, scroll = true, edges = ['top'], header, footer }: ScreenProps) {
+  const top = useContext(ScreenTopContext);
   return (
     <SafeAreaView style={styles.safe} edges={edges}>
+      {top ? <View style={styles.column}>{top}</View> : null}
       {header ? <View style={styles.column}>{header}</View> : null}
       {scroll ? (
         // "handled": a tap on a row or button acts on the first try instead of only dismissing the keyboard.

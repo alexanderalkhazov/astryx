@@ -15,6 +15,7 @@ import { Segmented } from '@/components/Segmented';
 import { Screen } from '@/components/Shell';
 import { Text } from '@/components/Text';
 import { type LossTolerance, useInvestorProfile } from '@/features/onboarding/profile';
+import { WhatIf } from '@/features/plain/WhatIf';
 import { invest } from '@/lib/api';
 import { formatMoney, formatPct, formatPnl, formatSessionDate } from '@/lib/format';
 import { useSession } from '@/state/session';
@@ -237,6 +238,7 @@ function PlanView({ plan, onEdit }: { plan: InvestPlan; onEdit: () => void }) {
               loading={rebalance.isPending}
               testID="invest-rebalance"
             />
+            <WhatIf action="rebalance" />
           </View>
         ) : null}
         {cash.gte(1) ? (
@@ -249,6 +251,7 @@ function PlanView({ plan, onEdit }: { plan: InvestPlan; onEdit: () => void }) {
               loading={investCash.isPending}
               testID="invest-cash"
             />
+            <WhatIf action="invest" />
           </View>
         ) : null}
       </View>

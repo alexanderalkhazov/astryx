@@ -9,6 +9,7 @@ import { Button } from '@/components/Button';
 import { HoldToConfirm } from '@/components/HoldToConfirm';
 import { Sheet } from '@/components/Sheet';
 import { Text } from '@/components/Text';
+import { WhatIf } from '@/features/plain/WhatIf';
 import { paper } from '@/lib/api';
 import { formatMoney, formatPrice, formatQuantity } from '@/lib/format';
 import { toast } from '@/state/toasts';
@@ -79,6 +80,7 @@ export function ConfirmOrderSheet({
           The order is simulated against our quotes in your paper account. A buy stop waits until the price reaches its entry. The stop and
           target are attached as a one-cancels-the-other pair.
         </Text.Caption>
+        <WhatIf action="approve" />
         <HoldToConfirm
           key={attempt}
           busy={sending}

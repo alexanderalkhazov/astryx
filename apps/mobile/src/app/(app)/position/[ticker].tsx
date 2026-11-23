@@ -17,6 +17,7 @@ import { StackHeader } from '@/components/Navigation';
 import { Screen } from '@/components/Shell';
 import { StatusBanner } from '@/components/StatusBanner';
 import { Text } from '@/components/Text';
+import { WhatIf } from '@/features/plain/WhatIf';
 import { market, portfolio } from '@/lib/api';
 import { formatEtTime, formatMoney, formatPct, formatPnl, formatPrice, formatQuantity, formatSessionDate } from '@/lib/format';
 import { toast } from '@/state/toasts';
@@ -159,6 +160,7 @@ export default function PositionScreen() {
         ) : null}
 
         {open ? <LevelTrack track={p.track} /> : null}
+        {open ? <WhatIf action="close" /> : null}
 
         <View style={styles.facts}>
           <Fact label="Quantity" value={`${formatQuantity(p.quantity)} shares`} />
