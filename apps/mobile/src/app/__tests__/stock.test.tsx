@@ -340,6 +340,9 @@ describe('Stock screen', () => {
     expect(screen.getByLabelText('Setup quality: 25.8 of 30')).toBeOnTheScreen();
     expect(screen.getByLabelText('Reward/risk: 10.5 of 15')).toBeOnTheScreen();
     expect(screen.getByText('A close below the stop at 178.20.')).toBeOnTheScreen();
+    await fireEvent.press(screen.getByTestId('term-relativeStrength')); // T-161: Simple mode explains the jargon
+    expect(await screen.findByText(/compared with the other stocks Astryx follows/)).toBeOnTheScreen();
+    await fireEvent.press(screen.getByRole('button', { name: 'Got it' }));
 
     await fireEvent.press(screen.getByRole('link', { name: 'Base Breakout v3, open strategy' }));
     await waitFor(() => expect(screen).toHavePathname('/strategy/strat-1'));

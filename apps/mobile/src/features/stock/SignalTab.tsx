@@ -6,6 +6,9 @@ import { EmptyState, SkeletonRow } from '@/components/Feedback';
 import { MetricGrid, ScoreBreakdownBar } from '@/components/Metric';
 import { Text } from '@/components/Text';
 import { AnalysisCard } from '@/features/analysis/AnalysisCard';
+import { useViewMode } from '@/features/plain/mode';
+import { Term } from '@/features/plain/Term';
+import { useSession } from '@/state/session';
 import { formatEtTime, formatPct, formatPrice, formatRatio, formatSessionDate } from '@/lib/format';
 import { previewDivide, previewSubtract } from '@/lib/decimal';
 
@@ -47,6 +50,7 @@ export function SignalTab({
   unavailable: boolean;
   evaluatedAt: string | null | undefined;
 }) {
+  const simple = useViewMode(useSession((s) => s.user?.id)) === 'simple';
   if (unavailable) {
     return (
       <View style={styles.tab}>
@@ -121,6 +125,18 @@ export function SignalTab({
         <Bullet text="A newer scan that no longer finds the setup retires the signal." />
       </Section>
 
+      {simple ? (
+        <View style={styles.terms} testID="signal-terms">
+          <Text.Caption tone="tertiary">Tap to learn: </Text.Caption>
+          {(['breakout', 'relativeStrength', 'volume', 'atr', 'rewardRisk'] as const).map((term, i) => (
+            <View key={term} style={styles.term}>
+              {i > 0 ? <Text.Caption tone="tertiary"> · </Text.Caption> : null}
+              <Term term={term} variant="caption" tone="secondary" />
+            </View>
+          ))}
+        </View>
+      ) : null}
+
       <Text.Caption tone="tertiary">
         {`Deterministic: ${signal.strategy.name} rules, evaluated ${when(signal.evaluatedAt)}. Scores come from strategy rules, not AI. Research only, not investment advice.`}
       </Text.Caption>
@@ -132,5 +148,7 @@ export function SignalTab({
 
 const styles = StyleSheet.create({
   tab: { gap: space[5], paddingTop: space[3] },
+  terms: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center' },
+  term: { flexDirection: 'row', alignItems: 'center' },
   section: { gap: space[2] },
 });

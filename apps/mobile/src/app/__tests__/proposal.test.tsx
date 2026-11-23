@@ -5,6 +5,7 @@ import { fireEvent, renderRouter, screen, waitFor, within } from 'expo-router/te
 import { Alert, Text } from 'react-native';
 
 import ProposalScreen from '../(app)/proposal/[id]';
+import { useSession } from '@/state/session';
 
 jest.mock('expo-crypto', () => ({ randomUUID: () => '00000000-0000-4000-8000-000000000001' }));
 jest.mock('expo-secure-store', () => ({
@@ -129,6 +130,32 @@ beforeEach(() => {
 });
 
 describe('Trade proposal (design 06)', () => {
+  it('explains the proposal in plain words in Simple mode, with terms that explain themselves (T-161)', async () => {
+    await renderProposal();
+
+    const plain = await screen.findByTestId('plain-proposal');
+    expect(within(plain).getByText('Buy 76 NVDA shares if the price rises to $186.50 today.')).toBeOnTheScreen();
+    expect(within(plain).getByText(/you lose about \$633\.84 \(0\.54% of your account\)/)).toBeOnTheScreen();
+    expect(within(plain).getByText(/you gain about \$1,330\.00/)).toBeOnTheScreen();
+
+    await fireEvent.press(within(plain).getByTestId('term-stop'));
+    expect(await screen.findByText(/sold automatically to cap the loss/)).toBeOnTheScreen();
+  });
+
+  it('shows only the numbers in Pro mode (T-161)', async () => {
+    const secureStore = jest.requireMock('expo-secure-store') as { getItemAsync: jest.Mock };
+    secureStore.getItemAsync.mockImplementation(async (key: string) => (key === 'astryx.viewMode.pro-user' ? 'pro' : null));
+    useSession.setState({ user: { id: 'pro-user' } as never });
+    try {
+      await renderProposal();
+
+      expect(await screen.findByText('RESEARCH PROPOSAL · NOT EXECUTED')).toBeOnTheScreen();
+      await waitFor(() => expect(screen.queryByTestId('plain-proposal')).not.toBeOnTheScreen());
+    } finally {
+      useSession.setState({ user: null });
+    }
+  });
+
   it('shows the research banner, levels, R:R, sizing, impact and the six design checks', async () => {
     await renderProposal();
 

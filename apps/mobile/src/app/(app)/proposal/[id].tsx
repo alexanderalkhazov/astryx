@@ -20,6 +20,8 @@ import { StatusBanner } from '@/components/StatusBanner';
 import { Stepper } from '@/components/Stepper';
 import { Text } from '@/components/Text';
 import { ConfirmOrderSheet } from '@/features/proposal/ConfirmOrderSheet';
+import { useViewMode } from '@/features/plain/mode';
+import { PlainProposalCard } from '@/features/plain/PlainProposalCard';
 import { FillReceiptSheet } from '@/features/proposal/FillReceiptSheet';
 import {
   approveGate,
@@ -32,6 +34,7 @@ import {
   useSizing,
 } from '@/features/proposal/useProposal';
 import { broker } from '@/lib/api';
+import { useSession } from '@/state/session';
 import { formatEtTime, formatMoney, formatPct, formatPrice } from '@/lib/format';
 
 const ORDER_LABEL: Record<Proposal['orderType'], string> = { buy_stop: 'BUY STOP', limit: 'LIMIT', market: 'MARKET' };
@@ -68,6 +71,7 @@ export default function ProposalScreen() {
     retry: false,
   });
   const alpaca = connections.data?.some((c) => c.broker === 'alpaca') ?? false;
+  const simple = useViewMode(useSession((s) => s.user?.id)) === 'simple';
 
   const header = <StackHeader title={proposal.data?.symbol ?? 'Proposal'} subtitle="Trade proposal" />;
 
@@ -184,6 +188,8 @@ export default function ProposalScreen() {
               : `AI analysis · ${p.source.signalAt ? formatEtTime(p.source.signalAt) : ''} ›`}
           </Text.Caption>
         </Pressable>
+
+        {simple && a && pending ? <PlainProposalCard proposal={p} assessment={a} /> : null}
 
         <Section title="Order">
           <Text.Data>{`${ORDER_LABEL[p.orderType]} · DAY`}</Text.Data>

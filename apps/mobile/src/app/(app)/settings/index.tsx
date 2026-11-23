@@ -17,6 +17,7 @@ import { Screen } from '@/components/Shell';
 import { Stepper } from '@/components/Stepper';
 import { Switch } from '@/components/Switch';
 import { Text } from '@/components/Text';
+import { setViewMode, useViewMode, type ViewMode } from '@/features/plain/mode';
 import { registerForPush, unregisterPush } from '@/features/push/push';
 import { LiveTradingGuardDialog } from '@/features/settings/LiveTradingGuardDialog';
 import { ResetPaperAccountDialog } from '@/features/settings/ResetPaperAccountDialog';
@@ -24,6 +25,7 @@ import { useDefaultWatchlist } from '@/features/watchlist/useWatchlist';
 import { broker, portfolio, settings } from '@/lib/api';
 import { formatCompactMoney, formatEtTime, formatMoney } from '@/lib/format';
 import { signOut } from '@/lib/session';
+import { useSession } from '@/state/session';
 import { toast } from '@/state/toasts';
 
 // Designs 18 and 25 · SYSTEM_DESIGN.md §8.4.11. Paper is the only trading mode; live ends in the server's 403.
@@ -51,6 +53,8 @@ export default function SettingsScreen() {
         </Text.Caption>
       </Section>
       <LiveTradingGuardDialog visible={guardOpen} limits={risk.data} onClose={() => setGuardOpen(false)} />
+
+      <ExplanationsSection />
 
       <Section title="Risk limits">{risk.data ? <RiskLimits current={risk.data} /> : <SkeletonRow />}</Section>
       <ScannerSection />
@@ -440,6 +444,31 @@ function SecuritySection() {
         onCancel={() => setConfirmAll(false)}
         onConfirm={() => all.mutate()}
       />
+    </Section>
+  );
+}
+
+// T-161: Simple explains proposals in plain words with tap-to-learn terms; Pro shows the trader's view only.
+function ExplanationsSection() {
+  const userId = useSession((s) => s.user?.id);
+  const mode = useViewMode(userId);
+  return (
+    <Section title="Explanations">
+      <Segmented
+        accessibilityLabel="Explanations"
+        mono={false}
+        options={[
+          { value: 'simple', label: 'Simple' },
+          { value: 'pro', label: 'Pro' },
+        ]}
+        value={mode}
+        onChange={(next) => userId && void setViewMode(userId, next as ViewMode)}
+      />
+      <Text.Caption tone="tertiary">
+        {mode === 'simple'
+          ? 'Proposals start with a plain-words summary: what you would buy, what you could lose or gain, and why.'
+          : 'Proposals show the numbers only, without the plain-words summary.'}
+      </Text.Caption>
     </Section>
   );
 }

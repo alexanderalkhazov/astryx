@@ -6,6 +6,7 @@ import { Text } from 'react-native';
 
 import ChangePasswordScreen from '../(app)/settings/change-password';
 import SettingsScreen from '../(app)/settings/index';
+import { useSession } from '@/state/session';
 
 jest.mock('expo-crypto', () => ({ randomUUID: () => 'reset-key-0001' }));
 jest.mock('expo-secure-store', () => ({
@@ -235,6 +236,27 @@ describe('Settings (designs 18 and 25)', () => {
     await fireEvent.press(screen.getByRole('radio', { name: 'down' }));
 
     await waitFor(() => expect(api.settings.setDevFaults).toHaveBeenCalledWith('down'));
+  });
+});
+
+describe('Explanations (T-161)', () => {
+  it('starts in Simple and remembers Pro for this account', async () => {
+    const secureStore = jest.requireMock('expo-secure-store') as { getItemAsync: jest.Mock; setItemAsync: jest.Mock };
+    secureStore.getItemAsync.mockResolvedValue(null); // nothing chosen yet
+    secureStore.setItemAsync.mockResolvedValue(undefined);
+    useSession.setState({ user: { id: 'mode-user' } as never });
+    try {
+      await renderAt();
+
+      expect(await screen.findByRole('radio', { name: 'Simple', selected: true })).toBeOnTheScreen();
+      await fireEvent.press(screen.getByRole('radio', { name: 'Pro' }));
+
+      expect(await screen.findByRole('radio', { name: 'Pro', selected: true })).toBeOnTheScreen();
+      expect(secureStore.setItemAsync).toHaveBeenCalledWith('astryx.viewMode.mode-user', 'pro', expect.anything());
+      expect(screen.getByText('Proposals show the numbers only, without the plain-words summary.')).toBeOnTheScreen();
+    } finally {
+      useSession.setState({ user: null });
+    }
   });
 });
 
