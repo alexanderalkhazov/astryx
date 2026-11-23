@@ -2609,6 +2609,8 @@ export interface components {
             name: string;
             /** Format: int32 */
             version: number;
+            /** @default unproven */
+            evidence: string;
         };
         StrategiesResponse: {
             items: components["schemas"]["StrategySummaryDto"][];
@@ -2619,6 +2621,19 @@ export interface components {
             version: components["schemas"]["VersionDto"];
             latestRun: null | components["schemas"]["RunSummaryDto"];
             todaysSignals: components["schemas"]["StrategySignalDto"][];
+        };
+        StrategyEvidence: {
+            verdict: string;
+            /** Format: decimal */
+            cagr: null | string;
+            /** Format: decimal */
+            multiple: null | string;
+            /** Format: decimal */
+            benchmarkMultiple: null | string;
+            /** Format: date */
+            periodStart: null | string;
+            /** Format: date */
+            periodEnd: null | string;
         };
         StrategyMetricsDto: {
             cagr: string;
@@ -2675,6 +2690,7 @@ export interface components {
             guard: null | components["schemas"]["GuardDto"];
             /** @default true */
             backtestIllustrative: boolean;
+            evidence?: null | components["schemas"]["StrategyEvidence"];
         };
         SuggestedLevelsDto: {
             justified: boolean;

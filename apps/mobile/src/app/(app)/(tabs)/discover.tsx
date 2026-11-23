@@ -12,6 +12,7 @@ import { SkeletonRow } from '@/components/Feedback';
 import { OpportunityRow } from '@/components/OpportunityRow';
 import { Screen, ScreenHeader } from '@/components/Shell';
 import { Text } from '@/components/Text';
+import { useInvestorProfile } from '@/features/onboarding/profile';
 import { FiltersSheet } from '@/features/discover/FiltersSheet';
 import { activeFilterChips, type DiscoverFilters, useDiscoverFilters } from '@/features/discover/filters';
 import { isScannerUnavailable, SIGNALS_REFRESH_MS, useScannerStatus, useSignals } from '@/features/discover/useSignals';
@@ -34,6 +35,9 @@ const SORT_LABEL: Record<DiscoverFilters['sort'], string> = {
   change: 'day change',
 };
 
+/** Setups a beginner may see: their strategy made money in a real backtest (T-166). */
+const provenForBeginners = (s: Signal) => s.strategy.evidence === 'beats_market' || s.strategy.evidence === 'lags_market';
+
 // Designs 02 (list), 03 (filters), 20 (loading), 21 (empty), 23 (scanner error) · SYSTEM_DESIGN.md §8.4.2.
 export default function DiscoverScreen() {
   const userId = useSession((s) => s.user?.id);
@@ -45,7 +49,11 @@ export default function DiscoverScreen() {
 
   const status = useScannerStatus();
   const signals = useSignals(filters);
-  const items = useMemo(() => signals.data?.pages.flatMap((p) => p.items) ?? [], [signals.data]);
+  const all = useMemo(() => signals.data?.pages.flatMap((p) => p.items) ?? [], [signals.data]);
+  // T-166: beginners only see setups from strategies that made money in their real backtest.
+  const beginner = useInvestorProfile(userId)?.level === 'beginner';
+  const items = useMemo(() => (beginner ? all.filter((s) => provenForBeginners(s)) : all), [all, beginner]);
+  const hiddenForBeginners = all.length - items.length;
   const counts = signals.data?.pages[0]?.counts;
   const unavailable = isScannerUnavailable(signals.error) || status.data?.status === 'unavailable';
   const chips = activeFilterChips(filters);
@@ -125,24 +133,31 @@ export default function DiscoverScreen() {
     );
   } else {
     body = (
-      <FlashList
-        data={items}
-        keyExtractor={(s: Signal) => s.id}
-        renderItem={({ item }: { item: Signal }) => (
-          <OpportunityRow signal={item} onPress={() => router.push({ pathname: '/stock/[ticker]', params: { ticker: item.symbol } })} />
-        )}
-        onEndReached={() => {
-          if (signals.hasNextPage && !signals.isFetchingNextPage) void signals.fetchNextPage();
-        }}
-        refreshControl={
-          <RefreshControl
-            refreshing={signals.isRefetching && !signals.isFetchingNextPage}
-            onRefresh={() => void signals.refetch()}
-            tintColor={color.text3}
-          />
-        }
-        testID="discover-list"
-      />
+      <>
+        {hiddenForBeginners > 0 ? (
+          <Text.Caption tone="tertiary" testID="discover-hidden-for-beginners">
+            {`${hiddenForBeginners} setup${hiddenForBeginners === 1 ? '' : 's'} hidden: their strategy lost money or isn't tested yet. Change your experience level in Settings to see them.`}
+          </Text.Caption>
+        ) : null}
+        <FlashList
+          data={items}
+          keyExtractor={(s: Signal) => s.id}
+          renderItem={({ item }: { item: Signal }) => (
+            <OpportunityRow signal={item} onPress={() => router.push({ pathname: '/stock/[ticker]', params: { ticker: item.symbol } })} />
+          )}
+          onEndReached={() => {
+            if (signals.hasNextPage && !signals.isFetchingNextPage) void signals.fetchNextPage();
+          }}
+          refreshControl={
+            <RefreshControl
+              refreshing={signals.isRefetching && !signals.isFetchingNextPage}
+              onRefresh={() => void signals.refetch()}
+              tintColor={color.text3}
+            />
+          }
+          testID="discover-list"
+        />
+      </>
     );
   }
 

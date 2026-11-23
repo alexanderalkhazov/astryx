@@ -8066,6 +8066,10 @@
           "version": {
             "type": "integer",
             "format": "int32"
+          },
+          "evidence": {
+            "type": "string",
+            "default": "unproven"
           }
         },
         "additionalProperties": false
@@ -8122,6 +8126,61 @@
             "items": {
               "$ref": "#/components/schemas/StrategySignalDto"
             }
+          }
+        },
+        "additionalProperties": false
+      },
+      "StrategyEvidence": {
+        "required": [
+          "verdict",
+          "cagr",
+          "multiple",
+          "benchmarkMultiple",
+          "periodStart",
+          "periodEnd"
+        ],
+        "type": "object",
+        "properties": {
+          "verdict": {
+            "type": "string"
+          },
+          "cagr": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "decimal"
+          },
+          "multiple": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "decimal"
+          },
+          "benchmarkMultiple": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "decimal"
+          },
+          "periodStart": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date"
+          },
+          "periodEnd": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date"
           }
         },
         "additionalProperties": false
@@ -8344,6 +8403,16 @@
           "backtestIllustrative": {
             "type": "boolean",
             "default": true
+          },
+          "evidence": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/StrategyEvidence"
+              }
+            ]
           }
         },
         "additionalProperties": false

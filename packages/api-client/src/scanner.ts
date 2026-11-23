@@ -41,7 +41,8 @@ export const Signal = z.object({
   }),
   reason: z.string(),
   levels: z.object({ orderType: z.enum(['buy_stop', 'limit', 'market']), entry: Decimal, stop: Decimal, target: Decimal }),
-  strategy: z.object({ id: z.string(), name: z.string(), version: z.number().int() }),
+  /** `evidence`: the strategy's backtest verdict (T-166): unproven, losing, lags_market or beats_market. */
+  strategy: z.object({ id: z.string(), name: z.string(), version: z.number().int(), evidence: z.string().optional() }),
   evaluatedAt: z.string(),
   dataAsOf: z.string(),
   status: z.enum(['active', 'superseded', 'expired', 'invalidated']),

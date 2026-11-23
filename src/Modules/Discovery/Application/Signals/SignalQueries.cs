@@ -20,7 +20,8 @@ public sealed record SignalMetricsDto(string? RelVolume, string? RelStrength, st
 
 public sealed record SignalLevelsDto(string OrderType, decimal Entry, decimal Stop, decimal Target);
 
-public sealed record SignalStrategyDto(Guid Id, string Name, int Version);
+/// <param name="Evidence">The strategy's backtest verdict (T-166): <c>unproven</c>, <c>losing</c>, <c>lags_market</c> or <c>beats_market</c>.</param>
+public sealed record SignalStrategyDto(Guid Id, string Name, int Version, string Evidence = Astryx.Contracts.Strategies.StrategyEvidence.Unproven);
 
 /// <summary>SignalDto (§11.4). <c>scoreBreakdown</c> and <c>proposalId</c> come with D4 only.</summary>
 public sealed record SignalDto(
@@ -39,7 +40,8 @@ public sealed record SignalFilter(string? Type, string? Sector, string? MarketCa
 
 /// <summary>Scanner status and the active signal list (§11.4 D1–D4). Signals are global; the same list for every user.</summary>
 public sealed class SignalQueries(
-    DiscoveryDbContext db, IInstrumentDirectory instruments, IPriceHistoryProvider history, IMarketDataFreshness freshness, IOptions<ScannerOptions> options, TimeProvider timeProvider)
+    DiscoveryDbContext db, IInstrumentDirectory instruments, IPriceHistoryProvider history, IMarketDataFreshness freshness, IOptions<ScannerOptions> options, TimeProvider timeProvider,
+    Astryx.Contracts.Strategies.IStrategyEvidence evidence)
 {
     public static readonly Error NotFound = new("not_found", "No signal with that id.");
 
@@ -117,7 +119,8 @@ public sealed class SignalQueries(
         var limit = filter.Limit ?? DefaultLimit;
         var shown = sorted.Skip(offset).Take(limit).ToList();
         var trails = await history.GetTrailsAsync(shown.Select(r => r.Signal.Symbol).ToList(), SparklineSessions, cancellationToken); // one query for the page
-        var page = shown.Select((row, i) => ToDto(row, offset + i + 1, withBreakdown: false, Trail(trails, row.Signal.Symbol))).ToList();
+        var verdicts = await evidence.ByStrategyAsync(cancellationToken);
+        var page = shown.Select((row, i) => ToDto(row, offset + i + 1, withBreakdown: false, Trail(trails, row.Signal.Symbol), Verdict(verdicts, row.Signal.StrategyId))).ToList();
 
         var next = offset + limit < sorted.Count ? EncodeCursor(offset + limit) : null;
         return new SignalPageDto(page, next, counts, new ScannerRefDto(scanner.LastRunAt, scanner.DataAsOf));
@@ -152,7 +155,8 @@ public sealed class SignalQueries(
         var rank = signal.Status == SignalStatus.Active
             ? await db.Signals.CountAsync(s => s.Status == SignalStatus.Active && s.Score > signal.Score, cancellationToken) + 1
             : 0;
-        return ToDto(new Row(signal, summary), rank, withBreakdown: true, Trail(await history.GetTrailsAsync([signal.Symbol], SparklineSessions, cancellationToken), signal.Symbol));
+        return ToDto(new Row(signal, summary), rank, withBreakdown: true, Trail(await history.GetTrailsAsync([signal.Symbol], SparklineSessions, cancellationToken), signal.Symbol),
+            Verdict(await evidence.ByStrategyAsync(cancellationToken), signal.StrategyId));
     }
 
     private sealed record Row(Signal Signal, InstrumentSummary? Instrument);
@@ -235,7 +239,10 @@ public sealed class SignalQueries(
     private static (IReadOnlyList<decimal> Closes, long? Volume) Trail(IReadOnlyDictionary<string, PriceTrail> trails, string symbol) =>
         trails.TryGetValue(symbol.ToUpperInvariant(), out var trail) ? (trail.Closes.Select(Price).ToList(), trail.Volume) : ([], null);
 
-    private static SignalDto ToDto(Row row, int rank, bool withBreakdown, (IReadOnlyList<decimal> Closes, long? Volume) trail)
+    private static string Verdict(IReadOnlyDictionary<Guid, Astryx.Contracts.Strategies.StrategyEvidence> verdicts, Guid strategyId) =>
+        verdicts.TryGetValue(strategyId, out var e) ? e.Verdict : Astryx.Contracts.Strategies.StrategyEvidence.Unproven;
+
+    private static SignalDto ToDto(Row row, int rank, bool withBreakdown, (IReadOnlyList<decimal> Closes, long? Volume) trail, string verdict)
     {
         var s = row.Signal;
         var metrics = JsonNode.Parse(s.Metrics)!;
@@ -246,7 +253,7 @@ public sealed class SignalQueries(
             new SignalMetricsDto(M("relVolume"), M("relStrength"), M("rewardRisk"), M("rsi14")),
             s.Reason,
             new SignalLevelsDto(s.OrderType, Price(s.EntryPrice), Price(s.StopPrice), Price(s.TargetPrice)),
-            new SignalStrategyDto(s.StrategyId, s.StrategyName, s.StrategyVersion),
+            new SignalStrategyDto(s.StrategyId, s.StrategyName, s.StrategyVersion, verdict),
             s.EvaluatedAt, s.DataAsOf, s.Status,
             withBreakdown ? JsonNode.Parse(s.ScoreBreakdown) : null,
             ProposalId: null,

@@ -43,7 +43,17 @@ public static class Backtester
     /// <summary>Bars handed to the rule as its history window, like the live facts' lookback.</summary>
     public const int HistoryWindow = 300;
 
-    private sealed record Position(int Series, DateOnly EntryDate, decimal Entry, decimal Stop, decimal Target, decimal Quantity);
+    /// <summary>Closes handed to an exit rule: enough for short indicators such as RSI(2) to settle.</summary>
+    public const int ExitWindow = 100;
+
+    private sealed record Position(int Series, DateOnly EntryDate, decimal Entry, decimal Stop, decimal Target, decimal Quantity)
+    {
+        /// <summary>Completed sessions since the entry session, for time exits.</summary>
+        public int Held { get; set; }
+
+        /// <summary>Set after a session's close when the rule's exit condition holds: sold at the next open.</summary>
+        public string? ExitAtOpen { get; set; }
+    }
 
     private sealed record Pending(int Series, SignalCandidate Candidate, decimal Quantity);
 
@@ -60,8 +70,20 @@ public static class Backtester
         // The curve starts on the first session any symbol has a universe-wide rank: before that no rule can run.
         var first = data.Series.SelectMany(x => x.Bars.Where((_, i) => x.RelStrengthRank[i] is not null).Select(b => b.SessionDate).Take(1)).DefaultIfEmpty(DateOnly.MaxValue).Min();
 
+        var exits = rule as IStrategyExit;
         foreach (var date in data.Sessions)
         {
+            // 0. Exits decided at the last close (time or indicator, T-163) sell at today's open.
+            foreach (var position in positions.Where(p => p.ExitAtOpen is not null).ToList())
+            {
+                if (index[position.Series].TryGetValue(date, out var i))
+                {
+                    var s = data.Series[position.Series];
+                    cash += Close(position, s, date, s.Bars[i].Open, position.ExitAtOpen!, settings, trades);
+                    positions.Remove(position);
+                }
+            }
+
             // 1. Yesterday's signals: work each entry against today's bar, then let it stop out the same day.
             foreach (var order in pending)
             {
@@ -132,6 +154,23 @@ public static class Backtester
                 if (index[s].TryGetValue(date, out var i))
                 {
                     lastClose[s] = data.Series[s].Bars[i].Close;
+                }
+            }
+
+            // 2b. After the close: rules with their own exit decide whether to sell at the next open.
+            if (exits is not null)
+            {
+                foreach (var position in positions)
+                {
+                    if (position.EntryDate == date || !index[position.Series].TryGetValue(date, out var i))
+                    {
+                        continue;
+                    }
+
+                    position.Held++;
+                    var from = Math.Max(0, i - (ExitWindow - 1)); // indicator exits need recent bars only
+                    var closes = data.Series[position.Series].Bars.Skip(from).Take(i - from + 1).Select(b => b.Close).ToList();
+                    position.ExitAtOpen = exits.ExitReason(new QuantFactsView(closes), position.Held, parameters);
                 }
             }
 

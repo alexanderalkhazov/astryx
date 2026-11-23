@@ -45,7 +45,7 @@ public sealed class PositionActions(
 
     public async Task<Result<ClosePreviewDto>> PreviewAsync(Guid positionId, CancellationToken cancellationToken)
     {
-        var owned = await OwnedPositionAsync(positionId, cancellationToken);
+        var owned = await OwnedPositionAsync(user.RequireUserId(), positionId, cancellationToken);
         if (!owned.IsSuccess)
         {
             return owned.Error;
@@ -70,9 +70,15 @@ public sealed class PositionActions(
     }
 
     /// <summary>T11: a market exit at last − slippage; the OCO legs are cancelled. Full close only in the MVP.</summary>
-    public async Task<Result<ClosePositionDto>> CloseAsync(Guid positionId, string idempotencyKey, CancellationToken cancellationToken)
+    public Task<Result<ClosePositionDto>> CloseAsync(Guid positionId, string idempotencyKey, CancellationToken cancellationToken) =>
+        CloseForAsync(user.RequireUserId(), positionId, idempotencyKey, "manual", cancellationToken);
+
+    /// <summary>
+    /// Closes <paramref name="userId"/>'s position: the user's own close (<c>manual</c>) or the system's on a strategy exit
+    /// (<c>strategy</c>, T-163). Must run inside a <see cref="Astryx.Infrastructure.Persistence.ModuleUnitOfWork"/>.
+    /// </summary>
+    public async Task<Result<ClosePositionDto>> CloseForAsync(Guid userId, Guid positionId, string idempotencyKey, string exitReason, CancellationToken cancellationToken)
     {
-        var userId = user.RequireUserId();
         if (await db.Orders.AsNoTracking().FirstOrDefaultAsync(o => o.ClientOrderId == idempotencyKey, cancellationToken) is { } done && done.PositionId is { } donePosition)
         {
             var again = await positionBook.LockAsync(donePosition, cancellationToken);
@@ -102,7 +108,7 @@ public sealed class PositionActions(
             return PositionNotFound;
         }
 
-        var owned = await OwnedPositionAsync(positionId, cancellationToken);
+        var owned = await OwnedPositionAsync(userId, positionId, cancellationToken);
         if (!owned.IsSuccess)
         {
             return owned.Error;
@@ -117,7 +123,7 @@ public sealed class PositionActions(
         var now = sessions.Now;
         if (brokerClose is not null)
         {
-            return await RecordAlpacaCloseAsync(position, brokerClose, userId, idempotencyKey, now, cancellationToken);
+            return await RecordAlpacaCloseAsync(position, brokerClose, userId, idempotencyKey, exitReason, now, cancellationToken);
         }
 
         if (await sessions.TodayAsync(cancellationToken) is not { } session || now < session.OpenAt || now >= session.CloseAt)
@@ -151,7 +157,7 @@ public sealed class PositionActions(
         };
         db.Orders.Add(exit);
         var siblings = await db.Orders.IgnoreQueryFilters().Where(o => o.PositionId == position.Id && o.OcoGroupId != null && o.Status == OrderStatus.Working).ToListAsync(cancellationToken);
-        var closed = await execution.ExitAsync(exit, siblings, quote.Last - slip, quote.Last, slip, "manual", gapped: false, quote.AsOf, now, cancellationToken);
+        var closed = await execution.ExitAsync(exit, siblings, quote.Last - slip, quote.Last, slip, exitReason, gapped: false, quote.AsOf, now, cancellationToken);
         if (!closed.IsSuccess)
         {
             return closed.Error;
@@ -246,7 +252,7 @@ public sealed class PositionActions(
     }
 
     /// <summary>Records Alpaca's close: the exit at Alpaca's price when it filled, else a submitted exit the sync settles.</summary>
-    private async Task<Result<ClosePositionDto>> RecordAlpacaCloseAsync(PositionSnapshot position, AlpacaClose close, Guid userId, string idempotencyKey, DateTimeOffset now, CancellationToken cancellationToken)
+    private async Task<Result<ClosePositionDto>> RecordAlpacaCloseAsync(PositionSnapshot position, AlpacaClose close, Guid userId, string idempotencyKey, string exitReason, DateTimeOffset now, CancellationToken cancellationToken)
     {
         var exit = new Order
         {
@@ -272,7 +278,7 @@ public sealed class PositionActions(
         var siblings = await db.Orders.IgnoreQueryFilters().Where(o => o.PositionId == position.Id && o.OcoGroupId != null && o.Status == OrderStatus.Working).ToListAsync(cancellationToken);
         if (close.Order is { IsFilled: true, FilledAvgPrice: { } price })
         {
-            var closed = await execution.ExitAsync(exit, siblings, price, price, 0m, "manual", gapped: false, close.Order.FilledAt ?? now, close.Order.FilledAt ?? now, cancellationToken);
+            var closed = await execution.ExitAsync(exit, siblings, price, price, 0m, exitReason, gapped: false, close.Order.FilledAt ?? now, close.Order.FilledAt ?? now, cancellationToken);
             if (!closed.IsSuccess)
             {
                 return closed.Error;
@@ -294,9 +300,9 @@ public sealed class PositionActions(
     }
 
     /// <summary>The user's position, row-locked when inside the close transaction; another user's is not found.</summary>
-    private async Task<Result<PositionSnapshot>> OwnedPositionAsync(Guid positionId, CancellationToken cancellationToken)
+    private async Task<Result<PositionSnapshot>> OwnedPositionAsync(Guid userId, Guid positionId, CancellationToken cancellationToken)
     {
-        var portfolioId = (await portfolios.GetActiveAsync(user.RequireUserId(), cancellationToken))?.Id;
+        var portfolioId = (await portfolios.GetActiveAsync(userId, cancellationToken))?.Id;
         var position = await positionBook.LockAsync(positionId, cancellationToken);
         return position is null || position.PortfolioId != portfolioId ? PositionNotFound : position;
     }

@@ -18,10 +18,17 @@ public static class StrategiesModule
         services.AddScoped<StrategyEvaluator>();
         services.AddScoped<Astryx.Contracts.Strategies.IStrategySignals, StrategySignals>();
         services.AddSingleton<IStrategyRule, BaseBreakoutRule>();
+        services.AddSingleton<IStrategyRule, TrendMomentumRule>(); // T-163: the four rules approved 2026-11-23
+        services.AddSingleton<IStrategyRule, TrendPullbackRule>();
+        services.AddSingleton<IStrategyRule, Rsi2MeanReversionRule>();
+        services.AddSingleton<IStrategyRule, EarningsDriftRule>();
         services.AddJobHandler<DrawdownGuardJob, DrawdownGuardHandler>();
         services.AddScoped<Application.Backtesting.BacktestService>();
+        services.AddScoped<Astryx.Contracts.Strategies.IStrategyEvidence, StrategyEvidenceSource>(); // T-166
         services.AddJobHandler<Application.Backtesting.BacktestJob, Application.Backtesting.BacktestService>();
         services.AddRecurringJob("strategies-drawdown-guard", TimeSpan.FromHours(1), _ => new DrawdownGuardJob());
+        services.AddJobHandler<StrategyExitJob, StrategyExitHandler>();
+        services.AddRecurringJob("strategies-exit", TimeSpan.FromMinutes(5), _ => new StrategyExitJob()); // T-163
         return services;
     }
 }

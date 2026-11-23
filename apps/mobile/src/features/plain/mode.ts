@@ -13,9 +13,9 @@ export function useViewMode(userId: string | undefined): ViewMode {
   const mode = useModeStore((s) => (userId ? s.modes[userId] : undefined));
   useEffect(() => {
     if (!userId || mode !== undefined) return;
-    void secureStorage
-      .getViewMode(userId)
-      .then((stored) => useModeStore.setState((s) => ({ modes: { ...s.modes, [userId]: stored === 'pro' ? 'pro' : 'simple' } })));
+    void Promise.resolve(secureStorage.getViewMode(userId)).then((stored) =>
+      useModeStore.setState((s) => ({ modes: { ...s.modes, [userId]: stored === 'pro' ? 'pro' : 'simple' } })),
+    );
   }, [userId, mode]);
   return mode ?? 'simple';
 }

@@ -45,10 +45,10 @@ public class BacktestTests(TradingApiFactory factory) : IClassFixture<TradingApi
     }
 
     [Fact]
-    public async Task A_strategy_without_an_implemented_rule_has_nothing_to_backtest()
+    public async Task An_unknown_strategy_has_nothing_to_backtest()
     {
         await using var scope = factory.Services.CreateAsyncScope();
 
-        (await scope.ServiceProvider.GetRequiredService<BacktestService>().RunAsync("trend_momentum", default)).ShouldBeNull();
+        (await scope.ServiceProvider.GetRequiredService<BacktestService>().RunAsync("user_custom_strategy", default)).ShouldBeNull();
     }
 }

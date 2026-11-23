@@ -16,6 +16,7 @@ public static class QuantModule
     {
         services.AddModuleDbContext<QuantDbContext>(QuantDbContext.SchemaName, historyKey: "quant");
         services.AddSingleton<IIndicatorCalculator, IndicatorCalculator>();
+        services.AddSingleton<Astryx.Contracts.Quant.IIndicatorMath, IndicatorMath>();
         services.AddSingleton<StockAnalysisEngine>();
         services.AddMemoryCache();
         services.TryAddSingleton(TimeProvider.System);

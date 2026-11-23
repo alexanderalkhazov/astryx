@@ -158,11 +158,28 @@ beforeEach(() => {
 });
 
 describe('Strategy lab (designs 13 and 14)', () => {
-  it('labels a strategy backtested on real data and the illustrative ones apart (T-160)', async () => {
-    mocks.strategies.list.mockResolvedValue(ok({ items: [SUMMARY({ backtestIllustrative: false }), PULLBACK] }));
+  it('says what each real backtest showed, and marks illustrative figures (T-160, T-166)', async () => {
+    const evidence = (verdict: 'losing' | 'lags_market' | 'beats_market', cagr: string, multiple: string) => ({
+      backtestIllustrative: false,
+      evidence: { verdict, cagr, multiple, benchmarkMultiple: '1.86', periodStart: '2022-11-25', periodEnd: '2026-11-20' },
+    });
+    mocks.strategies.list.mockResolvedValue(
+      ok({
+        items: [
+          SUMMARY(evidence('lags_market', '0.062', '1.27')),
+          { ...SUMMARY(evidence('losing', '-0.030', '0.89')), id: 'st9', code: 'trend_momentum', name: 'Trend Momentum' },
+          PULLBACK,
+        ],
+      }),
+    );
     await renderAt('/strategies');
 
-    expect(await screen.findByTestId('strategy-base_breakout-source')).toHaveTextContent('Backtest on real Alpaca daily data');
+    expect(await screen.findByTestId('strategy-base_breakout-source')).toHaveTextContent(
+      'Made money in testing, less than holding the stocks: ×1.27 vs ×1.86 holding the stocks · real Alpaca data',
+    );
+    expect(screen.getByTestId('strategy-trend_momentum-source')).toHaveTextContent(
+      'Lost money in testing: −3.0% a year · real Alpaca data',
+    );
     expect(screen.getByTestId(`strategy-${PULLBACK.code}-source`)).toHaveTextContent(
       'Illustrative figures: not yet backtested on real data',
     );

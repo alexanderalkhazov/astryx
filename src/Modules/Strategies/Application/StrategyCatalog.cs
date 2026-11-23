@@ -23,7 +23,7 @@ public sealed record GuardDto(string Drawdown, string WarnAt, string PauseAt, in
 public sealed record StrategySummaryDto(
     Guid Id, string Code, string Name, string Description, string Status, int DisplayOrder, int Version,
     DateOnly? LiveSince, LiveResultsDto? Live, StrategyMetricsDto? Metrics, IReadOnlyList<string> Sparkline, DateOnly? BacktestStart, DateOnly? BacktestEnd, GuardDto? Guard,
-    bool BacktestIllustrative = true);
+    bool BacktestIllustrative = true, Astryx.Contracts.Strategies.StrategyEvidence? Evidence = null);
 
 public sealed record ParameterDto(string Key, string Label, string Unit, JsonNode? Default, JsonNode? Min, JsonNode? Max, JsonNode? Step, JsonNode? Value);
 
@@ -235,7 +235,8 @@ public sealed class StrategyCatalog(StrategiesDbContext db, IStrategySignalFeed 
 
         return new StrategySummaryDto(
             s.Id, s.Code, s.Name, s.Description, s.Status, s.DisplayOrder, version?.VersionNumber ?? 0, s.LiveSince, Live(s), metrics, sparkline, run?.PeriodStart, run?.PeriodEnd, Guard(s),
-            BacktestIllustrative: run is null || JsonNode.Parse(run.Assumptions)?["illustrative"]?.GetValue<bool>() is not false); // seeded runs carry no flag
+            BacktestIllustrative: run is null || !StrategyEvidenceSource.IsReal(run), // seeded runs carry no flag
+            Evidence: run is not null && StrategyEvidenceSource.IsReal(run) ? StrategyEvidenceSource.Evidence(run) : Astryx.Contracts.Strategies.StrategyEvidence.None);
     }
 
     private static LiveResultsDto? Live(Strategy s)

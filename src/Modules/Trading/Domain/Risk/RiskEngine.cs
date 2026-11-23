@@ -2,6 +2,7 @@ using System.Globalization;
 using Astryx.Contracts.MarketData;
 using Astryx.Contracts.Paper;
 using Astryx.Contracts.Profiles;
+using Astryx.Contracts.Strategies;
 
 namespace Astryx.Modules.Trading.Domain.Risk;
 
@@ -51,7 +52,8 @@ public sealed record RiskInputs(
     DateTimeOffset Now,
     RiskLimits Limits,
     CostModel Costs,
-    BrokerReadiness? Broker = null);
+    BrokerReadiness? Broker = null,
+    StrategyEvidence? Evidence = null);
 
 public static class CheckStatus
 {
@@ -144,6 +146,11 @@ public static class RiskEngine
         if (i.Broker is { } broker)
         {
             checks.AddRange(BrokerChecks(broker));
+        }
+
+        if (i.Evidence is { } evidence)
+        {
+            checks.Add(EvidenceCheck(evidence));
         }
 
         return new RiskResult(
@@ -239,6 +246,19 @@ public static class RiskEngine
         !ordered || rr < min ? new("reward_risk", CheckStatus.Fail, $"Reward:risk {Ratio(rr)} below minimum {Ratio(min)}", rr, min)
         : rr < min + 0.25m ? new("reward_risk", CheckStatus.Warn, $"Reward:risk {Ratio(rr)}, close to the {Ratio(min)} minimum", rr, min)
         : new("reward_risk", CheckStatus.Pass, $"Reward:risk {Ratio(rr)} ≥ {Ratio(min)}", rr, min);
+
+    /// <summary>
+    /// What the proposal's strategy did in its real backtest (T-166). It never blocks a trade: the user decides, but
+    /// sees plainly when the strategy lost money, lagged simply holding the stocks, or hasn't been tested yet.
+    /// </summary>
+    private static RiskCheck EvidenceCheck(StrategyEvidence e) => e.Verdict switch
+    {
+        StrategyEvidence.Losing => new("strategy_evidence", CheckStatus.Warn, $"This strategy lost money in its backtest ({Pct(e.Cagr!.Value, 1, signed: true)} a year).", e.Cagr, 0m),
+        StrategyEvidence.LagsMarket => new("strategy_evidence", CheckStatus.Warn,
+            $"In its backtest this strategy made {Pct(e.Cagr!.Value, 1)} a year, less than simply holding the stocks (×{Ratio(e.Multiple!.Value)} vs ×{Ratio(e.BenchmarkMultiple!.Value)}).", e.Multiple, e.BenchmarkMultiple),
+        StrategyEvidence.BeatsMarket => new("strategy_evidence", CheckStatus.Pass, $"Beat simply holding the stocks in its backtest (×{Ratio(e.Multiple!.Value)})."),
+        _ => new("strategy_evidence", CheckStatus.Warn, "This strategy hasn't been backtested on real data yet."),
+    };
 
     /// <summary>Broker portfolios only (§17.3, T-142): the connection, the account's permission to trade, and the asset.</summary>
     private static IEnumerable<RiskCheck> BrokerChecks(BrokerReadiness b)

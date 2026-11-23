@@ -49,6 +49,6 @@ public class BaseBreakoutTests(SyncedMarketApiFactory factory) : IClassFixture<S
     {
         (await EvaluateAsync("NOPE")).ShouldBeNull();
         await using var scope = factory.Services.CreateAsyncScope();
-        (await scope.ServiceProvider.GetRequiredService<StrategyEvaluator>().EvaluateAsync("trend_momentum", "NVDA", default)).ShouldBeNull(); // rule not implemented yet
+        (await scope.ServiceProvider.GetRequiredService<StrategyEvaluator>().EvaluateAsync("user_custom_strategy", "NVDA", default)).ShouldBeNull(); // no rule with that code
     }
 }

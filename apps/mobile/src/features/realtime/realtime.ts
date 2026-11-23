@@ -38,7 +38,7 @@ export interface PositionUpdatedMessage {
   positionId: string;
   symbol: string;
   status: 'open' | 'closed';
-  exitReason: 'stop' | 'target' | 'manual' | 'reset' | null;
+  exitReason: 'stop' | 'target' | 'manual' | 'reset' | 'strategy' | null;
   price: string | null;
   realizedPnl: string | null;
   gappedThroughStop: boolean;
@@ -92,6 +92,12 @@ export function handlePositionUpdated(queryClient: QueryClient, message: Positio
     });
   } else if (message.exitReason === 'target') {
     toast({ tone: 'success', title: `Target hit · ${message.symbol}`, body: `Sold at ${formatMoney(message.price)}${pnl}` });
+  } else if (message.exitReason === 'strategy') {
+    toast({
+      tone: 'info',
+      title: `Strategy exit · ${message.symbol}`,
+      body: `The strategy's exit rule sold it at ${formatMoney(message.price)}${pnl}`,
+    });
   }
 }
 

@@ -1,6 +1,7 @@
 using Astryx.Contracts.MarketData;
 using Astryx.Contracts.Paper;
 using Astryx.Contracts.Profiles;
+using Astryx.Contracts.Strategies;
 using Astryx.Modules.Trading.Domain.Risk;
 using FsCheck;
 using FsCheck.Fluent;
@@ -61,6 +62,25 @@ public class RiskEngineTests
     [Fact]
     public void Without_a_usable_spread_Alpaca_costs_fall_back_to_basis_points() =>
         RiskEngine.Assess(Design() with { Costs = CostModel.Alpaca(null, null, CostModel.Default) }).SlippagePerShare.ShouldBe(0.02m);
+
+    [Theory]
+    [InlineData("losing", "-0.030", "0.89", "warn", "This strategy lost money in its backtest (+-3.0% a year).")]
+    [InlineData("lags_market", "0.062", "1.27", "warn", "In its backtest this strategy made 6.2% a year, less than simply holding the stocks (×1.27 vs ×1.86).")]
+    [InlineData("beats_market", "0.190", "2.01", "pass", "Beat simply holding the stocks in its backtest (×2.01).")]
+    public void The_strategy_evidence_is_shown_but_never_blocks(string verdict, string cagr, string multiple, string status, string message)
+    {
+        var inv = System.Globalization.CultureInfo.InvariantCulture;
+        var evidence = new StrategyEvidence(verdict, decimal.Parse(cagr, inv), decimal.Parse(multiple, inv), 1.86m, new DateOnly(2022, 11, 25), new DateOnly(2026, 11, 20));
+
+        var r = RiskEngine.Assess(Design() with { Evidence = evidence });
+
+        Check(r, "strategy_evidence").ShouldSatisfyAllConditions(c => c.Status.ShouldBe(status), c => c.Message.ShouldBe(message.Replace("+-", "−")));
+        r.Approvable.ShouldBeTrue(); // T-166: evidence informs, the user decides
+    }
+
+    [Fact]
+    public void An_untested_strategy_says_so() =>
+        Check(RiskEngine.Assess(Design() with { Evidence = StrategyEvidence.None }), "strategy_evidence").Message.ShouldBe("This strategy hasn't been backtested on real data yet.");
 
     [Fact]
     public void A_simulated_portfolio_has_no_broker_checks() =>

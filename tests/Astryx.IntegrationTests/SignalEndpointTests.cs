@@ -71,7 +71,15 @@ public class SignalEndpointTests(SyncedMarketApiFactory factory) : IClassFixture
         nvda.GetProperty("volume").GetInt64().ShouldBe(412_800_000);
         var counts = page.GetProperty("counts");
         counts.GetProperty("breakout").GetInt32().ShouldBeGreaterThanOrEqualTo(1);
-        counts.GetProperty("all").GetInt32().ShouldBe(page.GetProperty("items").GetArrayLength());
+        var shown = page.GetProperty("items").GetArrayLength();
+        if (page.GetProperty("nextCursor").ValueKind == JsonValueKind.Null)
+        {
+            counts.GetProperty("all").GetInt32().ShouldBe(shown);
+        }
+        else
+        {
+            counts.GetProperty("all").GetInt32().ShouldBeGreaterThan(shown); // five strategies now feed the list (T-163)
+        }
         page.GetProperty("scanner").GetProperty("lastRunAt").GetString().ShouldNotBeNull();
     }
 
@@ -122,16 +130,18 @@ public class SignalEndpointTests(SyncedMarketApiFactory factory) : IClassFixture
         try
         {
             var seen = new List<string>();
+            var ids = new List<string>();
             string? cursor = null;
             do
             {
                 var page = await GetAsync($"/api/v1/signals?limit=2&sort=score{(cursor is null ? "" : $"&cursor={Uri.EscapeDataString(cursor)}")}");
                 seen.AddRange(page.GetProperty("items").EnumerateArray().Select(i => i.GetProperty("symbol").GetString()!));
+                ids.AddRange(page.GetProperty("items").EnumerateArray().Select(i => i.GetProperty("id").GetString()!));
                 cursor = page.GetProperty("nextCursor").GetString();
             }
             while (cursor is not null);
 
-            seen.Distinct().Count().ShouldBe(seen.Count);
+            ids.Distinct().Count().ShouldBe(ids.Count); // a symbol may have signals from several strategies; a signal appears once
             seen[0].ShouldBe("NVDA"); // highest score
             seen.ShouldContain("AAPL");
             var byRr = (await GetAsync("/api/v1/signals?sort=rr&limit=50")).GetProperty("items").EnumerateArray().Select(i => decimal.Parse(i.GetProperty("metrics").GetProperty("rewardRisk").GetString()!)).ToList();

@@ -84,13 +84,7 @@ export function StrategyCard({ strategy, onPress }: { strategy: StrategySummary;
       </View>
       {s.sparkline.length > 1 ? <Sparkline closes={s.sparkline} width={280} height={44} /> : null}
       {s.metrics ? <HeadlineGrid metrics={s.metrics} /> : <Text.Caption tone="tertiary">No backtest yet.</Text.Caption>}
-      {s.metrics ? (
-        <Text.Caption tone={s.backtestIllustrative !== false ? 'pending' : 'tertiary'} testID={`strategy-${s.code}-source`}>
-          {s.backtestIllustrative !== false
-            ? 'Illustrative figures: not yet backtested on real data'
-            : 'Backtest on real Alpaca daily data'}
-        </Text.Caption>
-      ) : null}
+      {s.metrics ? <EvidenceLine strategy={s} /> : null}
       <GuardLine strategy={s} />
       {s.liveSince ? (
         <Text.DataSm tone="tertiary">
@@ -101,6 +95,31 @@ export function StrategyCard({ strategy, onPress }: { strategy: StrategySummary;
         </Text.DataSm>
       ) : null}
     </Pressable>
+  );
+}
+
+/** T-166: what the latest real backtest says, in a sentence; illustrative figures say so. */
+export function EvidenceLine({ strategy: s }: { strategy: StrategySummary }) {
+  const e = s.evidence;
+  if (s.backtestIllustrative !== false || !e || e.verdict === 'unproven' || !e.cagr || !e.multiple) {
+    return (
+      <Text.Caption tone="pending" testID={`strategy-${s.code}-source`}>
+        Illustrative figures: not yet backtested on real data
+      </Text.Caption>
+    );
+  }
+
+  const versus = e.benchmarkMultiple ? ` vs ×${formatRatio(e.benchmarkMultiple)} holding the stocks` : '';
+  const [text, tone] =
+    e.verdict === 'losing'
+      ? [`Lost money in testing: ${formatPct(e.cagr, { signed: true, dp: 1 })} a year`, 'loss' as const]
+      : e.verdict === 'lags_market'
+        ? [`Made money in testing, less than holding the stocks: ×${formatRatio(e.multiple)}${versus}`, 'pending' as const]
+        : [`Beat holding the stocks in testing: ×${formatRatio(e.multiple)}${versus}`, 'gain' as const];
+  return (
+    <Text.Caption tone={tone} testID={`strategy-${s.code}-source`}>
+      {`${text} · real Alpaca data`}
+    </Text.Caption>
   );
 }
 

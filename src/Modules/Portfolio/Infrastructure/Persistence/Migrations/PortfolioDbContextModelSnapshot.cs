@@ -408,7 +408,7 @@ namespace Astryx.Modules.Portfolio.Infrastructure.Persistence.Migrations
                         {
                             t.HasCheckConstraint("ck_positions_closed", "(status = 'open' AND closed_at IS NULL) OR (status = 'closed' AND closed_at IS NOT NULL AND exit_reason IS NOT NULL)");
 
-                            t.HasCheckConstraint("ck_positions_exit_reason", "exit_reason IS NULL OR exit_reason IN ('stop', 'target', 'manual', 'reset')");
+                            t.HasCheckConstraint("ck_positions_exit_reason", "exit_reason IS NULL OR exit_reason IN ('stop', 'target', 'manual', 'reset', 'strategy')");
 
                             t.HasCheckConstraint("ck_positions_quantity", "quantity >= 0");
 

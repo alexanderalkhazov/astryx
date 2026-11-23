@@ -47,4 +47,4 @@ public enum AdjustmentMode
 }
 
 /// <summary>A sparkline: closes oldest first and the latest bar's volume.</summary>
-public sealed record PriceTrail(IReadOnlyList<decimal> Closes, long Volume);
+public sealed record PriceTrail(IReadOnlyList<decimal> Closes, long Volume, DateOnly LastSession);

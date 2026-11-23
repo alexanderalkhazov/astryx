@@ -62,7 +62,7 @@ public sealed class PortfolioDbContext(DbContextOptions<PortfolioDbContext> opti
             entity.ToTable("positions", t =>
             {
                 t.HasCheckConstraint("ck_positions_status", "status IN ('open', 'closed')");
-                t.HasCheckConstraint("ck_positions_exit_reason", "exit_reason IS NULL OR exit_reason IN ('stop', 'target', 'manual', 'reset')");
+                t.HasCheckConstraint("ck_positions_exit_reason", "exit_reason IS NULL OR exit_reason IN ('stop', 'target', 'manual', 'reset', 'strategy')");
                 t.HasCheckConstraint("ck_positions_quantity", "quantity >= 0");
                 t.HasCheckConstraint("ck_positions_closed", "(status = 'open' AND closed_at IS NULL) OR (status = 'closed' AND closed_at IS NOT NULL AND exit_reason IS NOT NULL)");
             });

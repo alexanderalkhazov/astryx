@@ -19,6 +19,7 @@ public static class PortfolioModule
         services.AddScoped<Astryx.Contracts.Portfolio.IPortfolioLedger, PortfolioLedger>();
         services.AddScoped<Astryx.Contracts.Portfolio.IPortfolioDirectory, PortfolioDirectory>();
         services.AddScoped<Astryx.Contracts.Portfolio.IBrokerPortfolios, BrokerPortfolios>();
+        services.AddScoped<Astryx.Contracts.Portfolio.IStrategyPositions, StrategyPositions>();
         services.AddScoped<Astryx.Contracts.Portfolio.IPortfolioStateSource, PortfolioStateSource>();
         services.AddScoped<Astryx.Contracts.Portfolio.IPositionBook, PositionBook>();
         services.AddScoped<Astryx.Contracts.Portfolio.IPortfolioEpochs, PortfolioEpochs>();

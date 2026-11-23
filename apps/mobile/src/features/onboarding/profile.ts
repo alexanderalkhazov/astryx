@@ -98,7 +98,7 @@ export function useInvestorProfile(userId: string | undefined): InvestorProfile 
   const profile = useProfileStore((s) => (userId ? s.profiles[userId] : undefined));
   useEffect(() => {
     if (!userId || profile !== undefined) return;
-    void secureStorage.getProfile(userId).then((stored) =>
+    void Promise.resolve(secureStorage.getProfile(userId)).then((stored) =>
       useProfileStore.setState((s) => ({
         profiles: { ...s.profiles, [userId]: stored ? (JSON.parse(stored) as InvestorProfile) : null },
       })),

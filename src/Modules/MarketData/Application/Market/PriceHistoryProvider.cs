@@ -130,13 +130,29 @@ public sealed class PriceHistoryProvider(MarketDataDbContext db, MarketQueries q
             .GroupBy(x => x.Symbol)
             .ToDictionary(g => g.Key, g => PriceAdjustment.Factors(g.Select(x => x.Action), AdjustmentMode.SplitOnly, _ => null), StringComparer.Ordinal);
 
+        // Today's forming bar comes from the quote, as in the daily history: once the session has a quote and the
+        // end-of-day sync hasn't stored today's bar yet, the trail ends at the live price and today's volume.
+        var session = await clock.CurrentSessionAsync(cancellationToken);
+        var quotes = await (
+                from q in db.Quotes.AsNoTracking()
+                join i in db.Instruments.AsNoTracking() on q.InstrumentId equals i.Id
+                where wanted.Contains(i.Symbol) && q.AsOf >= session.OpenAt
+                select new { i.Symbol, q.Last, q.Volume })
+            .ToDictionaryAsync(q => q.Symbol, StringComparer.Ordinal, cancellationToken);
+
         return rows.GroupBy(r => r.Symbol, StringComparer.Ordinal).ToDictionary(
             g => g.Key,
             g =>
             {
                 var ordered = g.OrderByDescending(r => r.N).ToList();
                 var closes = ordered.Select(r => splits.TryGetValue(g.Key, out var f) ? r.Close * PriceAdjustment.At(r.SessionDate, f).Price : r.Close).ToList();
-                return new PriceTrail(closes, ordered[^1].Volume);
+                if (quotes.TryGetValue(g.Key, out var quote) && ordered[^1].SessionDate < session.SessionDate)
+                {
+                    closes = closes.Skip(closes.Count >= sessions ? 1 : 0).Append(quote.Last).ToList();
+                    return new PriceTrail(closes, quote.Volume, session.SessionDate);
+                }
+
+                return new PriceTrail(closes, ordered[^1].Volume, ordered[^1].SessionDate);
             },
             StringComparer.Ordinal);
     }

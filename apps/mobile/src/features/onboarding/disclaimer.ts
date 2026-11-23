@@ -24,9 +24,9 @@ export function useDisclaimerAccepted(userId: string | undefined): boolean | und
   const accepted = useDisclaimerStore((s) => (userId ? s.accepted[userId] : undefined));
   useEffect(() => {
     if (!userId || accepted !== undefined) return;
-    void secureStorage
-      .hasAcceptedDisclaimer(userId)
-      .then((value) => useDisclaimerStore.setState((s) => ({ accepted: { ...s.accepted, [userId]: value } })));
+    void Promise.resolve(secureStorage.hasAcceptedDisclaimer(userId)).then((value) =>
+      useDisclaimerStore.setState((s) => ({ accepted: { ...s.accepted, [userId]: value } })),
+    );
   }, [userId, accepted]);
   return accepted;
 }

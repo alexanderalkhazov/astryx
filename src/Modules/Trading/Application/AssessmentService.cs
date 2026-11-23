@@ -57,6 +57,7 @@ public sealed class AssessmentService(
     IMarketSessionClock sessions,
     IOpenOrders openOrders,
     IBrokerReadiness brokers,
+    Astryx.Contracts.Strategies.IStrategyEvidence evidence,
     IConfiguration configuration)
 {
     public static readonly IReadOnlyList<decimal> RiskChoices = [0.0050m, 0.0075m, 0.0100m];
@@ -228,7 +229,8 @@ public sealed class AssessmentService(
             HoldsSymbol: portfolio.OpenPositions.Any(p => p.InstrumentId == proposal.InstrumentId), WorkingEntryForSymbol: working.InstrumentIds.Contains(proposal.InstrumentId),
             portfolio.StartOfDayEquity, facts?.Atr14, await sessions.TodayAsync(cancellationToken), sessions.Now, limits,
             portfolio.BrokerConnectionId is null ? Costs() : CostModel.Alpaca(quote.Bid, quote.Ask, Costs()),
-            portfolio.BrokerConnectionId is { } connectionId ? await brokers.GetAsync(connectionId, proposal.Symbol, cancellationToken) : null);
+            portfolio.BrokerConnectionId is { } connectionId ? await brokers.GetAsync(connectionId, proposal.Symbol, cancellationToken) : null,
+            proposal.StrategyVersionId is { } versionId ? await evidence.ForVersionAsync(versionId, cancellationToken) : null);
         return (inputs, new HashContext(quote.QuoteSeq, portfolio.Version, limits.Version));
     }
 

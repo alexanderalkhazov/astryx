@@ -78,6 +78,32 @@ beforeEach(async () => {
 });
 
 describe('Discover', () => {
+  it('shows beginners only setups from strategies that made money in testing (T-166)', async () => {
+    const secureStore = jest.requireMock('expo-secure-store') as { getItemAsync: jest.Mock };
+    secureStore.getItemAsync.mockImplementation(async (key: string) =>
+      key === 'astryx.profile.v1.beginner-1' ? JSON.stringify({ level: 'beginner', horizon: 'years', tolerance: 'hold' }) : null,
+    );
+    useSession.setState({ user: { id: 'beginner-1' } as never });
+    const proven = { ...NVDA, strategy: { ...NVDA.strategy, evidence: 'lags_market' } };
+    const losing = {
+      ...NVDA,
+      id: 's2',
+      symbol: 'AMD',
+      name: 'AMD',
+      strategy: { id: 'tm', name: 'Trend Momentum', version: 1, evidence: 'losing' },
+    };
+    const untested = { ...NVDA, id: 's3', symbol: 'TGT', name: 'Target', strategy: { id: 'x', name: 'New', version: 1 } };
+    api.list.mockResolvedValue(page([proven, losing, untested]));
+    await renderDiscover();
+
+    expect(await screen.findByTestId('discover-hidden-for-beginners')).toHaveTextContent(
+      "2 setups hidden: their strategy lost money or isn't tested yet. Change your experience level in Settings to see them.",
+    );
+    expect(screen.getByTestId('opportunity-NVDA')).toBeOnTheScreen();
+    expect(screen.queryByTestId('opportunity-AMD')).not.toBeOnTheScreen();
+    expect(screen.queryByTestId('opportunity-TGT')).not.toBeOnTheScreen();
+  });
+
   it('shows the scanner line, chip counts and ranked rows (design 02)', async () => {
     await renderDiscover();
 

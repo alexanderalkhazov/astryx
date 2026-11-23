@@ -45,6 +45,17 @@ export const StrategySummary = z.object({
   guard: z.object({ drawdown: Decimal, warnAt: Decimal, pauseAt: Decimal, windowDays: z.number().int(), asOf: z.string() }).nullable(),
   /** False once a real backtest (T-160) replaced the seeded illustrative figures; absent means illustrative. */
   backtestIllustrative: z.boolean().optional(),
+  /** What the latest real backtest says (T-166); absent or `unproven` until there is one. */
+  evidence: z
+    .object({
+      verdict: z.enum(['unproven', 'losing', 'lags_market', 'beats_market']),
+      cagr: Decimal.nullable(),
+      multiple: Decimal.nullable(),
+      benchmarkMultiple: Decimal.nullable(),
+      periodStart: z.string().nullable(),
+      periodEnd: z.string().nullable(),
+    })
+    .optional(),
 });
 export type StrategySummary = z.infer<typeof StrategySummary>;
 
