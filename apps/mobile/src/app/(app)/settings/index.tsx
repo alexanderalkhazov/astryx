@@ -17,6 +17,7 @@ import { Screen } from '@/components/Shell';
 import { Stepper } from '@/components/Stepper';
 import { Switch } from '@/components/Switch';
 import { Text } from '@/components/Text';
+import { GOAL_LABEL, useGoal } from '@/features/onboarding/goal';
 import { LEVEL_LABEL, useInvestorProfile } from '@/features/onboarding/profile';
 import { setViewMode, useViewMode, type ViewMode } from '@/features/plain/mode';
 import { registerForPush, unregisterPush } from '@/features/push/push';
@@ -55,6 +56,7 @@ export default function SettingsScreen() {
       </Section>
       <LiveTradingGuardDialog visible={guardOpen} limits={risk.data} onClose={() => setGuardOpen(false)} />
 
+      <GoalSection />
       <ExperienceSection />
       <ExplanationsSection />
 
@@ -446,6 +448,27 @@ function SecuritySection() {
         onCancel={() => setConfirmAll(false)}
         onConfirm={() => all.mutate()}
       />
+    </Section>
+  );
+}
+
+// T-190: what the user came to do; it decides what Home suggests first.
+function GoalSection() {
+  const goal = useGoal(useSession((s) => s.user?.id));
+  return (
+    <Section title="Your goal">
+      <View style={styles.card}>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.push('/start')}
+          style={({ pressed }) => [styles.row, styles.link, { opacity: pressed ? 0.7 : 1 }]}
+          testID="settings-goal"
+        >
+          <Text.Body style={styles.flex}>{goal ? GOAL_LABEL[goal] : 'Not set'}</Text.Body>
+          <Text.Caption tone="secondary">Change</Text.Caption>
+          <ChevronRight size={18} strokeWidth={1.7} color={color.text3} />
+        </Pressable>
+      </View>
     </Section>
   );
 }

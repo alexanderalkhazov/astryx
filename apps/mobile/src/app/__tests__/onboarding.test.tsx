@@ -3,6 +3,7 @@ import { fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-li
 
 import AppLayout from '../(app)/_layout';
 import OnboardingScreen from '../(app)/onboarding';
+import StartScreen from '../(app)/start';
 import WelcomeScreen from '../(app)/welcome';
 import PrivacyScreen from '../privacy';
 import { useSession } from '@/state/session';
@@ -26,6 +27,9 @@ const routes = {
   '(app)/index': () => <Text>Home</Text>,
   '(app)/welcome': WelcomeScreen,
   '(app)/onboarding': OnboardingScreen,
+  '(app)/start': StartScreen,
+  '(app)/invest': () => <Text>Invest</Text>,
+  '(app)/discover': () => <Text>Discover</Text>,
   privacy: PrivacyScreen,
 };
 
@@ -71,7 +75,7 @@ describe('onboarding disclaimer (T-118)', () => {
     );
     await fireEvent.press(screen.getByRole('button', { name: 'Continue' }));
 
-    await waitFor(() => expect(screen).toHavePathname('/'));
+    await waitFor(() => expect(screen).toHavePathname('/start')); // then what to do first (T-190)
     expect(api.settings.updateRisk).toHaveBeenCalledWith(
       { version: 3 },
       expect.objectContaining({ maxRiskPerTradePct: '0.005', maxOpenPositions: 5 }),
@@ -91,7 +95,7 @@ describe('onboarding disclaimer (T-118)', () => {
     await fireEvent.press(screen.getByRole('radio', { name: 'See it as normal ups and downs' }));
     await fireEvent.press(screen.getByRole('button', { name: 'Continue' }));
 
-    await waitFor(() => expect(screen).toHavePathname('/'));
+    await waitFor(() => expect(screen).toHavePathname('/start')); // then what to do first (T-190)
     expect(api.settings.updateRisk).toHaveBeenCalledWith(
       { version: 3 },
       expect.objectContaining({ maxRiskPerTradePct: '0.0075', maxOpenPositions: 12 }),
@@ -102,11 +106,29 @@ describe('onboarding disclaimer (T-118)', () => {
   it('lets an account that already accepted and answered straight in', async () => {
     mockStored.set('astryx.disclaimer.v1.user-old', 'accepted');
     mockStored.set('astryx.profile.v1.user-old', JSON.stringify({ level: 'intermediate', horizon: 'months', tolerance: 'hold' }));
+    mockStored.set('astryx.goal.v1.user-old', 'practice');
     signedInAs('user-old');
     await renderRouter(routes, { initialUrl: '/' });
 
     expect(await screen.findByText('Home')).toBeOnTheScreen();
     expect(screen).toHavePathname('/');
+  });
+
+  it('asks an account that answered the questions what it wants to do, once (T-190)', async () => {
+    mockStored.set('astryx.disclaimer.v1.user-goal', 'accepted');
+    mockStored.set('astryx.profile.v1.user-goal', JSON.stringify({ level: 'beginner', horizon: 'years', tolerance: 'hold' }));
+    signedInAs('user-goal');
+    await renderRouter(routes, { initialUrl: '/' });
+
+    await waitFor(() => expect(screen).toHavePathname('/start'));
+    expect(screen.getByRole('header', { name: 'What would you like to do?' })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'Practice trading with pretend money' })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'Just look around' })).toBeOnTheScreen();
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Grow my money for the long term' }));
+
+    await waitFor(() => expect(screen).toHavePathname('/invest'));
+    expect(mockStored.get('astryx.goal.v1.user-goal')).toBe('invest');
   });
 
   it('shows the privacy policy', async () => {

@@ -258,6 +258,21 @@ describe('Explanations (T-161)', () => {
       useSession.setState({ user: null });
     }
   });
+
+  it('shows the chosen goal with a way to change it (T-190)', async () => {
+    const secureStore = jest.requireMock('expo-secure-store') as { getItemAsync: jest.Mock };
+    secureStore.getItemAsync.mockImplementation(async (key: string) => (key === 'astryx.goal.v1.goal-user' ? 'invest' : null));
+    useSession.setState({ user: { id: 'goal-user' } as never });
+    try {
+      await renderAt();
+
+      expect(await screen.findByText('Grow money long term')).toBeOnTheScreen();
+      expect(screen.getByTestId('settings-goal')).toHaveTextContent(/Change/);
+    } finally {
+      useSession.setState({ user: null });
+      secureStore.getItemAsync.mockReset();
+    }
+  });
 });
 
 describe('Paper account reset (P11, proposed dialog)', () => {

@@ -574,6 +574,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [ ] **T-190** "What would you like to do?" start
   - **Acceptance:** after the disclaimer and the T-162 questions, one screen with three large choices: "Grow my money for the long term" (→ Invest setup), "Practice trading with pretend money" (→ guided first trade, T-193), "Just look around" (→ Markets or Discover). The choice is saved per account, changeable in Settings, and shapes Home (T-191).
   - **Refs:** T-162 · **Depends:** — · **P1**
+  - Done (2026-11-24): `/start` after the questions (existing accounts see it once too), saved per account on the device, Settings › Your goal changes it. "Practice" opens Discover until the guided first trade (T-193) exists.
 - [ ] **T-191** Home as "your next step"
   - **Acceptance:** in Simple mode Home opens with one plain sentence about the user's money ("You have $10,250 of practice money, up $250 since you started") and one card with the single most useful next action, chosen by rules from their goal and state (no plan yet → start it; plan drifted → rebalance; a position near its stop → look at it; nothing to do → "All good. Check back tomorrow"). Charts and stats move below the fold, or to Pro mode.
   - **Refs:** T-161 · **Depends:** T-190 · **P1**
