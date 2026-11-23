@@ -591,7 +591,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Acceptance:** Simple mode shows four tabs (Home, Invest, Practice, Learn); the Strategy lab, scores, breakdowns and the full Activity feed are Pro-only (reachable, not deleted). Practice holds Discover, filtered for beginners, and open positions.
   - **Refs:** §11 · **Depends:** T-190 · **P1**
   - Done (2026-11-24): Simple mode shows Home, Invest, Practice and Learn; Pro keeps Home, Discover, Portfolio, Strategies, Activity. The other mode's screens keep their routes and links (only the tab button is hidden). Invest moved into the tabs (same `/invest`). Practice: the guided trade when there are no trades, your practice trades, and today's ideas with the beginner filter. Learn: the plain-words glossary in beginner order plus the guided trade (the full path is T-186). The e2e sign-in now passes the T-190 start screen.
-- [ ] **T-195** Getting-started checklist
+- [x] **T-195** Getting-started checklist — `4efc38c`
   - **Acceptance:** a dismissible "Getting started, 3 of 5" card: set up a plan or goal, watch a stock, make a practice trade, read one lesson, come back another day. Progress is derived from the user's real data, not ticked by hand.
   - **Depends:** T-190 · **P2**
   - Done (2026-11-24): on Simple-mode Home under the next step, until all five are done or it is hidden. Plan = an Invest plan exists; watch = the watchlist has a stock; trade = an open or closed position or a working order; lesson = a word opened in Learn; another day = a later local date than the first time the card appeared (the last two are recorded on the device, the rest come from the server). Each open item links to where it is done.
