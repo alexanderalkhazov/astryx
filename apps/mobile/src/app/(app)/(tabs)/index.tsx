@@ -12,13 +12,14 @@ import { LineChart } from '@/components/chart/LineChart';
 import { SkeletonRow } from '@/components/Feedback';
 import { MetricGrid, MetricHero } from '@/components/Metric';
 import { Segmented } from '@/components/Segmented';
-import { HomeHeader, Screen } from '@/components/Shell';
+import { HomeHeader, Screen, ScreenIntro } from '@/components/Shell';
 import { Text } from '@/components/Text';
 import { ConnectionBanner } from '@/features/connection/ConnectionBanner';
 import { checklist, dismissChecklist, localDate, useStarted } from '@/features/home/gettingStarted';
 import { moneySentence, type NextStep, nextStep } from '@/features/home/nextStep';
 import { useGoal } from '@/features/onboarding/goal';
 import { useViewMode } from '@/features/plain/mode';
+import { INTRO } from '@/features/plain/screenIntros';
 import { WATCHLISTS_KEY } from '@/features/watchlist/useWatchlist';
 import { broker, invest, market, notifications, portfolio, scanner, watchlists } from '@/lib/api';
 import { formatEtTime, formatMoney, formatPct, formatPnl, formatPrice, formatRatio } from '@/lib/format';
@@ -151,6 +152,7 @@ export default function HomeScreen() {
         testID="home-scroll"
       >
         <HomeHeader unreadAlerts={(unread.data ?? 0) > 0 || (attention.data?.length ?? 0) > 0} />
+        <ScreenIntro>{INTRO.home}</ScreenIntro>
         <ConnectionBanner />
 
         {simple ? (

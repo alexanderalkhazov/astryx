@@ -10,12 +10,13 @@ import { Button, IconButton } from '@/components/Button';
 import { Chip, RemovableChip } from '@/components/Chip';
 import { SkeletonRow } from '@/components/Feedback';
 import { OpportunityRow } from '@/components/OpportunityRow';
-import { Screen, ScreenHeader } from '@/components/Shell';
+import { Screen, ScreenHeader, ScreenIntro } from '@/components/Shell';
 import { Text } from '@/components/Text';
 import { useInvestorProfile } from '@/features/onboarding/profile';
 import { FiltersSheet } from '@/features/discover/FiltersSheet';
 import { activeFilterChips, type DiscoverFilters, useDiscoverFilters } from '@/features/discover/filters';
 import { isScannerUnavailable, SIGNALS_REFRESH_MS, useScannerStatus, useSignals } from '@/features/discover/useSignals';
+import { INTRO } from '@/features/plain/screenIntros';
 import { provenForBeginners } from '@/features/strategies/proven';
 import { formatEtTime } from '@/lib/format';
 import { useSession } from '@/state/session';
@@ -74,6 +75,7 @@ export default function DiscoverScreen() {
           </>
         }
       />
+      <ScreenIntro>{INTRO.discover}</ScreenIntro>
       <ScannerLine />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
         {TYPE_CHIPS.map((c) => (

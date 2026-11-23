@@ -12,6 +12,7 @@ import { Dialog } from '@/components/Dialog';
 import { SkeletonRow } from '@/components/Feedback';
 import { Screen, ScreenHeader } from '@/components/Shell';
 import { Text } from '@/components/Text';
+import { INTRO } from '@/features/plain/screenIntros';
 import { apiUrl } from '@/lib/config';
 import { notifications, paper, scanner } from '@/lib/api';
 import { formatEtTime, formatPrice, formatQuantity, formatSessionDate } from '@/lib/format';
@@ -85,6 +86,7 @@ export default function ActivityScreen() {
   return (
     <>
       <Screen
+        intro={INTRO.activity}
         header={
           <ScreenHeader
             title="Activity"

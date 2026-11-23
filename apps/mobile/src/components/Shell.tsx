@@ -11,6 +11,9 @@ import { Text } from './Text';
 /** Shown at the top of every Screen inside the provider (T-192: the signed-in layout puts the safety promise here). */
 export const ScreenTopContext = createContext<ReactNode>(null);
 
+/** Whether Screen shows its `intro` line (T-197: Simple mode; the signed-in layout provides it). */
+export const ScreenIntroContext = createContext(false);
+
 /** Widest content column: phones are 360–430 wide; anything wider centres the column (SYSTEM_DESIGN.md §8.12). */
 export const MAX_CONTENT_WIDTH = 430;
 
@@ -24,15 +27,23 @@ export interface ScreenProps {
   header?: ReactNode;
   /** Sticky bar below the content (e.g. the Stock screen's action bar); it takes the bottom safe area. */
   footer?: ReactNode;
+  /** One plain sentence under the header in Simple mode: what this screen is and what you can do here (T-197). */
+  intro?: string;
 }
 
 /** Screen frame: background, top safe area, 16 pt gutter, centred column. */
-export function Screen({ children, scroll = true, edges = ['top'], header, footer }: ScreenProps) {
+export function Screen({ children, scroll = true, edges = ['top'], header, footer, intro }: ScreenProps) {
   const top = useContext(ScreenTopContext);
+
   return (
     <SafeAreaView style={styles.safe} edges={edges}>
       {top ? <View style={styles.column}>{top}</View> : null}
       {header ? <View style={styles.column}>{header}</View> : null}
+      {intro ? (
+        <View style={[styles.column, styles.intro]}>
+          <ScreenIntro>{intro}</ScreenIntro>
+        </View>
+      ) : null}
       {scroll ? (
         // "handled": a tap on a row or button acts on the first try instead of only dismissing the keyboard.
         <ScrollView contentContainerStyle={[styles.column, styles.content]} keyboardShouldPersistTaps="handled">
@@ -47,6 +58,16 @@ export function Screen({ children, scroll = true, edges = ['top'], header, foote
         </SafeAreaView>
       ) : null}
     </SafeAreaView>
+  );
+}
+
+/** The Simple-mode first line, for screens whose title sits inside their content (Home, Discover). */
+export function ScreenIntro({ children }: { children: string }) {
+  if (!useContext(ScreenIntroContext)) return null;
+  return (
+    <Text variant="body" tone="secondary" testID="screen-intro">
+      {children}
+    </Text>
   );
 }
 
@@ -145,6 +166,7 @@ export function HomeHeader({ unreadAlerts = false }: { unreadAlerts?: boolean })
 }
 
 const styles = StyleSheet.create({
+  intro: { paddingHorizontal: space[4], paddingBottom: space[2] },
   footer: { borderTopWidth: 1, borderTopColor: color.line, backgroundColor: color.bg },
   safe: { flex: 1, backgroundColor: color.bg },
   column: { width: '100%', maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center' },

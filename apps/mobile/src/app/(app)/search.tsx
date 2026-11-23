@@ -13,6 +13,7 @@ import { Input } from '@/components/Input';
 import { Screen } from '@/components/Shell';
 import { StatusBanner } from '@/components/StatusBanner';
 import { Text } from '@/components/Text';
+import { INTRO } from '@/features/plain/screenIntros';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { search } from '@/lib/api';
 import { changeDirection, formatPct, formatPrice } from '@/lib/format';
@@ -63,7 +64,7 @@ export default function SearchScreen() {
   );
 
   return (
-    <Screen header={header}>
+    <Screen intro={INTRO.search} header={header}>
       {recent.data && recent.data.length > 0 ? (
         <View style={styles.section}>
           <Text.Overline tone="tertiary">Recent</Text.Overline>
@@ -89,7 +90,11 @@ export default function SearchScreen() {
           <SkeletonRow index={2} />
         </View>
       ) : results.data.length === 0 ? (
-        <EmptyState title={`No matches for '${query}'`} body="Try a ticker such as NVDA or part of a company name." />
+        <EmptyState
+          title={`No matches for '${query}'`}
+          body="Try a ticker such as NVDA or part of a company name."
+          action={{ label: 'Clear search', onPress: () => setText('') }}
+        />
       ) : (
         <View style={styles.section}>
           <Text.Caption tone="tertiary">

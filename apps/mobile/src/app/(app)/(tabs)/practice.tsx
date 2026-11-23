@@ -10,6 +10,7 @@ import { OpportunityRow } from '@/components/OpportunityRow';
 import { PaperChip, Screen, ScreenHeader } from '@/components/Shell';
 import { Text } from '@/components/Text';
 import { useInvestorProfile } from '@/features/onboarding/profile';
+import { INTRO } from '@/features/plain/screenIntros';
 import { provenForBeginners } from '@/features/strategies/proven';
 import { portfolio, scanner } from '@/lib/api';
 import { formatMoney, formatPnl } from '@/lib/format';
@@ -28,10 +29,8 @@ export default function PracticeScreen() {
   const open = positions.data?.items ?? [];
 
   return (
-    <Screen header={<ScreenHeader title="Practice" chip={<PaperChip />} />}>
+    <Screen intro={INTRO.practice} header={<ScreenHeader title="Practice" chip={<PaperChip />} />}>
       <View style={styles.content} testID="practice">
-        <Text.Body tone="secondary">Try trading single stocks with pretend money. Your trades and today’s ideas are here.</Text.Body>
-
         {positions.data && open.length === 0 ? (
           <View style={styles.card} testID="practice-guided">
             <Text.Section>Your first practice trade</Text.Section>

@@ -14,6 +14,7 @@ import { PaperChip, Screen, ScreenHeader } from '@/components/Shell';
 import { StatusBanner } from '@/components/StatusBanner';
 import { Tabs } from '@/components/Tabs';
 import { Text } from '@/components/Text';
+import { INTRO } from '@/features/plain/screenIntros';
 import { AssetDonut, PositionRow, SectorAllocation } from '@/features/portfolio/PortfolioParts';
 import { portfolio } from '@/lib/api';
 import { formatEtTime, formatMoney, formatPct, formatPnl, formatRatio } from '@/lib/format';
@@ -31,7 +32,7 @@ export default function PortfolioScreen() {
   const header = <ScreenHeader title="Portfolio" chip={<PaperChip />} />;
   if (summary.isError) {
     return (
-      <Screen header={header}>
+      <Screen intro={INTRO.portfolio} header={header}>
         <EmptyState
           title="Couldn't load your portfolio"
           body="Check your connection and try again."
@@ -43,7 +44,7 @@ export default function PortfolioScreen() {
 
   const s = summary.data;
   return (
-    <Screen header={header}>
+    <Screen intro={INTRO.portfolio} header={header}>
       {s?.stale ? (
         <StatusBanner
           tone="error"

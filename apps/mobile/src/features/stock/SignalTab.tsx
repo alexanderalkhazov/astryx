@@ -54,7 +54,10 @@ export function SignalTab({
   if (unavailable) {
     return (
       <View style={styles.tab}>
-        <EmptyState title="Signal unavailable" body="The scanner feed is unavailable, so signals are hidden rather than shown stale." />
+        <EmptyState
+          title="Signal unavailable"
+          body="The scanner feed is unavailable, so signals are hidden rather than shown stale. The AI research below still works; check back in a few minutes."
+        />
         <AnalysisCard symbol={symbol} />
       </View>
     );

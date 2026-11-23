@@ -12,6 +12,7 @@ import { StackHeader } from '@/components/Navigation';
 import { Screen } from '@/components/Shell';
 import { StatusBanner } from '@/components/StatusBanner';
 import { Text } from '@/components/Text';
+import { INTRO } from '@/features/plain/screenIntros';
 import { settings } from '@/lib/api';
 import { applyServerErrors, newPasswordField } from '@/lib/forms';
 import { toast } from '@/state/toasts';
@@ -41,7 +42,7 @@ export default function ChangePasswordScreen() {
   });
 
   return (
-    <Screen header={<StackHeader title="Change password" />}>
+    <Screen intro={INTRO.changePassword} header={<StackHeader title="Change password" />}>
       <View style={styles.form}>
         <Text.Body tone="secondary">Other devices signed in to this account will need to sign in again.</Text.Body>
         {failure ? <StatusBanner tone="error" title="Couldn't change your password" body={failure} testID="change-password-error" /> : null}

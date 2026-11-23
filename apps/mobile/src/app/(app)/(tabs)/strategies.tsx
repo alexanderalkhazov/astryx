@@ -10,6 +10,7 @@ import { EmptyState, SkeletonRow } from '@/components/Feedback';
 import { Segmented } from '@/components/Segmented';
 import { PaperChip, Screen, ScreenHeader } from '@/components/Shell';
 import { Text } from '@/components/Text';
+import { INTRO } from '@/features/plain/screenIntros';
 import { formatMonthYear, ILLUSTRATIVE_COPY, MetricsTable, StrategyCard } from '@/features/strategies/StrategyParts';
 import { strategies as strategiesApi } from '@/lib/api';
 import { formatRatio } from '@/lib/format';
@@ -26,7 +27,7 @@ export default function StrategiesScreen() {
   const header = <ScreenHeader title="Strategy lab" chip={<PaperChip />} />;
   if (list.isError) {
     return (
-      <Screen header={header}>
+      <Screen intro={INTRO.strategies} header={header}>
         <EmptyState
           title="Couldn't load strategies"
           body="Check your connection and try again."
@@ -40,7 +41,7 @@ export default function StrategiesScreen() {
   const start = items.find((s) => s.backtestStart)?.backtestStart;
   const end = items.find((s) => s.backtestEnd)?.backtestEnd;
   return (
-    <Screen header={header}>
+    <Screen intro={INTRO.strategies} header={header}>
       <Segmented
         accessibilityLabel="Strategy lab view"
         mono={false}
@@ -54,7 +55,11 @@ export default function StrategiesScreen() {
       {list.isPending ? (
         <SkeletonRow />
       ) : items.length === 0 ? (
-        <EmptyState title="No strategies" body="The strategy catalog is empty." />
+        <EmptyState
+          title="No strategies"
+          body="The strategy list is empty. Try again in a moment."
+          action={{ label: 'Retry', onPress: () => void list.refetch() }}
+        />
       ) : (
         <>
           <Text.Caption tone="tertiary">

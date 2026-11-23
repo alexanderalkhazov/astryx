@@ -20,6 +20,7 @@ import { Text } from '@/components/Text';
 import { GOAL_LABEL, useGoal } from '@/features/onboarding/goal';
 import { LEVEL_LABEL, useInvestorProfile } from '@/features/onboarding/profile';
 import { setViewMode, useViewMode, type ViewMode } from '@/features/plain/mode';
+import { INTRO } from '@/features/plain/screenIntros';
 import { registerForPush, unregisterPush } from '@/features/push/push';
 import { LiveTradingGuardDialog } from '@/features/settings/LiveTradingGuardDialog';
 import { ResetPaperAccountDialog } from '@/features/settings/ResetPaperAccountDialog';
@@ -36,7 +37,7 @@ export default function SettingsScreen() {
   const risk = useQuery({ queryKey: ['settings', 'risk'], queryFn: async () => (await settings.risk()).data });
 
   return (
-    <Screen header={<StackHeader title="Settings" />}>
+    <Screen intro={INTRO.settings} header={<StackHeader title="Settings" />}>
       <BrokerSection />
 
       <Section title="Trading mode">

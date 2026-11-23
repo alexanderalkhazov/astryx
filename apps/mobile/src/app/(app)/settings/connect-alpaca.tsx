@@ -13,6 +13,7 @@ import { StackHeader } from '@/components/Navigation';
 import { Screen } from '@/components/Shell';
 import { StatusBanner } from '@/components/StatusBanner';
 import { Text } from '@/components/Text';
+import { INTRO } from '@/features/plain/screenIntros';
 import { broker } from '@/lib/api';
 import { applyServerErrors } from '@/lib/forms';
 import { toast } from '@/state/toasts';
@@ -45,7 +46,7 @@ export default function ConnectAlpacaScreen() {
   });
 
   return (
-    <Screen header={<StackHeader title="Connect Alpaca" />}>
+    <Screen intro={INTRO.connectAlpaca} header={<StackHeader title="Connect Alpaca" />}>
       <View style={styles.form}>
         <Text.Body tone="secondary">
           Use your Alpaca paper trading keys (Alpaca dashboard › Paper trading › API keys). Approved trades are sent to that account; Astryx

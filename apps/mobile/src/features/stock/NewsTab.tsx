@@ -20,7 +20,13 @@ export function NewsTab({ symbol }: { symbol: string }) {
       />
     );
   }
-  if (news.data.length === 0) return <EmptyState title="No recent news" body={`Nothing new on ${symbol} from the news source.`} />;
+  if (news.data.length === 0)
+    return (
+      <EmptyState
+        title="No recent news"
+        body={`Nothing new on ${symbol} from the news source. The Signal tab shows what the price itself is doing.`}
+      />
+    );
 
   return (
     <View testID="news-tab">

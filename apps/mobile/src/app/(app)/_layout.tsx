@@ -3,10 +3,11 @@ import { Redirect, Stack, useGlobalSearchParams, usePathname, useSegments } from
 import { useEffect } from 'react';
 import { useReducedMotion } from 'react-native-reanimated';
 
-import { ScreenTopContext } from '@/components/Shell';
+import { ScreenIntroContext, ScreenTopContext } from '@/components/Shell';
 import { useDisclaimerAccepted } from '@/features/onboarding/disclaimer';
 import { useGoal } from '@/features/onboarding/goal';
 import { useInvestorProfile } from '@/features/onboarding/profile';
+import { useViewMode } from '@/features/plain/mode';
 import { SafetyBadge } from '@/features/plain/WhatIf';
 import { usePushNotifications } from '@/features/push/usePushNotifications';
 import { useScreenProtection } from '@/features/security/useScreenProtection';
@@ -27,6 +28,7 @@ export default function AppLayout() {
   const disclaimer = useDisclaimerAccepted(status === 'signedIn' ? userId : undefined);
   const profile = useInvestorProfile(status === 'signedIn' ? userId : undefined);
   const goal = useGoal(status === 'signedIn' ? userId : undefined);
+  const simple = useViewMode(status === 'signedIn' ? userId : undefined) === 'simple';
   useRealtimeConnection();
   usePushNotifications();
   useScreenProtection(status === 'signedIn');
@@ -52,19 +54,21 @@ export default function AppLayout() {
 
   return (
     <ScreenTopContext.Provider value={<SafetyBadge />}>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: color.bg },
-          ...stackTransition(reduceMotion),
-        }}
-      >
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="welcome" options={{ gestureEnabled: false, animation: 'fade' }} />
-        <Stack.Screen name="onboarding" options={{ gestureEnabled: false, animation: 'fade' }} />
-        <Stack.Screen name="start" options={{ gestureEnabled: false, animation: 'fade' }} />
-        <Stack.Screen name="search" options={{ presentation: 'fullScreenModal', animation: 'fade' }} />
-      </Stack>
+      <ScreenIntroContext.Provider value={simple}>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: color.bg },
+            ...stackTransition(reduceMotion),
+          }}
+        >
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="welcome" options={{ gestureEnabled: false, animation: 'fade' }} />
+          <Stack.Screen name="onboarding" options={{ gestureEnabled: false, animation: 'fade' }} />
+          <Stack.Screen name="start" options={{ gestureEnabled: false, animation: 'fade' }} />
+          <Stack.Screen name="search" options={{ presentation: 'fullScreenModal', animation: 'fade' }} />
+        </Stack>
+      </ScreenIntroContext.Provider>
     </ScreenTopContext.Provider>
   );
 }

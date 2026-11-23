@@ -15,6 +15,7 @@ import { PaperChip, Screen, ScreenHeader } from '@/components/Shell';
 import { Text } from '@/components/Text';
 import { type LossTolerance, useInvestorProfile } from '@/features/onboarding/profile';
 import { WhatIf } from '@/features/plain/WhatIf';
+import { INTRO } from '@/features/plain/screenIntros';
 import { invest } from '@/lib/api';
 import { formatMoney, formatPct, formatPnl, formatSessionDate } from '@/lib/format';
 import { useSession } from '@/state/session';
@@ -49,7 +50,7 @@ export default function InvestScreen() {
   const [editing, setEditing] = useState(false);
 
   return (
-    <Screen header={<ScreenHeader title="Invest" chip={<PaperChip />} />}>
+    <Screen intro={INTRO.invest} header={<ScreenHeader title="Invest" chip={<PaperChip />} />}>
       {plan.isPending ? (
         <SkeletonRow />
       ) : plan.data === null || editing ? (

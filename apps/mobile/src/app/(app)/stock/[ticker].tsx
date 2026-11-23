@@ -19,6 +19,7 @@ import { StatusBanner } from '@/components/StatusBanner';
 import { Switch } from '@/components/Switch';
 import { Tabs } from '@/components/Tabs';
 import { Text } from '@/components/Text';
+import { INTRO } from '@/features/plain/screenIntros';
 import { FundamentalsTab } from '@/features/stock/FundamentalsTab';
 import { NewsTab } from '@/features/stock/NewsTab';
 import { useReviewProposal } from '@/features/proposal/useReviewProposal';
@@ -86,7 +87,7 @@ export default function StockScreen() {
   if (instrument.isError) {
     const missing = isApiError(instrument.error) && instrument.error.status === 404;
     return (
-      <Screen header={header}>
+      <Screen intro={INTRO.stock} header={header}>
         {missing ? (
           <EmptyState
             title={`No stock called ${symbol}`}
@@ -145,7 +146,7 @@ export default function StockScreen() {
 
   return (
     <>
-      <Screen header={header} footer={footer}>
+      <Screen intro={INTRO.stock} header={header} footer={footer}>
         <PriceBlock quote={quote.data} sector={instrument.data?.industry ?? instrument.data?.sector ?? null} pending={quote.isPending} />
         {quote.data?.stale ? (
           <StatusBanner
@@ -174,9 +175,12 @@ export default function StockScreen() {
         ) : visible.length === 0 ? (
           <View style={styles.chartBox}>
             {timeframe === '1D' ? (
-              <EmptyState title="No bars yet today" body="Intraday bars appear once the session opens at 9:30 ET." />
+              <EmptyState
+                title="No bars yet today"
+                body="Intraday bars appear once the session opens at 9:30 ET. Until then, pick 1M or longer above to see past prices."
+              />
             ) : (
-              <EmptyState title="No price history yet" body="Bars appear after the first market data sync." />
+              <EmptyState title="No price history yet" body="Bars appear after the first market data sync. Check back in a few minutes." />
             )}
           </View>
         ) : (

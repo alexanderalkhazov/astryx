@@ -18,6 +18,7 @@ import { Screen } from '@/components/Shell';
 import { StatusBanner } from '@/components/StatusBanner';
 import { Text } from '@/components/Text';
 import { WhatIf } from '@/features/plain/WhatIf';
+import { INTRO } from '@/features/plain/screenIntros';
 import { market, portfolio } from '@/lib/api';
 import { formatEtTime, formatMoney, formatPct, formatPnl, formatPrice, formatQuantity, formatSessionDate } from '@/lib/format';
 import { toast } from '@/state/toasts';
@@ -80,7 +81,7 @@ export default function PositionScreen() {
   if (position.isError) {
     const missing = isApiError(position.error) && position.error.status === 404;
     return (
-      <Screen header={header}>
+      <Screen intro={INTRO.position} header={header}>
         <EmptyState
           title={missing ? `No ${symbol} position` : "Couldn't load the position"}
           body={missing ? "You haven't held this stock in your paper account." : 'Check your connection and try again.'}
@@ -96,7 +97,7 @@ export default function PositionScreen() {
 
   if (!p) {
     return (
-      <Screen header={header}>
+      <Screen intro={INTRO.position} header={header}>
         <SkeletonRow />
       </Screen>
     );
@@ -128,7 +129,7 @@ export default function PositionScreen() {
 
   return (
     <>
-      <Screen header={header} footer={footer}>
+      <Screen intro={INTRO.position} header={header} footer={footer}>
         {open ? (
           <View style={styles.valueBlock}>
             <View style={styles.row}>

@@ -19,6 +19,7 @@ import { Screen } from '@/components/Shell';
 import { StatusBanner } from '@/components/StatusBanner';
 import { Stepper } from '@/components/Stepper';
 import { Text } from '@/components/Text';
+import { INTRO } from '@/features/plain/screenIntros';
 import { ConfirmOrderSheet } from '@/features/proposal/ConfirmOrderSheet';
 import { canChooseQuantity, useInvestorProfile } from '@/features/onboarding/profile';
 import { useViewMode } from '@/features/plain/mode';
@@ -80,7 +81,7 @@ export default function ProposalScreen() {
 
   if (proposal.isError) {
     return (
-      <Screen header={header}>
+      <Screen intro={INTRO.proposal} header={header}>
         {isNotFound(proposal.error) ? (
           <EmptyState
             title="Proposal not found"
@@ -100,7 +101,7 @@ export default function ProposalScreen() {
 
   if (!proposal.data) {
     return (
-      <Screen header={header}>
+      <Screen intro={INTRO.proposal} header={header}>
         <View testID="proposal-loading" style={styles.gap}>
           {[0, 1, 2, 3].map((i) => (
             <SkeletonRow key={i} index={i} />
@@ -151,7 +152,7 @@ export default function ProposalScreen() {
 
   return (
     <>
-      <Screen header={header} footer={footer}>
+      <Screen intro={INTRO.proposal} header={header} footer={footer}>
         {pending ? (
           <StatusBanner
             tone="pending"

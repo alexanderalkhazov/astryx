@@ -11,6 +11,7 @@ import { StackHeader } from '@/components/Navigation';
 import { Screen } from '@/components/Shell';
 import { StatusBanner } from '@/components/StatusBanner';
 import { Text } from '@/components/Text';
+import { INTRO } from '@/features/plain/screenIntros';
 import { useDefaultWatchlist, useWatchlistEditor } from '@/features/watchlist/useWatchlist';
 import { changeDirection, formatPct, formatPrice } from '@/lib/format';
 
@@ -37,7 +38,7 @@ export default function WatchlistScreen() {
   );
 
   return (
-    <Screen header={header}>
+    <Screen intro={INTRO.watchlist} header={header}>
       {list.isError ? (
         <StatusBanner
           tone="error"

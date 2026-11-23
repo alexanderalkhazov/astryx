@@ -8,6 +8,7 @@ import { Screen, ScreenHeader } from '@/components/Shell';
 import { Text } from '@/components/Text';
 import { markLessonRead } from '@/features/home/gettingStarted';
 import { GLOSSARY, type GlossaryKey } from '@/features/plain/glossary';
+import { INTRO } from '@/features/plain/screenIntros';
 import { useSession } from '@/state/session';
 
 /** The order a beginner meets these words: the trade itself first, then what the screens show. */
@@ -40,9 +41,8 @@ export default function LearnScreen() {
   };
 
   return (
-    <Screen header={<ScreenHeader title="Learn" />}>
+    <Screen intro={INTRO.learn} header={<ScreenHeader title="Learn" />}>
       <View style={styles.content} testID="learn">
-        <Text.Body tone="secondary">Short, plain explanations of the words Astryx uses. Tap one to read it.</Text.Body>
         <View style={styles.card}>
           <Text.Section>Learn by doing</Text.Section>
           <Text.Body tone="secondary">The guided trade explains each step on a real idea, with pretend money.</Text.Body>

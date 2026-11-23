@@ -16,6 +16,7 @@ import { StatusBanner } from '@/components/StatusBanner';
 import { Stepper } from '@/components/Stepper';
 import { Tabs } from '@/components/Tabs';
 import { Text } from '@/components/Text';
+import { INTRO } from '@/features/plain/screenIntros';
 import {
   formatMonthYear,
   GuardLine,
@@ -42,7 +43,7 @@ export default function StrategyScreen() {
   if (detail.isError) {
     const missing = isApiError(detail.error) && detail.error.status === 404;
     return (
-      <Screen header={header}>
+      <Screen intro={INTRO.strategy} header={header}>
         {missing ? (
           <EmptyState
             title="Strategy not found"
@@ -61,14 +62,14 @@ export default function StrategyScreen() {
   }
   if (!d) {
     return (
-      <Screen header={header}>
+      <Screen intro={INTRO.strategy} header={header}>
         <SkeletonRow />
       </Screen>
     );
   }
 
   return (
-    <Screen header={header}>
+    <Screen intro={INTRO.strategy} header={header}>
       <View style={styles.head}>
         <Text.Body tone="secondary" style={styles.flex}>
           {d.summary.description}
@@ -158,7 +159,13 @@ function BacktestTab({ detail }: { detail: StrategyDetail }) {
     queryFn: async () => (await strategies.run(detail.summary.id, runId)).data,
     enabled: !!runId,
   });
-  if (!runId) return <EmptyState title="No backtest yet" body="This strategy hasn't been backtested." />;
+  if (!runId)
+    return (
+      <EmptyState
+        title="No backtest yet"
+        body="This strategy hasn't been tested on past prices yet. Check back after the next nightly run."
+      />
+    );
   if (run.isError)
     return (
       <EmptyState
