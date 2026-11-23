@@ -543,9 +543,10 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Acceptance:** every proposal has a plain summary ("Buy 12 TGT if it rises to $168.20. If it falls to $159.91 you lose about $102; if it reaches $212.16 you gain about $527.") and "why this" / "what could go wrong" in everyday words, generated deterministically from the signal and assessment (no AI needed). Jargon on proposal, stock and signal screens is tappable for a one-paragraph explanation (glossary: breakout, stop, target, R:R, ATR, RSI, relative strength, buy stop, position size, sector exposure). A "Simple / Pro" switch in Settings; Simple is the default for new accounts.
   - **Refs:** §8.4, §11 · **Depends:** T-086 · **P1**
   - Done (2026-11-23): plain-words card on proposals, 13-term glossary with tap-to-explain on the proposal and the Signal tab, Simple/Pro in Settings (Simple by default, per account and device).
-- [ ] **T-162** Guided onboarding and experience levels
+- [x] **T-162** Guided onboarding and experience levels — `f91207f`
   - **Acceptance:** after the disclaimer, a short questionnaire (experience, horizon, how much loss is acceptable) sets an experience level and conservative risk limits; Beginner gets lower risk per trade, fewer open positions and Simple mode. Features unlock by level (e.g. user-chosen quantity only from Intermediate). The answers are editable in Settings.
   - **Refs:** §14 · **Depends:** T-161 · **P1**
+  - Done (2026-11-23): three questions → Beginner / Intermediate / Experienced with matching server-side risk limits and Simple/Pro; beginners keep the engine's position size; Settings › Experience retakes them. The horizon answer is stored for the Invest track (T-164).
 - [ ] **T-163** More strategies (Q-09)
   - **Acceptance:** the four rules in `docs/strategies/rules-draft.md`, as approved by the owner, implemented as `<code>@1` rules with unit tests and backtests (T-160); time exits per the owner's decision.
   - **Refs:** §13.4, Q-09 · **Depends:** owner decision, T-160 · **P1**
