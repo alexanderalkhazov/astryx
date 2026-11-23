@@ -78,7 +78,7 @@ public class MarketIngestionTests(IngestionApiFactory factory) : IClassFixture<I
         var firstUpdate = await factory.QueryAsync(db => db.Instruments.MaxAsync(i => i.UpdatedAt));
         await factory.RunAsync<InstrumentSyncJob, InstrumentSyncHandler>(new InstrumentSyncJob());
 
-        (await factory.QueryAsync(db => db.Instruments.CountAsync(i => i.IsActive))).ShouldBe(1034);
+        (await factory.QueryAsync(db => db.Instruments.CountAsync(i => i.IsActive))).ShouldBe(1036);
         var nvda = await factory.QueryAsync(db => db.Instruments.SingleAsync(i => i.Symbol == "NVDA"));
         (nvda.ExchangeMic, nvda.Name, nvda.Sector).ShouldBe(("XNAS", "NVIDIA Corp.", "Information Technology"));
         JsonDocument.Parse(nvda.ProviderRefs).RootElement.GetProperty("fake").GetString().ShouldBe("NVDA");
@@ -108,7 +108,7 @@ public class MarketIngestionTests(IngestionApiFactory factory) : IClassFixture<I
         nvdaBars.ShouldAllBe(b => b.IsFinal);
         nvdaBars[^1].SessionDate.ShouldBe(new DateOnly(2026, 11, 6)); // today's forming bar is not stored
         nvdaBars[^1].Close.ShouldBe(180.24m);
-        (await factory.QueryAsync(db => db.PriceBars.Select(b => b.InstrumentId).Distinct().CountAsync())).ShouldBe(1034);
+        (await factory.QueryAsync(db => db.PriceBars.Select(b => b.InstrumentId).Distinct().CountAsync())).ShouldBe(1036);
         var nvdaId = await factory.QueryAsync(db => db.Instruments.Where(i => i.Symbol == "NVDA").Select(i => i.Id).SingleAsync());
         (await factory.QueryAsync(db => db.CorporateActions.CountAsync(a => a.InstrumentId == nvdaId))).ShouldBe(2);
 
@@ -126,7 +126,7 @@ public class MarketIngestionTests(IngestionApiFactory factory) : IClassFixture<I
         await factory.RunAsync<QuoteSyncJob, QuoteSyncHandler>(new QuoteSyncJob());
         var nvda = await QuoteAsync("NVDA");
         (nvda.Last, nvda.PrevClose, nvda.Volume, nvda.Quality, nvda.Source).ShouldBe((186.40m, 180.24m, 412_800_000L, "synthetic", "fake"));
-        (await factory.QueryAsync(db => db.Quotes.CountAsync())).ShouldBe(1034);
+        (await factory.QueryAsync(db => db.Quotes.CountAsync())).ShouldBe(1036);
         var events = await QuoteEventsAsync();
         events.Count.ShouldBe(eventsBefore.Count + 1);
         JsonDocument.Parse(events[^1]).RootElement.GetProperty("quotes").GetArrayLength().ShouldBeGreaterThan(0);
@@ -257,7 +257,7 @@ public class MarketIngestionTimelineTests(IngestionTimelineApiFactory factory) :
         var total = await factory.QueryAsync(db => db.PriceBars.CountAsync());
         factory.Clock.SetUtcNow(new DateTimeOffset(2026, 11, 9, 21, 31, 0, TimeSpan.Zero)); // 16:31 ET
         await factory.RunAsync<EodBarSyncJob, EodBarSyncHandler>(new EodBarSyncJob());
-        (await factory.QueryAsync(db => db.PriceBars.CountAsync())).ShouldBe(total + 1034);
+        (await factory.QueryAsync(db => db.PriceBars.CountAsync())).ShouldBe(total + 1036);
         var monday = (await IngestionQueries.DailyBarsAsync(factory, "NVDA"))[^1];
         (monday.SessionDate, monday.Close, monday.Volume, monday.IsFinal).ShouldBe((new DateOnly(2026, 11, 9), 186.40m, 412_800_000L, true));
 

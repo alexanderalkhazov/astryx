@@ -512,6 +512,14 @@
           "Microsoft.AspNetCore.Authentication.JwtBearer": "[10.0.14, )"
         }
       },
+      "astryx.modules.invest": {
+        "type": "Project",
+        "dependencies": {
+          "Astryx.Contracts": "[1.0.0, )",
+          "Astryx.Infrastructure": "[1.0.0, )",
+          "Astryx.SharedKernel": "[1.0.0, )"
+        }
+      },
       "astryx.modules.marketdata": {
         "type": "Project",
         "dependencies": {

@@ -194,7 +194,7 @@ public class MarketEndpointTests(SyncedMarketApiFactory factory) : IClassFixture
 
         var advancers = breadth.GetProperty("advancers").GetInt32();
         var decliners = breadth.GetProperty("decliners").GetInt32();
-        (advancers + decliners).ShouldBeInRange(900, 1034);
+        (advancers + decliners).ShouldBeInRange(900, 1036);
         advancers.ShouldBeGreaterThan(0);
         decliners.ShouldBeGreaterThan(0);
         decimal.Parse(breadth.GetProperty("pctAbove50dma").GetString()!, System.Globalization.CultureInfo.InvariantCulture).ShouldBeInRange(0m, 1m);

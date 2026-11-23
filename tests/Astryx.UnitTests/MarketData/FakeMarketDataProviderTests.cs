@@ -36,13 +36,13 @@ public class FakeMarketDataProviderTests
     }
 
     [Fact]
-    public async Task The_universe_has_1034_instruments_including_the_design_tickers()
+    public async Task The_universe_has_1036_instruments_including_the_design_tickers()
     {
         var (provider, _, _) = Create();
 
         var instruments = await provider.GetInstrumentsAsync(FakeMarketDataProvider.UniverseCode, default);
 
-        instruments.Count.ShouldBe(1034);
+        instruments.Count.ShouldBe(1036);
         instruments.Select(i => i.Symbol).ShouldBeUnique();
         foreach (var symbol in new[] { "NVDA", "AMD", "AMZN", "CRM", "PLTR", "TSLA", "COST", "JPM", "AAPL", "MSFT", "LLY", "UBER" })
         {

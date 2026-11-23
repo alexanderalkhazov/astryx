@@ -222,7 +222,9 @@ internal sealed class AlpacaMarketDataProvider(IHttpClientFactory httpFactory, A
     public Task<IReadOnlyList<ProviderInstrument>> GetInstrumentsAsync(string universeCode, CancellationToken cancellationToken)
     {
         IReadOnlyList<ProviderInstrument> instruments = universeCode == AlpacaUniverse.Code
-            ? universe.Members.Select(m => new ProviderInstrument(m.Symbol, m.ExchangeMic, m.Name, AssetType.Equity, "USD", m.Sector, m.Industry, MarketCap: null, m.Symbol)).ToList()
+            ? universe.Members.Select(m => new ProviderInstrument(m.Symbol, m.ExchangeMic, m.Name, AssetType.Equity, "USD", m.Sector, m.Industry, MarketCap: null, m.Symbol))
+                .Concat(AlpacaUniverse.CoreFunds.Select(f => new ProviderInstrument(f.Symbol, f.ExchangeMic, f.Name, AssetType.Etf, "USD", null, "Broad market fund", MarketCap: null, f.Symbol)))
+                .ToList()
             : [];
         return Task.FromResult(instruments);
     }
@@ -389,6 +391,14 @@ internal sealed class AlpacaUniverse
     public static readonly IReadOnlySet<string> UsEquityMics = new HashSet<string>(StringComparer.Ordinal) { "XNYS", "XNAS", "ARCX" };
 
     public sealed record Member(string Symbol, string ExchangeMic, string Name, string Sector, string Industry);
+
+    /// <summary>The Invest track's three-fund portfolio (T-164): US stocks, international stocks, US bonds. ETFs, so never scanned.</summary>
+    public static readonly IReadOnlyList<(string Symbol, string ExchangeMic, string Name)> CoreFunds =
+    [
+        ("SPY", "ARCX", "SPDR S&P 500 ETF Trust"),
+        ("VXUS", "XNAS", "Vanguard Total International Stock ETF"),
+        ("BND", "XNAS", "Vanguard Total Bond Market ETF"),
+    ];
 
     public IReadOnlyList<Member> Members { get; }
 

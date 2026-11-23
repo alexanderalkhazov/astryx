@@ -17,6 +17,8 @@ using Astryx.Modules.Discovery;
 using Astryx.Modules.Discovery.Api;
 using Astryx.Modules.Identity;
 using Astryx.Modules.Identity.Api;
+using Astryx.Modules.Invest;
+using Astryx.Modules.Invest.Api;
 using Astryx.Modules.MarketData;
 using Astryx.Modules.MarketData.Api;
 using Astryx.Modules.MarketData.Application.Market;
@@ -88,6 +90,7 @@ builder.Services
     .AddMarketDataModule(builder.Configuration)
     .AddDiscoveryModule(builder.Configuration)
     .AddWatchlistsModule(builder.Configuration)
+    .AddInvestModule(builder.Configuration)
     .AddQuantModule(builder.Configuration)
     .AddAiModule(builder.Configuration)
     .AddStrategiesModule(builder.Configuration)
@@ -159,6 +162,7 @@ app.MapProfileEndpoints();
 app.MapMarketEndpoints();
 app.MapSearchEndpoints();
 app.MapWatchlistEndpoints();
+app.MapInvestEndpoints();
 app.MapIndicatorEndpoints();
 app.MapStrategyEndpoints();
 app.MapScannerEndpoints();

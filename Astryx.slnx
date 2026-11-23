@@ -46,6 +46,9 @@
   <Folder Name="/src/Modules/Trading/">
     <Project Path="src/Modules/Trading/Astryx.Modules.Trading.csproj" />
   </Folder>
+  <Folder Name="/src/Modules/Invest/">
+    <Project Path="src/Modules/Invest/Astryx.Modules.Invest.csproj" />
+  </Folder>
   <Folder Name="/src/Modules/Watchlists/">
     <Project Path="src/Modules/Watchlists/Astryx.Modules.Watchlists.csproj" />
   </Folder>

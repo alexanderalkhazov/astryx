@@ -12,6 +12,7 @@ public class ModuleBoundaryTests
         typeof(Astryx.Modules.MarketData.MarketDataModule).Assembly.GetName().Name!,
         typeof(Astryx.Modules.Discovery.DiscoveryModule).Assembly.GetName().Name!,
         typeof(Astryx.Modules.Watchlists.WatchlistsModule).Assembly.GetName().Name!,
+        typeof(Astryx.Modules.Invest.InvestModule).Assembly.GetName().Name!,
         typeof(Astryx.Modules.Quant.QuantModule).Assembly.GetName().Name!,
         typeof(Astryx.Modules.Ai.AiModule).Assembly.GetName().Name!,
         typeof(Astryx.Modules.Strategies.StrategiesModule).Assembly.GetName().Name!,

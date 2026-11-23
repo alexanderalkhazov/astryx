@@ -21,6 +21,7 @@ public class UserOwnershipTests
         typeof(Astryx.Modules.Identity.IdentityModule).Assembly.GetName().Name!,
         typeof(Astryx.Modules.Profiles.ProfilesModule).Assembly.GetName().Name!,
         typeof(Astryx.Modules.Watchlists.WatchlistsModule).Assembly.GetName().Name!,
+        typeof(Astryx.Modules.Invest.InvestModule).Assembly.GetName().Name!,
         typeof(Astryx.Modules.Portfolio.PortfolioModule).Assembly.GetName().Name!,
         typeof(Astryx.Modules.Audit.AuditModule).Assembly.GetName().Name!,
         typeof(Astryx.Modules.Notifications.NotificationsModule).Assembly.GetName().Name!,

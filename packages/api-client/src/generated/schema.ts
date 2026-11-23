@@ -894,6 +894,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/invest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetInvestPlan"];
+        put: operations["SaveInvestPlan"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/invest/invest-cash": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["InvestCash"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/invest/rebalance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["RebalanceInvestPlan"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/strategies": {
         parameters: {
             query?: never;
@@ -1966,6 +2014,72 @@ export interface components {
             held: boolean;
             signalType: null | string;
         };
+        InvestContributionDto: {
+            /** Format: decimal */
+            amount: string;
+            frequency: string;
+            /** Format: date */
+            nextOn: null | string;
+        };
+        InvestDto: {
+            profile: string;
+            /** Format: decimal */
+            value: string;
+            /** Format: decimal */
+            cash: string;
+            /** Format: decimal */
+            contributed: string;
+            /** Format: decimal */
+            gain: string;
+            /** Format: decimal */
+            gainPct: string;
+            funds: components["schemas"]["InvestFundDto"][];
+            /** Format: decimal */
+            maxDrift: string;
+            rebalanceSuggested: boolean;
+            contribution: components["schemas"]["InvestContributionDto"];
+            goal: null | components["schemas"]["InvestGoalDto"];
+            activity: components["schemas"]["InvestTransactionDto"][];
+            /** Format: date-time */
+            pricesAsOf: null | string;
+        };
+        InvestFundDto: {
+            symbol: string;
+            name: string;
+            role: string;
+            /** Format: decimal */
+            targetWeight: string;
+            /** Format: decimal */
+            quantity: string;
+            /** Format: decimal */
+            price: null | string;
+            /** Format: decimal */
+            value: string;
+            /** Format: decimal */
+            weight: string;
+            /** Format: decimal */
+            costBasis: string;
+        };
+        InvestGoalDto: {
+            /** Format: decimal */
+            amount: string;
+            /** Format: date */
+            date: null | string;
+            /** Format: decimal */
+            progress: string;
+        };
+        InvestTransactionDto: {
+            kind: string;
+            symbol: null | string;
+            /** Format: decimal */
+            quantity: null | string;
+            /** Format: decimal */
+            price: null | string;
+            /** Format: decimal */
+            amount: string;
+            /** Format: date-time */
+            occurredAt: string;
+        };
         ItemsResponseOfNewsItemDto: {
             items: components["schemas"]["NewsItemDto"][];
         };
@@ -2478,6 +2592,18 @@ export interface components {
             /** Format: date-time */
             finishedAt: null | string;
             metrics: components["schemas"]["JsonNode"];
+        };
+        SaveInvestPlanRequest: {
+            profile: string;
+            /** Format: decimal */
+            initialDeposit: null | string;
+            /** Format: decimal */
+            contributionAmount: string;
+            contributionFrequency: string;
+            /** Format: decimal */
+            goalAmount: null | string;
+            /** Format: date */
+            goalDate: null | string;
         };
         ScannerRefDto: {
             /** Format: date-time */
@@ -3937,6 +4063,171 @@ export interface operations {
             };
             /** @description Precondition Required */
             428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    GetInvestPlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvestDto"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    SaveInvestPlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveInvestPlanRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvestDto"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    InvestCash: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvestDto"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    RebalanceInvestPlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvestDto"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };
