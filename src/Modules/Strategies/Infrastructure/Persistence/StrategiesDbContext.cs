@@ -34,6 +34,7 @@ public sealed class StrategiesDbContext(DbContextOptions<StrategiesDbContext> op
             entity.Property(s => s.Rules).HasColumnType("jsonb");
             entity.Property(s => s.ParamSchema).HasColumnType("jsonb");
             entity.Property(s => s.IllustrativeLive).HasColumnType("jsonb");
+            entity.Property(s => s.TrackRecord).HasColumnType("jsonb");
             entity.Property(s => s.GuardPausePct).HasPrecision(8, 6).HasDefaultValue(DrawdownGuard.DefaultPausePct);
             entity.Property(s => s.GuardWindowDays).HasDefaultValue(DrawdownGuard.DefaultWindowDays);
             entity.Property(s => s.GuardDrawdown).HasPrecision(8, 6);

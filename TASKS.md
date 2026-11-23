@@ -565,7 +565,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [ ] **T-166** Paper soak and published track record
   - **Acceptance:** each strategy's live paper results (signals, fills, P&L, drawdown) since a start date shown beside its backtest, so users see real out-of-sample results; a strategy is offered to Beginners only after a minimum soak and drawdown within its backtest range.
   - **Refs:** §17.9 (T-131) · **Depends:** T-160 · **P2**
-  - ⏸ WIP (2026-11-23, `007de59`): evidence gate done (verdict per strategy from its real backtest, risk-engine warning, beginners only see proven strategies). **Open:** each strategy's live paper results beside its backtest, and a minimum soak before Beginners see a strategy.
+  - Done (2026-11-24): evidence gate (`007de59`) plus a live track record: every emitted signal is followed on final bars with the backtester's rules (`strategies.track-record.v1`, every 4 h) and shown beside the backtest (signals, closed, win rate, average R, drawdown). Beginners see a strategy only after 20 closed signals over 60 days with live drawdown within the backtest's.
 
 ### M12 · Warm start (owner request 2026-11-23: "I open it and I don't know what to do", "I can't feel a sense of warm confidence")
 

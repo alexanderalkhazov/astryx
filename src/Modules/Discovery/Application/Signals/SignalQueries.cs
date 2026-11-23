@@ -21,7 +21,8 @@ public sealed record SignalMetricsDto(string? RelVolume, string? RelStrength, st
 public sealed record SignalLevelsDto(string OrderType, decimal Entry, decimal Stop, decimal Target);
 
 /// <param name="Evidence">The strategy's backtest verdict (T-166): <c>unproven</c>, <c>losing</c>, <c>lags_market</c> or <c>beats_market</c>.</param>
-public sealed record SignalStrategyDto(Guid Id, string Name, int Version, string Evidence = Astryx.Contracts.Strategies.StrategyEvidence.Unproven);
+/// <param name="Soaked">The strategy's live record is long enough, within its backtest's drawdown, to show beginners (T-166).</param>
+public sealed record SignalStrategyDto(Guid Id, string Name, int Version, string Evidence = Astryx.Contracts.Strategies.StrategyEvidence.Unproven, bool Soaked = false);
 
 /// <summary>SignalDto (§11.4). <c>scoreBreakdown</c> and <c>proposalId</c> come with D4 only.</summary>
 public sealed record SignalDto(
@@ -239,10 +240,10 @@ public sealed class SignalQueries(
     private static (IReadOnlyList<decimal> Closes, long? Volume) Trail(IReadOnlyDictionary<string, PriceTrail> trails, string symbol) =>
         trails.TryGetValue(symbol.ToUpperInvariant(), out var trail) ? (trail.Closes.Select(Price).ToList(), trail.Volume) : ([], null);
 
-    private static string Verdict(IReadOnlyDictionary<Guid, Astryx.Contracts.Strategies.StrategyEvidence> verdicts, Guid strategyId) =>
-        verdicts.TryGetValue(strategyId, out var e) ? e.Verdict : Astryx.Contracts.Strategies.StrategyEvidence.Unproven;
+    private static Astryx.Contracts.Strategies.StrategyEvidence Verdict(IReadOnlyDictionary<Guid, Astryx.Contracts.Strategies.StrategyEvidence> verdicts, Guid strategyId) =>
+        verdicts.TryGetValue(strategyId, out var e) ? e : Astryx.Contracts.Strategies.StrategyEvidence.None;
 
-    private static SignalDto ToDto(Row row, int rank, bool withBreakdown, (IReadOnlyList<decimal> Closes, long? Volume) trail, string verdict)
+    private static SignalDto ToDto(Row row, int rank, bool withBreakdown, (IReadOnlyList<decimal> Closes, long? Volume) trail, Astryx.Contracts.Strategies.StrategyEvidence verdict)
     {
         var s = row.Signal;
         var metrics = JsonNode.Parse(s.Metrics)!;
@@ -253,7 +254,7 @@ public sealed class SignalQueries(
             new SignalMetricsDto(M("relVolume"), M("relStrength"), M("rewardRisk"), M("rsi14")),
             s.Reason,
             new SignalLevelsDto(s.OrderType, Price(s.EntryPrice), Price(s.StopPrice), Price(s.TargetPrice)),
-            new SignalStrategyDto(s.StrategyId, s.StrategyName, s.StrategyVersion, verdict),
+            new SignalStrategyDto(s.StrategyId, s.StrategyName, s.StrategyVersion, verdict.Verdict, verdict.Soaked),
             s.EvaluatedAt, s.DataAsOf, s.Status,
             withBreakdown ? JsonNode.Parse(s.ScoreBreakdown) : null,
             ProposalId: null,

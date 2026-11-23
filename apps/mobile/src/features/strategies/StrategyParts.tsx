@@ -7,7 +7,7 @@ import { Badge, type BadgeTone } from '@/components/Badge';
 import { Sparkline } from '@/components/chart/Sparkline';
 import { MetricGrid } from '@/components/Metric';
 import { Text } from '@/components/Text';
-import { formatPct, formatRatio } from '@/lib/format';
+import { formatPct, formatRatio, formatSessionDate } from '@/lib/format';
 
 /** Backtests are history replayed by rules, never a forecast (SYSTEM_DESIGN.md §7.8). Shown wherever results are. */
 export const ILLUSTRATIVE_COPY =
@@ -85,6 +85,7 @@ export function StrategyCard({ strategy, onPress }: { strategy: StrategySummary;
       {s.sparkline.length > 1 ? <Sparkline closes={s.sparkline} width={280} height={44} /> : null}
       {s.metrics ? <HeadlineGrid metrics={s.metrics} /> : <Text.Caption tone="tertiary">No backtest yet.</Text.Caption>}
       {s.metrics ? <EvidenceLine strategy={s} /> : null}
+      <TrackRecordLine strategy={s} />
       <GuardLine strategy={s} />
       {s.liveSince ? (
         <Text.DataSm tone="tertiary">
@@ -119,6 +120,24 @@ export function EvidenceLine({ strategy: s }: { strategy: StrategySummary }) {
   return (
     <Text.Caption tone={tone} testID={`strategy-${s.code}-source`}>
       {`${text} · real Alpaca data`}
+    </Text.Caption>
+  );
+}
+
+/** T-166: the live, out-of-sample record of its real signals, in R (multiples of the planned risk). */
+export function TrackRecordLine({ strategy: s }: { strategy: StrategySummary }) {
+  const t = s.trackRecord;
+  if (!t || t.signals === 0) {
+    return null;
+  }
+
+  const record =
+    t.closed > 0 && t.averageR
+      ? `${t.closed} closed, ${formatPct(t.winRate ?? '0', { dp: 0 })} won, average ${new Decimal(t.averageR).isNegative() ? '' : '+'}${formatRatio(t.averageR)}R`
+      : `${t.triggered} triggered, none closed yet`;
+  return (
+    <Text.Caption tone="tertiary" testID={`strategy-${s.code}-live`}>
+      {`Live since ${t.since ? formatSessionDate(t.since) : '—'}: ${t.signals} signals, ${record}${t.soakMet ? '' : ' · in trial'}`}
     </Text.Caption>
   );
 }

@@ -44,6 +44,9 @@ public sealed class Strategy
     /// </summary>
     public string? IllustrativeLive { get; set; }
 
+    /// <summary>The live out-of-sample record (T-166) as JSON, rebuilt by the track-record job; null until its first run.</summary>
+    public string? TrackRecord { get; set; }
+
     /// <summary>Order in the Strategy lab and the colour index in charts.</summary>
     public int DisplayOrder { get; set; }
 

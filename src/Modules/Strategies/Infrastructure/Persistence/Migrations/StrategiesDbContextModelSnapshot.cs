@@ -302,6 +302,10 @@ namespace Astryx.Modules.Strategies.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(16)")
                         .HasColumnName("status");
 
+                    b.Property<string>("TrackRecord")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("track_record");
+
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");

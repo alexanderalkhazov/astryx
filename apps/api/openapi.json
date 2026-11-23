@@ -8546,6 +8546,10 @@
           "evidence": {
             "type": "string",
             "default": "unproven"
+          },
+          "soaked": {
+            "type": "boolean",
+            "default": false
           }
         },
         "additionalProperties": false
@@ -8657,6 +8661,10 @@
               "string"
             ],
             "format": "date"
+          },
+          "soaked": {
+            "type": "boolean",
+            "default": false
           }
         },
         "additionalProperties": false
@@ -8889,6 +8897,16 @@
                 "$ref": "#/components/schemas/StrategyEvidence"
               }
             ]
+          },
+          "trackRecord": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/TrackRecordDto"
+              }
+            ]
           }
         },
         "additionalProperties": false
@@ -9092,6 +9110,102 @@
           "tokenType": {
             "type": "string",
             "default": "Bearer"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TrackRecordDto": {
+        "required": [
+          "since",
+          "through",
+          "signals",
+          "triggered",
+          "closed",
+          "open",
+          "winRate",
+          "averageR",
+          "totalR",
+          "maxDrawdownR",
+          "backtestMaxDrawdownR",
+          "soakMet",
+          "soakNote",
+          "asOf"
+        ],
+        "type": "object",
+        "properties": {
+          "since": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date"
+          },
+          "through": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date"
+          },
+          "signals": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "triggered": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "closed": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "open": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "winRate": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "decimal"
+          },
+          "averageR": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "decimal"
+          },
+          "totalR": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "maxDrawdownR": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": "string",
+            "format": "decimal"
+          },
+          "backtestMaxDrawdownR": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "decimal"
+          },
+          "soakMet": {
+            "type": "boolean"
+          },
+          "soakNote": {
+            "type": "string"
+          },
+          "asOf": {
+            "type": "string",
+            "format": "date-time"
           }
         },
         "additionalProperties": false

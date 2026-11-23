@@ -25,6 +25,7 @@ public static class DiscoveryModule
         services.AddScoped<Astryx.Contracts.Discovery.IActiveSignalSource, ActiveSignalSource>();
         services.AddScoped<Astryx.Contracts.Discovery.ISignalLookup, SignalLookup>();
         services.AddScoped<Astryx.Contracts.Discovery.IStrategySignalFeed, StrategySignalFeed>();
+        services.AddScoped<Astryx.Contracts.Discovery.IEmittedSignalHistory, EmittedSignalHistory>();
         services.AddScoped<Astryx.Contracts.MarketData.IPrioritySymbolSource, SignalPrioritySymbols>();
         services.AddJobHandler<ScannerRunJob, ScannerRunHandler>();
         services.AddSingleton<ScannerFaults>();

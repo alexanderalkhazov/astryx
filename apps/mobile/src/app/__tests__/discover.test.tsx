@@ -84,7 +84,14 @@ describe('Discover', () => {
       key === 'astryx.profile.v1.beginner-1' ? JSON.stringify({ level: 'beginner', horizon: 'years', tolerance: 'hold' }) : null,
     );
     useSession.setState({ user: { id: 'beginner-1' } as never });
-    const proven = { ...NVDA, strategy: { ...NVDA.strategy, evidence: 'lags_market' } };
+    const proven = { ...NVDA, strategy: { ...NVDA.strategy, evidence: 'lags_market', soaked: true } };
+    const inTrial = {
+      ...NVDA,
+      id: 's4',
+      symbol: 'MSFT',
+      name: 'Microsoft',
+      strategy: { id: 'rsi', name: 'RSI(2)', version: 1, evidence: 'lags_market', soaked: false },
+    };
     const losing = {
       ...NVDA,
       id: 's2',
@@ -93,14 +100,15 @@ describe('Discover', () => {
       strategy: { id: 'tm', name: 'Trend Momentum', version: 1, evidence: 'losing' },
     };
     const untested = { ...NVDA, id: 's3', symbol: 'TGT', name: 'Target', strategy: { id: 'x', name: 'New', version: 1 } };
-    api.list.mockResolvedValue(page([proven, losing, untested]));
+    api.list.mockResolvedValue(page([proven, losing, untested, inTrial]));
     await renderDiscover();
 
     expect(await screen.findByTestId('discover-hidden-for-beginners')).toHaveTextContent(
-      "2 setups hidden: their strategy lost money or isn't tested yet. Change your experience level in Settings to see them.",
+      "3 setups hidden: their strategy lost money, isn't tested yet or is still in its live trial. Change your experience level in Settings to see them.",
     );
     expect(screen.getByTestId('opportunity-NVDA')).toBeOnTheScreen();
     expect(screen.queryByTestId('opportunity-AMD')).not.toBeOnTheScreen();
+    expect(screen.queryByTestId('opportunity-MSFT')).not.toBeOnTheScreen(); // made money in testing, still in its live trial
     expect(screen.queryByTestId('opportunity-TGT')).not.toBeOnTheScreen();
   });
 

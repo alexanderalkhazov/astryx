@@ -15,6 +15,14 @@ public sealed record StrategyMetricsDto(string Cagr, string Sharpe, string MaxDr
 /// <summary>Live paper results. Illustrative (seeded) until Portfolio attributes fills to strategies (M5).</summary>
 public sealed record LiveResultsDto(string SinceInceptionPct, string MtdPct, string MtdPnl, int MtdTrades, bool Illustrative);
 
+/// <summary>
+/// T-166: every signal the strategy really emitted since <see cref="Since"/>, followed on the bars that came after it,
+/// in units of planned risk (R), beside the backtest's deepest R drawdown; <see cref="SoakMet"/> gates beginners.
+/// </summary>
+public sealed record TrackRecordDto(
+    DateOnly? Since, DateOnly? Through, int Signals, int Triggered, int Closed, int Open, decimal? WinRate, decimal? AverageR, decimal TotalR, decimal MaxDrawdownR,
+    decimal? BacktestMaxDrawdownR, bool SoakMet, string SoakNote, DateTimeOffset AsOf);
+
 /// <summary>Drawdown guard state (§7.8): drawdown from the window's high, the warning and pause thresholds (fractions).</summary>
 public sealed record GuardDto(string Drawdown, string WarnAt, string PauseAt, int WindowDays, DateOnly AsOf);
 
@@ -23,7 +31,7 @@ public sealed record GuardDto(string Drawdown, string WarnAt, string PauseAt, in
 public sealed record StrategySummaryDto(
     Guid Id, string Code, string Name, string Description, string Status, int DisplayOrder, int Version,
     DateOnly? LiveSince, LiveResultsDto? Live, StrategyMetricsDto? Metrics, IReadOnlyList<string> Sparkline, DateOnly? BacktestStart, DateOnly? BacktestEnd, GuardDto? Guard,
-    bool BacktestIllustrative = true, Astryx.Contracts.Strategies.StrategyEvidence? Evidence = null);
+    bool BacktestIllustrative = true, Astryx.Contracts.Strategies.StrategyEvidence? Evidence = null, TrackRecordDto? TrackRecord = null);
 
 public sealed record ParameterDto(string Key, string Label, string Unit, JsonNode? Default, JsonNode? Min, JsonNode? Max, JsonNode? Step, JsonNode? Value);
 
@@ -236,7 +244,8 @@ public sealed class StrategyCatalog(StrategiesDbContext db, IStrategySignalFeed 
         return new StrategySummaryDto(
             s.Id, s.Code, s.Name, s.Description, s.Status, s.DisplayOrder, version?.VersionNumber ?? 0, s.LiveSince, Live(s), metrics, sparkline, run?.PeriodStart, run?.PeriodEnd, Guard(s),
             BacktestIllustrative: run is null || !StrategyEvidenceSource.IsReal(run), // seeded runs carry no flag
-            Evidence: run is not null && StrategyEvidenceSource.IsReal(run) ? StrategyEvidenceSource.Evidence(run) : Astryx.Contracts.Strategies.StrategyEvidence.None);
+            Evidence: run is not null && StrategyEvidenceSource.IsReal(run) ? StrategyEvidenceSource.Evidence(run) : Astryx.Contracts.Strategies.StrategyEvidence.None,
+            TrackRecord: TrackRecordJson.Read(s.TrackRecord));
     }
 
     private static LiveResultsDto? Live(Strategy s)

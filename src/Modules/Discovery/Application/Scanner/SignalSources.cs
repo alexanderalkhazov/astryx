@@ -73,3 +73,21 @@ public sealed class StrategySignalFeed(DiscoveryDbContext db) : IStrategySignalF
             .Select(s => new StrategySignal(s.Id, s.Symbol, s.SignalType, s.Score, s.EntryPrice, s.EvaluatedAt))
             .ToListAsync(cancellationToken);
 }
+
+public sealed class EmittedSignalHistory(DiscoveryDbContext db) : IEmittedSignalHistory
+{
+    public async Task<IReadOnlyList<EmittedSignal>> ForStrategyAsync(Guid strategyId, CancellationToken cancellationToken)
+    {
+        var rows = await db.Signals.AsNoTracking()
+            .Where(s => s.StrategyId == strategyId)
+            .Select(s => new { s.Symbol, s.OrderType, s.EntryPrice, s.StopPrice, s.TargetPrice, s.DataAsOf, s.EvaluatedAt })
+            .ToListAsync(cancellationToken);
+
+        // Regular-session data times fall on the same calendar day in UTC and New York.
+        return rows.GroupBy(r => (r.Symbol, Session: DateOnly.FromDateTime(r.DataAsOf.UtcDateTime)))
+            .Select(g => g.MaxBy(r => r.EvaluatedAt)!)
+            .Select(r => new EmittedSignal(r.Symbol, r.OrderType, r.EntryPrice, r.StopPrice, r.TargetPrice, DateOnly.FromDateTime(r.DataAsOf.UtcDateTime), r.EvaluatedAt))
+            .OrderBy(s => s.Session).ThenBy(s => s.Symbol, StringComparer.Ordinal)
+            .ToList();
+    }
+}

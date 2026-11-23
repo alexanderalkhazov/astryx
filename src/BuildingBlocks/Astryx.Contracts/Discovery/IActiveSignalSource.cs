@@ -31,3 +31,13 @@ public interface IStrategySignalFeed
     /// <summary>Best score first, at most 20.</summary>
     Task<IReadOnlyList<StrategySignal>> ActiveForStrategyAsync(Guid strategyId, CancellationToken cancellationToken);
 }
+
+/// <summary>A signal the scanner really emitted: the last one per symbol and session (T-166).</summary>
+public sealed record EmittedSignal(string Symbol, string OrderType, decimal Entry, decimal Stop, decimal Target, DateOnly Session, DateTimeOffset EvaluatedAt);
+
+/// <summary>Owned by Discovery, read by Strategies through Contracts: every signal a strategy emitted, for its live track record.</summary>
+public interface IEmittedSignalHistory
+{
+    /// <summary>Oldest first, one per symbol and session (the scanner re-evaluates during a session; the last answer counts).</summary>
+    Task<IReadOnlyList<EmittedSignal>> ForStrategyAsync(Guid strategyId, CancellationToken cancellationToken);
+}

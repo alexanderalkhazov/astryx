@@ -2737,6 +2737,8 @@ export interface components {
             version: number;
             /** @default unproven */
             evidence: string;
+            /** @default false */
+            soaked: boolean;
         };
         StrategiesResponse: {
             items: components["schemas"]["StrategySummaryDto"][];
@@ -2760,6 +2762,8 @@ export interface components {
             periodStart: null | string;
             /** Format: date */
             periodEnd: null | string;
+            /** @default false */
+            soaked: boolean;
         };
         StrategyMetricsDto: {
             cagr: string;
@@ -2817,6 +2821,7 @@ export interface components {
             /** @default true */
             backtestIllustrative: boolean;
             evidence?: null | components["schemas"]["StrategyEvidence"];
+            trackRecord?: null | components["schemas"]["TrackRecordDto"];
         };
         SuggestedLevelsDto: {
             justified: boolean;
@@ -2864,6 +2869,34 @@ export interface components {
             refreshTokenExpiresAt: string;
             /** @default Bearer */
             tokenType: string;
+        };
+        TrackRecordDto: {
+            /** Format: date */
+            since: null | string;
+            /** Format: date */
+            through: null | string;
+            /** Format: int32 */
+            signals: number;
+            /** Format: int32 */
+            triggered: number;
+            /** Format: int32 */
+            closed: number;
+            /** Format: int32 */
+            open: number;
+            /** Format: decimal */
+            winRate: null | string;
+            /** Format: decimal */
+            averageR: null | string;
+            /** Format: decimal */
+            totalR: string;
+            /** Format: decimal */
+            maxDrawdownR: string;
+            /** Format: decimal */
+            backtestMaxDrawdownR: null | string;
+            soakMet: boolean;
+            soakNote: string;
+            /** Format: date-time */
+            asOf: string;
         };
         TradingModeRequest: {
             mode: string;

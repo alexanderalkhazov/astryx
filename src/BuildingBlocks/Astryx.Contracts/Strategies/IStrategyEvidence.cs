@@ -3,9 +3,10 @@ namespace Astryx.Contracts.Strategies;
 /// <summary>
 /// What a strategy's latest real backtest says (TASKS.md T-166): <c>unproven</c> (no real backtest yet),
 /// <c>losing</c> (it lost money), <c>lags_market</c> (made money, less than holding every stock equally) or
-/// <c>beats_market</c>. Figures are fractions; null when unproven.
+/// <c>beats_market</c>. Figures are fractions; null when unproven. <paramref name="Soaked"/>: its live track record is long
+/// enough, with a drawdown inside the backtest's, for beginners to see it.
 /// </summary>
-public sealed record StrategyEvidence(string Verdict, decimal? Cagr, decimal? Multiple, decimal? BenchmarkMultiple, DateOnly? PeriodStart, DateOnly? PeriodEnd)
+public sealed record StrategyEvidence(string Verdict, decimal? Cagr, decimal? Multiple, decimal? BenchmarkMultiple, DateOnly? PeriodStart, DateOnly? PeriodEnd, bool Soaked = false)
 {
     public const string Unproven = "unproven";
     public const string Losing = "losing";

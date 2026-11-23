@@ -54,7 +54,28 @@ export const StrategySummary = z.object({
       benchmarkMultiple: Decimal.nullable(),
       periodStart: z.string().nullable(),
       periodEnd: z.string().nullable(),
+      soaked: z.boolean().optional(),
     })
+    .optional(),
+  /** T-166: every signal it really emitted, followed forward, in R; `soakMet` gates beginners. Absent until the first build. */
+  trackRecord: z
+    .object({
+      since: z.string().nullable(),
+      through: z.string().nullable(),
+      signals: z.number().int(),
+      triggered: z.number().int(),
+      closed: z.number().int(),
+      open: z.number().int(),
+      winRate: Decimal.nullable(),
+      averageR: Decimal.nullable(),
+      totalR: Decimal,
+      maxDrawdownR: Decimal,
+      backtestMaxDrawdownR: Decimal.nullable(),
+      soakMet: z.boolean(),
+      soakNote: z.string(),
+      asOf: z.string(),
+    })
+    .nullable()
     .optional(),
 });
 export type StrategySummary = z.infer<typeof StrategySummary>;

@@ -36,7 +36,9 @@ const SORT_LABEL: Record<DiscoverFilters['sort'], string> = {
 };
 
 /** Setups a beginner may see: their strategy made money in a real backtest (T-166). */
-const provenForBeginners = (s: Signal) => s.strategy.evidence === 'beats_market' || s.strategy.evidence === 'lags_market';
+// Beginners see a strategy that made money in testing and finished its live trial within its tested drawdown (T-166).
+const provenForBeginners = (s: Signal) =>
+  (s.strategy.evidence === 'beats_market' || s.strategy.evidence === 'lags_market') && s.strategy.soaked === true;
 
 // Designs 02 (list), 03 (filters), 20 (loading), 21 (empty), 23 (scanner error) · SYSTEM_DESIGN.md §8.4.2.
 export default function DiscoverScreen() {
@@ -136,7 +138,7 @@ export default function DiscoverScreen() {
       <>
         {hiddenForBeginners > 0 ? (
           <Text.Caption tone="tertiary" testID="discover-hidden-for-beginners">
-            {`${hiddenForBeginners} setup${hiddenForBeginners === 1 ? '' : 's'} hidden: their strategy lost money or isn't tested yet. Change your experience level in Settings to see them.`}
+            {`${hiddenForBeginners} setup${hiddenForBeginners === 1 ? '' : 's'} hidden: their strategy lost money, isn't tested yet or is still in its live trial. Change your experience level in Settings to see them.`}
           </Text.Caption>
         ) : null}
         <FlashList

@@ -15,10 +15,13 @@ public sealed class StrategyEvidenceSource(StrategiesDbContext db) : IStrategyEv
 {
     public async Task<IReadOnlyDictionary<Guid, StrategyEvidence>> ByStrategyAsync(CancellationToken cancellationToken)
     {
-        var strategies = await db.Strategies.AsNoTracking().Where(s => s.OwnerUserId == null).Select(s => s.Id).ToListAsync(cancellationToken);
-        var runs = await db.Runs.AsNoTracking().Where(r => strategies.Contains(r.StrategyId) && r.Status == RunStatus.Completed).ToListAsync(cancellationToken);
+        var strategies = await db.Strategies.AsNoTracking().Where(s => s.OwnerUserId == null).Select(s => new { s.Id, s.TrackRecord }).ToListAsync(cancellationToken);
+        var ids = strategies.Select(s => s.Id).ToList();
+        var runs = await db.Runs.AsNoTracking().Where(r => ids.Contains(r.StrategyId) && r.Status == RunStatus.Completed).ToListAsync(cancellationToken);
         var latest = runs.Where(IsReal).GroupBy(r => r.StrategyId).ToDictionary(g => g.Key, g => g.MaxBy(r => r.RunNumber)!);
-        return strategies.ToDictionary(id => id, id => latest.TryGetValue(id, out var run) ? Evidence(run) : StrategyEvidence.None);
+        return strategies.ToDictionary(
+            s => s.Id,
+            s => (latest.TryGetValue(s.Id, out var run) ? Evidence(run) : StrategyEvidence.None) with { Soaked = TrackRecordJson.Read(s.TrackRecord)?.SoakMet == true });
     }
 
     public async Task<StrategyEvidence> ForVersionAsync(Guid strategyVersionId, CancellationToken cancellationToken)

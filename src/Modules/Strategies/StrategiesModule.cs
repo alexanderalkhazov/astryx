@@ -29,6 +29,8 @@ public static class StrategiesModule
         services.AddRecurringJob("strategies-drawdown-guard", TimeSpan.FromHours(1), _ => new DrawdownGuardJob());
         services.AddJobHandler<StrategyExitJob, StrategyExitHandler>();
         services.AddRecurringJob("strategies-exit", TimeSpan.FromMinutes(5), _ => new StrategyExitJob()); // T-163
+        services.AddJobHandler<TrackRecordJob, TrackRecordHandler>();
+        services.AddRecurringJob("strategies-track-record", TimeSpan.FromHours(4), _ => new TrackRecordJob()); // T-166
         return services;
     }
 }
