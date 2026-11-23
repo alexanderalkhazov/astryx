@@ -15,7 +15,7 @@ public class PersistenceTests(ApiFactory factory) : IClassFixture<ApiFactory>
     {
         _ = factory.CreateClient(); // starting the host applies migrations
         var registrations = factory.Services.GetServices<ModuleDbContextRegistration>().ToList();
-        registrations.Count.ShouldBe(14); // infra + 13 modules
+        registrations.Count.ShouldBe(15); // infra + 14 modules (Invest: T-164)
 
         await using var connection = new NpgsqlConnection(factory.ConnectionString);
         await connection.OpenAsync();

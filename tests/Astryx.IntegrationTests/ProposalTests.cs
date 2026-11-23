@@ -298,7 +298,8 @@ public class AssessmentTests(TradingApiFactory factory) : IClassFixture<TradingA
         (a.GetProperty("capitalRequired").GetString(), a.GetProperty("maxLoss").GetString(), a.GetProperty("potentialProfit").GetString(), a.GetProperty("rewardRisk").GetString())
             .ShouldBe(("11936.00", "531.20", "1120.00", "2.11"));
         a.GetProperty("checks").EnumerateArray().Take(6).Select(c => c.GetProperty("code").GetString()).ShouldBe(["risk_per_trade", "position_weight", "sector_exposure", "cash_available", "daily_loss_halt", "session_open"]);
-        a.GetProperty("checks").GetArrayLength().ShouldBe(12);
+        a.GetProperty("checks").GetArrayLength().ShouldBe(13); // the twelve engine checks plus strategy_evidence for a signal proposal (T-166)
+        Check(a, "strategy_evidence").GetProperty("status").GetString().ShouldBe("warn"); // the seeded catalog has no real backtest yet
         Check(a, "position_weight").GetProperty("status").GetString().ShouldBe("warn"); // 11.94%, inside 10.8–12%
         a.GetProperty("checks").EnumerateArray().Where(c => c.GetProperty("status").GetString() == "fail").Select(c => c.GetProperty("message").GetString()).ShouldBeEmpty();
         (a.GetProperty("approvable").GetBoolean(), a.GetProperty("stale").GetBoolean()).ShouldBe((true, false));
