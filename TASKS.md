@@ -531,6 +531,32 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Acceptance:** owner reviews T-130–T-135 evidence and enables the flag for their own account only. The doc and ADR are updated.
   - **Refs:** §17.9 · **Depends:** T-130–T-135 · **P2**
 
+### M9 · Beginner mode (owner request 2026-11-23: "help non-stock people trade and invest")
+
+> Order: evidence first (T-160), so nothing is shown to beginners on faith; then plain language (T-161) and guidance (T-162). T-163 needs the Q-09 rule decisions, T-165 an AI hosting decision, and every item stays owner-only until Q-04 and T-130 (legal) are settled.
+
+- [ ] **T-160** Real backtest engine
+  - **Acceptance:** an event-driven daily backtest runs a strategy version's rule over stored history with the same `IQuantFacts` inputs, entry/stop/target semantics, cost model and risk sizing as live (no look-ahead: decisions on bar *t* use data through *t*, fills from *t+1*). Results per run: trades, equity curve, CAGR, Sharpe, max drawdown, win rate, average R, exposure; persisted in `strategy.backtest_runs/trades` and shown in the Strategy lab instead of the seeded "illustrative" figures (label: "Backtest · 2 years · Alpaca daily bars"). A job and a dev endpoint run it; golden test on fixture data.
+  - **Refs:** §13, Q-10 · **Depends:** T-064 · **P1**
+- [ ] **T-161** Plain-language proposals and glossary
+  - **Acceptance:** every proposal has a plain summary ("Buy 12 TGT if it rises to $168.20. If it falls to $159.91 you lose about $102; if it reaches $212.16 you gain about $527.") and "why this" / "what could go wrong" in everyday words, generated deterministically from the signal and assessment (no AI needed). Jargon on proposal, stock and signal screens is tappable for a one-paragraph explanation (glossary: breakout, stop, target, R:R, ATR, RSI, relative strength, buy stop, position size, sector exposure). A "Simple / Pro" switch in Settings; Simple is the default for new accounts.
+  - **Refs:** §8.4, §11 · **Depends:** T-086 · **P1**
+- [ ] **T-162** Guided onboarding and experience levels
+  - **Acceptance:** after the disclaimer, a short questionnaire (experience, horizon, how much loss is acceptable) sets an experience level and conservative risk limits; Beginner gets lower risk per trade, fewer open positions and Simple mode. Features unlock by level (e.g. user-chosen quantity only from Intermediate). The answers are editable in Settings.
+  - **Refs:** §14 · **Depends:** T-161 · **P1**
+- [ ] **T-163** More strategies (Q-09)
+  - **Acceptance:** the four rules in `docs/strategies/rules-draft.md`, as approved by the owner, implemented as `<code>@1` rules with unit tests and backtests (T-160); time exits per the owner's decision.
+  - **Refs:** §13.4, Q-09 · **Depends:** owner decision, T-160 · **P1**
+- [ ] **T-164** Investing track
+  - **Acceptance:** an "Invest" area separate from trading: a diversified core portfolio from a short list of broad index ETFs, a target allocation chosen from the onboarding answers, recurring paper buys (weekly or monthly) and rebalancing suggestions, with goal tracking. Trading remains a small "practice" allocation. ETFs added to the universe and market data.
+  - **Refs:** new · **Depends:** T-162 · **P2**
+- [ ] **T-165** Stronger AI explanations
+  - **Acceptance:** a larger model (local or hosted, per owner decision) behind `IAiProvider`; explanations checked against the deterministic facts (numbers must match the assessment) before display; eval set extended with beginner-oriented questions.
+  - **Refs:** §12 · **Depends:** owner decision · **P2**
+- [ ] **T-166** Paper soak and published track record
+  - **Acceptance:** each strategy's live paper results (signals, fills, P&L, drawdown) since a start date shown beside its backtest, so users see real out-of-sample results; a strategy is offered to Beginners only after a minimum soak and drawdown within its backtest range.
+  - **Refs:** §17.9 (T-131) · **Depends:** T-160 · **P2**
+
 ---
 
 ## Part D — Progress log
