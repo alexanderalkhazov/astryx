@@ -571,7 +571,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 
 > Comes before M10: more data doesn't help if the first minute is confusing. The app was designed as a dense trading workstation; Simple mode (T-161) changed words, not the experience. Done means the owner, opening it cold, knows what to do and does it without help; every item is checked by the owner against simulator screenshots, not by the author's judgement.
 
-- [ ] **T-190** "What would you like to do?" start
+- [x] **T-190** "What would you like to do?" start — `518d2e6`
   - **Acceptance:** after the disclaimer and the T-162 questions, one screen with three large choices: "Grow my money for the long term" (→ Invest setup), "Practice trading with pretend money" (→ guided first trade, T-193), "Just look around" (→ Markets or Discover). The choice is saved per account, changeable in Settings, and shapes Home (T-191).
   - **Refs:** T-162 · **Depends:** — · **P1**
   - Done (2026-11-24): `/start` after the questions (existing accounts see it once too), saved per account on the device, Settings › Your goal changes it. "Practice" opens Discover until the guided first trade (T-193) exists.
