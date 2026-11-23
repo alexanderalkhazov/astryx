@@ -598,7 +598,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [ ] **T-196** Warm theme
   - **Acceptance:** a light, softer theme for Simple mode (warmer colours, friendlier type scale, fewer numbers per screen, illustrations in empty states), meeting WCAG AA contrast; the current dark workstation look stays as the Pro theme. Design tokens only, no per-screen colours.
   - **Refs:** design tokens · **Depends:** — · **P2**
-- [ ] **T-197** Every screen says what it is and what to do
+- [x] **T-197** Every screen says what it is and what to do — `75ae96c`
   - **Acceptance:** a copy pass: each screen's first line answers "what is this and what can I do here?" in Simple mode, and every empty or error state names the next action. A Jest check fails on a Simple-mode screen without a header sentence.
   - **Depends:** — · **P1**
   - Done (2026-11-24): one intro sentence per signed-in screen, all in `features/plain/screenIntros.ts`, shown under the title in Simple mode (`Screen intro`, or `ScreenIntro` where the title is in the content). `screenIntros.test.tsx` fails when a screen has none (four onboarding screens and two dev placeholders are exempt, with reasons), when an intro goes unused or runs past two short sentences. The six empty states that only described the problem now say what to do (Retry, Clear search, or where to look instead).
