@@ -551,10 +551,10 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Acceptance:** the four rules in `docs/strategies/rules-draft.md`, as approved by the owner, implemented as `<code>@1` rules with unit tests and backtests (T-160); time exits per the owner's decision.
   - **Refs:** §13.4, Q-09 · **Depends:** owner decision, T-160 · **P1**
   - Done (2026-11-23): all four rules with unit tests, time/indicator exits (backtest and live job), earnings confirmed by news live. Real backtests vs ×1.86 holding the stocks: Earnings Drift ×1.55, RSI(2) ×1.44, Trend Pullback ×0.91, Trend Momentum ×0.89.
-- [ ] **T-164** Investing track
+- [x] **T-164** Investing track — `ac94944`
   - **Acceptance:** an "Invest" area separate from trading: a diversified core portfolio from a short list of broad index ETFs, a target allocation chosen from the onboarding answers, recurring paper buys (weekly or monthly) and rebalancing suggestions, with goal tracking. Trading remains a small "practice" allocation. ETFs added to the universe and market data.
   - **Refs:** new · **Depends:** T-162 · **P2**
-  - ⏸ WIP (2026-11-23): backend done (Invest module, endpoints, contributions job, ETFs in both universes, tests). **Open:** the mobile Invest tab/screens and onboarding-driven default mix.
+  - Done (2026-11-23): Invest module (SPY/VXUS/BND, cautious/balanced/growth, contributions, rebalancing) and the app's Invest screens with a Home entry; the starting mix follows the onboarding answers. Simulated paper only (never sent to Alpaca).
 - [ ] **T-165** Stronger AI explanations
   - **Acceptance:** a larger model (local or hosted, per owner decision) behind `IAiProvider`; explanations checked against the deterministic facts (numbers must match the assessment) before display; eval set extended with beginner-oriented questions.
   - **Refs:** §12 · **Depends:** owner decision · **P2**
