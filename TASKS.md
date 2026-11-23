@@ -547,9 +547,10 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Acceptance:** after the disclaimer, a short questionnaire (experience, horizon, how much loss is acceptable) sets an experience level and conservative risk limits; Beginner gets lower risk per trade, fewer open positions and Simple mode. Features unlock by level (e.g. user-chosen quantity only from Intermediate). The answers are editable in Settings.
   - **Refs:** §14 · **Depends:** T-161 · **P1**
   - Done (2026-11-23): three questions → Beginner / Intermediate / Experienced with matching server-side risk limits and Simple/Pro; beginners keep the engine's position size; Settings › Experience retakes them. The horizon answer is stored for the Invest track (T-164).
-- [ ] **T-163** More strategies (Q-09)
+- [x] **T-163** More strategies (Q-09) — `007de59`
   - **Acceptance:** the four rules in `docs/strategies/rules-draft.md`, as approved by the owner, implemented as `<code>@1` rules with unit tests and backtests (T-160); time exits per the owner's decision.
   - **Refs:** §13.4, Q-09 · **Depends:** owner decision, T-160 · **P1**
+  - Done (2026-11-23): all four rules with unit tests, time/indicator exits (backtest and live job), earnings confirmed by news live. Real backtests vs ×1.86 holding the stocks: Earnings Drift ×1.55, RSI(2) ×1.44, Trend Pullback ×0.91, Trend Momentum ×0.89.
 - [ ] **T-164** Investing track
   - **Acceptance:** an "Invest" area separate from trading: a diversified core portfolio from a short list of broad index ETFs, a target allocation chosen from the onboarding answers, recurring paper buys (weekly or monthly) and rebalancing suggestions, with goal tracking. Trading remains a small "practice" allocation. ETFs added to the universe and market data.
   - **Refs:** new · **Depends:** T-162 · **P2**
@@ -559,6 +560,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [ ] **T-166** Paper soak and published track record
   - **Acceptance:** each strategy's live paper results (signals, fills, P&L, drawdown) since a start date shown beside its backtest, so users see real out-of-sample results; a strategy is offered to Beginners only after a minimum soak and drawdown within its backtest range.
   - **Refs:** §17.9 (T-131) · **Depends:** T-160 · **P2**
+  - ⏸ WIP (2026-11-23, `007de59`): evidence gate done (verdict per strategy from its real backtest, risk-engine warning, beginners only see proven strategies). **Open:** each strategy's live paper results beside its backtest, and a minimum soak before Beginners see a strategy.
 
 ---
 
