@@ -15,6 +15,7 @@ const VIEW_MODE = (userId: string) => `astryx.viewMode.${userId}`;
 const PROFILE = (userId: string) => `astryx.profile.v1.${userId}`;
 const GOAL = (userId: string) => `astryx.goal.v1.${userId}`;
 const GUIDED_TRADE = (userId: string) => `astryx.guidedTrade.v1.${userId}`;
+const STARTED = (userId: string) => `astryx.started.v1.${userId}`;
 
 export const secureStorage = {
   getRefreshToken: () => SecureStore.getItemAsync(REFRESH_TOKEN, OPTIONS),
@@ -31,6 +32,8 @@ export const secureStorage = {
   setGoal: (userId: string, goal: string) => SecureStore.setItemAsync(GOAL(userId), goal, OPTIONS),
   getGuidedTrade: (userId: string) => SecureStore.getItemAsync(GUIDED_TRADE(userId), OPTIONS),
   setGuidedTrade: (userId: string, json: string) => SecureStore.setItemAsync(GUIDED_TRADE(userId), json, OPTIONS),
+  getStarted: (userId: string) => SecureStore.getItemAsync(STARTED(userId), OPTIONS),
+  setStarted: (userId: string, json: string) => SecureStore.setItemAsync(STARTED(userId), json, OPTIONS),
 
   /** A random id generated on first use; refresh-token families are bound to it on the server. */
   async getDeviceId(): Promise<string> {

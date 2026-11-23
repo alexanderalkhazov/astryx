@@ -29,6 +29,7 @@ jest.mock('@/lib/api', () => ({
   market: { breadth: jest.fn() },
   broker: { connections: jest.fn() },
   invest: { get: jest.fn() },
+  watchlists: { list: jest.fn() },
 }));
 const api = jest.requireMock('@/lib/api') as {
   portfolio: Record<'summary' | 'performance' | 'attention' | 'positions' | 'sync' | 'strategyMtd', jest.Mock>;
@@ -36,6 +37,7 @@ const api = jest.requireMock('@/lib/api') as {
   market: { breadth: jest.Mock };
   broker: { connections: jest.Mock };
   invest: { get: jest.Mock };
+  watchlists: { list: jest.Mock };
 };
 const ok = <T,>(data: T) => ({ data });
 
@@ -75,6 +77,7 @@ async function renderHome() {
       discover: () => <Text>Discover screen</Text>,
       portfolio: () => <Text>Portfolio screen</Text>,
       invest: () => <Text>Invest screen</Text>,
+      learn: () => <Text>Learn screen</Text>,
     },
     { initialUrl: '/' },
   );
@@ -85,6 +88,7 @@ beforeEach(async () => {
   useSession.setState({ user: { id: 'home-user' } as never });
   await setViewMode('home-user', 'pro'); // design 01 is the Pro view; Simple mode is T-191 below
   api.invest.get.mockResolvedValue(ok(null));
+  api.watchlists.list.mockResolvedValue(ok({ items: [{ id: 'w', isDefault: true, items: [] }] }));
   api.portfolio.summary.mockResolvedValue(ok(SUMMARY));
   api.portfolio.performance.mockResolvedValue(
     ok({
@@ -251,5 +255,28 @@ describe('Home in Simple mode (T-191)', () => {
     await renderHome();
 
     expect(await screen.findByTestId('home-next-all_good')).toHaveTextContent(/Nothing needs you today\. Check back tomorrow\./);
+  });
+
+  it('shows the getting-started checklist from real data, and hides it for good (T-195)', async () => {
+    await saveGoal('home-user', 'practice');
+    api.watchlists.list.mockResolvedValue(ok({ items: [{ id: 'w', isDefault: true, items: [{ symbol: 'NVDA' }] }] }));
+    api.portfolio.positions.mockImplementation(async (status: string) =>
+      ok({ items: status === 'closed' ? [{ id: 'c1', symbol: 'AMD' }] : [], nextCursor: null }),
+    );
+    await renderHome();
+
+    expect(await screen.findByText('Getting started, 2 of 5')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Watch a stock, done')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Make a practice trade, done')).toBeOnTheScreen();
+    await fireEvent.press(screen.getByRole('link', { name: 'Read one lesson' }));
+    await waitFor(() => expect(screen).toHavePathname('/learn'));
+  });
+
+  it('can be hidden', async () => {
+    await saveGoal('home-user', 'practice');
+    await renderHome();
+
+    await fireEvent.press(await screen.findByRole('button', { name: 'Hide getting started' }));
+    await waitFor(() => expect(screen.queryByTestId('home-getting-started')).toBeNull());
   });
 });

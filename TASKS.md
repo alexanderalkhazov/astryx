@@ -594,6 +594,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [ ] **T-195** Getting-started checklist
   - **Acceptance:** a dismissible "Getting started, 3 of 5" card: set up a plan or goal, watch a stock, make a practice trade, read one lesson, come back another day. Progress is derived from the user's real data, not ticked by hand.
   - **Depends:** T-190 · **P2**
+  - Done (2026-11-24): on Simple-mode Home under the next step, until all five are done or it is hidden. Plan = an Invest plan exists; watch = the watchlist has a stock; trade = an open or closed position or a working order; lesson = a word opened in Learn; another day = a later local date than the first time the card appeared (the last two are recorded on the device, the rest come from the server). Each open item links to where it is done.
 - [ ] **T-196** Warm theme
   - **Acceptance:** a light, softer theme for Simple mode (warmer colours, friendlier type scale, fewer numbers per screen, illustrations in empty states), meeting WCAG AA contrast; the current dark workstation look stays as the Pro theme. Design tokens only, no per-screen colours.
   - **Refs:** design tokens · **Depends:** — · **P2**

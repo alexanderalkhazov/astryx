@@ -6,13 +6,16 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Button } from '@/components/Button';
 import { Screen, ScreenHeader } from '@/components/Shell';
 import { Text } from '@/components/Text';
+import { markLessonRead } from '@/features/home/gettingStarted';
 import { GLOSSARY, type GlossaryKey } from '@/features/plain/glossary';
+import { useSession } from '@/state/session';
 
 /** The order a beginner meets these words: the trade itself first, then what the screens show. */
 const BASICS: GlossaryKey[] = ['paper', 'buyStop', 'stop', 'target', 'rewardRisk', 'positionSize', 'riskPerTrade'];
 
 // T-194: Simple mode's Learn tab. The full learning path is T-186; for now the plain-words glossary and the guided trade.
 export default function LearnScreen() {
+  const userId = useSession((s) => s.user?.id);
   const [open, setOpen] = useState<GlossaryKey>();
   const rest = (Object.keys(GLOSSARY) as GlossaryKey[]).filter((k) => !BASICS.includes(k));
 
@@ -23,7 +26,10 @@ export default function LearnScreen() {
         key={key}
         accessibilityRole="button"
         accessibilityState={{ expanded }}
-        onPress={() => setOpen(expanded ? undefined : key)}
+        onPress={() => {
+          setOpen(expanded ? undefined : key);
+          if (!expanded && userId) void markLessonRead(userId); // T-195: "read one lesson"
+        }}
         style={({ pressed }) => [styles.item, { opacity: pressed ? 0.8 : 1 }]}
         testID={`learn-${key}`}
       >

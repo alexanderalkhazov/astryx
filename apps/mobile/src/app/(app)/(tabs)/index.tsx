@@ -15,10 +15,12 @@ import { Segmented } from '@/components/Segmented';
 import { HomeHeader, Screen } from '@/components/Shell';
 import { Text } from '@/components/Text';
 import { ConnectionBanner } from '@/features/connection/ConnectionBanner';
+import { checklist, dismissChecklist, localDate, useStarted } from '@/features/home/gettingStarted';
 import { moneySentence, type NextStep, nextStep } from '@/features/home/nextStep';
 import { useGoal } from '@/features/onboarding/goal';
 import { useViewMode } from '@/features/plain/mode';
-import { broker, invest, market, notifications, portfolio, scanner } from '@/lib/api';
+import { WATCHLISTS_KEY } from '@/features/watchlist/useWatchlist';
+import { broker, invest, market, notifications, portfolio, scanner, watchlists } from '@/lib/api';
 import { formatEtTime, formatMoney, formatPct, formatPnl, formatPrice, formatRatio } from '@/lib/format';
 import { useSession } from '@/state/session';
 import { toast } from '@/state/toasts';
@@ -114,6 +116,32 @@ export default function HomeScreen() {
       ? nextStep({ goal, attention: attention.data, plan: investing.data, openPositions: positions.data.items.length })
       : undefined;
   const showAll = !simple || details;
+  const started = useStarted(simple ? userId : undefined);
+  const watched = useQuery({
+    queryKey: WATCHLISTS_KEY,
+    queryFn: async () => (await watchlists.list()).data.items,
+    enabled: simple && started !== undefined && !started.dismissed,
+    retry: false,
+  });
+  const closed = useQuery({
+    queryKey: ['positions', 'closed'],
+    queryFn: async () => (await portfolio.positions('closed')).data,
+    enabled: simple && started !== undefined && !started.dismissed,
+    retry: false,
+  });
+  const steps =
+    started && !started.dismissed && watched.data && closed.data && positions.data && investing.data !== undefined
+      ? checklist({
+          hasPlan: investing.data !== null,
+          watching: watched.data.some((w) => w.items.length > 0),
+          traded:
+            positions.data.items.length > 0 ||
+            closed.data.items.length > 0 ||
+            (attention.data ?? []).some((a) => a.kind === 'working_order'),
+          started,
+          today: localDate(),
+        })
+      : undefined;
 
   return (
     <Screen scroll={false}>
@@ -135,6 +163,9 @@ export default function HomeScreen() {
               <SkeletonRow />
             )}
             {step ? <NextStepCard step={step} /> : <SkeletonRow />}
+            {steps && steps.some((x) => !x.done) && userId ? (
+              <GettingStarted items={steps} onDismiss={() => void dismissChecklist(userId)} />
+            ) : null}
           </View>
         ) : null}
 
@@ -351,6 +382,35 @@ function NextStepCard({ step }: { step: NextStep }) {
   );
 }
 
+function GettingStarted({ items, onDismiss }: { items: ReturnType<typeof checklist>; onDismiss: () => void }) {
+  const done = items.filter((i) => i.done).length;
+  return (
+    <View style={styles.stepCard} testID="home-getting-started">
+      <View style={styles.sectionHeader}>
+        <Text.Section>{`Getting started, ${done} of ${items.length}`}</Text.Section>
+        <Pressable accessibilityRole="button" accessibilityLabel="Hide getting started" onPress={onDismiss} hitSlop={8}>
+          <Text.Caption tone="tertiary">Hide</Text.Caption>
+        </Pressable>
+      </View>
+      {items.map((item) => (
+        <Pressable
+          key={item.key}
+          accessibilityRole={item.href && !item.done ? 'link' : 'text'}
+          accessibilityLabel={`${item.label}${item.done ? ', done' : ''}`}
+          disabled={!item.href || item.done}
+          onPress={() => item.href && router.push(item.href)}
+          style={styles.checkRow}
+        >
+          <View style={[styles.check, item.done && styles.checkDone]} />
+          <Text.Body tone={item.done ? 'tertiary' : 'primary'} style={item.done ? styles.struck : undefined}>
+            {item.label}
+          </Text.Body>
+        </Pressable>
+      ))}
+    </View>
+  );
+}
+
 function OpportunityCard({ signal }: { signal: Signal }) {
   return (
     <Pressable
@@ -401,6 +461,10 @@ const styles = StyleSheet.create({
   simpleTop: { gap: space[4], paddingTop: space[2] },
   stepCard: { gap: space[2], padding: space[4], borderRadius: radius.card, backgroundColor: color.surface1, borderLeftWidth: 3 },
   detailsToggle: { alignSelf: 'center', paddingVertical: space[2] },
+  checkRow: { flexDirection: 'row', alignItems: 'center', gap: space[3], minHeight: 36 },
+  check: { width: 18, height: 18, borderRadius: 9, borderWidth: 1.5, borderColor: color.text3 },
+  checkDone: { backgroundColor: color.signal, borderColor: color.signal },
+  struck: { textDecorationLine: 'line-through' },
   investCard: {
     flexDirection: 'row',
     alignItems: 'center',
