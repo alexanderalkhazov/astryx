@@ -17,8 +17,8 @@ export const GOALS: readonly { value: Goal; title: string; body: string; href: H
   {
     value: 'practice',
     title: 'Practice trading with pretend money',
-    body: 'Try buying and selling single stocks. Nothing here can cost you real money.',
-    href: '/discover',
+    body: 'We’ll walk you through your first trade step by step. Nothing here can cost you real money.',
+    href: '/guided-trade',
   },
   {
     value: 'explore',

@@ -574,7 +574,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [x] **T-190** "What would you like to do?" start — `518d2e6`
   - **Acceptance:** after the disclaimer and the T-162 questions, one screen with three large choices: "Grow my money for the long term" (→ Invest setup), "Practice trading with pretend money" (→ guided first trade, T-193), "Just look around" (→ Markets or Discover). The choice is saved per account, changeable in Settings, and shapes Home (T-191).
   - **Refs:** T-162 · **Depends:** — · **P1**
-  - Done (2026-11-24): `/start` after the questions (existing accounts see it once too), saved per account on the device, Settings › Your goal changes it. "Practice" opens Discover until the guided first trade (T-193) exists.
+  - Done (2026-11-24): `/start` after the questions (existing accounts see it once too), saved per account on the device, Settings › Your goal changes it. "Practice" opens the guided first trade (T-193).
 - [x] **T-191** Home as "your next step" — `9065aad`
   - **Acceptance:** in Simple mode Home opens with one plain sentence about the user's money ("You have $10,250 of practice money, up $250 since you started") and one card with the single most useful next action, chosen by rules from their goal and state (no plan yet → start it; plan drifted → rebalance; a position near its stop → look at it; nothing to do → "All good. Check back tomorrow"). Charts and stats move below the fold, or to Pro mode.
   - **Refs:** T-161 · **Depends:** T-190 · **P1**
@@ -586,6 +586,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [ ] **T-193** Guided first trade
   - **Acceptance:** a step-by-step walkthrough on a real setup, using practice money: what a stock and its price are, what the plan is (buy if it rises to X), what the stop does, how much could be lost, then approve with the hold gesture, ending in a small celebration and "here's where to watch it". Skippable; it resumes where you left off.
   - **Refs:** T-161, T-162 · **Depends:** T-192 · **P1**
+  - Done (2026-11-24): `/guided-trade`: intro, then five steps on a real proposal from today's scanner (a proven, soaked strategy's idea when there is one, else the top idea): what the stock is, the plan in words per order type, the stop and target, what could be lost from the server's fresh risk assessment, then the usual confirm sheet and hold. Ends with "Well done!" and where to watch it. Progress (step and proposal) is saved per account, so Skip resumes at the same step; an ended idea offers a new one, and a failing risk check offers another idea. The Practice goal and Home's first-trade step open it.
 - [ ] **T-194** Simpler navigation in Simple mode
   - **Acceptance:** Simple mode shows four tabs (Home, Invest, Practice, Learn); the Strategy lab, scores, breakdowns and the full Activity feed are Pro-only (reachable, not deleted). Practice holds Discover, filtered for beginners, and open positions.
   - **Refs:** §11 · **Depends:** T-190 · **P1**

@@ -16,6 +16,7 @@ import { useInvestorProfile } from '@/features/onboarding/profile';
 import { FiltersSheet } from '@/features/discover/FiltersSheet';
 import { activeFilterChips, type DiscoverFilters, useDiscoverFilters } from '@/features/discover/filters';
 import { isScannerUnavailable, SIGNALS_REFRESH_MS, useScannerStatus, useSignals } from '@/features/discover/useSignals';
+import { provenForBeginners } from '@/features/strategies/proven';
 import { formatEtTime } from '@/lib/format';
 import { useSession } from '@/state/session';
 
@@ -34,11 +35,6 @@ const SORT_LABEL: Record<DiscoverFilters['sort'], string> = {
   relStrength: 'relative strength',
   change: 'day change',
 };
-
-/** Setups a beginner may see: their strategy made money in a real backtest (T-166). */
-// Beginners see a strategy that made money in testing and finished its live trial within its tested drawdown (T-166).
-const provenForBeginners = (s: Signal) =>
-  (s.strategy.evidence === 'beats_market' || s.strategy.evidence === 'lags_market') && s.strategy.soaked === true;
 
 // Designs 02 (list), 03 (filters), 20 (loading), 21 (empty), 23 (scanner error) · SYSTEM_DESIGN.md §8.4.2.
 export default function DiscoverScreen() {

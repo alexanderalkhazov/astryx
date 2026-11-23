@@ -78,9 +78,9 @@ export function nextStep({ goal, attention, plan, openPositions }: HomeState): N
     return {
       kind: 'first_trade',
       title: 'Make your first practice trade',
-      body: 'Pick one of today’s ideas and see how a trade works, with pretend money.',
+      body: 'We’ll walk you through one of today’s ideas step by step, with pretend money.',
       tone: 'normal',
-      action: { label: 'See today’s ideas', href: '/discover' },
+      action: { label: 'Start the guided trade', href: '/guided-trade' },
     };
 
   if (goal === 'explore' && openPositions === 0 && plan === null)
