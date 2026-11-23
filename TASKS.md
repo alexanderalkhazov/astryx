@@ -554,6 +554,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [ ] **T-164** Investing track
   - **Acceptance:** an "Invest" area separate from trading: a diversified core portfolio from a short list of broad index ETFs, a target allocation chosen from the onboarding answers, recurring paper buys (weekly or monthly) and rebalancing suggestions, with goal tracking. Trading remains a small "practice" allocation. ETFs added to the universe and market data.
   - **Refs:** new · **Depends:** T-162 · **P2**
+  - ⏸ WIP (2026-11-23): backend done (Invest module, endpoints, contributions job, ETFs in both universes, tests). **Open:** the mobile Invest tab/screens and onboarding-driven default mix.
 - [ ] **T-165** Stronger AI explanations
   - **Acceptance:** a larger model (local or hosted, per owner decision) behind `IAiProvider`; explanations checked against the deterministic facts (numbers must match the assessment) before display; eval set extended with beginner-oriented questions.
   - **Refs:** §12 · **Depends:** owner decision · **P2**
