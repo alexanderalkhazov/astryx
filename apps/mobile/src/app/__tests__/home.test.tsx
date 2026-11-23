@@ -4,6 +4,9 @@ import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testi
 import { Text } from 'react-native';
 
 import HomeScreen from '../(app)/(tabs)/index';
+import { saveGoal } from '@/features/onboarding/goal';
+import { setViewMode } from '@/features/plain/mode';
+import { useSession } from '@/state/session';
 
 jest.mock('expo-crypto', () => ({ randomUUID: () => '00000000-0000-4000-8000-000000000001' }));
 jest.mock('expo-secure-store', () => ({
@@ -25,12 +28,14 @@ jest.mock('@/lib/api', () => ({
   scanner: { list: jest.fn() },
   market: { breadth: jest.fn() },
   broker: { connections: jest.fn() },
+  invest: { get: jest.fn() },
 }));
 const api = jest.requireMock('@/lib/api') as {
   portfolio: Record<'summary' | 'performance' | 'attention' | 'positions' | 'sync' | 'strategyMtd', jest.Mock>;
   scanner: { list: jest.Mock };
   market: { breadth: jest.Mock };
   broker: { connections: jest.Mock };
+  invest: { get: jest.Mock };
 };
 const ok = <T,>(data: T) => ({ data });
 
@@ -69,13 +74,17 @@ async function renderHome() {
       'position/[ticker]': () => <Text>Position screen</Text>,
       discover: () => <Text>Discover screen</Text>,
       portfolio: () => <Text>Portfolio screen</Text>,
+      invest: () => <Text>Invest screen</Text>,
     },
     { initialUrl: '/' },
   );
 }
 
-beforeEach(() => {
+beforeEach(async () => {
   jest.clearAllMocks();
+  useSession.setState({ user: { id: 'home-user' } as never });
+  await setViewMode('home-user', 'pro'); // design 01 is the Pro view; Simple mode is T-191 below
+  api.invest.get.mockResolvedValue(ok(null));
   api.portfolio.summary.mockResolvedValue(ok(SUMMARY));
   api.portfolio.performance.mockResolvedValue(
     ok({
@@ -191,5 +200,56 @@ describe('Home (design 01)', () => {
 
     await waitFor(() => expect(api.portfolio.sync).toHaveBeenCalled());
     await waitFor(() => expect(useToasts.getState().toasts.at(-1)?.title).toBe('Synced 14:40 ET'));
+  });
+});
+
+describe('Home in Simple mode (T-191)', () => {
+  beforeEach(async () => {
+    await setViewMode('home-user', 'simple');
+    api.portfolio.attention.mockResolvedValue(ok({ items: [] }));
+    api.portfolio.positions.mockResolvedValue(ok({ items: [], nextCursor: null }));
+  });
+
+  it('leads with one sentence and one next step, with the charts a tap away', async () => {
+    await saveGoal('home-user', 'invest');
+    await renderHome();
+
+    expect(await screen.findByText('You have $118,172.18 of practice money, up $10,672.93 since you started.')).toBeOnTheScreen();
+    expect(await screen.findByTestId('home-next-start_plan')).toHaveTextContent(/Start your investing plan/);
+    expect(screen.queryByText('Cash: $7,665.03')).toBeNull();
+    expect(screen.queryByText('Market breadth')).toBeNull();
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Show charts and details' }));
+    expect(await screen.findByLabelText('Cash: $7,665.03')).toBeOnTheScreen();
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Start my plan' }));
+    await waitFor(() => expect(screen).toHavePathname('/invest'));
+  });
+
+  it('puts a position near its stop first, whatever the goal', async () => {
+    await saveGoal('home-user', 'invest');
+    api.portfolio.attention.mockResolvedValue(
+      ok({
+        items: [
+          { kind: 'pending_proposal', title: 'AMD proposal waiting', body: '', deepLink: '/proposal/p2', severity: 'info' },
+          { kind: 'stop_proximity', title: 'NVDA near its stop', body: '', deepLink: '/position/NVDA', severity: 'warning' },
+        ],
+      }),
+    );
+    await renderHome();
+
+    expect(await screen.findByTestId('home-next-stop_proximity')).toHaveTextContent(/NVDA near its stop/);
+    await fireEvent.press(screen.getByRole('button', { name: 'Look at it' }));
+    await waitFor(() => expect(screen).toHavePathname('/position/NVDA'));
+  });
+
+  it('says all good when there is nothing to do', async () => {
+    await saveGoal('home-user', 'practice');
+    api.portfolio.positions.mockResolvedValue(
+      ok({ items: [{ id: 'x', symbol: 'NVDA', marketValue: '14166.40', unrealizedPnl: '-9.12' }], nextCursor: null }),
+    );
+    await renderHome();
+
+    expect(await screen.findByTestId('home-next-all_good')).toHaveTextContent(/Nothing needs you today\. Check back tomorrow\./);
   });
 });

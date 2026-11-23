@@ -578,6 +578,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [ ] **T-191** Home as "your next step"
   - **Acceptance:** in Simple mode Home opens with one plain sentence about the user's money ("You have $10,250 of practice money, up $250 since you started") and one card with the single most useful next action, chosen by rules from their goal and state (no plan yet → start it; plan drifted → rebalance; a position near its stop → look at it; nothing to do → "All good. Check back tomorrow"). Charts and stats move below the fold, or to Pro mode.
   - **Refs:** T-161 · **Depends:** T-190 · **P1**
+  - Done (2026-11-24): Simple mode opens with "You have $X of practice money, up $Y since you started." and a "Your next step" card from fixed rules (`features/home/nextStep.ts`): entries paused → position near its stop → proposal waiting → start a plan (Invest goal) → plan drifted → first practice trade (Practice goal) → look around (Explore goal) → "All good. Check back tomorrow". The Investing card and open positions stay; chart, stats, breadth, opportunities and strategies sit behind "Show charts and details". Pro mode is unchanged.
 - [ ] **T-192** Safety promise everywhere
   - **Acceptance:** a calm, always-visible "Practice money: nothing here can cost you real money" badge in Simple mode, and short "What happens if…?" answers (what if the price falls, what if I close the app, can I undo) beside every money action: approve, close, invest, rebalance.
   - **Refs:** §17 · **Depends:** — · **P1**

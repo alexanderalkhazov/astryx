@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 
 import { SignalBadge } from '@/components/Badge';
+import { Button } from '@/components/Button';
 import { LineChart } from '@/components/chart/LineChart';
 import { SkeletonRow } from '@/components/Feedback';
 import { MetricGrid, MetricHero } from '@/components/Metric';
@@ -14,8 +15,12 @@ import { Segmented } from '@/components/Segmented';
 import { HomeHeader, Screen } from '@/components/Shell';
 import { Text } from '@/components/Text';
 import { ConnectionBanner } from '@/features/connection/ConnectionBanner';
+import { moneySentence, type NextStep, nextStep } from '@/features/home/nextStep';
+import { useGoal } from '@/features/onboarding/goal';
+import { useViewMode } from '@/features/plain/mode';
 import { broker, invest, market, notifications, portfolio, scanner } from '@/lib/api';
 import { formatEtTime, formatMoney, formatPct, formatPnl, formatPrice, formatRatio } from '@/lib/format';
+import { useSession } from '@/state/session';
 import { toast } from '@/state/toasts';
 
 /** Screens still waiting for their tasks, reachable in development builds only. */
@@ -35,6 +40,10 @@ const tone = (value: string) => (new Decimal(value).isNegative() ? 'loss' : 'gai
 // Design 01 · SYSTEM_DESIGN.md §8.4.1: what the portfolio did and what needs attention.
 export default function HomeScreen() {
   const queryClient = useQueryClient();
+  const userId = useSession((st) => st.user?.id);
+  const simple = useViewMode(userId) === 'simple';
+  const goal = useGoal(userId);
+  const [details, setDetails] = useState(false);
   const [range, setRange] = useState<PerformanceRange>('1M');
   const [scrub, setScrub] = useState<number | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -99,6 +108,12 @@ export default function HomeScreen() {
   const s = summary.data;
   const p = performance.data;
   const point = p && scrub !== null ? p.series[scrub] : null;
+  // T-191: Simple mode leads with one sentence and one next step; the rest is a tap away.
+  const step =
+    attention.data && investing.data !== undefined && positions.data
+      ? nextStep({ goal, attention: attention.data, plan: investing.data, openPositions: positions.data.items.length })
+      : undefined;
+  const showAll = !simple || details;
 
   return (
     <Screen scroll={false}>
@@ -110,7 +125,20 @@ export default function HomeScreen() {
         <HomeHeader unreadAlerts={(unread.data ?? 0) > 0 || (attention.data?.length ?? 0) > 0} />
         <ConnectionBanner />
 
-        {s ? (
+        {simple ? (
+          <View style={styles.simpleTop}>
+            {s ? (
+              <Text.Title accessibilityRole="header" testID="home-sentence">
+                {moneySentence(s.equity, s.allTimePnl)}
+              </Text.Title>
+            ) : (
+              <SkeletonRow />
+            )}
+            {step ? <NextStepCard step={step} /> : <SkeletonRow />}
+          </View>
+        ) : null}
+
+        {!showAll ? null : s ? (
           <MetricHero label={`Total portfolio value · ${alpaca ? 'Alpaca paper' : 'paper account'}`} value={point?.equity ?? s.equity}>
             {point ? (
               <Text.DataSm tone="tertiary">{point.t.slice(0, 10)}</Text.DataSm>
@@ -157,7 +185,7 @@ export default function HomeScreen() {
           </Pressable>
         ) : null}
 
-        {p ? (
+        {showAll && p ? (
           <LineChart
             series={[{ key: 'equity', points: p.series.map((x) => ({ t: x.t, v: x.equity })) }]}
             benchmark={p.series.every((x) => x.benchmark) ? p.series.map((x) => ({ t: x.t, v: x.benchmark! })) : undefined}
@@ -165,15 +193,19 @@ export default function HomeScreen() {
             accessibilityLabel={`Portfolio over ${range} against the S&P 500`}
           />
         ) : null}
-        <Segmented
-          accessibilityLabel="Chart range"
-          options={RANGES.map((r) => ({ value: r, label: r }))}
-          value={range}
-          onChange={setRange}
-        />
-        <Text.Caption tone="tertiary">Dashed line: S&P 500 (SPY), rebased.</Text.Caption>
+        {showAll ? (
+          <>
+            <Segmented
+              accessibilityLabel="Chart range"
+              options={RANGES.map((r) => ({ value: r, label: r }))}
+              value={range}
+              onChange={setRange}
+            />
+            <Text.Caption tone="tertiary">Dashed line: S&P 500 (SPY), rebased.</Text.Caption>
+          </>
+        ) : null}
 
-        {s ? (
+        {showAll && s ? (
           <MetricGrid
             items={[
               { label: 'Cash', value: formatMoney(s.cash) },
@@ -183,7 +215,7 @@ export default function HomeScreen() {
           />
         ) : null}
 
-        {(attention.data ?? []).length > 0 ? (
+        {showAll && (attention.data ?? []).length > 0 ? (
           <Section title="Needs attention">
             {attention.data!.map((item) => (
               <Pressable
@@ -209,7 +241,7 @@ export default function HomeScreen() {
           </Section>
         ) : null}
 
-        {(opportunities.data ?? []).length > 0 ? (
+        {showAll && (opportunities.data ?? []).length > 0 ? (
           <Section title="Top opportunities" action={{ label: 'See all', onPress: () => router.push('/discover') }}>
             <ScrollView
               horizontal
@@ -226,7 +258,7 @@ export default function HomeScreen() {
           </Section>
         ) : null}
 
-        {breadth.data ? (
+        {showAll && breadth.data ? (
           <Section title="Market breadth">
             <View
               style={styles.breadth}
@@ -257,7 +289,7 @@ export default function HomeScreen() {
           </Section>
         ) : null}
 
-        {(strategies.data ?? []).length > 0 ? (
+        {showAll && (strategies.data ?? []).length > 0 ? (
           <Section title="Strategies · month to date">
             {strategies.data!.map((st) => (
               <Pressable
@@ -275,6 +307,19 @@ export default function HomeScreen() {
           </Section>
         ) : null}
 
+        {simple ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ expanded: details }}
+            onPress={() => setDetails((d) => !d)}
+            hitSlop={8}
+            style={styles.detailsToggle}
+            testID="home-details"
+          >
+            <Text.Body tone="signal">{details ? 'Show less' : 'Show charts and details'}</Text.Body>
+          </Pressable>
+        ) : null}
+
         {__DEV__ ? (
           <View style={styles.dev}>
             <Text.Overline tone="pending">Developer</Text.Overline>
@@ -290,6 +335,19 @@ export default function HomeScreen() {
         ) : null}
       </ScrollView>
     </Screen>
+  );
+}
+
+const STEP_ACCENT: Record<NextStep['tone'], string> = { urgent: color.pending, normal: color.signal, calm: color.line };
+
+function NextStepCard({ step }: { step: NextStep }) {
+  return (
+    <View style={[styles.stepCard, { borderLeftColor: STEP_ACCENT[step.tone] }]} testID={`home-next-${step.kind}`}>
+      <Text.Overline tone="tertiary">YOUR NEXT STEP</Text.Overline>
+      <Text.Section>{step.title}</Text.Section>
+      <Text.Body tone="secondary">{step.body}</Text.Body>
+      {step.action ? <Button label={step.action.label} onPress={() => router.push(step.action!.href)} testID="home-next-action" /> : null}
+    </View>
   );
 }
 
@@ -340,6 +398,9 @@ function Section({
 const styles = StyleSheet.create({
   content: { gap: space[4], paddingBottom: space[6] },
   heroLines: { gap: 2 },
+  simpleTop: { gap: space[4], paddingTop: space[2] },
+  stepCard: { gap: space[2], padding: space[4], borderRadius: radius.card, backgroundColor: color.surface1, borderLeftWidth: 3 },
+  detailsToggle: { alignSelf: 'center', paddingVertical: space[2] },
   investCard: {
     flexDirection: 'row',
     alignItems: 'center',
