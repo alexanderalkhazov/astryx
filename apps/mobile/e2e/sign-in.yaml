@@ -72,3 +72,18 @@ env:
           id: onboarding-tolerance-normal
       - tapOn:
           id: onboarding-continue
+# Then what to do first (T-190): "Just look around" opens Discover; go back Home so every flow starts in the same place.
+- extendedWaitUntil:
+    visible:
+      id: start-explore
+    timeout: 5000
+    optional: true
+- runFlow:
+    when:
+      visible:
+        id: start-explore
+    commands:
+      - tapOn:
+          id: start-explore
+      - tapOn:
+          id: tab-index

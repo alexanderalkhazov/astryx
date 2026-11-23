@@ -9,7 +9,10 @@ import TabsLayout from '../(app)/(tabs)/_layout';
 import ActivityScreen from '../(app)/(tabs)/activity';
 import DiscoverScreen from '../(app)/(tabs)/discover';
 import HomeScreen from '../(app)/(tabs)/index';
+import InvestScreen from '../(app)/(tabs)/invest';
+import LearnScreen from '../(app)/(tabs)/learn';
 import PortfolioScreen from '../(app)/(tabs)/portfolio';
+import PracticeScreen from '../(app)/(tabs)/practice';
 import StrategiesScreen from '../(app)/(tabs)/strategies';
 import AnalysisScreen from '../(app)/analyses/[id]';
 import AnalysesScreen from '../(app)/analyses/index';
@@ -64,6 +67,9 @@ const routes = {
   '(app)/(tabs)/portfolio': PortfolioScreen,
   '(app)/(tabs)/strategies': StrategiesScreen,
   '(app)/(tabs)/activity': ActivityScreen,
+  '(app)/(tabs)/invest': InvestScreen,
+  '(app)/(tabs)/practice': PracticeScreen,
+  '(app)/(tabs)/learn': LearnScreen,
   '(app)/stock/[ticker]': StockWithSheet,
   '(app)/proposal/[id]': ProposalScreen,
   '(app)/position/[ticker]': PositionScreen,
@@ -107,8 +113,19 @@ describe('app shell', () => {
     expect(screen.getByRole('button', { name: /^Alerts/, selected: true })).toBeOnTheScreen();
   });
 
-  it('switches between all five tabs, with the PAPER chip on Portfolio', async () => {
+  it('switches between all five tabs in Pro, with the PAPER chip on Portfolio', async () => {
+    const stored: Record<string, string> = {
+      'astryx.disclaimer.v1.pro-user': 'accepted',
+      'astryx.profile.v1.pro-user': JSON.stringify({ level: 'experienced', horizon: 'weeks', tolerance: 'normal' }),
+      'astryx.goal.v1.pro-user': 'practice',
+      'astryx.viewMode.pro-user': 'pro',
+    };
+    const secureStore = jest.requireMock('expo-secure-store') as { getItemAsync: jest.Mock };
+    secureStore.getItemAsync.mockImplementation(async (key: string) => stored[key] ?? null);
+    useSession.setState({ user: { id: 'pro-user' } as never });
     await renderRouter(routes, { initialUrl: '/' });
+    await waitFor(() => expect(screen.getByTestId('tab-discover')).toBeOnTheScreen());
+    expect(screen.queryByTestId('tab-learn')).toBeNull();
 
     for (const [tab, pathname, title] of [
       ['discover', '/discover', 'Discover'],
@@ -123,6 +140,28 @@ describe('app shell', () => {
       expect(screen.getByRole('header', { name: title })).toBeOnTheScreen();
       if (tab === 'portfolio') expect(screen.getByTestId('paper-chip')).toBeOnTheScreen();
     }
+    secureStore.getItemAsync.mockReset();
+  });
+
+  it('shows four plain tabs in Simple mode and keeps the Pro screens reachable (T-194)', async () => {
+    await renderRouter(routes, { initialUrl: '/' });
+
+    expect(screen.queryByTestId('tab-discover')).toBeNull();
+    expect(screen.queryByTestId('tab-strategies')).toBeNull();
+    for (const [tab, pathname, title] of [
+      ['invest', '/invest', 'Invest'],
+      ['practice', '/practice', 'Practice'],
+      ['learn', '/learn', 'Learn'],
+      ['index', '/', 'Overview'],
+    ] as const) {
+      await fireEvent.press(screen.getByTestId(`tab-${tab}`));
+      await waitFor(() => expect(screen).toHavePathname(pathname));
+      expect(screen.getByRole('header', { name: title })).toBeOnTheScreen();
+    }
+
+    await fireEvent.press(screen.getByTestId('tab-practice'));
+    await fireEvent.press(await screen.findByRole('button', { name: 'All ideas and filters' }));
+    await waitFor(() => expect(screen).toHavePathname('/discover'));
   });
 
   it.each([

@@ -1,6 +1,18 @@
 import { color, size, space, type as typeScale } from '@astryx/design-tokens';
 import { type Tabs, useRouter } from 'expo-router';
-import { Activity, ChartPie, ChevronLeft, FlaskConical, House, type LucideIcon, type LucideProps, Scan } from 'lucide-react-native';
+import {
+  Activity,
+  BookOpen,
+  ChartPie,
+  ChevronLeft,
+  FlaskConical,
+  House,
+  type LucideIcon,
+  type LucideProps,
+  Scan,
+  Sprout,
+  Target,
+} from 'lucide-react-native';
 import type { ComponentProps, ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, type TextStyle, View } from 'react-native';
 
@@ -23,6 +35,9 @@ const TAB_ICONS: Record<string, LucideIcon | typeof ScannerIcon> = {
   portfolio: ChartPie,
   strategies: FlaskConical,
   activity: Activity,
+  invest: Sprout,
+  practice: Target,
+  learn: BookOpen,
 };
 
 /**
@@ -34,6 +49,8 @@ export function TabBar({ state, descriptors, emitter, navigateToTab, insets }: T
     <View style={[styles.tabBar, { paddingBottom: insets.bottom > 0 ? insets.bottom : space[2] }]} accessibilityRole="tablist">
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key]!;
+        // T-194: a tab left out of the current mode keeps its route (links still open it) but gets no button.
+        if (StyleSheet.flatten(options.tabBarItemStyle)?.display === 'none') return null;
         const focused = state.index === index;
         const Icon = TAB_ICONS[route.name] ?? House;
         const label = typeof options.title === 'string' ? options.title : route.name;

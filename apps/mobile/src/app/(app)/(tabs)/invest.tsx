@@ -10,9 +10,8 @@ import { Button } from '@/components/Button';
 import { SkeletonRow } from '@/components/Feedback';
 import { Input } from '@/components/Input';
 import { MetricHero } from '@/components/Metric';
-import { StackHeader } from '@/components/Navigation';
 import { Segmented } from '@/components/Segmented';
-import { Screen } from '@/components/Shell';
+import { PaperChip, Screen, ScreenHeader } from '@/components/Shell';
 import { Text } from '@/components/Text';
 import { type LossTolerance, useInvestorProfile } from '@/features/onboarding/profile';
 import { WhatIf } from '@/features/plain/WhatIf';
@@ -50,7 +49,7 @@ export default function InvestScreen() {
   const [editing, setEditing] = useState(false);
 
   return (
-    <Screen header={<StackHeader title="Investing" />}>
+    <Screen header={<ScreenHeader title="Invest" chip={<PaperChip />} />}>
       {plan.isPending ? (
         <SkeletonRow />
       ) : plan.data === null || editing ? (

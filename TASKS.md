@@ -590,6 +590,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 - [ ] **T-194** Simpler navigation in Simple mode
   - **Acceptance:** Simple mode shows four tabs (Home, Invest, Practice, Learn); the Strategy lab, scores, breakdowns and the full Activity feed are Pro-only (reachable, not deleted). Practice holds Discover, filtered for beginners, and open positions.
   - **Refs:** §11 · **Depends:** T-190 · **P1**
+  - Done (2026-11-24): Simple mode shows Home, Invest, Practice and Learn; Pro keeps Home, Discover, Portfolio, Strategies, Activity. The other mode's screens keep their routes and links (only the tab button is hidden). Invest moved into the tabs (same `/invest`). Practice: the guided trade when there are no trades, your practice trades, and today's ideas with the beginner filter. Learn: the plain-words glossary in beginner order plus the guided trade (the full path is T-186). The e2e sign-in now passes the T-190 start screen.
 - [ ] **T-195** Getting-started checklist
   - **Acceptance:** a dismissible "Getting started, 3 of 5" card: set up a plan or goal, watch a stock, make a practice trade, read one lesson, come back another day. Progress is derived from the user's real data, not ticked by hand.
   - **Depends:** T-190 · **P2**
