@@ -106,6 +106,7 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
 | **M7** E2E and hardening | Automated journey, failure tests, observability, release gate | §21.10 release gate passes |
 | **M8** Alpaca Live (gated) | Real-money trading through Alpaca, only after legal, operational and safety gates | Every §17.9 gate ticked, owner sign-off |
 | **M9** Beginner mode | Evidence-gated strategies, plain language, onboarding, long-term investing | A beginner can start an Invest plan and only sees strategies with real evidence |
+| **M12** Warm start (before M10) | A first-time user knows what to do within a minute and feels safe doing it | The owner opens the app cold and completes a first step without help |
 | **M10** Whole market and company data | Any US stock or ETF, a Markets overview, quarterly financials and dividends | AAPL shows 8 quarters of SEC financials and its dividends; any Alpaca-tradable symbol opens |
 
 **Priority (owner, 2026-11-12): a working local app first.** Work runs M2 → M3 → M4 → M5 → M5b → M6 on the local stack (Docker, simulator, dev build). The CI, scanning and lint tasks (T-001, T-002, T-003, the CI check in T-010) and release or deployment work are deferred until the end-to-end journey works locally. A `Depends:` on one of them does not block local work. T-010's local generation (`pnpm api:gen`) is done with the market endpoints (T-045). Rule A.1 (real money disabled) and every safety rule still apply.
@@ -564,6 +565,38 @@ Priorities: **P0** = required for the end-to-end MVP · **P1** = required before
   - **Acceptance:** each strategy's live paper results (signals, fills, P&L, drawdown) since a start date shown beside its backtest, so users see real out-of-sample results; a strategy is offered to Beginners only after a minimum soak and drawdown within its backtest range.
   - **Refs:** §17.9 (T-131) · **Depends:** T-160 · **P2**
   - ⏸ WIP (2026-11-23, `007de59`): evidence gate done (verdict per strategy from its real backtest, risk-engine warning, beginners only see proven strategies). **Open:** each strategy's live paper results beside its backtest, and a minimum soak before Beginners see a strategy.
+
+### M12 · Warm start (owner request 2026-11-23: "I open it and I don't know what to do", "I can't feel a sense of warm confidence")
+
+> Comes before M10: more data doesn't help if the first minute is confusing. The app was designed as a dense trading workstation; Simple mode (T-161) changed words, not the experience. Done means the owner, opening it cold, knows what to do and does it without help; every item is checked by the owner against simulator screenshots, not by the author's judgement.
+
+- [ ] **T-190** "What would you like to do?" start
+  - **Acceptance:** after the disclaimer and the T-162 questions, one screen with three large choices: "Grow my money for the long term" (→ Invest setup), "Practice trading with pretend money" (→ guided first trade, T-193), "Just look around" (→ Markets or Discover). The choice is saved per account, changeable in Settings, and shapes Home (T-191).
+  - **Refs:** T-162 · **Depends:** — · **P1**
+- [ ] **T-191** Home as "your next step"
+  - **Acceptance:** in Simple mode Home opens with one plain sentence about the user's money ("You have $10,250 of practice money, up $250 since you started") and one card with the single most useful next action, chosen by rules from their goal and state (no plan yet → start it; plan drifted → rebalance; a position near its stop → look at it; nothing to do → "All good. Check back tomorrow"). Charts and stats move below the fold, or to Pro mode.
+  - **Refs:** T-161 · **Depends:** T-190 · **P1**
+- [ ] **T-192** Safety promise everywhere
+  - **Acceptance:** a calm, always-visible "Practice money: nothing here can cost you real money" badge in Simple mode, and short "What happens if…?" answers (what if the price falls, what if I close the app, can I undo) beside every money action: approve, close, invest, rebalance.
+  - **Refs:** §17 · **Depends:** — · **P1**
+- [ ] **T-193** Guided first trade
+  - **Acceptance:** a step-by-step walkthrough on a real setup, using practice money: what a stock and its price are, what the plan is (buy if it rises to X), what the stop does, how much could be lost, then approve with the hold gesture, ending in a small celebration and "here's where to watch it". Skippable; it resumes where you left off.
+  - **Refs:** T-161, T-162 · **Depends:** T-192 · **P1**
+- [ ] **T-194** Simpler navigation in Simple mode
+  - **Acceptance:** Simple mode shows four tabs (Home, Invest, Practice, Learn); the Strategy lab, scores, breakdowns and the full Activity feed are Pro-only (reachable, not deleted). Practice holds Discover, filtered for beginners, and open positions.
+  - **Refs:** §11 · **Depends:** T-190 · **P1**
+- [ ] **T-195** Getting-started checklist
+  - **Acceptance:** a dismissible "Getting started, 3 of 5" card: set up a plan or goal, watch a stock, make a practice trade, read one lesson, come back another day. Progress is derived from the user's real data, not ticked by hand.
+  - **Depends:** T-190 · **P2**
+- [ ] **T-196** Warm theme
+  - **Acceptance:** a light, softer theme for Simple mode (warmer colours, friendlier type scale, fewer numbers per screen, illustrations in empty states), meeting WCAG AA contrast; the current dark workstation look stays as the Pro theme. Design tokens only, no per-screen colours.
+  - **Refs:** design tokens · **Depends:** — · **P2**
+- [ ] **T-197** Every screen says what it is and what to do
+  - **Acceptance:** a copy pass: each screen's first line answers "what is this and what can I do here?" in Simple mode, and every empty or error state names the next action. A Jest check fails on a Simple-mode screen without a header sentence.
+  - **Depends:** — · **P1**
+- [ ] **T-198** Owner walkthrough
+  - **Acceptance:** Maestro captures every Simple-mode screen on the simulator into a review page; the owner marks where they got lost; each mark becomes a fix, and M12 closes when a cold walkthrough has none.
+  - **Depends:** T-190–T-197 · **P1**
 
 ### M10 · Whole market and company data (owner request 2026-11-23: "broad stocks / indices / market integration", "dividends / company earnings in Q1–Q4")
 
